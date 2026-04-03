@@ -1,0 +1,3 @@
+webserver:
+    document-root: my_project_directory/public
+    passthru: /index.php
