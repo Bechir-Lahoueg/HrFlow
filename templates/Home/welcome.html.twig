@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Welcome | HrFlow{% endblock %}
+
+{% block body %}
+    <main style="min-height:100vh;display:grid;place-items:center;background:linear-gradient(145deg,#f4f8f7,#e8f3f1);font-family:Manrope,sans-serif;padding:1rem;">
+        <section style="width:min(700px,100%);background:#fff;border:1px solid #d6e1e5;border-radius:18px;padding:2rem;box-shadow:0 20px 45px rgba(15,23,42,.10);">
+            {% for message in app.flashes('success') %}
+                <p style="margin:0 0 1rem 0;padding:.7rem .9rem;border-radius:10px;background:#e7f7f2;border:1px solid #bde7d9;color:#0f766e;font-weight:700;">{{ message }}</p>
+            {% endfor %}
+            <h1 style="margin:0 0 .5rem 0;color:#0f766e;font-size:2rem;">Bienvenue sur HrFlow</h1>
+            <p style="margin:0 0 1rem 0;color:#425862;">Connexion reussie.</p>
+
+            {% if user %}
+                <div style="display:grid;gap:.45rem;padding:1rem;border-radius:12px;background:#f7fbfa;border:1px solid #e4efed;">
+                    <p style="margin:0;"><strong>Utilisateur:</strong> {{ user.userIdentifier }}</p>
+                    {% if user.email is defined and user.email %}
+                        <p style="margin:0;"><strong>Email:</strong> {{ user.email }}</p>
+                    {% endif %}
+                    {% if user.role is defined %}
+                        <p style="margin:0;"><strong>Role (DB):</strong> {{ user.role }}</p>
+                    {% endif %}
+                    <p style="margin:0;"><strong>Roles Symfony:</strong> {{ user.roles|join(', ') }}</p>
+                </div>
+            {% endif %}
+
+            <div style="margin-top:1.2rem;display:flex;gap:.7rem;flex-wrap:wrap;">
+                <a href="{{ path('app_home') }}" style="padding:.7rem 1rem;border-radius:999px;text-decoration:none;background:#0f766e;color:white;font-weight:700;">Accueil</a>
+                <a href="{{ path('app_logout') }}" style="padding:.7rem 1rem;border-radius:999px;text-decoration:none;background:#e7efed;color:#0f766e;font-weight:700;">Se deconnecter</a>
+            </div>
+        </section>
+    </main>
+{% endblock %}

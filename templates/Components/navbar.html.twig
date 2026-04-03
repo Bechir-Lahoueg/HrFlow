@@ -1,0 +1,90 @@
+<header class="site-header">
+	<div class="container nav-shell">
+		<a href="{{ path('app_home') }}" class="brand" aria-label="HrFlow home">
+			<img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="brand-logo">
+			<span class="brand-title">HrFlow</span>
+			<span class="brand-badge">Talent Suite</span>
+		</a>
+
+		<nav class="main-nav" id="mainNav" aria-label="Main navigation">
+			<a href="#features" class="nav-link">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+				Features
+			</a>
+			<a href="#how-it-works" class="nav-link">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+				How it works
+			</a>
+			<a href="#testimonials" class="nav-link">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+				Testimonials
+			</a>
+			<a href="#contact" class="nav-link">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+				Contact
+			</a>
+		</nav>
+
+		<div class="nav-right">
+			<a href="{{ path('app_login') }}" class="nav-login">Log in</a>
+			<a href="#contact" class="nav-cta">
+				Get started free
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+			</a>
+		</div>
+
+		<button class="nav-hamburger" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
+		</button>
+	</div>
+
+	{# Mobile overlay menu #}
+	<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+		<div class="mobile-menu-inner">
+			<a href="#features" class="mobile-link" onclick="closeMobileMenu()">Features</a>
+			<a href="#how-it-works" class="mobile-link" onclick="closeMobileMenu()">How it works</a>
+			<a href="#testimonials" class="mobile-link" onclick="closeMobileMenu()">Testimonials</a>
+			<a href="#contact" class="mobile-link" onclick="closeMobileMenu()">Contact</a>
+			<hr class="mobile-divider">
+			<a href="{{ path('app_login') }}" class="mobile-link mobile-login">Log in</a>
+			<a href="#contact" class="mobile-cta">Get started free</a>
+		</div>
+	</div>
+</header>
+
+<script>
+	(function() {
+		const toggle = document.getElementById('navToggle');
+		const menu = document.getElementById('mobileMenu');
+		const header = document.querySelector('.site-header');
+
+		toggle.addEventListener('click', function() {
+			const open = menu.classList.toggle('is-open');
+			toggle.classList.toggle('is-active', open);
+			toggle.setAttribute('aria-expanded', open);
+			menu.setAttribute('aria-hidden', !open);
+			document.body.style.overflow = open ? 'hidden' : '';
+		});
+
+		window.closeMobileMenu = function() {
+			menu.classList.remove('is-open');
+			toggle.classList.remove('is-active');
+			toggle.setAttribute('aria-expanded', 'false');
+			menu.setAttribute('aria-hidden', 'true');
+			document.body.style.overflow = '';
+		};
+
+		let lastScroll = 0;
+		window.addEventListener('scroll', function() {
+			const curr = window.pageYOffset;
+			if (curr > 60) {
+				header.classList.add('scrolled');
+			} else {
+				header.classList.remove('scrolled');
+			}
+			lastScroll = curr;
+		});
+	})();
+</script>
