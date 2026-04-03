@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     JobOfferForm.fxml
+     Fragment loaded into globalModalOverlay → modalBody at runtime.
+     Controller: controllers.JobOffersController
+     ═════════════════════════════════════════════════════════════════════ -->
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.controller.Rh.Recrutement.JobOfferFormController"
+            styleClass="modal-scroll"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            minWidth="500"
+            prefWidth="520">
+
+    <VBox styleClass="modal-form" spacing="20">
+        <padding>
+            <Insets top="24" right="28" bottom="16" left="28"/>
+        </padding>
+
+        <!-- Job Title -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Job Title *" styleClass="form-label"/>
+            <TextField fx:id="fieldTitle"
+                       promptText="e.g. Senior Backend Engineer"
+                       styleClass="form-input"/>
+        </VBox>
+
+        <!-- Department + Location -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Department *" styleClass="form-label"/>
+                <ComboBox fx:id="fieldDepartment"
+                          promptText="Select department"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Engineering"/>
+                            <String fx:value="Product"/>
+                            <String fx:value="Design"/>
+                            <String fx:value="Marketing"/>
+                            <String fx:value="Sales"/>
+                            <String fx:value="Finance"/>
+                            <String fx:value="HR"/>
+                            <String fx:value="Operations"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Location *" styleClass="form-label"/>
+                <TextField fx:id="fieldLocation"
+                           promptText="e.g. Remote, New York"
+                           styleClass="form-input"/>
+            </VBox>
+        </HBox>
+
+        <!-- Employment Type + Salary -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Employment Type *" styleClass="form-label"/>
+                <ComboBox fx:id="fieldType"
+                          promptText="Select type"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Full-Time"/>
+                            <String fx:value="Part-Time"/>
+                            <String fx:value="Contract"/>
+                            <String fx:value="Temporary"/>
+                            <String fx:value="Internship"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Min Salary *" styleClass="form-label"/>
+                <TextField fx:id="fieldSalaryMin"
+                           promptText="e.g. 5000"
+                           styleClass="form-input"/>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Max Salary *" styleClass="form-label"/>
+                <TextField fx:id="fieldSalaryMax"
+                           promptText="e.g. 8000"
+                           styleClass="form-input"/>
+            </VBox>
+        </HBox>
+
+        <!-- Status -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Status *" styleClass="form-label"/>
+            <ComboBox fx:id="fieldStatus"
+                      promptText="Select status"
+                      styleClass="form-input, form-combo"
+                      maxWidth="Infinity">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="OPEN"/>
+                        <String fx:value="CLOSED"/>
+                        <String fx:value="DRAFT"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </VBox>
+
+        <!-- Description -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Job Description" styleClass="form-label"/>
+            <TextArea fx:id="fieldDescription"
+                      promptText="Describe responsibilities, required skills, and qualifications…"
+                      styleClass="form-textarea"
+                      prefRowCount="4"
+                      wrapText="true"/>
+        </VBox>
+
+        <!-- Requirements -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Requirements" styleClass="form-label"/>
+            <TextArea fx:id="fieldRequirements"
+                      promptText="List minimum qualifications, experience, education…"
+                      styleClass="form-textarea"
+                      prefRowCount="3"
+                      wrapText="true"/>
+        </VBox>
+
+    </VBox>
+</ScrollPane>

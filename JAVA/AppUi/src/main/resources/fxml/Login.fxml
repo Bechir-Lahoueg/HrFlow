@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<HBox prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.LoginController">
+    
+    <!-- Left Side - Welcome Section with Background & Logo -->
+    <VBox alignment="CENTER" prefWidth="700.0" styleClass="login-left-panel" 
+          style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #ffffff 0%, #f0f0f0 100%);" HBox.hgrow="ALWAYS">
+        <padding>
+            <Insets top="40.0" bottom="40.0" left="50.0" right="50.0" />
+        </padding>
+        
+        <VBox alignment="CENTER" spacing="35.0" VBox.vgrow="ALWAYS">
+            <!-- Logo Section -->
+            <VBox alignment="CENTER" spacing="25.0">
+                <ImageView fitHeight="500.0" fitWidth="500.0" preserveRatio="true">
+                    <image>
+                        <Image url="@/logo.png" />
+                    </image>
+                </ImageView>
+            </VBox>
+            
+            <Region VBox.vgrow="ALWAYS" />
+        </VBox>
+    </VBox>
+    
+    <!-- Right Side - Login Form -->
+    <VBox alignment="CENTER" prefWidth="500.0" styleClass="login-right-panel" 
+          style="-fx-background-color: #ffffff;">
+        <padding>
+            <Insets top="60.0" bottom="60.0" left="50.0" right="50.0" />
+        </padding>
+        
+        <!-- TabPane pour les deux types de connexion -->
+        <TabPane fx:id="loginTabPane" prefHeight="580.0" prefWidth="400.0" tabClosingPolicy="UNAVAILABLE" styleClass="login-tabpane">
+            
+            <!-- Tab Admin/RH -->
+            <Tab text="👔 Admin / RH" styleClass="login-tab">
+                <content>
+                    <VBox alignment="CENTER" spacing="20.0" styleClass="login-form-container">
+                        <padding>
+                            <Insets top="35.0" bottom="35.0" left="35.0" right="35.0" />
+                        </padding>
+                        
+                        <!-- Icon & Title -->
+                        <VBox alignment="CENTER" spacing="8.0">
+                            <Label text="🔐" style="-fx-font-size: 42px;"/>
+                            <Label text="Connexion Admin" styleClass="login-form-title" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;">
+                                <font><Font name="System Bold" size="24.0" /></font>
+                            </Label>
+                            <Label text="Accédez à votre espace de gestion" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                        </VBox>
+
+                        <!-- Username Field -->
+                        <VBox spacing="8.0" styleClass="login-input-group">
+                            <Label text="Nom d'utilisateur" style="-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e0; -fx-border-radius: 8; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-padding: 4 12;">
+                                <Label text="👤" style="-fx-font-size: 18px;"/>
+                                <TextField fx:id="userUsernameField" onKeyPressed="#handleUserEnterKey" prefHeight="38.0" promptText="admin@hrflow.com" styleClass="login-input" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-prompt-text-fill: #94a3b8;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+
+                        <!-- Password Field -->
+                        <VBox spacing="8.0" styleClass="login-input-group">
+                            <Label text="Mot de passe" style="-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e0; -fx-border-radius: 8; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-padding: 4 12;">
+                                <Label text="🔒" style="-fx-font-size: 18px;"/>
+                                <PasswordField fx:id="userPasswordField" onKeyPressed="#handleUserEnterKey" prefHeight="38.0" promptText="••••••••" styleClass="login-input" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-prompt-text-fill: #94a3b8;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+
+                        <Label fx:id="userErrorLabel" styleClass="login-error-label" text="" wrapText="true" style="-fx-text-fill: #dc2626; -fx-font-size: 12px; -fx-padding: 5 0;"/>
+
+                        <!-- Sign In Button -->
+                        <Button onAction="#handleUserLogin" prefHeight="48.0" prefWidth="300.0" styleClass="login-submit-btn" text="Se connecter" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2); -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102,126,234,0.4), 12, 0, 0, 4);">
+                            <font><Font name="System Bold" size="15.0" /></font>
+                        </Button>
+
+                        <!-- Forgot Password Link -->
+                        <HBox alignment="CENTER" spacing="5.0">
+                            <Label text="Mot de passe oublié ?" styleClass="login-forgot-link" style="-fx-text-fill: #667eea; -fx-cursor: hand; -fx-underline: true;">
+                                <font><Font size="12.0" /></font>
+                            </Label>
+                        </HBox>
+                        
+                        <Region VBox.vgrow="ALWAYS" minHeight="10.0" />
+                        
+                        <!-- Info Box -->
+                        <HBox spacing="8.0" alignment="CENTER" style="-fx-background-color: #eff6ff; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #3b82f6; -fx-border-width: 1; -fx-border-radius: 8;">
+                            <Label text="💡" style="-fx-font-size: 14px;"/>
+                            <Label text="Accès réservé aux administrateurs et RH" style="-fx-text-fill: #1e40af; -fx-font-size: 11px;" wrapText="true"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <!-- Tab Employé -->
+            <Tab text="👨‍💼 Employé" styleClass="login-tab">
+                <content>
+                    <VBox alignment="CENTER" spacing="20.0" styleClass="login-form-container">
+                        <padding>
+                            <Insets top="35.0" bottom="35.0" left="35.0" right="35.0" />
+                        </padding>
+                        
+                        <!-- Icon & Title -->
+                        <VBox alignment="CENTER" spacing="8.0">
+                            <Label text="👨‍💼" style="-fx-font-size: 42px;"/>
+                            <Label text="Espace Employé" styleClass="login-form-title" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;">
+                                <font><Font name="System Bold" size="24.0" /></font>
+                            </Label>
+                            <Label text="Accédez à votre espace personnel" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                        </VBox>
+
+                        <!-- Email Field -->
+                        <VBox spacing="8.0" styleClass="login-input-group">
+                            <Label text="Email professionnel" style="-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e0; -fx-border-radius: 8; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-padding: 4 12;">
+                                <Label text="📧" style="-fx-font-size: 18px;"/>
+                                <TextField fx:id="employeeEmailField" onKeyPressed="#handleEmployeeEnterKey" prefHeight="38.0" promptText="employe@entreprise.com" styleClass="login-input" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-prompt-text-fill: #94a3b8;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+
+                        <!-- Password Field -->
+                        <VBox spacing="8.0" styleClass="login-input-group">
+                            <Label text="Mot de passe" style="-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e0; -fx-border-radius: 8; -fx-border-width: 1.5; -fx-background-radius: 8; -fx-padding: 4 12;">
+                                <Label text="🔒" style="-fx-font-size: 18px;"/>
+                                <PasswordField fx:id="employeePasswordField" onKeyPressed="#handleEmployeeEnterKey" prefHeight="38.0" promptText="••••••••" styleClass="login-input" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-prompt-text-fill: #94a3b8;" HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+
+                        <Label fx:id="employeeErrorLabel" styleClass="login-error-label" text="" wrapText="true" style="-fx-text-fill: #dc2626; -fx-font-size: 12px; -fx-padding: 5 0;"/>
+
+                        <!-- Sign In Button -->
+                        <Button onAction="#handleEmployeeLogin" prefHeight="48.0" prefWidth="300.0" styleClass="login-submit-btn" text="Se connecter" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2); -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102,126,234,0.4), 12, 0, 0, 4);">
+                            <font><Font name="System Bold" size="15.0" /></font>
+                        </Button>
+
+                        <!-- Forgot Password Link -->
+                        <HBox alignment="CENTER" spacing="5.0">
+                            <Label text="Mot de passe oublié ?" styleClass="login-forgot-link" style="-fx-text-fill: #667eea; -fx-cursor: hand; -fx-underline: true;">
+                                <font><Font size="12.0" /></font>
+                            </Label>
+                        </HBox>
+                        
+                        <Region VBox.vgrow="ALWAYS" minHeight="10.0" />
+                        
+                        <!-- Info Box -->
+                        <HBox spacing="8.0" alignment="CENTER" style="-fx-background-color: #f0fdf4; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #22c55e; -fx-border-width: 1; -fx-border-radius: 8;">
+                            <Label text="💡" style="-fx-font-size: 14px;"/>
+                            <Label text="Utilisez votre email professionnel pour vous connecter" style="-fx-text-fill: #166534; -fx-font-size: 11px;" wrapText="true"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </Tab>
+        </TabPane>
+    </VBox>
+
+</HBox>

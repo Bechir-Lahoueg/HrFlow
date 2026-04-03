@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane fitToWidth="true" fitToHeight="true" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.example.ui.controller.Employee.EmployeeSettingsViewController"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+    <VBox spacing="25.0" minHeight="600" style="-fx-background-color: #f4f6f9;">
+        <padding>
+            <Insets top="30.0" bottom="30.0" left="40.0" right="40.0" />
+        </padding>
+
+        <!-- Page Title -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <Label text="⚙️ Paramètres" styleClass="page-title">
+                <font><Font name="System Bold" size="28.0" /></font>
+            </Label>
+        </HBox>
+
+        <Separator style="-fx-background-color: #bdc3c7;"/>
+
+        <!-- Settings Section -->
+        <VBox alignment="CENTER" spacing="30.0" VBox.vgrow="ALWAYS" prefHeight="400" minHeight="350"
+              style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+            
+            <Label text="⚙️" style="-fx-font-size: 56px;" />
+            <Label text="Paramètres de votre compte" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <Label text="Cette section permettra de gérer vos préférences, votre profil et vos paramètres de sécurité" 
+                   style="-fx-font-size: 15px; -fx-text-fill: #7f8c8d;" textAlignment="CENTER" wrapText="true" maxWidth="500"/>
+            
+            <!-- Info Card -->
+            <VBox spacing="15" alignment="CENTER" style="-fx-background-color: #ecf0f1; -fx-padding: 25; -fx-background-radius: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-border-radius: 10;" maxWidth="400">
+                <Label text="🔧 Fonctionnalités à venir" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Separator prefWidth="300" style="-fx-background-color: #bdc3c7;"/>
+                <Label text="✓ Modifier mon profil" style="-fx-font-size: 13px; -fx-text-fill: #34495e;"/>
+                <Label text="✓ Changer mon mot de passe" style="-fx-font-size: 13px; -fx-text-fill: #34495e;"/>
+                <Label text="✓ Préférences de notification" style="-fx-font-size: 13px; -fx-text-fill: #34495e;"/>
+                <Label text="✓ Gérer ma photo de profil" style="-fx-font-size: 13px; -fx-text-fill: #34495e;"/>
+            </VBox>
+            
+            <Separator prefWidth="400.0" style="-fx-background-color: #bdc3c7;"/>
+            
+            <!-- Bouton de déconnexion -->
+            <Button text="🚪 Déconnexion" onAction="#handleLogout" 
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.3), 8, 0, 0, 2);">
+                <font><Font size="15.0" /></font>
+            </Button>
+        </VBox>
+    </VBox>
+</ScrollPane>

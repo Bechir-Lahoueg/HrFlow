@@ -1,0 +1,449 @@
+-- =====================================================
+-- HRFlow - Full Database Schema (All Modules)
+-- Generated from code scan (AppUi + all functional modules)
+-- Target: MySQL 8+
+-- Date: 2026-04-03
+-- =====================================================
+
+CREATE DATABASE IF NOT EXISTS defaultdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE defaultdb;
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =====================================================
+-- 1) CORE: USERS / EMPLOYEES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_users_username (username),
+    INDEX idx_users_email (email),
+    INDEX idx_users_role (role),
+    CHECK (role IN ('ADMIN', 'RH', 'EMPLOYEE', 'admin', 'rh', 'employee'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    age INT NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rh_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_employees_rh FOREIGN KEY (rh_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_employees_rh_id (rh_id),
+    INDEX idx_employees_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 2) LEAVE MANAGEMENT (GestionDesConges)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS leave_balance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL UNIQUE,
+    employee_name VARCHAR(255) NOT NULL,
+    available_days DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    total_accrued DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    total_used DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    last_accrual_date DATE,
+    hire_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_leave_balance_employee FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_leave_balance_employee_id (employee_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS leave_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    employee_name VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    leave_type VARCHAR(100) NOT NULL,
+    reason TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'ATTENTE',
+    request_date DATE NOT NULL,
+    rh_comment TEXT,
+    days_count INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_leave_requests_employee FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_leave_requests_employee_id (employee_id),
+    INDEX idx_leave_requests_status (status),
+    INDEX idx_leave_requests_request_date (request_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS leave_notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_leave_notifications_emp (employee_id),
+    INDEX idx_leave_notifications_read (is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 3) TRAINING (Gestionformation)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS formation (
+    id_formation INT AUTO_INCREMENT PRIMARY KEY,
+    titre VARCHAR(255) NOT NULL,
+    description TEXT,
+    type VARCHAR(100) NOT NULL,
+    duree INT NOT NULL,
+    organisme VARCHAR(255) NOT NULL,
+    objectifs TEXT,
+    id_rh INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_formation_type (type),
+    INDEX idx_formation_id_rh (id_rh),
+    INDEX idx_formation_titre (titre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS session_formation (
+    id_session INT AUTO_INCREMENT PRIMARY KEY,
+    id_formation INT NOT NULL,
+    date_debut DATE NOT NULL,
+    date_fin DATE NOT NULL,
+    lieu VARCHAR(255) NOT NULL,
+    mode VARCHAR(50) NOT NULL,
+    capacite_max INT NOT NULL,
+    statut VARCHAR(50) NOT NULL DEFAULT 'Planifiee',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_session_formation_formation FOREIGN KEY (id_formation) REFERENCES formation(id_formation) ON DELETE CASCADE,
+    INDEX idx_session_formation_dates (date_debut, date_fin),
+    INDEX idx_session_formation_statut (statut),
+    INDEX idx_session_formation_id_formation (id_formation)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS participation_formation (
+    id_participation INT AUTO_INCREMENT PRIMARY KEY,
+    id_session INT NOT NULL,
+    id_utilisateur INT NOT NULL,
+    date_inscription DATE NOT NULL,
+    statut_participation VARCHAR(50) NOT NULL DEFAULT 'Inscrit',
+    resultat VARCHAR(50) NULL,
+    note DECIMAL(5,2) NULL,
+    certificat_obtenu BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_participation_session FOREIGN KEY (id_session) REFERENCES session_formation(id_session) ON DELETE CASCADE,
+    CONSTRAINT fk_participation_user FOREIGN KEY (id_utilisateur) REFERENCES employees(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_participation_session_user (id_session, id_utilisateur),
+    INDEX idx_participation_utilisateur (id_utilisateur),
+    INDEX idx_participation_statut (statut_participation),
+    INDEX idx_participation_session (id_session)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS feedback_formation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    formation_id INT NOT NULL,
+    session_id INT NULL,
+    rating INT NOT NULL,
+    contenu_comment TEXT,
+    formateur_comment TEXT,
+    organisation_comment TEXT,
+    recommande BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_feedback_formation_user (user_id),
+    INDEX idx_feedback_formation_formation (formation_id),
+    INDEX idx_feedback_formation_session (session_id),
+    CONSTRAINT fk_feedback_formation_user FOREIGN KEY (user_id) REFERENCES employees(id) ON DELETE CASCADE,
+    CONSTRAINT fk_feedback_formation_formation FOREIGN KEY (formation_id) REFERENCES formation(id_formation) ON DELETE CASCADE,
+    CONSTRAINT fk_feedback_formation_session FOREIGN KEY (session_id) REFERENCES session_formation(id_session) ON DELETE SET NULL,
+    CHECK (rating BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 4) RECRUITMENT (GestionRecrutement + AiServices import/export)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS job_offer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    department VARCHAR(150),
+    location VARCHAR(150),
+    employmentType VARCHAR(100),
+    employment_type VARCHAR(100),
+    salary_min DECIMAL(12,2) NOT NULL DEFAULT 0,
+    salary_max DECIMAL(12,2) NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL,
+    created_by INT NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_job_offer_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_job_offer_status (status),
+    INDEX idx_job_offer_department (department),
+    INDEX idx_job_offer_location (location),
+    INDEX idx_job_offer_is_deleted (is_deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS applications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_name VARCHAR(255) NOT NULL,
+    job_offer_id INT NOT NULL,
+    cv_path VARCHAR(500) NOT NULL,
+    cover_letter_path VARCHAR(500),
+    status VARCHAR(30) NOT NULL,
+    notes TEXT,
+    applied_at DATETIME NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    Department VARCHAR(150),
+    experience_level VARCHAR(100),
+    EmailAddress VARCHAR(255),
+    employee_id INT NULL,
+    source VARCHAR(100) NULL,
+    CONSTRAINT fk_applications_job_offer FOREIGN KEY (job_offer_id) REFERENCES job_offer(id) ON DELETE CASCADE,
+    CONSTRAINT fk_applications_employee FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL,
+    INDEX idx_applications_status (status),
+    INDEX idx_applications_applied_at (applied_at),
+    INDEX idx_applications_is_deleted (is_deleted),
+    INDEX idx_applications_department (Department),
+    INDEX idx_applications_email (EmailAddress)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS interviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    application_id INT NOT NULL,
+    interviewer_id INT NOT NULL,
+    interview_date DATETIME NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    meeting_link VARCHAR(500),
+    location VARCHAR(255),
+    feedback TEXT,
+    score INT NOT NULL DEFAULT 0,
+    result VARCHAR(20) NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_interviews_application FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+    CONSTRAINT fk_interviews_interviewer FOREIGN KEY (interviewer_id) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_interviews_date (interview_date),
+    INDEX idx_interviews_result (result),
+    INDEX idx_interviews_type (type),
+    INDEX idx_interviews_is_deleted (is_deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 5) EMPLOYEE RELATIONS (GestionRelationEmployees)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS request_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    requires_approval BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_request_types_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    request_type_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    attachment_url VARCHAR(500),
+    status VARCHAR(30) NOT NULL,
+    priority VARCHAR(20) NOT NULL,
+    submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_by INT NULL,
+    reviewed_date TIMESTAMP NULL,
+    review_comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_requests_user FOREIGN KEY (user_id) REFERENCES employees(id) ON DELETE CASCADE,
+    CONSTRAINT fk_requests_type FOREIGN KEY (request_type_id) REFERENCES request_types(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_requests_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_requests_status (status),
+    INDEX idx_requests_priority (priority),
+    INDEX idx_requests_submitted_date (submitted_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    reference_id INT NULL,
+    reference_type VARCHAR(80) NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_notifications_user_id (user_id),
+    INDEX idx_notifications_is_read (is_read),
+    INDEX idx_notifications_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS feedbacks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    from_user_id INT NOT NULL,
+    to_user_id INT NOT NULL,
+    feedback_type VARCHAR(40) NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT,
+    is_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_feedbacks_from_user FOREIGN KEY (from_user_id) REFERENCES employees(id) ON DELETE CASCADE,
+    CONSTRAINT fk_feedbacks_to_user FOREIGN KEY (to_user_id) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_feedbacks_to_user (to_user_id),
+    INDEX idx_feedbacks_status (status),
+    CHECK (rating BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    rh_id INT NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    priority VARCHAR(20) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    estimated_hours INT NULL,
+    actual_hours INT NOT NULL DEFAULT 0,
+    budget DECIMAL(14,2) NULL,
+    completion_rate INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_projects_rh FOREIGN KEY (rh_id) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_projects_rh_id (rh_id),
+    INDEX idx_projects_status (status),
+    INDEX idx_projects_end_date (end_date),
+    CHECK (completion_rate BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_collaborators (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    employee_id INT NOT NULL,
+    role VARCHAR(120) NOT NULL,
+    assigned_hours INT NULL,
+    worked_hours INT NOT NULL DEFAULT 0,
+    joined_date DATE NOT NULL,
+    left_date DATE NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_collaborators_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_project_collaborators_employee FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_project_collaborators_project_id (project_id),
+    INDEX idx_project_collaborators_employee_id (employee_id),
+    INDEX idx_project_collaborators_active (is_active),
+    UNIQUE KEY uq_project_collaborator_active (project_id, employee_id, is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    assigned_to INT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    status VARCHAR(30) NOT NULL,
+    priority VARCHAR(20) NOT NULL,
+    estimated_hours INT NULL,
+    actual_hours INT NOT NULL DEFAULT 0,
+    due_date DATE NULL,
+    completed_date DATE NULL,
+    order_index INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_tasks_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_project_tasks_assigned_to FOREIGN KEY (assigned_to) REFERENCES employees(id) ON DELETE SET NULL,
+    INDEX idx_project_tasks_project_id (project_id),
+    INDEX idx_project_tasks_assigned_to (assigned_to),
+    INDEX idx_project_tasks_status (status),
+    INDEX idx_project_tasks_due_date (due_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_milestones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    target_date DATE NOT NULL,
+    completion_date DATE NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    completion_rate INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_milestones_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    INDEX idx_project_milestones_project_id (project_id),
+    INDEX idx_project_milestones_target_date (target_date),
+    INDEX idx_project_milestones_status (status),
+    CHECK (completion_rate BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_updates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    user_id INT NOT NULL,
+    update_type VARCHAR(40) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_updates_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_project_updates_user FOREIGN KEY (user_id) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_project_updates_project_id (project_id),
+    INDEX idx_project_updates_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 6) PAYROLL (GestionRemuneration)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS Prime (
+    id_prime INT AUTO_INCREMENT PRIMARY KEY,
+    type_prime VARCHAR(100) NOT NULL,
+    montant DECIMAL(12,2) NOT NULL,
+    date_attribution DATE NOT NULL,
+    id_employe INT NOT NULL,
+    CONSTRAINT fk_prime_employee FOREIGN KEY (id_employe) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_prime_id_employe (id_employe)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS Deduction (
+    id_deduction INT AUTO_INCREMENT PRIMARY KEY,
+    type_deduction VARCHAR(100) NOT NULL,
+    montant DECIMAL(12,2) NOT NULL,
+    date_deduction DATE NOT NULL,
+    id_employe INT NOT NULL,
+    CONSTRAINT fk_deduction_employee FOREIGN KEY (id_employe) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_deduction_id_employe (id_employe)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FichePaie (
+    id_fiche INT AUTO_INCREMENT PRIMARY KEY,
+    mois VARCHAR(20) NOT NULL,
+    annee INT NOT NULL,
+    salaire_brut DECIMAL(12,2) NOT NULL,
+    total_primes DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_deductions DECIMAL(12,2) NOT NULL DEFAULT 0,
+    salaire_net DECIMAL(12,2) NOT NULL,
+    id_employees INT NOT NULL,
+    CONSTRAINT fk_fiche_paie_employee FOREIGN KEY (id_employees) REFERENCES employees(id) ON DELETE CASCADE,
+    INDEX idx_fichepaie_employee (id_employees),
+    INDEX idx_fichepaie_periode (annee, mois)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Optional seed (uncomment if needed)
+-- INSERT INTO users (username, email, password, role)
+-- VALUES ('admin', 'admin@hrflow.tn', '$2a$10$dummyhash', 'ADMIN');

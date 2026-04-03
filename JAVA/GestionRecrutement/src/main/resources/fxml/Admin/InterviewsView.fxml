@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     InterviewsView.fxml
+     Loaded dynamically into MainView's contentArea StackPane.
+     Controller: controllers.InterviewsController
+     ═════════════════════════════════════════════════════════════════════ -->
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.InterviewsController"
+      styleClass="view-container"
+      spacing="0">
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         STATS CARDS ROW
+         ───────────────────────────────────────────────────────────────── -->
+    <HBox styleClass="stats-row" spacing="16">
+        <VBox.margin>
+            <Insets top="28" right="28" bottom="0" left="28"/>
+        </VBox.margin>
+
+        <!-- Card 1: Scheduled -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-blue">
+                <Label text="🗓" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Scheduled" styleClass="stat-card-label"/>
+                <Label fx:id="statScheduled" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 2: Today -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-orange">
+                <Label text="🤝" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Today" styleClass="stat-card-label"/>
+                <Label fx:id="statToday" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 3: Completed -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-green">
+                <Label text="🏆" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Completed" styleClass="stat-card-label"/>
+                <Label fx:id="statCompleted" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 4: Offers Extended -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-purple">
+                <Label text="⚡️" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Offers Extended" styleClass="stat-card-label"/>
+                <Label fx:id="statOffersExtended" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+    </HBox>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         MAIN CONTENT CARD
+         ───────────────────────────────────────────────────────────────── -->
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="0">
+        <VBox.margin>
+            <Insets top="20" right="28" bottom="28" left="28"/>
+        </VBox.margin>
+
+        <!-- ── Header Action Bar ── -->
+        <HBox styleClass="card-header" alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="3">
+                <Label text="Manage Interviews" styleClass="card-title"/>
+                <Label text="Schedule, track, and record all candidate interviews" styleClass="card-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Filter by Status -->
+            <ComboBox fx:id="filterStatus"
+                      promptText="Filter by Status"
+                      styleClass="filter-combo"
+                      prefWidth="140"
+                      onAction="#handleFilterChange">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <!-- Filter by Type -->
+            <ComboBox fx:id="filterType"
+                      promptText="Interview Type"
+                      styleClass="filter-combo"
+                      prefWidth="130"
+                      onAction="#handleTypeFilterChange">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Button text="⬇  Export" styleClass="btn-secondary" onAction="#handleExport"/>
+            <Button text="🗑  Delete" styleClass="btn-secondary" onAction="#handleDelete"/>
+            <Button fx:id="btnScheduleInterview" text="＋  Schedule Interview"
+                    styleClass="btn-primary" onAction="#handleScheduleInterview"/>
+        </HBox>
+
+        <Separator styleClass="card-divider"/>
+
+        <!-- ── Upcoming Today Banner (shown contextually by controller) ── -->
+        <HBox fx:id="todayBanner" styleClass="today-banner" alignment="CENTER_LEFT"
+              spacing="12" visible="false" managed="false">
+            <VBox.margin>
+                <Insets top="0" right="0" bottom="0" left="0"/>
+            </VBox.margin>
+            <Label text="📅" styleClass="today-banner-icon"/>
+            <Label text="You have 3 interviews scheduled for today." styleClass="today-banner-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="View Today's Schedule" styleClass="btn-banner"
+                    onAction="#handleViewToday"/>
+            <Button text="✕" styleClass="btn-banner-close"
+                    onAction="#handleDismissBanner"/>
+        </HBox>
+
+        <!-- ── TableView ── -->
+        <TableView fx:id="interviewTableView"
+                   styleClass="job-table"
+                   VBox.vgrow="ALWAYS">
+
+            <columns>
+
+                <!-- Candidate Name -->
+                <TableColumn fx:id="colCandidateName" text="CANDIDATE" prefWidth="170"
+                             sortable="true"/>
+
+                <!-- Job Position -->
+                <TableColumn fx:id="colPosition" text="POSITION" prefWidth="180"
+                             sortable="true"/>
+
+                <!-- Interview Type -->
+                <TableColumn fx:id="colType" text="TYPE" prefWidth="120"
+                             sortable="true"/>
+
+                <!-- Interviewer -->
+                <TableColumn fx:id="colInterviewer" text="INTERVIEWER" prefWidth="150"
+                             sortable="true"/>
+
+                <!-- Date & Time -->
+                <TableColumn fx:id="colDateTime" text="DATE &amp; TIME" prefWidth="150"
+                             sortable="true"/>
+
+                <!-- Duration -->
+                <TableColumn fx:id="colDuration" text="DURATION" prefWidth="100"
+                             sortable="false"/>
+
+                <!-- Status — colored badge -->
+                <TableColumn fx:id="colStatus" text="STATUS" prefWidth="120"
+                             sortable="true"/>
+                <!-- StatusBadgeCell wired in controller -->
+
+                <!-- Actions -->
+                <TableColumn fx:id="colActions" text="ACTIONS" prefWidth="135"
+                             sortable="false" resizable="false"/>
+                <!-- ActionButtonCell wired in controller -->
+
+            </columns>
+
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" styleClass="table-placeholder">
+                    <Label text="🗓" styleClass="table-placeholder-icon"/>
+                    <Label text="No interviews scheduled" styleClass="table-placeholder-title"/>
+                    <Label text="Click  ＋ Schedule Interview  to book the first one."
+                           styleClass="table-placeholder-subtitle"/>
+                </VBox>
+            </placeholder>
+
+        </TableView>
+
+        <!-- ── Pagination Bar ── -->
+        <HBox styleClass="pagination-bar" alignment="CENTER_LEFT" spacing="12">
+            <Label fx:id="paginationInfo" text=""
+                   styleClass="pagination-info"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Pagination fx:id="tablePagination"
+                        pageCount="8"
+                        currentPageIndex="0"
+                        maxPageIndicatorCount="5"
+                        styleClass="table-pagination"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

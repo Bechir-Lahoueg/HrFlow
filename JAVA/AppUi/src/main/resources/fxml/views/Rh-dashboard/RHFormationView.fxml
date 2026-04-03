@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.control.*?>
+        <?import javafx.scene.layout.*?>
+        <?import javafx.scene.text.Font?>
+
+<ScrollPane fitToWidth="true" fitToHeight="true" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.ui.controller.Rh.RHFormationController"
+            style="-fx-background-color: #f0f2f5; -fx-background: #f0f2f5;">
+    <VBox spacing="15" style="-fx-background-color: #f0f2f5; -fx-padding: 20;">
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%); -fx-padding: 15 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
+            <Label text="📚" style="-fx-font-size: 24px;"/>
+            <Label text="Gestion des Formations" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnRefresh" text="🔄 Actualiser" onAction="#handleRefresh"
+                    style="-fx-background-color: rgba(255,255,255,0.3); -fx-text-fill: white; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold; -fx-border-color: white; -fx-border-width: 1.5; -fx-border-radius: 6;"/>
+        </HBox>
+
+        <!-- Modern Navigation Bar -->
+        <HBox fx:id="tabNavBar" spacing="0" alignment="CENTER_LEFT"
+              style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 2 0; -fx-padding: 0;">
+            <Button fx:id="btnTabFormations" text="📋 Formations"
+                    style="-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-padding: 16 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: #667eea; -fx-border-radius: 0; -fx-effect: null;"
+                    HBox.hgrow="NEVER"/>
+            <Button fx:id="btnTabSessions" text="📅 Sessions"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a0aec0; -fx-padding: 16 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: transparent; -fx-border-radius: 0; -fx-effect: null;"
+                    HBox.hgrow="NEVER"/>
+            <Button fx:id="btnTabParticipants" text="👥 Participants"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a0aec0; -fx-padding: 16 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: transparent; -fx-border-radius: 0; -fx-effect: null;"
+                    HBox.hgrow="NEVER"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- Content Container with StackPane -->
+        <StackPane fx:id="contentStackPane" VBox.vgrow="ALWAYS"
+                   style="-fx-background-color: white; -fx-border-radius: 0; -fx-background-radius: 0; -fx-border-color: transparent; -fx-border-width: 0;">
+
+            <!-- ==================== FORMATIONS CONTENT ==================== -->
+            <VBox fx:id="formationsPanel" spacing="12" style="-fx-padding: 20;">
+
+                <!-- Boutons d'action -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button fx:id="btnAddFormation" text="➕ Nouvelle Formation" onAction="#handleAddFormation"
+                            style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchFieldFormations" promptText="🔍 Rechercher..." prefWidth="250" prefHeight="32"
+                               style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-padding: 8; -fx-font-size: 12px;"/>
+                    <Button text="🔄 Actualiser" onAction="#handleRefreshFormations"
+                            style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);"/>
+                </HBox>
+
+                <!-- Liste des formations en cartes -->
+                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" prefHeight="400" maxHeight="500"
+                            style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                    <FlowPane fx:id="formationsContainer" hgap="18" vgap="18"
+                              style="-fx-padding: 12; -fx-background-color: transparent;"
+                              prefWrapLength="1200">
+                        <!-- Les cartes de formation seront ajoutées dynamiquement ici -->
+                    </FlowPane>
+                </ScrollPane>
+
+            </VBox>
+
+            <!-- ==================== SESSIONS CONTENT ==================== -->
+            <VBox fx:id="sessionsPanel" spacing="12" style="-fx-padding: 20; -fx-background-color: white;">
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button fx:id="btnAddSession" text="➕ Nouvelle Session" onAction="#handleAddSession"
+                            style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Formation :" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2d3748;"/>
+                    <ComboBox fx:id="filterSessionFormation" prefWidth="250" prefHeight="32" promptText="Sélectionnez une formation" style="-fx-font-size: 12px;"/>
+                </HBox>
+
+                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" prefHeight="400" maxHeight="500"
+                            style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                    <FlowPane fx:id="sessionsContainer"
+                              hgap="12" vgap="12"
+                              prefWrapLength="1200"
+                              style="-fx-padding: 12; -fx-background-color: transparent;"/>
+                </ScrollPane>
+
+            </VBox>
+
+            <!-- ==================== PARTICIPANTS CONTENT ==================== -->
+            <VBox fx:id="participantsPanel" spacing="12" style="-fx-padding: 20; -fx-background-color: white;">
+
+                <!-- Sélection formation avec recherche -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Rechercher par formation :" style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #2d3748;"/>
+                    <ComboBox fx:id="cbFormationForParticipants" prefWidth="350" prefHeight="32" promptText="Toutes les formations" style="-fx-font-size: 12px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnRefreshParticipants" text="🔄 Actualiser"
+                            style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <!-- Affichage des participants par formation et session -->
+                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" prefHeight="400" maxHeight="600"
+                            style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="vboxParticipants" spacing="15" style="-fx-padding: 5; -fx-background-color: transparent;"/>
+                </ScrollPane>
+
+            </VBox>
+
+        </StackPane>
+
+    </VBox>
+</ScrollPane>

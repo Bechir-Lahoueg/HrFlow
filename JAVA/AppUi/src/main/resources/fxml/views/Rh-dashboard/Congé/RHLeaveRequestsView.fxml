@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<!-- Sous-vue : Filtres + Tableau des demandes + Actions + Conflit + Détails -->
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.ui.controller.Rh.Congé.RHLeaveRequestsController"
+      spacing="20">
+
+    <!-- ===== FILTRES ===== -->
+    <HBox spacing="16" alignment="CENTER_LEFT"
+          style="-fx-background-color: white; -fx-padding: 14 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+        <Label text="🔍" style="-fx-font-size: 16px;"/>
+        <Label text="Statut :" style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #4a5568;"/>
+        <ComboBox fx:id="filterComboBox" prefWidth="180"
+                  style="-fx-background-radius: 7; -fx-border-color: #cbd5e0; -fx-border-radius: 7; -fx-border-width: 1; -fx-font-size: 13px;"/>
+        <Separator orientation="VERTICAL" prefHeight="28"/>
+        <Label text="🔎" style="-fx-font-size: 16px;"/>
+        <Label text="Rechercher :" style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #4a5568;"/>
+        <TextField fx:id="searchField" promptText="Nom de l'employé..." prefWidth="240"
+                   style="-fx-background-radius: 7; -fx-border-color: #cbd5e0; -fx-border-radius: 7; -fx-border-width: 1; -fx-padding: 7 12; -fx-font-size: 13px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="tableCountLabel" text="0 demande(s)"
+               style="-fx-font-size: 12px; -fx-text-fill: #718096; -fx-font-weight: bold; -fx-background-color: #edf2f7; -fx-padding: 5 14; -fx-background-radius: 6;"/>
+    </HBox>
+
+    <!-- ===== TABLEAU DES DEMANDES ===== -->
+    <VBox spacing="14"
+          style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.09), 10, 0, 0, 3);">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="📋" style="-fx-font-size: 20px;"/>
+            <Label text="Liste des Demandes de Congés"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+        </HBox>
+        <Separator style="-fx-background-color: #e2e8f0;"/>
+        <TableView fx:id="leaveRequestsTable" prefHeight="380"
+                   style="-fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 13px;">
+            <columns>
+                <TableColumn fx:id="idColumn"          text="ID"            prefWidth="60"  minWidth="50"  style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="employeeColumn"    text="👤 Employé"     prefWidth="200" minWidth="160"/>
+                <TableColumn fx:id="startDateColumn"   text="📅 Début"       prefWidth="120" minWidth="100" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="endDateColumn"     text="📅 Fin"         prefWidth="120" minWidth="100" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="leaveTypeColumn"   text="Type de Congé"  prefWidth="160" minWidth="130"/>
+                <TableColumn fx:id="daysColumn"        text="Jours"          prefWidth="80"  minWidth="60"  style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="statusColumn"      text="Statut"         prefWidth="130" minWidth="110" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="requestDateColumn" text="Demandé le"     prefWidth="130" minWidth="110" style="-fx-alignment: CENTER;"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="10" style="-fx-padding: 40;">
+                    <Label text="📭" style="-fx-font-size: 48px; -fx-opacity: 0.3;"/>
+                    <Label text="Aucune demande trouvée"
+                           style="-fx-text-fill: #a0aec0; -fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Modifiez vos filtres ou attendez de nouvelles demandes"
+                           style="-fx-text-fill: #cbd5e0; -fx-font-size: 12px;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="viewDetailsButton" text="👁️ Voir Détails"
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 7; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);">
+                <font><Font name="System Bold" size="12.0"/></font>
+            </Button>
+            <Button fx:id="approveButton" text="✅ Approuver"
+                    style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 7; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);">
+                <font><Font name="System Bold" size="12.0"/></font>
+            </Button>
+            <Button fx:id="rejectButton" text="❌ Refuser"
+                    style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 7; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);">
+                <font><Font name="System Bold" size="12.0"/></font>
+            </Button>
+            <Button fx:id="deleteButton" text="🗑 Supprimer"
+                    style="-fx-background-color: #7c3aed; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 7; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);">
+                <font><Font name="System Bold" size="12.0"/></font>
+            </Button>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="checkConflictsButton" text="🚨 Vérifier Conflits"
+                    style="-fx-background-color: #ed8936; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 7; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 1);">
+                <font><Font name="System Bold" size="12.0"/></font>
+            </Button>
+        </HBox>
+    </VBox>
+
+    <!-- ===== BANDEAU CONFLIT ===== -->
+    <Label fx:id="conflictLabel" maxWidth="Infinity" wrapText="true"
+           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 16; -fx-background-radius: 8;"
+           visible="false" managed="false"/>
+
+    <!-- ===== PANNEAU DÉTAILS ===== -->
+    <VBox spacing="12"
+          style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.09), 10, 0, 0, 3);">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="📄" style="-fx-font-size: 20px;"/>
+            <Label text="Détails de la Demande Sélectionnée"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox spacing="6" alignment="CENTER_LEFT"
+                  style="-fx-background-color: #eff6ff; -fx-padding: 6 14; -fx-background-radius: 6; -fx-border-color: #3b82f6; -fx-border-width: 1; -fx-border-radius: 6;">
+                <Label text="💡" style="-fx-font-size: 14px;"/>
+                <Label text="Cliquez sur une ligne pour voir les détails"
+                       style="-fx-text-fill: #1e40af; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+            </HBox>
+        </HBox>
+        <Separator style="-fx-background-color: #e2e8f0;"/>
+        <TextArea fx:id="detailsTextArea" editable="false" wrapText="true" prefHeight="160"
+                  style="-fx-font-family: 'Segoe UI'; -fx-font-size: 13px; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-border-width: 1; -fx-background-radius: 8; -fx-padding: 14; -fx-control-inner-background: #f8fafc;"
+                  promptText="Sélectionnez une demande dans le tableau ci-dessus pour voir les détails complets..."/>
+    </VBox>
+
+</VBox>

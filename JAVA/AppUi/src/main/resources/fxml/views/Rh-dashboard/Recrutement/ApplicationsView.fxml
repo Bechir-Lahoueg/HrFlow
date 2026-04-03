@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     ApplicationsView.fxml
+     Loaded dynamically into MainView's contentArea StackPane.
+     Controller: controllers.ApplicationsController
+     ═════════════════════════════════════════════════════════════════════ -->
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.ui.controller.Rh.Recrutement.ApplicationsController"
+      styleClass="view-container"
+      spacing="0">
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         STATS CARDS ROW
+         ───────────────────────────────────────────────────────────────── -->
+    <HBox styleClass="stats-row" spacing="16">
+        <VBox.margin>
+            <Insets top="28" right="28" bottom="0" left="28"/>
+        </VBox.margin>
+
+        <!-- Card 1: Total Applications -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-blue">
+                <Label text="👥" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Total Applications" styleClass="stat-card-label"/>
+                <Label fx:id="statTotalApps" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 2: Under Review -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-orange">
+                <Label text="🎯" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Under Review" styleClass="stat-card-label"/>
+                <Label fx:id="statUnderReview" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 3: Shortlisted -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-purple">
+                <Label text="🎙" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Shortlisted" styleClass="stat-card-label"/>
+                <Label fx:id="statShortlisted" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <!-- Card 4: Rejected -->
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-red">
+                <Label text="❌" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Rejected" styleClass="stat-card-label"/>
+                <Label fx:id="statRejected" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+    </HBox>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         MAIN CONTENT CARD
+         ───────────────────────────────────────────────────────────────── -->
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="0">
+        <VBox.margin>
+            <Insets top="20" right="28" bottom="28" left="28"/>
+        </VBox.margin>
+
+        <!-- ── Header Action Bar ── -->
+        <HBox styleClass="card-header" alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="3">
+                <Label text="Manage Applications" styleClass="card-title"/>
+                <Label text="Track and process all candidate applications" styleClass="card-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Filter by Stage -->
+            <ComboBox fx:id="filterStage"
+                      promptText="Filter by Stage"
+                      styleClass="filter-combo"
+                      prefWidth="160"
+                      onAction="#handleFilterChange">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="All Stages"/>
+                        <String fx:value="APPLIED"/>
+                        <String fx:value="SCREENING"/>
+                        <String fx:value="SHORTLISTED"/>
+                        <String fx:value="INTERVIEW"/>
+                        <String fx:value="OFFERED"/>
+                        <String fx:value="REJECTED"/>
+                        <String fx:value="HIRED"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <!-- Filter by Job -->
+            <ComboBox fx:id="filterJob"
+                      promptText="Filter by Job"
+                      styleClass="filter-combo"
+                      prefWidth="160"
+                      onAction="#handleJobFilterChange">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="All Positions"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <TextField fx:id="searchField" promptText="Search candidate..." styleClass="search-field" prefWidth="200" onAction="#handleSearch"/>
+            <Button text="🔍" styleClass="btn-secondary" onAction="#handleSearch"/>
+            
+            <Button text="⬇  Export" styleClass="btn-secondary" onAction="#handleExport"/>
+            <Button text="🗑  Delete" styleClass="btn-secondary" onAction="#handleDeleteSelected"/>
+            <Button fx:id="btnAddApplication" text="＋  Add Application"
+                    styleClass="btn-primary" onAction="#handleAddApplication"/>
+        </HBox>
+
+        <Separator styleClass="card-divider"/>
+
+        <!-- ── TableView ── -->
+        <TableView fx:id="appTableView"
+                   styleClass="job-table"
+                   VBox.vgrow="ALWAYS">
+
+            <columns>
+
+                <!-- Applicant Name -->
+                <TableColumn fx:id="colApplicantName" text="APPLICANT" prefWidth="190"
+                             sortable="true"/>
+
+                <!-- Email -->
+                <TableColumn fx:id="colEmail" text="EMAIL" prefWidth="200"
+                             sortable="true"/>
+
+                <!-- Applied For (Job Title) -->
+                <TableColumn fx:id="colAppliedFor" text="APPLIED FOR" prefWidth="190"
+                             sortable="true"/>
+
+                <!-- Department -->
+                <TableColumn fx:id="colDepartment" text="DEPARTMENT" prefWidth="140"
+                             sortable="true"/>
+
+                <!-- Date Applied -->
+                <TableColumn fx:id="colDateApplied" text="DATE APPLIED" prefWidth="130"
+                             sortable="true"/>
+
+                <!-- Stage — colored badge -->
+                <TableColumn fx:id="colStage" text="STAGE" prefWidth="120"
+                             sortable="true"/>
+                <!-- StageBadgeCell wired in controller:
+                     colStage.setCellFactory(col -> new StageBadgeCell()); -->
+
+                <!-- Actions -->
+                <TableColumn fx:id="colActions" text="ACTIONS" prefWidth="120"
+                             sortable="false" resizable="false"/>
+                <!-- ActionButtonCell wired in controller -->
+
+            </columns>
+
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" styleClass="table-placeholder">
+                    <Label text="📭" styleClass="table-placeholder-icon"/>
+                    <Label text="No applications found" styleClass="table-placeholder-title"/>
+                    <Label text="Click  ＋ Add Application  to log the first one."
+                           styleClass="table-placeholder-subtitle"/>
+                </VBox>
+            </placeholder>
+
+        </TableView>
+
+        <!-- ── Pagination Bar ── -->
+        <HBox styleClass="pagination-bar" alignment="CENTER_LEFT" spacing="12">
+            <Label fx:id="paginationInfo" text=""
+                   styleClass="pagination-info"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Pagination fx:id="tablePagination"
+                        pageCount="1"
+                        currentPageIndex="0"
+                        maxPageIndicatorCount="5"
+                        styleClass="table-pagination"/>
+        </HBox>
+
+    </VBox>
+
+    <!-- ═════════════════════════════════════════════════════════════════
+         ADD / EDIT APPLICATION FORM
+         Injected into MainView's globalModalOverlay → modalBody
+         by ApplicationsController.showAddModal() / showEditModal()
+         ─────────────────────────────────────────────────────────────────
+         NOTE: This VBox is NOT embedded here at runtime. It is loaded
+         separately as a fragment and placed into the global modal body.
+         It is shown below for reference / standalone loading.
+         ═════════════════════════════════════════════════════════════════ -->
+
+</VBox>

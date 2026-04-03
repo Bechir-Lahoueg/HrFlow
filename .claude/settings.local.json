@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -m)",
+      "Bash(php -i)",
+      "Bash(symfony php:*)",
+      "Bash(symfony server:stop)",
+      "Bash(symfony server:start -d)",
+      "Bash(php bin/console tailwind:build)",
+      "Bash(php bin/console cache:clear)",
+      "Bash(php bin/console asset-map:compile)",
+      "Bash(php bin/console tailwind:build -v)",
+      "Bash(php bin/console debug:asset-map)",
+      "Bash(ls config/packages/symfonycasts_tailwind*)",
+      "Bash(php bin/console debug:config symfonycasts_tailwind)",
+      "Bash(curl -sk \"https://127.0.0.1:8000\")",
+      "Bash(curl -sk \"https://127.0.0.1:8000/assets/styles/app-9531addcb1fb8731a4c7150a050eceee.css\")",
+      "Bash(curl -sk \"https://127.0.0.1:8000/assets/styles/app-eb53184ba51815296bb443257b8e427f.css\")"
+    ]
+  }
+}

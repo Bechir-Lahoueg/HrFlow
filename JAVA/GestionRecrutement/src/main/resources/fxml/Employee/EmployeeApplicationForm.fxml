@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.Employee.EmployeeApplicationFormController"
+            styleClass="modal-scroll"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            maxHeight="500">
+
+    <VBox styleClass="modal-form" spacing="20">
+        <padding>
+            <Insets top="24" right="28" bottom="16" left="28"/>
+        </padding>
+
+        <!-- Job Information (Display Only) -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Position" styleClass="form-label"/>
+            <Label fx:id="jobTitleLabel" text="Job Position" styleClass="form-value"/>
+        </VBox>
+
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Department" styleClass="form-label"/>
+            <Label fx:id="departmentLabel" text="Department" styleClass="form-value"/>
+        </VBox>
+
+        <!-- Email Address (Pre-filled) -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Email Address *" styleClass="form-label"/>
+            <TextField fx:id="fieldEmail"
+                       promptText="e.g. john@email.com"
+                       styleClass="form-input"/>
+        </VBox>
+
+        <!-- Cover Letter / Motivation -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Why are you interested in this role? *" styleClass="form-label"/>
+            <TextArea fx:id="fieldCoverLetter"
+                      promptText="Explain your interest, relevant experience, and what you'll bring to the team…"
+                      styleClass="form-textarea"
+                      prefRowCount="5"
+                      wrapText="true"/>
+        </VBox>
+
+        <!-- Experience Level -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Experience Level *" styleClass="form-label"/>
+            <ComboBox fx:id="fieldExperience"
+                      promptText="Select level"
+                      styleClass="form-input, form-combo"
+                      maxWidth="Infinity">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Entry Level (0-2 yrs)"/>
+                        <String fx:value="Mid Level (2-5 yrs)"/>
+                        <String fx:value="Senior Level (5-10 yrs)"/>
+                        <String fx:value="Lead/Principal (10+ yrs)"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </VBox>
+
+        <!-- Application Source -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="How did you hear about this role?" styleClass="form-label"/>
+            <ComboBox fx:id="fieldSource"
+                      promptText="Select source"
+                      styleClass="form-input, form-combo"
+                      maxWidth="Infinity">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Company Website"/>
+                        <String fx:value="LinkedIn"/>
+                        <String fx:value="Indeed"/>
+                        <String fx:value="Glassdoor"/>
+                        <String fx:value="Employee Referral"/>
+                        <String fx:value="Job Fair"/>
+                        <String fx:value="Other"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+        </VBox>
+
+        <!-- Additional Notes -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Additional Information (optional)" styleClass="form-label"/>
+            <TextArea fx:id="fieldNotes"
+                      promptText="Any other relevant information or questions…"
+                      styleClass="form-textarea"
+                      prefRowCount="3"
+                      wrapText="true"/>
+        </VBox>
+
+        <!-- Error Label -->
+        <Label fx:id="formErrorLabel" text="" styleClass="form-error"/>
+
+        <!-- Buttons -->
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Button fx:id="btnCancel" text="Cancel" styleClass="btn-secondary" onAction="#handleCancel"/>
+            <Button fx:id="btnSubmit" text="Submit Application" styleClass="btn-primary" onAction="#handleSubmit"/>
+        </HBox>
+
+    </VBox>
+</ScrollPane>

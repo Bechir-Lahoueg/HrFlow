@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.InterviewsController"
+            styleClass="modal-scroll"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
+
+    <VBox spacing="20" styleClass="modal-form">
+        <padding>
+            <Insets top="24" right="24" bottom="24" left="24"/>
+        </padding>
+
+        <!-- Candidate & Application Selection -->
+        <VBox spacing="8" styleClass="form-group">
+            <Label text="Select Candidate Application" styleClass="form-label"/>
+            <ComboBox fx:id="fieldApplication" promptText="Choose an application..." 
+                      maxWidth="Infinity" styleClass="form-combo, form-input"/>
+        </VBox>
+
+        <HBox spacing="16">
+            <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                <Label text="Interview Date" styleClass="form-label"/>
+                <DatePicker fx:id="fieldDate" promptText="Select date" 
+                            maxWidth="Infinity" styleClass="form-datepicker"/>
+            </VBox>
+            <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                <Label text="Interview Type" styleClass="form-label"/>
+                <ComboBox fx:id="fieldType" promptText="Select type" 
+                          maxWidth="Infinity" styleClass="form-combo, form-input">
+                    <items>
+                        <!-- Items will be populated by controller -->
+                    </items>
+                </ComboBox>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="8" styleClass="form-group">
+            <Label text="Interviewer" styleClass="form-label"/>
+            <ComboBox fx:id="fieldInterviewer" promptText="Select interviewer..." 
+                      maxWidth="Infinity" styleClass="form-combo, form-input"/>
+        </VBox>
+
+        <HBox spacing="16">
+            <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                <Label text="Location" styleClass="form-label"/>
+                <TextField fx:id="fieldLocation" promptText="Office room or Physical Address" 
+                           styleClass="form-input"/>
+            </VBox>
+            <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                <Label text="Meeting Link" styleClass="form-label"/>
+                <TextField fx:id="fieldMeetingLink" promptText="Zoom, Meets, or Teams link" 
+                           styleClass="form-input"/>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="8" styleClass="form-group">
+            <Label text="Post-Interview Details" styleClass="form-label"/>
+            <HBox spacing="16">
+                <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                    <Label text="Interview Score (0-100)" styleClass="form-label-sm"/>
+                    <TextField fx:id="fieldScore" promptText="Enter score..." 
+                               styleClass="form-input"/>
+                </VBox>
+                <VBox spacing="8" styleClass="form-group" HBox.hgrow="ALWAYS">
+                    <Label text="Interview Result" styleClass="form-label-sm"/>
+                    <ComboBox fx:id="fieldResult" promptText="Select result..." 
+                              maxWidth="Infinity" styleClass="form-combo, form-input">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="PENDING"/>
+                                <String fx:value="PASS"/>
+                                <String fx:value="FAIL"/>
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="8" styleClass="form-group">
+            <Label text="Internal Feedback &amp; Notes" styleClass="form-label"/>
+            <TextArea fx:id="fieldNotes" promptText="Specific areas to focus on or feedback after the round..." 
+                      prefHeight="100" wrapText="true" styleClass="form-textarea"/>
+        </VBox>
+        
+    </VBox>
+</ScrollPane>

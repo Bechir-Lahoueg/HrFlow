@@ -39,7 +39,7 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         return new Passport(
             new UserBadge($identifier, fn (string $userIdentifier) => $this->userProvider->loadUserByIdentifier($userIdentifier)),
             new CustomCredentials(
-                static fn (string $plainPassword, PasswordAuthenticatedUserInterface $user): bool => hash('sha256', $plainPassword) === $user->getPassword(),
+                fn (string $plainPassword, PasswordAuthenticatedUserInterface $user): bool => $this->isPasswordValid($plainPassword, $user->getPassword()),
                 $password
             ),
             [
@@ -99,5 +99,16 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         }
 
         return 'UNKNOWN';
+    }
+
+    private function isPasswordValid(string $plainPassword, string $storedPassword): bool
+    {
+        // Keep compatibility with historical SHA-256 and plain-text records.
+        if (password_get_info($storedPassword)['algo'] !== null) {
+            return password_verify($plainPassword, $storedPassword);
+        }
+
+        return hash_equals($storedPassword, hash('sha256', $plainPassword))
+            || hash_equals($storedPassword, $plainPassword);
     }
 }

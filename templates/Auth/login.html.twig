@@ -3,248 +3,120 @@
 {% block title %}Login | HrFlow{% endblock %}
 
 {% block stylesheets %}
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-	<style>
-		:root {
-			--bg: #f4f8f7;
-			--text: #122025;
-			--muted: #5e6e76;
-			--line: #d6e1e5;
-			--primary: #0f766e;
-			--primary-dark: #0b5e58;
-			--surface: #ffffff;
-		}
-
-		* {
-			box-sizing: border-box;
-			margin: 0;
-			padding: 0;
-		}
-
-		body {
-			font-family: 'Manrope', sans-serif;
-			color: var(--text);
-			background:
-				radial-gradient(circle at 12% 18%, rgba(15, 118, 110, 0.12), transparent 35%),
-				radial-gradient(circle at 90% 10%, rgba(14, 157, 146, 0.1), transparent 40%),
-				var(--bg);
-			min-height: 100vh;
-			display: grid;
-			place-items: center;
-			padding: 1.2rem;
-		}
-
-		.login-shell {
-			width: min(980px, 100%);
-			display: grid;
-			grid-template-columns: 1.05fr 0.95fr;
-			border: 1px solid var(--line);
-			border-radius: 22px;
-			overflow: hidden;
-			background: var(--surface);
-			box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
-		}
-
-		.login-side {
-			padding: 2rem;
-			background: linear-gradient(145deg, #0f766e, #0ea79a);
-			color: #fff;
-		}
-
-		.brand {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.55rem;
-			text-decoration: none;
-			color: #fff;
-			margin-bottom: 1.3rem;
-		}
-
-		.brand img {
-			width: 40px;
-			height: 40px;
-			border-radius: 10px;
-			object-fit: cover;
-			border: 1px solid rgba(255, 255, 255, 0.28);
-		}
-
-		.brand span {
-			font-family: 'Space Grotesk', sans-serif;
-			font-weight: 700;
-			font-size: 1.1rem;
-		}
-
-		.login-side h1 {
-			font-family: 'Space Grotesk', sans-serif;
-			font-size: clamp(1.6rem, 3.2vw, 2.3rem);
-			line-height: 1.12;
-			margin-bottom: 0.8rem;
-		}
-
-		.login-side p {
-			opacity: 0.9;
-			line-height: 1.65;
-			max-width: 34ch;
-		}
-
-		.login-side svg {
-			display: block;
-			width: 100%;
-			margin-top: 1.4rem;
-		}
-
-		.login-form-wrap {
-			padding: 2rem;
-			display: flex;
-			align-items: center;
-		}
-
-		.login-form {
-			width: 100%;
-			display: grid;
-			gap: 0.95rem;
-		}
-
-		.login-form h2 {
-			font-family: 'Space Grotesk', sans-serif;
-			font-size: 1.45rem;
-			margin-bottom: 0.35rem;
-		}
-
-		.login-form p {
-			color: var(--muted);
-			margin-bottom: 0.6rem;
-		}
-
-		label {
-			font-size: 0.9rem;
-			font-weight: 700;
-		}
-
-		input {
-			width: 100%;
-			border: 1px solid var(--line);
-			border-radius: 12px;
-			padding: 0.8rem 0.9rem;
-			font-size: 0.95rem;
-			outline: none;
-			transition: border-color 0.2s ease, box-shadow 0.2s ease;
-		}
-
-		input:focus {
-			border-color: var(--primary);
-			box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
-		}
-
-		.form-row {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			font-size: 0.87rem;
-		}
-
-		.form-row a {
-			color: var(--primary);
-			text-decoration: none;
-			font-weight: 700;
-		}
-
-		button {
-			border: none;
-			border-radius: 999px;
-			padding: 0.85rem 1.1rem;
-			font-weight: 800;
-			font-size: 0.92rem;
-			background: linear-gradient(135deg, var(--primary), #0ea79a);
-			color: #fff;
-			cursor: pointer;
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
-			box-shadow: 0 10px 26px rgba(15, 118, 110, 0.25);
-		}
-
-		button:hover {
-			transform: translateY(-1px);
-		}
-
-		.back-home {
-			margin-top: 0.4rem;
-			font-size: 0.9rem;
-			color: var(--muted);
-		}
-
-		.back-home a {
-			color: var(--primary);
-			font-weight: 700;
-			text-decoration: none;
-		}
-
-		@media (max-width: 860px) {
-			.login-shell {
-				grid-template-columns: 1fr;
-			}
-
-			.login-side {
-				padding: 1.5rem;
-			}
-
-			.login-side svg {
-				max-height: 160px;
-			}
-		}
-	</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
-	<section class="login-shell" aria-label="Login page">
-		<div class="login-side">
-			<a href="{{ path('app_home') }}" class="brand" aria-label="Back to home">
-				<img src="{{ asset('logo.png') }}" alt="HrFlow logo">
-				<span>HrFlow</span>
-			</a>
-			<h1>Connectez-vous a votre espace RH</h1>
-			<p>Suivez les candidatures, vos entretiens, et vos KPIs recrutement dans une interface simple.</p>
-			<svg viewBox="0 0 360 180" role="img" aria-label="Illustration dashboard RH">
-				<rect x="8" y="10" width="344" height="160" rx="16" fill="rgba(255,255,255,0.14)"/>
-				<rect x="24" y="30" width="92" height="12" rx="6" fill="rgba(255,255,255,0.5)"/>
-				<rect x="24" y="52" width="312" height="1" fill="rgba(255,255,255,0.32)"/>
-				<rect x="24" y="66" width="96" height="86" rx="10" fill="rgba(255,255,255,0.24)"/>
-				<rect x="132" y="66" width="96" height="86" rx="10" fill="rgba(255,255,255,0.24)"/>
-				<rect x="240" y="66" width="96" height="86" rx="10" fill="rgba(255,255,255,0.24)"/>
-				<circle cx="52" cy="98" r="10" fill="#fff" opacity="0.85"/>
-				<circle cx="160" cy="98" r="10" fill="#fff" opacity="0.85"/>
-				<circle cx="268" cy="98" r="10" fill="#fff" opacity="0.85"/>
-			</svg>
-		</div>
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased flex">
 
-		<div class="login-form-wrap">
-			<form class="login-form" method="post" action="{{ path('app_login') }}">
-				<h2>Login</h2>
-				<p>Entrez vos informations pour continuer.</p>
+    {# Left panel - branding #}
+    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {# Decorative shapes #}
+        <div class="absolute top-20 left-[10%] w-72 h-72 bg-teal-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-[10%] w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-400/5 rounded-full blur-3xl"></div>
 
-				{% if error %}
-					<p style="color:#b42318;background:#fff0f0;border:1px solid #ffd0d0;padding:.6rem .75rem;border-radius:10px;">
-						{{ error.messageKey|trans(error.messageData, 'security') }}
-					</p>
-				{% endif %}
+        <div class="relative z-10 flex flex-col justify-between p-12 w-full">
+            {# Brand #}
+            <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
+                <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[3] origin-left">
+            </a>
 
-				<label for="identifier">Email ou Username</label>
-				<input id="identifier" name="identifier" type="text" placeholder="nom@entreprise.com ou Admin" value="{{ last_username|default('') }}" required>
+            {# Main content #}
+            <div class="mt-auto mb-auto">
+                <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-6">
+                    Connectez-vous a<br>
+                    <span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">votre espace RH</span>
+                </h1>
+                <p class="text-lg text-slate-400 max-w-md leading-relaxed">
+                    Suivez les candidatures, gerez vos equipes, et pilotez vos KPIs recrutement dans une interface simple et moderne.
+                </p>
 
-				<label for="password">Password</label>
-				<input id="password" name="password" type="password" placeholder="********" required>
-				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                {# Stats row #}
+                <div class="flex items-center gap-8 mt-10">
+                    <div>
+                        <p class="text-2xl font-extrabold text-white">2,000+</p>
+                        <p class="text-sm text-slate-500">Entreprises</p>
+                    </div>
+                    <div class="w-px h-10 bg-slate-700"></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-white">50k+</p>
+                        <p class="text-sm text-slate-500">Employes</p>
+                    </div>
+                    <div class="w-px h-10 bg-slate-700"></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-white">99.9%</p>
+                        <p class="text-sm text-slate-500">Uptime</p>
+                    </div>
+                </div>
+            </div>
 
-				<div class="form-row">
-					<label><input type="checkbox" name="_remember_me" style="width:auto; margin-right: 0.35rem;">Remember me</label>
-					<a href="#">Mot de passe oublie ?</a>
-				</div>
+            {# Bottom quote #}
+            <div class="mt-auto pt-10 border-t border-slate-700/50">
+                <p class="text-sm text-slate-500 italic">"HrFlow a transforme notre processus de recrutement. Nous avons reduit notre temps d'embauche de 40%."</p>
+                <p class="text-sm font-semibold text-slate-400 mt-2">— Sarah M., DRH</p>
+            </div>
+        </div>
+    </div>
 
-				<button type="submit">Se connecter</button>
-				<p class="back-home">Retour a <a href="{{ path('app_home') }}">l'accueil</a>.</p>
-			</form>
-		</div>
-	</section>
+    {# Right panel - form #}
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div class="w-full max-w-md">
+            {# Mobile logo #}
+            <a href="{{ path('app_home') }}" class="lg:hidden flex items-center gap-2.5 no-underline mb-10">
+                <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[3] origin-left">
+            </a>
+
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Bon retour</h2>
+            <p class="text-slate-500 mb-8">Entrez vos informations pour continuer.</p>
+
+            {% if error %}
+                <div class="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 font-medium flex items-center gap-2">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login') }}" class="space-y-5">
+                <div>
+                    <label for="identifier" class="block text-sm font-bold text-slate-700 mb-2">Email ou Username</label>
+                    <input id="identifier" name="identifier" type="text"
+                           placeholder="nom@entreprise.com ou Admin"
+                           value="{{ last_username|default('') }}"
+                           required
+                           class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-bold text-slate-700 mb-2">Mot de passe</label>
+                    <input id="password" name="password" type="password"
+                           placeholder="********"
+                           required
+                           class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20">
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="_remember_me" class="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500">
+                        <span class="text-sm text-slate-600">Se souvenir de moi</span>
+                    </label>
+                    <a href="#" class="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">Mot de passe oublie ?</a>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3.5 px-6 text-base font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-xl hover:shadow-slate-900/20">
+                    Se connecter
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-slate-500 mt-8">
+                Retour a <a href="{{ path('app_home') }}" class="font-semibold text-teal-600 hover:text-teal-700 transition-colors">l'accueil</a>
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}

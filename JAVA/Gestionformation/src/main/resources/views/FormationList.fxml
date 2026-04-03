@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controllers.FormationListController"
+            stylesheets="@../css/style.css">
+
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              spacing="20"
+              styleClass="header"
+              style="-fx-padding: 15;"> <Label text="Gestion des formations"
+                                               styleClass="header-title"/>
+
+            <TextField fx:id="searchField"
+                       promptText="🔍 Rechercher une formation..."
+                       prefWidth="300"
+                       style="-fx-background-radius: 20; -fx-padding: 8 15;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="+ Nouvelle formation"
+                    onAction="#openAddFormation"
+                    styleClass="primary-button"/>
+
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <content>
+                <FlowPane fx:id="formationContainer"
+                          hgap="20"
+                          vgap="20"
+                          prefWrapLength="900"
+                          styleClass="flow-container"
+                          style="-fx-padding: 20;"/>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

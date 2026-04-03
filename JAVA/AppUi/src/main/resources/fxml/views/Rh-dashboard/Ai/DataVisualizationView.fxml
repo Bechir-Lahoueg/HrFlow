@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     Enhanced AI Data Analysis View - Professional & Clean Design
+     Controller: org.example.ui.controller.Ai.DataVisualizationController
+     ═════════════════════════════════════════════════════════════════════ -->
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.ui.controller.Ai.DataVisualizationController"
+      styleClass="view-container"
+      stylesheets="@/css/AiModel.css"
+      spacing="24" 
+      style="-fx-background-color: #f8fafc; -fx-padding: 20;">
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ENHANCED HEADER SECTION
+             ═══════════════════════════════════════════════════════════════ -->
+        <VBox styleClass="content-card" spacing="20">
+            <padding>
+                <Insets top="28" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <StackPane styleClass="ai-model-icon">
+                    <Label text="🤖" styleClass="ai-model-icon-emoji"/>
+                </StackPane>
+
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="AI Data Analysis" styleClass="ai-model-title"/>
+                    <Label text="Ask questions about your recruitment data and get instant visualizations"
+                           styleClass="ai-model-subtitle"
+                           wrapText="true"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ENHANCED TABLE QUERY SECTION
+             ═══════════════════════════════════════════════════════════════ -->
+        <VBox styleClass="content-card" spacing="20">
+            <padding>
+                <Insets top="28" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <!-- Enhanced Header -->
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <Label text="📊 Table Query" styleClass="ai-prompt-label"/>
+                    <Label fx:id="tableStatusLabel" text="" styleClass="ai-status-label"/>
+                </HBox>
+                <Label text="Get detailed tabular data from your recruitment database"
+                       style="-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-line-spacing: 1.4;"/>
+            </VBox>
+
+            <!-- Enhanced Input Area -->
+            <VBox spacing="16">
+                <TextArea fx:id="tablePromptInput"
+                          styleClass="ai-prompt-textarea"
+                          promptText="e.g., 'Show me top 10 applicants by experience level' or 'List all interviews scheduled this week'"
+                          wrapText="true"
+                          prefRowCount="3"
+                          VBox.vgrow="ALWAYS"/>
+                
+                <HBox alignment="CENTER_RIGHT" spacing="12">
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="tableGenerateBtn"
+                            styleClass="btn-primary"
+                            text="🔍 Generate Table"
+                            onAction="#handleGenerateTable"
+                            prefWidth="160"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ENHANCED TABLE RESULTS SECTION
+             ═══════════════════════════════════════════════════════════════ -->
+        <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="0" minHeight="350">
+            <padding>
+                <Insets top="28" right="28" bottom="28" left="28"/>
+            </padding>
+
+            <!-- Enhanced Results Header -->
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label fx:id="tableResultTitle" text="📊 Results Table"
+                               styleClass="ai-model-title"/>
+                        <Label fx:id="tableResultSubtitle" text="Your query results will appear here"
+                               styleClass="ai-model-subtitle"/>
+                    </VBox>
+                    
+                    <Label fx:id="tableDataPoints" text="0 rows" 
+                           style="-fx-font-size: 12px; -fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 6 12; -fx-background-radius: 8;"/>
+                </HBox>
+            </VBox>
+
+            <Separator styleClass="separator"/>
+
+            <!-- Enhanced Results Container -->
+            <StackPane VBox.vgrow="ALWAYS" minHeight="250">
+                
+                <!-- Enhanced Empty State -->
+                <VBox fx:id="tableEmptyState"
+                      alignment="CENTER"
+                      spacing="20"
+                      styleClass="empty-state">
+                    <Label text="📊" styleClass="empty-state icon"/>
+                    <Label text="No data to display" styleClass="empty-state title"/>
+                    <Label text="Enter a query above and click 'Generate' to see results"
+                           styleClass="empty-state description"/>
+                </VBox>
+
+                <!-- Enhanced Table -->
+                <TableView fx:id="resultsTableView"
+                           visible="false"
+                           managed="false"
+                           VBox.vgrow="ALWAYS"
+                           styleClass="table-view">
+                    
+                    <!-- Dynamic columns will be added programmatically by controller -->
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="16" styleClass="empty-state">
+                            <Label text="🔍" styleClass="empty-state icon"/>
+                            <Label text="No results found" styleClass="empty-state title"/>
+                            <Label text="Try adjusting your query or search terms"
+                                   styleClass="empty-state description"/>
+                        </VBox>
+                    </placeholder>
+
+                </TableView>
+
+            </StackPane>
+        </VBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ENHANCED CHART QUERY SECTION
+             ═══════════════════════════════════════════════════════════════ -->
+        <VBox styleClass="content-card" spacing="20">
+            <padding>
+                <Insets top="28" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <!-- Enhanced Header -->
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <Label text="📈 Chart Query" styleClass="ai-prompt-label"/>
+                    <Label fx:id="chartStatusLabel" text="" styleClass="ai-status-label"/>
+                </HBox>
+                <Label text="Create beautiful visualizations from your recruitment data"
+                       style="-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-line-spacing: 1.4;"/>
+            </VBox>
+
+            <!-- Enhanced Input Area -->
+            <VBox spacing="16">
+                <TextArea fx:id="chartPromptInput"
+                          styleClass="ai-prompt-textarea"
+                          promptText="e.g., 'Show hiring trends over the past 6 months' or 'Compare applications by department'"
+                          wrapText="true"
+                          prefRowCount="3"
+                          VBox.vgrow="ALWAYS"/>
+                
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="6">
+                        <Label text="Chart Type:" style="-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-font-weight: 500;"/>
+                        <ComboBox fx:id="chartTypeSelector"
+                                  styleClass="form-combo"
+                                  prefWidth="140"
+                                  onAction="#handleChartTypeChange"
+                                  value="PIE">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="BAR"/>
+                                    <String fx:value="PIE"/>
+                                    <String fx:value="LINE"/>
+                                    <String fx:value="AREA"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </VBox>
+                    
+                    <Region HBox.hgrow="ALWAYS"/>
+                    
+                    <Button fx:id="chartGenerateBtn"
+                            styleClass="btn-primary"
+                            text="📈 Generate Chart"
+                            onAction="#handleGenerateChart"
+                            prefWidth="160"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ENHANCED CHART RESULTS SECTION
+             ═══════════════════════════════════════════════════════════════ -->
+        <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="0" minHeight="350">
+            <padding>
+                <Insets top="28" right="28" bottom="32" left="28"/>
+            </padding>
+
+            <!-- Enhanced Chart Header -->
+            <VBox spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label fx:id="chartResultTitle" text="📈 Visualization"
+                               styleClass="ai-model-title"/>
+                        <Label fx:id="chartResultSubtitle" text="Your chart will appear here"
+                               styleClass="ai-model-subtitle"/>
+                    </VBox>
+                    
+                    <Label fx:id="chartDataPoints" text="0 data points" 
+                           style="-fx-font-size: 12px; -fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 6 12; -fx-background-radius: 8;"/>
+                    
+                    <Button text="⬇ Export" styleClass="btn-secondary"
+                            onAction="#handleExportChart"
+                            prefWidth="100"/>
+                    <Button text="🔄 Refresh" styleClass="btn-secondary"
+                            onAction="#handleRefreshChart"
+                            prefWidth="100"/>
+                </HBox>
+            </VBox>
+
+            <Separator styleClass="separator"/>
+
+            <!-- Enhanced Chart Container -->
+            <StackPane VBox.vgrow="ALWAYS" minHeight="250">
+                
+                <!-- Enhanced Empty State -->
+                <VBox fx:id="chartEmptyState"
+                      alignment="CENTER"
+                      spacing="20"
+                      styleClass="empty-state">
+                    <Label text="📈" styleClass="empty-state icon"/>
+                    <Label text="No visualization to display" styleClass="empty-state title"/>
+                    <Label text="Enter a query above and click 'Generate' to see a chart"
+                           styleClass="empty-state description"/>
+                </VBox>
+
+                <!-- Enhanced Charts -->
+                <BarChart fx:id="resultsBarChart"
+                          visible="false"
+                          managed="false"
+                          legendVisible="true"
+                          animated="true"
+                          styleClass="chart">
+                    <xAxis>
+                        <CategoryAxis fx:id="chartXAxis" label="Category" styleClass="chart-axis"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="chartYAxis" label="Count" side="LEFT" styleClass="chart-axis"/>
+                    </yAxis>
+                </BarChart>
+
+                <LineChart fx:id="resultsLineChart"
+                           visible="false"
+                           managed="false"
+                           legendVisible="true"
+                           animated="true"
+                           styleClass="chart">
+                    <xAxis>
+                        <CategoryAxis fx:id="lineChartXAxis" label="Time Period" styleClass="chart-axis"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="lineChartYAxis" label="Value" side="LEFT" styleClass="chart-axis"/>
+                    </yAxis>
+                </LineChart>
+
+                <PieChart fx:id="resultsPieChart"
+                          visible="false"
+                          managed="false"
+                          legendVisible="true"
+                          animated="true"
+                          styleClass="chart"/>
+
+                <AreaChart fx:id="resultsAreaChart"
+                           visible="false"
+                           managed="false"
+                           legendVisible="true"
+                           animated="true"
+                           styleClass="chart">
+                    <xAxis>
+                        <CategoryAxis fx:id="areaChartXAxis" label="Period" styleClass="chart-axis"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="areaChartYAxis" label="Value" side="LEFT" styleClass="chart-axis"/>
+                    </yAxis>
+                </AreaChart>
+
+            </StackPane>
+        </VBox>
+
+    </VBox>
+
+

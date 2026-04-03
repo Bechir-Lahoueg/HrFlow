@@ -16,22 +16,46 @@ final class DbUserProvider implements UserProviderInterface
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
+        // First try the users table (Admin / RH)
         $row = $this->connection->fetchAssociative(
             'SELECT id, username, email, password, role FROM users WHERE username = :identifier OR email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
-        if (!$row) {
-            throw new UserNotFoundException(sprintf('User "%s" was not found.', $identifier));
+        if ($row) {
+            return $this->hydrateUser($row);
         }
 
-        return $this->hydrateUser($row);
+        // Then try the employees table (like the Java app)
+        $empRow = $this->connection->fetchAssociative(
+            'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE email = :identifier LIMIT 1',
+            ['identifier' => $identifier]
+        );
+
+        if ($empRow) {
+            return $this->hydrateEmployee($empRow);
+        }
+
+        throw new UserNotFoundException(sprintf('User "%s" was not found.', $identifier));
     }
 
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof DbUser) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
+        }
+
+        if ($user->getSource() === 'employees') {
+            $row = $this->connection->fetchAssociative(
+                'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE id = :id LIMIT 1',
+                ['id' => $user->getId()]
+            );
+
+            if (!$row) {
+                throw new UserNotFoundException(sprintf('Employee id "%d" was not found.', $user->getId()));
+            }
+
+            return $this->hydrateEmployee($row);
         }
 
         $row = $this->connection->fetchAssociative(
@@ -58,7 +82,27 @@ final class DbUserProvider implements UserProviderInterface
             (string) $row['username'],
             isset($row['email']) ? (string) $row['email'] : null,
             (string) $row['password'],
-            (string) $row['role']
+            (string) $row['role'],
+            'users'
+        );
+    }
+
+    private function hydrateEmployee(array $row): DbUser
+    {
+        $firstName = (string) $row['first_name'];
+        $lastName = (string) $row['last_name'];
+
+        return new DbUser(
+            (int) $row['id'],
+            $firstName . ' ' . $lastName,
+            (string) $row['email'],
+            (string) $row['password'],
+            'EMPLOYEE',
+            'employees',
+            $firstName,
+            $lastName,
+            (string) $row['job_title'],
+            (int) $row['age']
         );
     }
 }

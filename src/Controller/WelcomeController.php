@@ -32,7 +32,7 @@ final class WelcomeController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function admin(): Response
     {
-        return $this->render('Home/welcome_admin.html.twig', [
+        return $this->render('DashboardAdmin/welcome_admin.html.twig', [
             'user' => $this->getUser(),
         ]);
     }
@@ -41,7 +41,7 @@ final class WelcomeController extends AbstractController
     #[IsGranted('ROLE_RH')]
     public function rh(): Response
     {
-        return $this->render('Home/welcome_rh.html.twig', [
+        return $this->render('DashboardHr/welcome_rh.html.twig', [
             'user' => $this->getUser(),
         ]);
     }
@@ -50,7 +50,7 @@ final class WelcomeController extends AbstractController
     #[IsGranted('ROLE_EMPLOYEE')]
     public function employee(): Response
     {
-        return $this->render('Home/welcome_employee.html.twig', [
+        return $this->render('DashboardEmployee/welcome_employee.html.twig', [
             'user' => $this->getUser(),
         ]);
     }

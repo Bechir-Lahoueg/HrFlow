@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     JobOffersView.fxml
+     Loaded dynamically into MainView's contentArea StackPane.
+     Controller: controllers.JobOffersController
+     Modal is handled globally in MainView — controller calls
+     mainController.showModal(form, title, subtitle) to open it.
+     ═════════════════════════════════════════════════════════════════════ -->
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.JobOffersController"
+      styleClass="view-container"
+      spacing="0">
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         STATS CARDS ROW
+         ───────────────────────────────────────────────────────────────── -->
+    <HBox styleClass="stats-row" spacing="16">
+        <VBox.margin>
+            <Insets top="28" right="28" bottom="0" left="28"/>
+        </VBox.margin>
+
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-blue">
+                <Label text="💼" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Total Jobs" styleClass="stat-card-label"/>
+                <Label fx:id="statTotalJobs" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-green">
+                <Label text="✅" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Active Positions" styleClass="stat-card-label"/>
+                <Label fx:id="statActiveJobs" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-orange">
+                <Label text="⏳" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Under Review" styleClass="stat-card-label"/>
+                <Label fx:id="statDraftJobs" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+        <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+            <StackPane styleClass="stat-icon-bg, stat-icon-bg-purple">
+                <Label text="📬" styleClass="stat-icon"/>
+            </StackPane>
+            <VBox spacing="3">
+                <Label text="Applications" styleClass="stat-card-label"/>
+                <Label fx:id="statApplications" text="0" styleClass="stat-card-value"/>
+                <Label text="" styleClass="stat-card-trend"/>
+            </VBox>
+        </HBox>
+
+    </HBox>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         MAIN CONTENT CARD
+         ───────────────────────────────────────────────────────────────── -->
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="0">
+        <VBox.margin>
+            <Insets top="20" right="28" bottom="28" left="28"/>
+        </VBox.margin>
+
+        <!-- ── Header Action Bar ── -->
+        <HBox styleClass="card-header" alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="3">
+                <Label text="Manage Job Offers" styleClass="card-title"/>
+                <Label text="Create, review, and manage all open positions" styleClass="card-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <ComboBox fx:id="filterStatus"
+                      promptText="Filter by Status"
+                      styleClass="filter-combo"
+                      prefWidth="160"
+                      onAction="#handleFilterChange">
+                <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="All Statuses"/>
+                            <String fx:value="OPEN"/>
+                            <String fx:value="DRAFT"/>
+                            <String fx:value="CLOSED"/>
+                        </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Button text="⬇  Export" styleClass="btn-secondary" onAction="#handleExport"/>
+
+            <!-- Triggers globalModalOverlay via MainController -->
+            <Button fx:id="btnAddJob" text="＋  Add Job"
+                    styleClass="btn-primary" onAction="#handleAddJob"/>
+        </HBox>
+
+        <Separator styleClass="card-divider"/>
+
+        <!-- ── TableView ── -->
+        <TableView fx:id="jobTableView"
+                   styleClass="job-table"
+                   VBox.vgrow="ALWAYS">
+
+            <columns>
+                <TableColumn fx:id="colTitle"      text="JOB TITLE"    prefWidth="220" sortable="true"/>
+                <TableColumn fx:id="colDepartment" text="DEPARTMENT"   prefWidth="150" sortable="true"/>
+                <TableColumn fx:id="colLocation"   text="LOCATION"     prefWidth="140" sortable="true"/>
+                <TableColumn fx:id="colType"       text="TYPE"         prefWidth="110" sortable="true"/>
+                <TableColumn fx:id="colSalary"     text="SALARY RANGE" prefWidth="140" sortable="true"/>
+                <!-- StatusBadgeCell wired in controller -->
+                <TableColumn fx:id="colStatus"     text="STATUS"       prefWidth="110" sortable="true"/>
+                <!-- ActionButtonCell wired in controller -->
+                <TableColumn fx:id="colActions"    text="ACTIONS"      prefWidth="120"
+                             sortable="false" resizable="false"/>
+            </columns>
+
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" styleClass="table-placeholder">
+                    <Label text="📭" styleClass="table-placeholder-icon"/>
+                    <Label text="No job offers found" styleClass="table-placeholder-title"/>
+                    <Label text="Click  ＋ Add Job  to create your first listing."
+                           styleClass="table-placeholder-subtitle"/>
+                </VBox>
+            </placeholder>
+
+        </TableView>
+
+        <!-- ── Pagination Bar ── -->
+        <HBox styleClass="pagination-bar" alignment="CENTER_LEFT" spacing="12">
+            <Label fx:id="paginationInfo" text=""
+                   styleClass="pagination-info"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Pagination fx:id="tablePagination"
+                        pageCount="3"
+                        currentPageIndex="0"
+                        maxPageIndicatorCount="5"
+                        styleClass="table-pagination"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

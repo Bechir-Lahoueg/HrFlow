@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.FeedbackController"
+      style="-fx-background-color: #f4f6f9;">
+
+    <!-- ═══ TITRE ═══════════════════════════════════════════════════ -->
+    <Label text="💬 Gestion des Feedbacks"
+           style="-fx-font-size: 20px; -fx-font-weight: bold;
+                  -fx-text-fill: #2c3e50; -fx-padding: 20 20 10 20;"/>
+
+    <!-- ═══ TABS ═════════════════════════════════════════════════════ -->
+    <TabPane VBox.vgrow="ALWAYS"
+             tabClosingPolicy="UNAVAILABLE"
+             style="-fx-padding: 0 10 10 10;">
+
+        <!-- ─── Onglet 1 : Feedback Employé ──────────────────────── -->
+        <Tab text="👥 Feedback Employé">
+            <HBox spacing="20" style="-fx-padding: 16;">
+
+                <!-- Tableau -->
+                <VBox spacing="12" HBox.hgrow="ALWAYS">
+                    <HBox spacing="12">
+                        <Label fx:id="lblTotal" text="Total : 0"
+                               style="-fx-background-color: #3498db; -fx-text-fill: white;
+                                      -fx-padding: 4 12; -fx-background-radius: 12;"/>
+                        <Label fx:id="lblAvgRating" text="Note moyenne : 0 ⭐"
+                               style="-fx-background-color: #f39c12; -fx-text-fill: white;
+                                      -fx-padding: 4 12; -fx-background-radius: 12;"/>
+                    </HBox>
+
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="Type :"/>
+                        <ComboBox fx:id="filterType" prefWidth="140"/>
+                        <Label text="Statut :"/>
+                        <ComboBox fx:id="filterStatus" prefWidth="140"/>
+                    </HBox>
+
+                    <TableView fx:id="tableFeedbacks" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colId"     text="#"      prefWidth="50"/>
+                            <TableColumn fx:id="colFrom"   text="De"     prefWidth="120"/>
+                            <TableColumn fx:id="colTo"     text="À"      prefWidth="120"/>
+                            <TableColumn fx:id="colType"   text="Type"   prefWidth="120"/>
+                            <TableColumn fx:id="colRating" text="Note"   prefWidth="100"/>
+                            <TableColumn fx:id="colStatus" text="Statut" prefWidth="110"/>
+                            <TableColumn fx:id="colDate"   text="Date"   prefWidth="150"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Aucun feedback trouvé."
+                                   style="-fx-text-fill: #999; -fx-font-style: italic;"/>
+                        </placeholder>
+                    </TableView>
+
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Button fx:id="btnAcknowledge" text="👁️ Accuser réception"
+                                onAction="#handleAcknowledge"
+                                style="-fx-background-color: #3498db; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;"/>
+                        <Button fx:id="btnDelete" text="🗑️ Supprimer"
+                                onAction="#handleDelete"
+                                style="-fx-background-color: #e74c3c; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+
+                <Separator orientation="VERTICAL"/>
+
+                <!-- Formulaire -->
+                <VBox spacing="14" minWidth="280" maxWidth="300">
+                    <Label fx:id="lblFormTitle" text="➕ Nouveau feedback"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Separator/>
+
+                    <VBox spacing="4">
+                        <Label text="Destinataire *" style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbToUser" maxWidth="Infinity"
+                                  promptText="Choisir un utilisateur..."/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Type *" style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbFeedbackType" maxWidth="Infinity"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Note *" style="-fx-font-weight: bold;"/>
+                        <Slider fx:id="sliderRating"/>
+                        <Label fx:id="lblRatingValue" text="⭐ 3 / 5"
+                               style="-fx-text-fill: #f39c12; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Commentaire *" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtComment" prefRowCount="4" wrapText="true"
+                                  promptText="Votre commentaire..."
+                                  style="-fx-border-color: #ddd; -fx-border-radius: 6;"/>
+                    </VBox>
+
+                    <CheckBox fx:id="chkAnonymous" text="Envoyer anonymement"/>
+                    <Separator/>
+
+                    <HBox spacing="10">
+                        <Button fx:id="btnSave" text="💾 Envoyer"
+                                onAction="#handleSave" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: #2ecc71; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 9 0;
+                                       -fx-font-weight: bold; -fx-cursor: hand;"/>
+                        <Button fx:id="btnClear" text="🔄" onAction="#handleClear"
+                                style="-fx-background-color: #95a5a6; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 9 14; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </Tab>
+
+        <!-- ─── Onglet 2 : Feedback Formation ────────────────────── -->
+        <Tab text="🎓 Feedback Formation">
+            <HBox spacing="20" style="-fx-padding: 16;">
+
+                <!-- Tableau formation -->
+                <VBox spacing="12" HBox.hgrow="ALWAYS">
+                    <HBox spacing="12">
+                        <Label fx:id="lblTotalFF" text="Total : 0 avis"
+                               style="-fx-background-color: #3498db; -fx-text-fill: white;
+                                      -fx-padding: 4 12; -fx-background-radius: 12;"/>
+                        <Label fx:id="lblAvgRatingFF" text="Note moyenne : 0 ⭐"
+                               style="-fx-background-color: #f39c12; -fx-text-fill: white;
+                                      -fx-padding: 4 12; -fx-background-radius: 12;"/>
+                        <Label fx:id="lblRecommandation" text="Recommandée : 0%"
+                               style="-fx-background-color: #27ae60; -fx-text-fill: white;
+                                      -fx-padding: 4 12; -fx-background-radius: 12;"/>
+                    </HBox>
+
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="Filtrer :"/>
+                        <ComboBox fx:id="filterFormation" prefWidth="220"/>
+                    </HBox>
+
+                    <TableView fx:id="tableFF" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colFFId"        text="#"            prefWidth="50"/>
+                            <TableColumn fx:id="colFFUser"      text="Employé"      prefWidth="120"/>
+                            <TableColumn fx:id="colFFFormation" text="Formation"    prefWidth="150"/>
+                            <TableColumn fx:id="colFFSession"   text="Session"      prefWidth="120"/>
+                            <TableColumn fx:id="colFFRating"    text="Note"         prefWidth="100"/>
+                            <TableColumn fx:id="colFFRecommande" text="Recommande ?" prefWidth="110"/>
+                            <TableColumn fx:id="colFFDate"      text="Date"         prefWidth="150"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Aucun feedback formation trouvé."
+                                   style="-fx-text-fill: #999; -fx-font-style: italic;"/>
+                        </placeholder>
+                    </TableView>
+
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button fx:id="btnDeleteFF" text="🗑️ Supprimer"
+                                onAction="#handleDeleteFF"
+                                style="-fx-background-color: #e74c3c; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+
+                <Separator orientation="VERTICAL"/>
+
+                <!-- Formulaire formation -->
+                <VBox spacing="10" minWidth="290" maxWidth="310">
+                    <Label fx:id="lblFormTitleFF" text="➕ Nouveau feedback formation"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Separator/>
+
+                    <VBox spacing="3">
+                        <Label text="Formation *" style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbFormation" maxWidth="Infinity"
+                                  promptText="Choisir une formation..."/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Session" style="-fx-font-weight: bold;"/>
+                        <ComboBox fx:id="cbSession" maxWidth="Infinity"
+                                  promptText="Choisir une session..."/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Note globale *" style="-fx-font-weight: bold;"/>
+                        <Slider fx:id="sliderRatingFF"/>
+                        <Label fx:id="lblRatingValueFF" text="⭐ 3 / 5"
+                               style="-fx-text-fill: #f39c12; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Contenu" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtContenu" prefRowCount="2" wrapText="true"
+                                  promptText="Avis sur le contenu..."
+                                  style="-fx-border-color: #ddd; -fx-border-radius: 6;"/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Formateur" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtFormateur" prefRowCount="2" wrapText="true"
+                                  promptText="Avis sur le formateur..."
+                                  style="-fx-border-color: #ddd; -fx-border-radius: 6;"/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Organisation" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtOrganisation" prefRowCount="2" wrapText="true"
+                                  promptText="Avis sur l'organisation..."
+                                  style="-fx-border-color: #ddd; -fx-border-radius: 6;"/>
+                    </VBox>
+
+                    <CheckBox fx:id="chkRecommande"
+                              text="Je recommande cette formation ✅"
+                              selected="true"/>
+                    <Separator/>
+
+                    <HBox spacing="10">
+                        <Button fx:id="btnSaveFF" text="💾 Soumettre"
+                                onAction="#handleSaveFF" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: #2ecc71; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 9 0;
+                                       -fx-font-weight: bold; -fx-cursor: hand;"/>
+                        <Button fx:id="btnClearFF" text="🔄" onAction="#handleClearFF"
+                                style="-fx-background-color: #95a5a6; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 9 14; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </Tab>
+
+    </TabPane>
+</VBox>

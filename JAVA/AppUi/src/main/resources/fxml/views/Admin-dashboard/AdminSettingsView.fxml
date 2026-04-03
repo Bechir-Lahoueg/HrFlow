@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AdminSettingsViewController">
+    <VBox spacing="25.0">
+        <padding>
+            <Insets top="30.0" bottom="30.0" left="40.0" right="40.0" />
+        </padding>
+        
+        <!-- Page Title -->
+        <Label text="Paramètres" styleClass="page-title">
+            <font><Font name="System Bold" size="26.0" /></font>
+        </Label>
+        
+        <!-- Profile Section -->
+        <VBox spacing="20.0" styleClass="settings-section">
+            <padding>
+                <Insets top="25.0" bottom="25.0" left="30.0" right="30.0" />
+            </padding>
+            
+            <Label text="Informations du Profil" styleClass="section-title">
+                <font><Font name="System Bold" size="18.0" /></font>
+            </Label>
+            
+            <Separator />
+            
+            <!-- Profile Grid -->
+            <GridPane hgap="20.0" vgap="20.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="30.0" />
+                    <ColumnConstraints percentWidth="70.0" />
+                </columnConstraints>
+                
+                <!-- Username -->
+                <Label text="Nom d'utilisateur:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label fx:id="usernameLabel" text="-" styleClass="setting-value">
+                        <font><Font size="14.0" /></font>
+                    </Label>
+                </HBox>
+                
+                <!-- Email -->
+                <Label text="Email:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label fx:id="emailLabel" text="-" styleClass="setting-value">
+                        <font><Font size="14.0" /></font>
+                    </Label>
+                </HBox>
+                
+                <!-- Role -->
+                <Label text="Rôle:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <Label fx:id="roleLabel" text="-" styleClass="setting-value, role-badge">
+                        <font><Font name="System Bold" size="14.0" /></font>
+                    </Label>
+                </HBox>
+                
+                <!-- User ID -->
+                <Label text="ID Utilisateur:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                    <Label fx:id="userIdLabel" text="-" styleClass="setting-value">
+                        <font><Font size="14.0" /></font>
+                    </Label>
+                </HBox>
+                
+                <!-- Creation Date -->
+                <Label text="Compte créé le:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                    <font><Font name="System Bold" size="14.0" /></font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <Label fx:id="createdAtLabel" text="-" styleClass="setting-value">
+                        <font><Font size="14.0" /></font>
+                    </Label>
+                </HBox>
+            </GridPane>
+        </VBox>
+        
+        <!-- Security Section -->
+        <VBox spacing="20.0" styleClass="settings-section">
+            <padding>
+                <Insets top="25.0" bottom="25.0" left="30.0" right="30.0" />
+            </padding>
+            
+            <Label text="Sécurité" styleClass="section-title">
+                <font><Font name="System Bold" size="18.0" /></font>
+            </Label>
+            
+            <Separator />
+            
+            <GridPane hgap="15.0" vgap="20.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="30.0" />
+                    <ColumnConstraints percentWidth="70.0" />
+                </columnConstraints>
+                
+                <!-- Current Password -->
+                <Label text="Mot de passe actuel:" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <PasswordField fx:id="currentPasswordField" promptText="Entrez votre mot de passe actuel" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                
+                <!-- New Password -->
+                <Label text="Nouveau mot de passe:" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <PasswordField fx:id="newPasswordField" promptText="Nouveau mot de passe" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                
+                <!-- Confirm Password -->
+                <Label text="Confirmer:" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <PasswordField fx:id="confirmPasswordField" promptText="Confirmez le nouveau mot de passe" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                
+                <!-- Change Password Button -->
+                <HBox GridPane.columnIndex="1" GridPane.rowIndex="3" spacing="10.0">
+                    <Button text="Changer le mot de passe" onAction="#handleChangePassword" styleClass="primary-button">
+                        <font><Font size="13.0" /></font>
+                    </Button>
+                </HBox>
+            </GridPane>
+        </VBox>
+        
+        <!-- System Information Section -->
+        <VBox spacing="20.0" styleClass="settings-section">
+            <padding>
+                <Insets top="25.0" bottom="25.0" left="30.0" right="30.0" />
+            </padding>
+            
+            <Label text="Informations Système" styleClass="section-title">
+                <font><Font name="System Bold" size="18.0" /></font>
+            </Label>
+            
+            <Separator />
+            
+            <GridPane hgap="20.0" vgap="15.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="30.0" />
+                    <ColumnConstraints percentWidth="70.0" />
+                </columnConstraints>
+                
+                <Label text="Version de l'application:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label text="1.0.0" styleClass="setting-value" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                
+                <Label text="Plateforme:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label text="JavaFX 21.0.1" styleClass="setting-value" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                
+                <Label text="Base de données:" styleClass="setting-label" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                    <font><Font size="13.0" /></font>
+                </Label>
+                <Label text="MySQL" styleClass="setting-value" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <font><Font size="13.0" /></font>
+                </Label>
+            </GridPane>
+        </VBox>
+        
+    </VBox>
+</ScrollPane>

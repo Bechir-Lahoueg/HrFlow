@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml"
+      spacing="10"
+      fx:controller="org.example.controllers.AddFormationController">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Nouvelle formation" style="-fx-font-size:16px; -fx-font-weight:bold;" />
+        <Button text="X" fx:id="btnClose" style="-fx-background-color:transparent;" />
+    </HBox>
+
+    <!-- Champs de saisie -->
+    <VBox spacing="5">
+        <Label text="Titre" />
+        <TextField fx:id="txtTitre" />
+    </VBox>
+
+    <VBox spacing="5">
+        <Label text="Description" />
+        <TextArea fx:id="txtDescription" prefRowCount="3" />
+    </VBox>
+
+    <HBox spacing="10">
+        <VBox spacing="5">
+            <Label text="Type" />
+            <TextField fx:id="txtType" />
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Durée (jours)" />
+            <TextField fx:id="txtDuree" />
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Organisme" />
+            <TextField fx:id="txtOrganisme" />
+        </VBox>
+    </HBox>
+
+    <!-- Objectifs -->
+    <VBox spacing="5">
+        <Label text="Objectifs" />
+        <HBox spacing="5">
+            <TextField fx:id="txtObjectif" promptText="Ajouter un objectif" />
+            <Button text="Ajouter" fx:id="btnAddObjectif" />
+        </HBox>
+        <ListView fx:id="listObjectifs" prefHeight="100" />
+    </VBox>
+
+    <Button text="Enregistrer" fx:id="btnSave" style="-fx-background-color:#145EB7; -fx-text-fill:white;" />
+
+</VBox>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.controller.Employee.Recrutement.EmployeeRecruitmentDashboardController"
+            styleClass="view-container"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED">
+
+    <VBox spacing="0">
+        <padding>
+            <Insets top="28" right="28" bottom="28" left="28"/>
+        </padding>
+
+        <!-- WELCOME BANNER -->
+        <HBox styleClass="welcome-banner" spacing="16" alignment="CENTER_LEFT">
+            <VBox.margin>
+                <Insets top="0" right="0" bottom="24" left="0"/>
+            </VBox.margin>
+
+            <StackPane styleClass="welcome-avatar">
+                <Label fx:id="welcomeAvatarText" text="JD" styleClass="welcome-avatar-text"/>
+            </StackPane>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label fx:id="welcomeTitle" text="Welcome back, John! 👋" styleClass="welcome-title"/>
+                <Label fx:id="welcomeSubtitle" text="Ready to explore new opportunities? You have 3 active applications."
+                       styleClass="welcome-subtitle"/>
+            </VBox>
+
+            <Button text="Complete Profile" styleClass="btn-primary"
+                    onAction="#handleCompleteProfile"/>
+        </HBox>
+
+        <!-- STATS ROW -->
+        <HBox styleClass="stats-row" spacing="16">
+            <VBox.margin>
+                <Insets top="0" right="0" bottom="24" left="0"/>
+            </VBox.margin>
+
+            <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+                <StackPane styleClass="stat-icon-bg, stat-icon-bg-blue">
+                    <Label text="📄" styleClass="stat-icon"/>
+                </StackPane>
+                <VBox spacing="3">
+                    <Label text="Active Applications" styleClass="stat-card-label"/>
+                    <Label fx:id="statActiveApps" text="3" styleClass="stat-card-value"/>
+                    <Label text="→ In progress" styleClass="stat-card-trend, trend-neutral"/>
+                </VBox>
+            </HBox>
+
+            <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+                <StackPane styleClass="stat-icon-bg, stat-icon-bg-orange">
+                    <Label text="📅" styleClass="stat-icon"/>
+                </StackPane>
+                <VBox spacing="3">
+                    <Label text="Upcoming Interviews" styleClass="stat-card-label"/>
+                    <Label fx:id="statInterviews" text="1" styleClass="stat-card-value"/>
+                    <Label text="→ Tomorrow 10AM" styleClass="stat-card-trend, trend-neutral"/>
+                </VBox>
+            </HBox>
+
+            <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+                <StackPane styleClass="stat-icon-bg, stat-icon-bg-green">
+                    <Label text="🔍" styleClass="stat-icon"/>
+                </StackPane>
+                <VBox spacing="3">
+                    <Label text="New Opportunities" styleClass="stat-card-label"/>
+                    <Label fx:id="statNewJobs" text="12" styleClass="stat-card-value"/>
+                    <Label text="↑ 4 this week" styleClass="stat-card-trend, trend-up"/>
+                </VBox>
+            </HBox>
+
+            <HBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="16" alignment="CENTER_LEFT">
+                <StackPane styleClass="stat-icon-bg, stat-icon-bg-purple">
+                    <Label text="📈" styleClass="stat-icon"/>
+                </StackPane>
+                <VBox spacing="3">
+                    <Label text="Profile Views" styleClass="stat-card-label"/>
+                    <Label fx:id="statProfileViews" text="28" styleClass="stat-card-value"/>
+                    <Label text="↑ Last 30 days" styleClass="stat-card-trend, trend-up"/>
+                </VBox>
+            </HBox>
+
+        </HBox>
+
+        <!-- TWO-COLUMN LAYOUT -->
+        <HBox spacing="20" alignment="TOP_LEFT">
+
+            <!-- LEFT: My Applications -->
+            <VBox styleClass="content-card" spacing="0" HBox.hgrow="ALWAYS" prefWidth="380">
+                <HBox styleClass="card-header" alignment="CENTER_LEFT" spacing="12">
+                    <VBox spacing="3" HBox.hgrow="ALWAYS">
+                        <Label text="My Applications" styleClass="card-title"/>
+                        <Label text="Track your progress" styleClass="card-subtitle"/>
+                    </VBox>
+                    <Button text="View All →" styleClass="btn-link"
+                            onAction="#handleViewAllApplications"/>
+                </HBox>
+
+                <Separator styleClass="card-divider"/>
+
+                <!-- Application Status Items - Dynamic Content -->
+                <VBox fx:id="myApplicationsContainer" styleClass="application-status-list" spacing="0">
+                    <!-- Content will be populated dynamically by the controller -->
+                </VBox>
+
+            </VBox>
+
+            <!-- RIGHT: Featured Opportunities -->
+            <VBox styleClass="content-card" spacing="0" HBox.hgrow="ALWAYS">
+                <HBox styleClass="card-header" alignment="CENTER_LEFT" spacing="12">
+                    <VBox spacing="3" HBox.hgrow="ALWAYS">
+                        <Label text="Featured Opportunities" styleClass="card-title"/>
+                        <Label text="Recommended for you" styleClass="card-subtitle"/>
+                    </VBox>
+                    <Button text="Browse All →" styleClass="btn-link"
+                            onAction="#handleBrowseJobs"/>
+                </HBox>
+
+                <Separator styleClass="card-divider"/>
+
+                <!-- Job Summary - Dynamic Content -->
+                <VBox fx:id="featuredOpportunitiesContainer" styleClass="application-status-list" spacing="0">
+                    <!-- Content will be populated dynamically by the controller -->
+                </VBox>
+
+            </VBox>
+
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>

@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.*?>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║   ADMIN DASHBOARD — PREMIUM LIGHT EDITORIAL                             ║
+  ║   Aesthetic: Crisp white · ink-black typography · vivid color accents   ║
+  ║   Style: Editorial magazine · geometric precision · refined whitespace   ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+-->
+
+<StackPane xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.example.ui.controller.AdminHomeViewController"
+           style="-fx-background-color: #f5f6fa;">
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!--  DECORATIVE BACKGROUND GEOMETRY                             -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <Pane mouseTransparent="true" style="-fx-background-color: transparent;">
+
+        <!-- Top-right large circle accent -->
+        <Circle radius="420" centerX="1380" centerY="-60"
+                style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #eef2ff 0%, #e0e7ff 100%); -fx-opacity: 0.9;"/>
+
+        <!-- Bottom-left soft blob -->
+        <Circle radius="300" centerX="-80" centerY="900"
+                style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #ecfdf5 0%, #d1fae5 100%); -fx-opacity: 0.8;"/>
+
+        <!-- Dot grid (decorative) -->
+        <Circle radius="2.5" centerX="950"  centerY="60"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.6;"/>
+        <Circle radius="2.5" centerX="980"  centerY="60"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.6;"/>
+        <Circle radius="2.5" centerX="1010" centerY="60"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.6;"/>
+        <Circle radius="2.5" centerX="1040" centerY="60"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.6;"/>
+        <Circle radius="2.5" centerX="1070" centerY="60"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.6;"/>
+        <Circle radius="2.5" centerX="950"  centerY="90"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.4;"/>
+        <Circle radius="2.5" centerX="980"  centerY="90"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.4;"/>
+        <Circle radius="2.5" centerX="1010" centerY="90"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.4;"/>
+        <Circle radius="2.5" centerX="1040" centerY="90"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.4;"/>
+        <Circle radius="2.5" centerX="1070" centerY="90"  style="-fx-fill: #c7d2fe; -fx-opacity: 0.4;"/>
+        <Circle radius="2.5" centerX="950"  centerY="120" style="-fx-fill: #c7d2fe; -fx-opacity: 0.25;"/>
+        <Circle radius="2.5" centerX="980"  centerY="120" style="-fx-fill: #c7d2fe; -fx-opacity: 0.25;"/>
+        <Circle radius="2.5" centerX="1010" centerY="120" style="-fx-fill: #c7d2fe; -fx-opacity: 0.25;"/>
+        <Circle radius="2.5" centerX="1040" centerY="120" style="-fx-fill: #c7d2fe; -fx-opacity: 0.25;"/>
+        <Circle radius="2.5" centerX="1070" centerY="120" style="-fx-fill: #c7d2fe; -fx-opacity: 0.25;"/>
+    </Pane>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!--  MAIN SCROLL CONTENT                                        -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <ScrollPane fitToWidth="true"
+                style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;"
+                hbarPolicy="NEVER">
+
+        <VBox spacing="36.0" style="-fx-background-color: transparent;">
+            <padding>
+                <Insets top="44.0" bottom="56.0" left="52.0" right="52.0"/>
+            </padding>
+
+            <!-- ── TOP NAV BAR ── -->
+            <HBox alignment="CENTER_LEFT" spacing="0">
+
+                <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <StackPane minWidth="36" minHeight="36">
+                        <Rectangle width="36" height="36" arcWidth="10" arcHeight="10"
+                                   style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #4f46e5 0%, #7c3aed 100%);
+                                          -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.35), 10, 0, 0, 3);"/>
+                        <Label text="⚡" style="-fx-font-size: 16px;"/>
+                    </StackPane>
+                    <VBox spacing="1">
+                        <Label text="AdminPanel"
+                               style="-fx-text-fill: #111827; -fx-font-size: 17px; -fx-font-weight: bold;">
+                            <font><Font name="System Bold" size="17.0"/></font>
+                        </Label>
+                        <Label text="Système de gestion" style="-fx-text-fill: #9ca3af; -fx-font-size: 11px;"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="6" alignment="CENTER"
+                      style="-fx-background-color: white; -fx-background-radius: 50;
+                             -fx-border-color: #e5e7eb; -fx-border-radius: 50; -fx-border-width: 1;
+                             -fx-padding: 8 18 8 18;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);">
+                    <Label text="Accueil" style="-fx-text-fill: #6b7280; -fx-font-size: 12px;"/>
+                    <Label text="›" style="-fx-text-fill: #d1d5db; -fx-font-size: 12px;"/>
+                    <Label text="Tableau de bord"
+                           style="-fx-text-fill: #4f46e5; -fx-font-size: 12px; -fx-font-weight: bold;">
+                        <font><Font name="System Bold" size="12.0"/></font>
+                    </Label>
+                </HBox>
+
+                <Region minWidth="20"/>
+
+                <HBox spacing="8" alignment="CENTER"
+                      style="-fx-background-color: #ecfdf5; -fx-background-radius: 50;
+                             -fx-border-color: #6ee7b7; -fx-border-radius: 50; -fx-border-width: 1;
+                             -fx-padding: 8 16 8 16;">
+                    <Circle radius="5"
+                            style="-fx-fill: #10b981; -fx-effect: dropshadow(gaussian, #10b981, 5, 0.7, 0, 0);"/>
+                    <Label text="En ligne"
+                           style="-fx-text-fill: #065f46; -fx-font-size: 12px; -fx-font-weight: bold;">
+                        <font><Font name="System Bold" size="12.0"/></font>
+                    </Label>
+                </HBox>
+            </HBox>
+
+            <!-- ── HERO HEADER CARD ── -->
+            <StackPane>
+                <VBox style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #4f46e5 0%, #7c3aed 55%, #a855f7 100%);
+                             -fx-background-radius: 28;
+                             -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.45), 30, 0, 0, 10);">
+                    <padding><Insets top="40.0" bottom="40.0" left="48.0" right="48.0"/></padding>
+
+                    <HBox spacing="30" alignment="CENTER_LEFT">
+
+                        <StackPane minWidth="96" minHeight="96">
+                            <Circle radius="48"
+                                    style="-fx-fill: rgba(255,255,255,0.15);
+                                           -fx-stroke: rgba(255,255,255,0.35); -fx-stroke-width: 2;"/>
+                            <Circle radius="38" style="-fx-fill: rgba(255,255,255,0.12);"/>
+                            <Label text="👤" style="-fx-font-size: 36px;"/>
+                            <Circle radius="8"
+                                    style="-fx-fill: #34d399; -fx-stroke: white; -fx-stroke-width: 2;
+                                           -fx-effect: dropshadow(gaussian, #34d399, 6, 0.8, 0, 0);"
+                                    StackPane.alignment="BOTTOM_RIGHT" translateX="6" translateY="6"/>
+                        </StackPane>
+
+                        <VBox spacing="10" HBox.hgrow="ALWAYS">
+                            <HBox spacing="6" alignment="CENTER_LEFT">
+                                <Label text="👋" style="-fx-font-size: 14px;"/>
+                                <Label text="Bonjour, bienvenue !"
+                                       style="-fx-text-fill: rgba(255,255,255,0.75); -fx-font-size: 13px;"/>
+                            </HBox>
+                            <Label fx:id="welcomeLabel" text="Super Administrateur"
+                                   style="-fx-text-fill: white; -fx-font-size: 34px; -fx-font-weight: bold;
+                                          -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);">
+                                <font><Font name="System Bold" size="34.0"/></font>
+                            </Label>
+                            <HBox spacing="10">
+                                <Label text="⚡  SUPER ADMIN"
+                                       style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 8;
+                                              -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold;
+                                              -fx-padding: 5 12 5 12; -fx-letter-spacing: 1px;">
+                                    <font><Font name="System Bold" size="11.0"/></font>
+                                </Label>
+                                <Label text="🔒  ACCÈS TOTAL"
+                                       style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 8;
+                                              -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 11px; -fx-font-weight: bold;
+                                              -fx-padding: 5 12 5 12; -fx-letter-spacing: 1px;">
+                                    <font><Font name="System Bold" size="11.0"/></font>
+                                </Label>
+                            </HBox>
+                            <Label text="Gérez tous les utilisateurs et paramètres de la plateforme en temps réel."
+                                   style="-fx-text-fill: rgba(255,255,255,0.65); -fx-font-size: 13.5px;"
+                                   wrapText="true"/>
+                        </VBox>
+
+                        <VBox alignment="CENTER_RIGHT" spacing="14"
+                              style="-fx-background-color: rgba(255,255,255,0.12); -fx-background-radius: 18;
+                                     -fx-padding: 22 26 22 26;">
+                            <Label fx:id="dateLabel" text="Jeudi 05 Mars 2026"
+                                   style="-fx-text-fill: rgba(255,255,255,0.65); -fx-font-size: 12px;"/>
+                            <Label fx:id="timeLabel" text="09:41"
+                                   style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="36.0"/></font>
+                            </Label>
+                            <Separator style="-fx-background-color: rgba(255,255,255,0.2);"/>
+                            <HBox spacing="6" alignment="CENTER">
+                                <Circle radius="4" style="-fx-fill: #34d399;"/>
+                                <Label text="Système actif"
+                                       style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 11px;"/>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Decorative circles inside hero -->
+                <Circle radius="160" style="-fx-fill: rgba(255,255,255,0.04);" mouseTransparent="true"
+                         StackPane.alignment="TOP_RIGHT" translateX="40" translateY="-60"/>
+                <Circle radius="90"  style="-fx-fill: rgba(255,255,255,0.06);" mouseTransparent="true"
+                         StackPane.alignment="BOTTOM_LEFT" translateX="-20" translateY="50"/>
+            </StackPane>
+
+            <!-- ── STATS SECTION HEADER ── -->
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <VBox spacing="2">
+                    <Label text="VUE D'ENSEMBLE"
+                           style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-font-weight: bold; -fx-letter-spacing: 2.5px;">
+                        <font><Font name="System Bold" size="10.5"/></font>
+                    </Label>
+                    <Label text="Statistiques de la plateforme"
+                           style="-fx-text-fill: #111827; -fx-font-size: 20px; -fx-font-weight: bold;">
+                        <font><Font name="System Bold" size="20.0"/></font>
+                    </Label>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Mis à jour à l'instant"
+                       style="-fx-text-fill: #6b7280; -fx-font-size: 12px;
+                              -fx-background-color: white; -fx-background-radius: 8;
+                              -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-border-width: 1;
+                              -fx-padding: 6 14 6 14;
+                              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);"/>
+            </HBox>
+
+            <!-- ── STATISTICS CARDS ── -->
+            <GridPane hgap="22.0" vgap="22.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25.0" minWidth="200"/>
+                    <ColumnConstraints percentWidth="25.0" minWidth="200"/>
+                    <ColumnConstraints percentWidth="25.0" minWidth="200"/>
+                    <ColumnConstraints percentWidth="25.0" minWidth="200"/>
+                </columnConstraints>
+
+                <!-- CARD 1 – Total Utilisateurs (indigo) -->
+                <StackPane GridPane.columnIndex="0">
+                    <VBox spacing="0"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #e0e7ff; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.12), 18, 0, 0, 4);">
+                        <padding><Insets top="28" bottom="28" left="26" right="26"/></padding>
+                        <HBox alignment="CENTER_LEFT">
+                            <StackPane minWidth="52" minHeight="52">
+                                <Rectangle width="52" height="52" arcWidth="14" arcHeight="14"
+                                           style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #eef2ff, #c7d2fe);"/>
+                                <Label text="👥" style="-fx-font-size: 24px;"/>
+                            </StackPane>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox alignment="CENTER_RIGHT" spacing="2">
+                                <Label text="▲ 12%"
+                                       style="-fx-text-fill: #059669; -fx-font-size: 12px; -fx-font-weight: bold;
+                                              -fx-background-color: #d1fae5; -fx-background-radius: 6; -fx-padding: 3 8 3 8;">
+                                    <font><Font name="System Bold" size="12.0"/></font>
+                                </Label>
+                                <Label text="ce mois" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                            </VBox>
+                        </HBox>
+                        <VBox spacing="3" style="-fx-padding: 18 0 0 0;">
+                            <Label fx:id="totalUsersLabel" text="0"
+                                   style="-fx-font-size: 44px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="44.0"/></font>
+                            </Label>
+                            <Label text="Total Utilisateurs"
+                                   style="-fx-font-size: 13.5px; -fx-text-fill: #6b7280; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="13.5"/></font>
+                            </Label>
+                        </VBox>
+                        <VBox style="-fx-padding: 18 0 0 0;">
+                            <ProgressBar progress="0.72" maxWidth="99999"
+                                         style="-fx-accent: #4f46e5; -fx-control-inner-background: #e0e7ff;
+                                                -fx-background-radius: 6; -fx-pref-height: 7;"/>
+                        </VBox>
+                        <Label text="72% de l'objectif mensuel"
+                               style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-padding: 6 0 0 0;"/>
+                    </VBox>
+                    <Rectangle width="5" height="80" arcWidth="5" arcHeight="5"
+                               style="-fx-fill: linear-gradient(from 0% 0% to 0% 100%, #4f46e5, #818cf8);"
+                               StackPane.alignment="CENTER_LEFT" translateX="0"/>
+                </StackPane>
+
+                <!-- CARD 2 – Total Employés (emerald) -->
+                <StackPane GridPane.columnIndex="1">
+                    <VBox spacing="0"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #d1fae5; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.12), 18, 0, 0, 4);">
+                        <padding><Insets top="28" bottom="28" left="26" right="26"/></padding>
+                        <HBox alignment="CENTER_LEFT">
+                            <StackPane minWidth="52" minHeight="52">
+                                <Rectangle width="52" height="52" arcWidth="14" arcHeight="14"
+                                           style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #ecfdf5, #a7f3d0);"/>
+                                <Label text="👔" style="-fx-font-size: 24px;"/>
+                            </StackPane>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox alignment="CENTER_RIGHT" spacing="2">
+                                <Label text="▲ 8%"
+                                       style="-fx-text-fill: #059669; -fx-font-size: 12px; -fx-font-weight: bold;
+                                              -fx-background-color: #d1fae5; -fx-background-radius: 6; -fx-padding: 3 8 3 8;">
+                                    <font><Font name="System Bold" size="12.0"/></font>
+                                </Label>
+                                <Label text="ce mois" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                            </VBox>
+                        </HBox>
+                        <VBox spacing="3" style="-fx-padding: 18 0 0 0;">
+                            <Label fx:id="totalEmployeesLabel" text="0"
+                                   style="-fx-font-size: 44px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="44.0"/></font>
+                            </Label>
+                            <Label text="Total Employés"
+                                   style="-fx-font-size: 13.5px; -fx-text-fill: #6b7280; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="13.5"/></font>
+                            </Label>
+                        </VBox>
+                        <VBox style="-fx-padding: 18 0 0 0;">
+                            <ProgressBar progress="0.58" maxWidth="99999"
+                                         style="-fx-accent: #10b981; -fx-control-inner-background: #d1fae5;
+                                                -fx-background-radius: 6; -fx-pref-height: 7;"/>
+                        </VBox>
+                        <Label text="58% de l'objectif mensuel"
+                               style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-padding: 6 0 0 0;"/>
+                    </VBox>
+                    <Rectangle width="5" height="80" arcWidth="5" arcHeight="5"
+                               style="-fx-fill: linear-gradient(from 0% 0% to 0% 100%, #10b981, #34d399);"
+                               StackPane.alignment="CENTER_LEFT" translateX="0"/>
+                </StackPane>
+
+                <!-- CARD 3 – Administrateurs (violet) -->
+                <StackPane GridPane.columnIndex="2">
+                    <VBox spacing="0"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #ede9fe; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.12), 18, 0, 0, 4);">
+                        <padding><Insets top="28" bottom="28" left="26" right="26"/></padding>
+                        <HBox alignment="CENTER_LEFT">
+                            <StackPane minWidth="52" minHeight="52">
+                                <Rectangle width="52" height="52" arcWidth="14" arcHeight="14"
+                                           style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #f5f3ff, #ddd6fe);"/>
+                                <Label text="⚡" style="-fx-font-size: 24px;"/>
+                            </StackPane>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox alignment="CENTER_RIGHT" spacing="2">
+                                <Label text="= stable"
+                                       style="-fx-text-fill: #7c3aed; -fx-font-size: 12px; -fx-font-weight: bold;
+                                              -fx-background-color: #ede9fe; -fx-background-radius: 6; -fx-padding: 3 8 3 8;">
+                                    <font><Font name="System Bold" size="12.0"/></font>
+                                </Label>
+                                <Label text="ce mois" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                            </VBox>
+                        </HBox>
+                        <VBox spacing="3" style="-fx-padding: 18 0 0 0;">
+                            <Label fx:id="adminCountLabel" text="0"
+                                   style="-fx-font-size: 44px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="44.0"/></font>
+                            </Label>
+                            <Label text="Administrateurs"
+                                   style="-fx-font-size: 13.5px; -fx-text-fill: #6b7280; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="13.5"/></font>
+                            </Label>
+                        </VBox>
+                        <VBox style="-fx-padding: 18 0 0 0;">
+                            <ProgressBar progress="0.3" maxWidth="99999"
+                                         style="-fx-accent: #7c3aed; -fx-control-inner-background: #ede9fe;
+                                                -fx-background-radius: 6; -fx-pref-height: 7;"/>
+                        </VBox>
+                        <Label text="30% de l'objectif mensuel"
+                               style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-padding: 6 0 0 0;"/>
+                    </VBox>
+                    <Rectangle width="5" height="80" arcWidth="5" arcHeight="5"
+                               style="-fx-fill: linear-gradient(from 0% 0% to 0% 100%, #7c3aed, #a78bfa);"
+                               StackPane.alignment="CENTER_LEFT" translateX="0"/>
+                </StackPane>
+
+                <!-- CARD 4 – Responsables RH (rose) -->
+                <StackPane GridPane.columnIndex="3">
+                    <VBox spacing="0"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #fce7f3; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(219,39,119,0.1), 18, 0, 0, 4);">
+                        <padding><Insets top="28" bottom="28" left="26" right="26"/></padding>
+                        <HBox alignment="CENTER_LEFT">
+                            <StackPane minWidth="52" minHeight="52">
+                                <Rectangle width="52" height="52" arcWidth="14" arcHeight="14"
+                                           style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #fdf2f8, #fbcfe8);"/>
+                                <Label text="💼" style="-fx-font-size: 24px;"/>
+                            </StackPane>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox alignment="CENTER_RIGHT" spacing="2">
+                                <Label text="▲ 5%"
+                                       style="-fx-text-fill: #059669; -fx-font-size: 12px; -fx-font-weight: bold;
+                                              -fx-background-color: #d1fae5; -fx-background-radius: 6; -fx-padding: 3 8 3 8;">
+                                    <font><Font name="System Bold" size="12.0"/></font>
+                                </Label>
+                                <Label text="ce mois" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                            </VBox>
+                        </HBox>
+                        <VBox spacing="3" style="-fx-padding: 18 0 0 0;">
+                            <Label fx:id="rhCountLabel" text="0"
+                                   style="-fx-font-size: 44px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="44.0"/></font>
+                            </Label>
+                            <Label text="Responsables RH"
+                                   style="-fx-font-size: 13.5px; -fx-text-fill: #6b7280; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="13.5"/></font>
+                            </Label>
+                        </VBox>
+                        <VBox style="-fx-padding: 18 0 0 0;">
+                            <ProgressBar progress="0.45" maxWidth="99999"
+                                         style="-fx-accent: #db2777; -fx-control-inner-background: #fce7f3;
+                                                -fx-background-radius: 6; -fx-pref-height: 7;"/>
+                        </VBox>
+                        <Label text="45% de l'objectif mensuel"
+                               style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-padding: 6 0 0 0;"/>
+                    </VBox>
+                    <Rectangle width="5" height="80" arcWidth="5" arcHeight="5"
+                               style="-fx-fill: linear-gradient(from 0% 0% to 0% 100%, #db2777, #f472b6);"
+                               StackPane.alignment="CENTER_LEFT" translateX="0"/>
+                </StackPane>
+            </GridPane>
+
+            <!-- ── ACTIONS SECTION HEADER ── -->
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <VBox spacing="2">
+                    <Label text="NAVIGATION"
+                           style="-fx-text-fill: #9ca3af; -fx-font-size: 10.5px; -fx-font-weight: bold; -fx-letter-spacing: 2.5px;">
+                        <font><Font name="System Bold" size="10.5"/></font>
+                    </Label>
+                    <Label text="Actions rapides"
+                           style="-fx-text-fill: #111827; -fx-font-size: 20px; -fx-font-weight: bold;">
+                        <font><Font name="System Bold" size="20.0"/></font>
+                    </Label>
+                </VBox>
+            </HBox>
+
+            <!-- ── ACTION CARDS ── -->
+            <GridPane hgap="22.0" vgap="22.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.33" minWidth="230"/>
+                    <ColumnConstraints percentWidth="33.33" minWidth="230"/>
+                    <ColumnConstraints percentWidth="33.33" minWidth="230"/>
+                </columnConstraints>
+
+                <!-- ACTION 1: Gérer utilisateurs -->
+                <StackPane GridPane.columnIndex="0" style="-fx-cursor: hand;">
+                    <VBox spacing="20"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #e0e7ff; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.1), 20, 0, 0, 5);">
+                        <padding><Insets top="32" bottom="32" left="30" right="30"/></padding>
+                        <HBox>
+                            <Label text="GESTION"
+                                   style="-fx-background-color: #eef2ff; -fx-background-radius: 8;
+                                          -fx-text-fill: #4f46e5; -fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-padding: 4 10 4 10; -fx-letter-spacing: 1.5px;">
+                                <font><Font name="System Bold" size="10.0"/></font>
+                            </Label>
+                        </HBox>
+                        <StackPane alignment="CENTER_LEFT">
+                            <Circle radius="38"
+                                    style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #eef2ff, #c7d2fe);
+                                           -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.2), 12, 0, 0, 3);"/>
+                            <Label text="👥" style="-fx-font-size: 34px;" StackPane.alignment="CENTER"/>
+                        </StackPane>
+                        <VBox spacing="8">
+                            <Label text="Gérer les utilisateurs"
+                                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="18.0"/></font>
+                            </Label>
+                            <Label text="Créez, modifiez ou supprimez des comptes. Attribuez des rôles et gérez les accès."
+                                   style="-fx-text-fill: #6b7280; -fx-font-size: 13px;" wrapText="true"/>
+                        </VBox>
+                        <Separator style="-fx-background-color: #f3f4f6;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Button text="Accéder au module"
+                                   onAction="#handleNavigateToUsers"
+                                   style="-fx-background-color: #4f46e5; -fx-background-radius: 10;
+                                          -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-padding: 10 20 10 20;
+                                          -fx-effect: dropshadow(gaussian, rgba(79,70,229,0.4), 10, 0, 0, 3);
+                                          -fx-cursor: hand; -fx-border-color: transparent;">
+                                <font><Font name="System Bold" size="13.0"/></font>
+                            </Button>
+                            <Label text="→" style="-fx-text-fill: #4f46e5; -fx-font-size: 16px; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="16.0"/></font>
+                            </Label>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+
+                <!-- ACTION 2: Gérer employés -->
+                <StackPane GridPane.columnIndex="1" style="-fx-cursor: hand;">
+                    <VBox spacing="20"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #d1fae5; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.1), 20, 0, 0, 5);">
+                        <padding><Insets top="32" bottom="32" left="30" right="30"/></padding>
+                        <HBox>
+                            <Label text="EMPLOYÉS"
+                                   style="-fx-background-color: #ecfdf5; -fx-background-radius: 8;
+                                          -fx-text-fill: #059669; -fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-padding: 4 10 4 10; -fx-letter-spacing: 1.5px;">
+                                <font><Font name="System Bold" size="10.0"/></font>
+                            </Label>
+                        </HBox>
+                        <StackPane alignment="CENTER_LEFT">
+                            <Circle radius="38"
+                                    style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #ecfdf5, #a7f3d0);
+                                           -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.2), 12, 0, 0, 3);"/>
+                            <Label text="👔" style="-fx-font-size: 34px;" StackPane.alignment="CENTER"/>
+                        </StackPane>
+                        <VBox spacing="8">
+                            <Label text="Gérer les employés"
+                                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="18.0"/></font>
+                            </Label>
+                            <Label text="Consultez les profils, gérez les contrats et suivez les présences de vos équipes."
+                                   style="-fx-text-fill: #6b7280; -fx-font-size: 13px;" wrapText="true"/>
+                        </VBox>
+                        <Separator style="-fx-background-color: #f3f4f6;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Button text="Accéder au module"
+                                   onAction="#handleNavigateToEmployees"
+                                   style="-fx-background-color: #10b981; -fx-background-radius: 10;
+                                          -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-padding: 10 20 10 20;
+                                          -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.35), 10, 0, 0, 3);
+                                          -fx-cursor: hand; -fx-border-color: transparent;">
+                                <font><Font name="System Bold" size="13.0"/></font>
+                            </Button>
+                            <Label text="→" style="-fx-text-fill: #10b981; -fx-font-size: 16px; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="16.0"/></font>
+                            </Label>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+
+                <!-- ACTION 3: Statistiques -->
+                <StackPane GridPane.columnIndex="2" style="-fx-cursor: hand;">
+                    <VBox spacing="20"
+                          style="-fx-background-color: white; -fx-background-radius: 22;
+                                 -fx-border-color: #fef9c3; -fx-border-width: 1.5; -fx-border-radius: 22;
+                                 -fx-effect: dropshadow(gaussian, rgba(234,179,8,0.1), 20, 0, 0, 5);">
+                        <padding><Insets top="32" bottom="32" left="30" right="30"/></padding>
+                        <HBox>
+                            <Label text="RAPPORTS"
+                                   style="-fx-background-color: #fefce8; -fx-background-radius: 8;
+                                          -fx-text-fill: #d97706; -fx-font-size: 10px; -fx-font-weight: bold;
+                                          -fx-padding: 4 10 4 10; -fx-letter-spacing: 1.5px;">
+                                <font><Font name="System Bold" size="10.0"/></font>
+                            </Label>
+                        </HBox>
+                        <StackPane alignment="CENTER_LEFT">
+                            <Circle radius="38"
+                                    style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #fefce8, #fde68a);
+                                           -fx-effect: dropshadow(gaussian, rgba(234,179,8,0.2), 12, 0, 0, 3);"/>
+                            <Label text="📊" style="-fx-font-size: 34px;" StackPane.alignment="CENTER"/>
+                        </StackPane>
+                        <VBox spacing="8">
+                            <Label text="Voir les statistiques"
+                                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;">
+                                <font><Font name="System Bold" size="18.0"/></font>
+                            </Label>
+                            <Label text="Analysez les performances, exportez des rapports et visualisez les tendances clés."
+                                   style="-fx-text-fill: #6b7280; -fx-font-size: 13px;" wrapText="true"/>
+                        </VBox>
+                        <Separator style="-fx-background-color: #f3f4f6;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Button text="Accéder au module"
+                                   onAction="#handleNavigateToStatistics"
+                                   style="-fx-background-color: #d97706; -fx-background-radius: 10;
+                                          -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-padding: 10 20 10 20;
+                                          -fx-effect: dropshadow(gaussian, rgba(234,179,8,0.4), 10, 0, 0, 3);
+                                          -fx-cursor: hand; -fx-border-color: transparent;">
+                                <font><Font name="System Bold" size="13.0"/></font>
+                            </Button>
+                            <Label text="→" style="-fx-text-fill: #d97706; -fx-font-size: 16px; -fx-font-weight: bold;">
+                                <font><Font name="System Bold" size="16.0"/></font>
+                            </Label>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+            </GridPane>
+
+            <!-- ── FOOTER STATUS BAR ── -->
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  style="-fx-background-color: white; -fx-background-radius: 14;
+                         -fx-border-color: #e5e7eb; -fx-border-radius: 14; -fx-border-width: 1;
+                         -fx-padding: 14 28 14 28;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+                <HBox spacing="8" alignment="CENTER">
+                    <Circle radius="5" style="-fx-fill: #10b981;"/>
+                    <Label text="Base de données connectée" style="-fx-text-fill: #374151; -fx-font-size: 12px;"/>
+                </HBox>
+                <Rectangle width="1" height="18" style="-fx-fill: #e5e7eb;"/>
+                <HBox spacing="8" alignment="CENTER">
+                    <Circle radius="5" style="-fx-fill: #4f46e5;"/>
+                    <Label text="Serveur actif · 99.9% uptime" style="-fx-text-fill: #374151; -fx-font-size: 12px;"/>
+                </HBox>
+                <Rectangle width="1" height="18" style="-fx-fill: #e5e7eb;"/>
+                <HBox spacing="8" alignment="CENTER">
+                    <Circle radius="5" style="-fx-fill: #f59e0b;"/>
+                    <Label text="0 alerte active" style="-fx-text-fill: #374151; -fx-font-size: 12px;"/>
+                </HBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="AdminPanel v2.4.1" style="-fx-text-fill: #9ca3af; -fx-font-size: 11px;"/>
+                <Label text="·" style="-fx-text-fill: #d1d5db;"/>
+                <Label text="Dernière MAJ : 05 mars 2026" style="-fx-text-fill: #9ca3af; -fx-font-size: 11px;"/>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+</StackPane>

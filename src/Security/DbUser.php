@@ -13,6 +13,11 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
         private readonly ?string $email,
         private readonly string $password,
         private readonly string $role,
+        private readonly string $source = 'users',
+        private readonly ?string $firstName = null,
+        private readonly ?string $lastName = null,
+        private readonly ?string $jobTitle = null,
+        private readonly ?int $age = null,
     ) {
     }
 
@@ -34,6 +39,45 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRole(): string
     {
         return $this->role;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function getFullName(): ?string
+    {
+        if ($this->firstName && $this->lastName) {
+            return $this->firstName . ' ' . $this->lastName;
+        }
+
+        return null;
+    }
+
+    public function getJobTitle(): ?string
+    {
+        return $this->jobTitle;
+    }
+
+    public function getAge(): ?int
+    {
+        return $this->age;
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->source === 'employees';
     }
 
     public function getUserIdentifier(): string

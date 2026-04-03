@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+
+<ScrollPane fitToWidth="true" fitToHeight="true" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.ui.controller.Rh.RHRelationEmployeesController"
+            style="-fx-background-color: #f0f2f5; -fx-background: #f0f2f5; -fx-border-color: transparent;">
+
+    <VBox spacing="0" style="-fx-background-color: #f0f2f5;">
+
+        <VBox spacing="0" style="-fx-padding: 20 25 0 25;">
+
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%); -fx-padding: 20 30; -fx-background-radius: 12 12 0 0; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <StackPane style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 10;">
+                    <Label text="🤝" style="-fx-font-size: 26px;"/>
+                </StackPane>
+                <VBox>
+                    <Label text="Gestion des Relations" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 22px;"/>
+                    <Label text="Espace Administration et Communication RH" style="-fx-text-fill: white; -fx-opacity: 0.8; -fx-font-size: 12px;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="← Retour Dashboard" onAction="#handleBackToDashboard"
+                        style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 20; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+            </HBox>
+
+            <HBox fx:id="tabNavBar" spacing="0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 2 0; -fx-padding: 0;">
+                <Button fx:id="btnTabRequests" text="📋 Demandes"
+                        style="-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-padding: 15 25; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: #667eea;"/>
+                <Button fx:id="btnTabConfig" text="🗂️ Configuration"
+                        style="-fx-background-color: transparent; -fx-text-fill: #a0aec0; -fx-padding: 15 25; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: transparent;"/>
+                <Button fx:id="btnTabFeedbacks" text="💬 Feedbacks"
+                        style="-fx-background-color: transparent; -fx-text-fill: #a0aec0; -fx-padding: 15 25; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: transparent;"/>
+                <Button fx:id="btnTabAlerts" text="🔔 Alertes"
+                        style="-fx-background-color: transparent; -fx-text-fill: #a0aec0; -fx-padding: 15 25; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-border-width: 0 0 3 0; -fx-border-color: transparent;"/>
+            </HBox>
+        </VBox>
+
+        <StackPane fx:id="contentStackPane" VBox.vgrow="ALWAYS" style="-fx-padding: 0 25 25 25;">
+
+            <VBox fx:id="requestsPanel" spacing="25" style="-fx-padding: 20; -fx-background-color: transparent;">
+                <HBox spacing="15" alignment="CENTER">
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-color: #667eea; -fx-border-width: 0 0 4 0;">
+                        <Label text="TOTAL REQUÊTES" style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblTotalRequests" text="0" style="-fx-text-fill: #2d3748; -fx-font-weight: bold; -fx-font-size: 22px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-color: #dd6b20; -fx-border-width: 0 0 4 0;">
+                        <Label text="EN ATTENTE" style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblPendingRequests" text="0" style="-fx-text-fill: #dd6b20; -fx-font-weight: bold; -fx-font-size: 22px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-color: #38a169; -fx-border-width: 0 0 4 0;">
+                        <Label text="APPROUVÉES" style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblApprovedRequests" text="0" style="-fx-text-fill: #38a169; -fx-font-weight: bold; -fx-font-size: 22px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-color: #e53e3e; -fx-border-width: 0 0 4 0;">
+                        <Label text="REJETÉES" style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblRejectedRequests" text="0" style="-fx-text-fill: #e53e3e; -fx-font-weight: bold; -fx-font-size: 22px;"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="15" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);">
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <TextField fx:id="searchFieldRequests" promptText="🔍 Rechercher un employé ou titre..." prefWidth="350" prefHeight="40" style="-fx-background-radius: 20; -fx-border-color: #e2e8f0; -fx-border-radius: 20; -fx-background-color: #f8fafc;"/>
+                        <ComboBox fx:id="filterStatusRequests" prefWidth="150" prefHeight="40" style="-fx-background-radius: 8;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="🔄" onAction="#handleRefreshRequests" prefHeight="40" prefWidth="40" style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                    </HBox>
+
+                    <TableView fx:id="tableRequests" VBox.vgrow="ALWAYS" prefHeight="350">
+                        <columns>
+                            <TableColumn fx:id="colRequestId" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="colRequestEmployee" text="Employé" prefWidth="180"/>
+                            <TableColumn fx:id="colRequestType" text="Type" prefWidth="130"/>
+                            <TableColumn fx:id="colRequestTitle" text="Titre" prefWidth="200"/>
+                            <TableColumn fx:id="colRequestPriority" text="Priorité" prefWidth="100"/>
+                            <TableColumn fx:id="colRequestStatus" text="Statut" prefWidth="110"/>
+                            <TableColumn fx:id="colRequestDate" text="Date" prefWidth="130"/>
+                        </columns>
+                        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    </TableView>
+
+                    <HBox spacing="12">
+                        <Button fx:id="btnViewRequestDetails" text="👁️ Voir détails" onAction="#handleViewRequestDetails" style="-fx-background-color: #edf2f7; -fx-text-fill: #2d3748; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 25; -fx-cursor: hand;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnRejectRequest" text="❌ Rejeter" onAction="#handleRejectRequest" style="-fx-background-color: #fff5f5; -fx-text-fill: #e53e3e; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 25; -fx-cursor: hand;"/>
+                        <Button fx:id="btnApproveRequest" text="✅ Approuver" onAction="#handleApproveRequest" style="-fx-background-color: #38a169; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 25; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox fx:id="configPanel" spacing="20" visible="false" style="-fx-padding: 20;">
+                <VBox spacing="15" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);">
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Button fx:id="btnAddRequestType" text="➕ Nouveau Type" onAction="#handleAddRequestType" style="-fx-background-color: #38a169; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="🔄" onAction="#handleRefreshRequestTypes" prefHeight="35" prefWidth="35" style="-fx-background-radius: 20; -fx-background-color: #edf2f7;"/>
+                    </HBox>
+                    <TableView fx:id="tableRequestTypes" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colTypeId" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="colTypeName" text="Nom" prefWidth="200"/>
+                            <TableColumn fx:id="colTypeDescription" text="Description" prefWidth="300"/>
+                            <TableColumn fx:id="colTypeApproval" text="Approbation" prefWidth="130"/>
+                            <TableColumn fx:id="colTypeCreated" text="Création" prefWidth="150"/>
+                        </columns>
+                        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button fx:id="btnEditRequestType" text="✏️ Modifier" style="-fx-background-color: #ecc94b; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 20; -fx-font-weight: bold;"/>
+                        <Button fx:id="btnDeleteRequestType" text="🗑️ Supprimer" style="-fx-background-color: #e53e3e; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 20; -fx-font-weight: bold;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox fx:id="feedbacksPanel" spacing="20" visible="false" style="-fx-padding: 20;">
+                <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
+                    <Tab text="Employés">
+                        <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 15;">
+                            <HBox spacing="15" alignment="CENTER_LEFT">
+                                <VBox alignment="CENTER" prefWidth="220" prefHeight="80" style="-fx-background-color: #f8fafc; -fx-padding: 10; -fx-background-radius: 10; -fx-border-color: #667eea; -fx-border-width: 0 0 3 0;">
+                                    <Label text="TOTAL FEEDBACKS" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #718096;"/>
+                                    <Label fx:id="lblTotalFeedbacks" text="0" style="-fx-font-weight: bold; -fx-text-fill: #667eea; -fx-font-size: 20px;"/>
+                                </VBox>
+                                <VBox alignment="CENTER" prefWidth="220" prefHeight="80" style="-fx-background-color: #f8fafc; -fx-padding: 10; -fx-background-radius: 10; -fx-border-color: #ecc94b; -fx-border-width: 0 0 3 0;">
+                                    <Label text="NOTE MOYENNE" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #718096;"/>
+                                    <Label fx:id="lblAverageRating" text="0 / 5" style="-fx-font-weight: bold; -fx-text-fill: #d69e2e; -fx-font-size: 20px;"/>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <ComboBox fx:id="filterTypeFeedback" prefHeight="35" promptText="Type" style="-fx-background-radius: 8;"/>
+                                <TextField fx:id="searchFieldFeedbacks" promptText="Rechercher..." prefHeight="35" style="-fx-background-radius: 20;"/>
+                            </HBox>
+                            <TableView fx:id="tableFeedbacks" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="colFeedbackId" text="ID" prefWidth="60"/>
+                                    <TableColumn fx:id="colFeedbackFrom" text="De" prefWidth="150"/>
+                                    <TableColumn fx:id="colFeedbackTo" text="À" prefWidth="150"/>
+                                    <TableColumn fx:id="colFeedbackType" text="Type" prefWidth="100"/>
+                                    <TableColumn fx:id="colFeedbackRating" text="Note" prefWidth="80"/>
+                                    <TableColumn fx:id="colFeedbackComment" text="Commentaire" prefWidth="250"/>
+                                    <TableColumn fx:id="colFeedbackDate" text="Date" prefWidth="120"/>
+                                </columns>
+                                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                            </TableView>
+                            <Button fx:id="btnViewFeedbackDetails" text="👁️ Détails complets" onAction="#handleViewFeedbackDetails" style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 20; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </Tab>
+                    <Tab text="Formations">
+                        <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 15;">
+                            <HBox spacing="15" alignment="CENTER_LEFT">
+                                <Label fx:id="lblTotalFF" text="Total : 0" style="-fx-background-color: #edf2f7; -fx-padding: 8 15; -fx-background-radius: 15; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblAvgRatingFF" text="Note : 0 ⭐" style="-fx-background-color: #fffaf0; -fx-padding: 8 15; -fx-background-radius: 15; -fx-text-fill: #d69e2e; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblRecommandationFF" text="Rec : 0%" style="-fx-background-color: #f0fff4; -fx-padding: 8 15; -fx-background-radius: 15; -fx-text-fill: #38a169; -fx-font-weight: bold;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <ComboBox fx:id="filterFormationFF" prefWidth="250" promptText="Filtrer Formation" style="-fx-background-radius: 8;"/>
+                            </HBox>
+                            <TableView fx:id="tableFF" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="colFFId" text="ID" prefWidth="50"/>
+                                    <TableColumn fx:id="colFFUser" text="Employé" prefWidth="150"/>
+                                    <TableColumn fx:id="colFFFormation" text="Formation" prefWidth="200"/>
+                                    <TableColumn fx:id="colFFSession" text="Session" prefWidth="130"/>
+                                    <TableColumn fx:id="colFFRating" text="Note" prefWidth="80"/>
+                                    <TableColumn fx:id="colFFRecommande" text="Rec." prefWidth="100"/>
+                                    <TableColumn fx:id="colFFDate" text="Date" prefWidth="120"/>
+                                </columns>
+                                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                            </TableView>
+                            <Button fx:id="btnViewFFDetails" text="👁️ Voir l'évaluation" onAction="#handleViewFFDetails" style="-fx-background-color: #764ba2; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 20; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </Tab>
+                </TabPane>
+            </VBox>
+
+            <VBox fx:id="alertsPanel" spacing="20" visible="false" style="-fx-padding: 20;">
+                <VBox spacing="15" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);">
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label fx:id="lblTotalNotifications" text="Total : 0" style="-fx-text-fill: #718096; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblUnreadNotifications" text="Non lues : 0" style="-fx-text-fill: #e53e3e; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="filterReadNotifications" prefWidth="150" style="-fx-background-radius: 8;"/>
+                        <TextField fx:id="searchFieldNotifications" promptText="Rechercher alerte..." style="-fx-background-radius: 20;"/>
+                        <Button text="✓ Tout marquer lu" onAction="#handleMarkAllAsRead" style="-fx-background-color: #38a169; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 18; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <TableView fx:id="tableNotifications" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colNotificationId" text="ID" prefWidth="60"/>
+                            <TableColumn fx:id="colNotificationType" text="Type" prefWidth="120"/>
+                            <TableColumn fx:id="colNotificationTitle" text="Titre" prefWidth="200"/>
+                            <TableColumn fx:id="colNotificationMessage" text="Message" prefWidth="350"/>
+                            <TableColumn fx:id="colNotificationRead" text="Statut" prefWidth="100"/>
+                            <TableColumn fx:id="colNotificationDate" text="Date" prefWidth="130"/>
+                        </columns>
+                        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button fx:id="btnMarkAsRead" text="✓ Marquer comme lu" style="-fx-background-color: #edf2f7; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-weight: bold;"/>
+                        <Button fx:id="btnDeleteNotification" text="🗑️ Supprimer" style="-fx-background-color: #fff5f5; -fx-text-fill: #e53e3e; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-weight: bold;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+        </StackPane>
+    </VBox>
+</ScrollPane>

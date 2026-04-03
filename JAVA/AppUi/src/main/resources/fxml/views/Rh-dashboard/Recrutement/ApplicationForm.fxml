@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     ApplicationForm.fxml
+     Fragment loaded into globalModalOverlay → modalBody at runtime.
+     Controller: controllers.ApplicationsController
+     ═════════════════════════════════════════════════════════════════════ -->
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.controller.Rh.Recrutement.ApplicationFormController"
+            styleClass="modal-scroll"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            minWidth="500"
+            prefWidth="520">
+
+    <VBox styleClass="modal-form" spacing="20">
+        <padding>
+            <Insets top="24" right="28" bottom="16" left="28"/>
+        </padding>
+
+        <!-- Candidate Name + Email -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Candidate Name *" styleClass="form-label"/>
+                <TextField fx:id="fieldCandidate"
+                           promptText="Full name of the candidate"
+                           styleClass="form-input"/>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Email Address *" styleClass="form-label"/>
+                <TextField fx:id="fieldEmail"
+                           promptText="candidate@example.com"
+                           styleClass="form-input"/>
+            </VBox>
+        </HBox>
+
+        <!-- Applied For (Job) + Department -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Applied For (Job) *" styleClass="form-label"/>
+                <ComboBox fx:id="fieldJob"
+                          promptText="Select job"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity"/>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Department *" styleClass="form-label"/>
+                <ComboBox fx:id="fieldDepartment"
+                          promptText="Select department"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Engineering"/>
+                            <String fx:value="Product"/>
+                            <String fx:value="Design"/>
+                            <String fx:value="Marketing"/>
+                            <String fx:value="Sales"/>
+                            <String fx:value="Finance"/>
+                            <String fx:value="HR"/>
+                            <String fx:value="Operations"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+        </HBox>
+
+        <!-- Application Stage + Date Applied -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Stage *" styleClass="form-label"/>
+                <ComboBox fx:id="fieldStage"
+                          promptText="Select stage"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="APPLIED"/>
+                            <String fx:value="SCREENING"/>
+                            <String fx:value="SHORTLISTED"/>
+                            <String fx:value="INTERVIEW"/>
+                            <String fx:value="OFFERED"/>
+                            <String fx:value="REJECTED"/>
+                            <String fx:value="HIRED"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Date Applied *" styleClass="form-label"/>
+                <DatePicker fx:id="fieldDateApplied"
+                            styleClass="form-input, form-datepicker"
+                            maxWidth="Infinity"/>
+            </VBox>
+        </HBox>
+
+        <!-- Experience Level + Source -->
+        <HBox spacing="16">
+            <VBox styleClass="form-group" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Experience Level" styleClass="form-label"/>
+                <ComboBox fx:id="fieldExperience"
+                          promptText="Select level"
+                          styleClass="form-input, form-combo"
+                          maxWidth="Infinity">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Entry Level (0–2 yrs)"/>
+                            <String fx:value="Mid Level (2–5 yrs)"/>
+                            <String fx:value="Senior (5–8 yrs)"/>
+                            <String fx:value="Lead / Principal (8+ yrs)"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+        </HBox>
+
+        <!-- Resume / CV Link -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Resume / CV URL" styleClass="form-label"/>
+            <TextField fx:id="fieldResumeUrl"
+                       promptText="https://drive.google.com/… or file path"
+                       styleClass="form-input"/>
+        </VBox>
+
+        <!-- Cover Letter / Notes -->
+        <VBox styleClass="form-group" spacing="6">
+            <Label text="Cover Letter / Notes" styleClass="form-label"/>
+            <TextArea fx:id="fieldCoverLetter"
+                      promptText="Paste cover letter or add recruiter notes…"
+                      styleClass="form-textarea"
+                      prefRowCount="4"
+                      wrapText="true"/>
+        </VBox>
+
+    </VBox>
+</ScrollPane>

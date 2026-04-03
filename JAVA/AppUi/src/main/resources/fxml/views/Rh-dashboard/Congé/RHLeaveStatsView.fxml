@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.controller.Rh.Congé.RHLeaveStatsController"
+            fitToWidth="true"
+            style="-fx-background-color: #f0f2f5; -fx-background: #f0f2f5;">
+
+    <VBox spacing="20" style="-fx-padding: 25; -fx-background-color: #f0f2f5;">
+
+        <!-- ===== EN-TÊTE ===== -->
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-background-color: linear-gradient(to right, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                     -fx-padding: 18 24; -fx-background-radius: 12;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 14, 0, 0, 4);">
+            <Label text="📊" style="-fx-font-size: 28px;"/>
+            <VBox spacing="2">
+                <Label text="Statistiques Avancées &amp; Export"
+                       style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px;"/>
+                <Label text="Analyses complètes des congés · Excel &amp; PDF"
+                       style="-fx-text-fill: rgba(255,255,255,0.65); -fx-font-size: 11px;"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="backButton" text="← Retour Gestion Congés" onAction="#handleBack"
+                    style="-fx-background-color: rgba(255,255,255,0.18); -fx-text-fill: white;
+                           -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 9 20;
+                           -fx-background-radius: 7; -fx-cursor: hand;
+                           -fx-border-color: rgba(255,255,255,0.55); -fx-border-width: 1.5; -fx-border-radius: 7;"/>
+        </HBox>
+
+        <!-- ===== KPI CARDS ===== -->
+        <GridPane hgap="16" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25.0"/>
+                <ColumnConstraints percentWidth="25.0"/>
+                <ColumnConstraints percentWidth="25.0"/>
+                <ColumnConstraints percentWidth="25.0"/>
+            </columnConstraints>
+
+            <!-- Total -->
+            <VBox alignment="CENTER" spacing="6" GridPane.columnIndex="0"
+                  style="-fx-background-color: white; -fx-padding: 22 12; -fx-background-radius: 12;
+                         -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.25), 12, 0, 0, 4);
+                         -fx-border-color: #6366f1; -fx-border-width: 2.5; -fx-border-radius: 12;">
+                <Label text="📋" style="-fx-font-size: 30px;"/>
+                <Label text="Total demandes" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <Label fx:id="kpiTotalLabel" text="—"
+                       style="-fx-font-weight: bold; -fx-font-size: 30px; -fx-text-fill: #6366f1;"/>
+            </VBox>
+
+            <!-- Taux approbation -->
+            <VBox alignment="CENTER" spacing="6" GridPane.columnIndex="1"
+                  style="-fx-background-color: white; -fx-padding: 22 12; -fx-background-radius: 12;
+                         -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.25), 12, 0, 0, 4);
+                         -fx-border-color: #10b981; -fx-border-width: 2.5; -fx-border-radius: 12;">
+                <Label text="📈" style="-fx-font-size: 30px;"/>
+                <Label text="Taux d'approbation" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <Label fx:id="kpiRateLabel" text="—"
+                       style="-fx-font-weight: bold; -fx-font-size: 30px; -fx-text-fill: #10b981;"/>
+            </VBox>
+
+            <!-- Jours utilisés -->
+            <VBox alignment="CENTER" spacing="6" GridPane.columnIndex="2"
+                  style="-fx-background-color: white; -fx-padding: 22 12; -fx-background-radius: 12;
+                         -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.25), 12, 0, 0, 4);
+                         -fx-border-color: #f59e0b; -fx-border-width: 2.5; -fx-border-radius: 12;">
+                <Label text="📅" style="-fx-font-size: 30px;"/>
+                <Label text="Jours approuvés" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <Label fx:id="kpiDaysLabel" text="—"
+                       style="-fx-font-weight: bold; -fx-font-size: 30px; -fx-text-fill: #f59e0b;"/>
+            </VBox>
+
+            <!-- Employés actifs -->
+            <VBox alignment="CENTER" spacing="6" GridPane.columnIndex="3"
+                  style="-fx-background-color: white; -fx-padding: 22 12; -fx-background-radius: 12;
+                         -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.25), 12, 0, 0, 4);
+                         -fx-border-color: #ef4444; -fx-border-width: 2.5; -fx-border-radius: 12;">
+                <Label text="👥" style="-fx-font-size: 30px;"/>
+                <Label text="Employés distincts" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                <Label fx:id="kpiEmployeesLabel" text="—"
+                       style="-fx-font-weight: bold; -fx-font-size: 30px; -fx-text-fill: #ef4444;"/>
+            </VBox>
+        </GridPane>
+
+        <!-- ===== TABS ===== -->
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE"
+                 style="-fx-background-color: white; -fx-background-radius: 12;
+                        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.09), 10, 0, 0, 3);">
+
+            <!-- ── Tab 1 : Graphiques ───────────────────────────────────────────── -->
+            <Tab text="📊  Graphiques">
+                <VBox spacing="20" style="-fx-padding: 20; -fx-background-color: white;">
+
+                    <HBox spacing="20">
+                        <!-- Pie chart : par type -->
+                        <VBox spacing="10" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 10;
+                                     -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 10;">
+                            <Label text="🥧  Répartition par type de congé"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2d3748;"/>
+                            <Separator/>
+                            <PieChart fx:id="typesPieChart" prefHeight="290" legendVisible="true"
+                                      labelsVisible="true"/>
+                        </VBox>
+
+                        <!-- Bar chart : tendances mensuelles -->
+                        <VBox spacing="10" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 10;
+                                     -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 10;">
+                            <Label text="📆  Soumissions mensuelles (12 mois)"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2d3748;"/>
+                            <Separator/>
+                            <BarChart fx:id="monthlyBarChart" prefHeight="290" legendVisible="false">
+                                <xAxis><CategoryAxis label="Mois"/></xAxis>
+                                <yAxis><NumberAxis label="Nb demandes"/></yAxis>
+                            </BarChart>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Line chart : jours approuvés par mois -->
+                    <VBox spacing="10"
+                          style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 10;
+                                 -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 10;">
+                        <Label text="📉  Jours de congé approuvés par mois"
+                               style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2d3748;"/>
+                        <Separator/>
+                        <LineChart fx:id="approvedDaysLineChart" prefHeight="260" legendVisible="false">
+                            <xAxis><CategoryAxis label="Mois"/></xAxis>
+                            <yAxis><NumberAxis label="Jours"/></yAxis>
+                        </LineChart>
+                    </VBox>
+
+                </VBox>
+            </Tab>
+
+            <!-- ── Tab 2 : Employés ───────────────────────────────────────────── -->
+            <Tab text="👥  Employés">
+                <VBox spacing="12" style="-fx-padding: 20; -fx-background-color: white;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="🏆  Classement des employés par jours approuvés"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="empTableCountLabel" text=""
+                               style="-fx-font-size: 12px; -fx-text-fill: #718096; -fx-font-weight: bold;
+                                      -fx-background-color: #edf2f7; -fx-padding: 5 14; -fx-background-radius: 6;"/>
+                    </HBox>
+                    <Separator/>
+                    <TableView fx:id="employeeStatsTable" prefHeight="420"
+                               style="-fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1;
+                                      -fx-border-radius: 8; -fx-font-size: 13px;">
+                        <columns>
+                            <TableColumn fx:id="empRankCol"      text="#"                 prefWidth="55"  style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="empNameCol"      text="👤 Employé"         prefWidth="230"/>
+                            <TableColumn fx:id="empTotalCol"     text="Total"             prefWidth="80"  style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="empApprovedCol"  text="✅ Approuvées"      prefWidth="110" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="empRejectedCol"  text="❌ Refusées"        prefWidth="100" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="empDaysCol"      text="📅 Jours approuvés" prefWidth="140" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="empRateCol"      text="📈 Taux appro."     prefWidth="120" style="-fx-alignment: CENTER;"/>
+                        </columns>
+                        <placeholder>
+                            <VBox alignment="CENTER" spacing="10" style="-fx-padding: 40;">
+                                <Label text="📭" style="-fx-font-size: 48px; -fx-opacity: 0.3;"/>
+                                <Label text="Aucune donnée employé"
+                                       style="-fx-text-fill: #a0aec0; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                            </VBox>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+
+            <!-- ── Tab 3 : Export ───────────────────────────────────────────────── -->
+            <Tab text="📤  Export">
+                <VBox spacing="24" style="-fx-padding: 30; -fx-background-color: white;">
+
+                    <!-- Titre -->
+                    <VBox spacing="4">
+                        <Label text="📤  Exporter les données de congés"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                        <Label text="Générez des rapports professionnels complets en Excel ou PDF"
+                               style="-fx-font-size: 13px; -fx-text-fill: #718096;"/>
+                    </VBox>
+                    <Separator/>
+
+                    <!-- Options d'export -->
+                    <HBox spacing="24" alignment="CENTER">
+
+                        <!-- Carte Excel -->
+                        <VBox spacing="16" alignment="CENTER"
+                              style="-fx-background-color: #f0fff4; -fx-padding: 30 40; -fx-background-radius: 14;
+                                     -fx-border-color: #22c55e; -fx-border-width: 2; -fx-border-radius: 14;
+                                     -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.2), 12, 0, 0, 4);"
+                              HBox.hgrow="ALWAYS">
+                            <Label text="🟢" style="-fx-font-size: 50px;"/>
+                            <Label text="Export Excel (.xlsx)"
+                                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                            <VBox spacing="4">
+                                <Label text="✔  4 feuilles : Demandes · Stats · Employés · Mensuel"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Tableaux stylisés avec filtres automatiques"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Mise en forme couleur par statut"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Ligne de totaux automatique"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                            </VBox>
+                            <Button fx:id="exportExcelButton" text="📥  Télécharger Excel"
+                                    onAction="#handleExportExcel" prefWidth="200"
+                                    style="-fx-background-color: #22c55e; -fx-text-fill: white;
+                                           -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 24;
+                                           -fx-background-radius: 8; -fx-cursor: hand;
+                                           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 6, 0, 0, 2);"/>
+                        </VBox>
+
+                        <!-- Séparateur vertical -->
+                        <Separator orientation="VERTICAL" prefHeight="260"/>
+
+                        <!-- Carte PDF -->
+                        <VBox spacing="16" alignment="CENTER"
+                              style="-fx-background-color: #fff5f5; -fx-padding: 30 40; -fx-background-radius: 14;
+                                     -fx-border-color: #ef4444; -fx-border-width: 2; -fx-border-radius: 14;
+                                     -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.2), 12, 0, 0, 4);"
+                              HBox.hgrow="ALWAYS">
+                            <Label text="🔴" style="-fx-font-size: 50px;"/>
+                            <Label text="Export PDF"
+                                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #991b1b;"/>
+                            <VBox spacing="4">
+                                <Label text="✔  Page de couverture avec KPIs visuels"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Tableaux : stats globales · par type · mensuel"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Liste complète des demandes colorisées"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                                <Label text="✔  Top 20 employés avec médailles 🥇🥈🥉"
+                                       style="-fx-font-size: 12px; -fx-text-fill: #4b5563;"/>
+                            </VBox>
+                            <Button fx:id="exportPdfButton" text="📥  Télécharger PDF"
+                                    onAction="#handleExportPdf" prefWidth="200"
+                                    style="-fx-background-color: #ef4444; -fx-text-fill: white;
+                                           -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 24;
+                                           -fx-background-radius: 8; -fx-cursor: hand;
+                                           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 6, 0, 0, 2);"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Barre de statut export -->
+                    <Label fx:id="exportStatusLabel" text="" wrapText="true" maxWidth="Infinity"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 16;
+                                  -fx-background-radius: 8;" visible="false" managed="false"/>
+
+                </VBox>
+            </Tab>
+
+        </TabPane>
+
+    </VBox>
+</ScrollPane>
