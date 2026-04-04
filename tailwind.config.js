@@ -9,6 +9,7 @@ const safelist = fs.existsSync(safelistFile)
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./assets/**/*.js",
     "./templates/**/*.html.twig",

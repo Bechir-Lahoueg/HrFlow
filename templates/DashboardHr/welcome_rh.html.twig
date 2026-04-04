@@ -4,10 +4,10 @@
 
 {% block body %}
 <div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
-    {% include 'Home/DashboardHr/components/_sidebar.html.twig' %}
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-72 transition-all duration-300">
-        {% include 'Home/DashboardHr/components/_header.html.twig' %}
+        {% include 'DashboardHr/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">

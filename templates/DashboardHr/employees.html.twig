@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Employees | HrFlow RH{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-72 transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 4h.01m-.01-14a9 9 0 100 18 9 9 0 000-18z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-slate-800">Employees</h1>
+                    <p class="text-sm text-slate-500 mt-1">Add employees linked to your RH account. Password hashing is SHA-256 Java-compatible.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <section class="xl:col-span-1 bg-white rounded-2xl border border-slate-200/60 p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v6m-3-3h6M6 18h7a2 2 0 002-2v-1.28a2 2 0 00-.587-1.414l-2.72-2.72A2 2 0 0010.28 10H6a2 2 0 00-2 2v4a2 2 0 002 2z"/></svg>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-800">Create Employee</h2>
+                    </div>
+
+                    <form method="post" action="{{ path('app_rh_employees') }}" class="space-y-4">
+                        <input type="hidden" name="_token" value="{{ csrf_token('create_employee_rh') }}">
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="first_name">First Name</label>
+                            <input id="first_name" name="first_name" type="text" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="e.g. Sara" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="last_name">Last Name</label>
+                            <input id="last_name" name="last_name" type="text" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="e.g. Ben Ali" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="age">Age</label>
+                            <input id="age" name="age" type="number" min="18" max="100" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="e.g. 29" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="job_title">Job Title</label>
+                            <input id="job_title" name="job_title" type="text" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="e.g. Frontend Developer" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="email">Email</label>
+                            <input id="email" name="email" type="email" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="employee@company.com" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider" for="password">Password</label>
+                            <input id="password" name="password" type="password" required class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" placeholder="Secure password" />
+                        </div>
+
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:from-teal-400 hover:to-emerald-500 shadow-lg shadow-teal-500/20 transition-all duration-200 mt-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Add Employee
+                        </button>
+                    </form>
+                </section>
+
+                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60">
+                    <div class="flex items-center justify-between p-6 pb-0 mb-4">
+                        <h2 class="text-lg font-bold text-slate-800">My Employees</h2>
+                        <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md">{{ employees|length }} total</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-y border-slate-200/70">
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">First Name</th>
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Last Name</th>
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</th>
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Position</th>
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Age</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for employee in employees %}
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-6 py-3.5 text-[13px] font-medium text-slate-800">{{ employee.first_name }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.last_name }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.email }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.job_title }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.age }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-400">No employees added yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
