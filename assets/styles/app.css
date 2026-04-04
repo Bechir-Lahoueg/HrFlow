@@ -1,4 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ── Entry animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide-left { animation: slideInLeft 0.4s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0.06s; opacity: 0; }
+.stagger-2 { animation-delay: 0.12s; opacity: 0; }
+.stagger-3 { animation-delay: 0.18s; opacity: 0; }
+.stagger-4 { animation-delay: 0.24s; opacity: 0; }
+.stagger-5 { animation-delay: 0.30s; opacity: 0; }
+
+/* ── Gradient mesh blobs ── */
+@keyframes meshDrift {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(30px, -25px) scale(1.1) rotate(120deg); }
+  66% { transform: translate(-20px, 15px) scale(0.9) rotate(240deg); }
+}
+.mesh-blob { animation: meshDrift 20s ease-in-out infinite; }
+.mesh-blob-alt { animation: meshDrift 25s ease-in-out infinite reverse; }
+
+/* ── Dot grid background (light / dark) ── */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+:is(.dark .dot-grid) {
+  background-image: radial-gradient(circle, rgba(113, 113, 122, 0.12) 1px, transparent 1px);
+}
+
+/* ── Notification glow ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+}
+.glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+
+/* ── Scrollbar (light) ── */
+.scrollbar-themed::-webkit-scrollbar { width: 4px; }
+.scrollbar-themed::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-themed::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.08); border-radius: 4px; }
+.scrollbar-themed::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.15); }
+
+/* ── Scrollbar (dark) ── */
+:is(.dark .scrollbar-themed)::-webkit-scrollbar-thumb { background: rgba(113, 113, 122, 0.25); }
+:is(.dark .scrollbar-themed)::-webkit-scrollbar-thumb:hover { background: rgba(113, 113, 122, 0.4); }
+
+/* ── Monospace numbers ── */
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Card hover lift ── */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Table row highlight ── */
+.table-row-hover {
+  transition: background-color 0.15s ease;
+}
+
+/* ── Theme toggle animation ── */
+@keyframes spinIn {
+  from { transform: rotate(-90deg) scale(0); opacity: 0; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+.theme-icon-in {
+  animation: spinIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
