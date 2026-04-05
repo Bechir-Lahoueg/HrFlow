@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Offres d'emploi | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    <main class="pt-32 pb-10 px-6">
+        <div class="max-w-6xl mx-auto rounded-3xl border border-slate-200 bg-white shadow-lg p-10 md:p-14 min-h-[70vh]">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900">ameen hne t7ot les offre demploit illi yasna3hum rh t fetchihum</h1>
+        </div>
+    </main>
+</div>
+{% endblock %}

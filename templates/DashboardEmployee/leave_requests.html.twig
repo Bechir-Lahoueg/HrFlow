@@ -16,7 +16,9 @@
         .flatpickr-day{border-radius:.5rem;font-weight:500;transition:all .15s}
         .flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange{background:#0f172a!important;border-color:#0f172a!important;box-shadow:0 4px 14px -4px rgba(15,23,42,.5)}
         .flatpickr-day:hover{background:#f1f5f9;border-color:#f1f5f9}
-        .flatpickr-day.flatpickr-disabled{color:#cbd5e1!important;text-decoration:line-through}
+        .flatpickr-day.flatpickr-disabled{color:#94a3b8!important;text-decoration:line-through;opacity:1!important}
+        .flatpickr-day.holiday-disabled{background:#fee2e2!important;color:#b91c1c!important;border-color:#fecaca!important;font-weight:700}
+        .flatpickr-day.weekend-disabled{background:#f1f5f9!important;color:#64748b!important;border-color:#e2e8f0!important}
         .flatpickr-day.today{border-color:#06b6d4;color:#06b6d4;font-weight:700}
         .flatpickr-day.today.selected{color:#fff}
 
@@ -181,11 +183,11 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label for="start_date" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Date debut</label>
-                                <input id="start_date" name="start_date" type="text" required autocomplete="off" placeholder="YYYY-MM-DD" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:bg-white transition-colors">
+                                <input id="start_date" name="start_date" type="text" required autocomplete="off" readonly placeholder="Choisir dans le calendrier" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm cursor-pointer focus:border-cyan-500 focus:ring-cyan-500 focus:bg-white transition-colors">
                             </div>
                             <div>
                                 <label for="end_date" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Date fin</label>
-                                <input id="end_date" name="end_date" type="text" required autocomplete="off" placeholder="YYYY-MM-DD" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:bg-white transition-colors">
+                                <input id="end_date" name="end_date" type="text" required autocomplete="off" readonly placeholder="Choisir dans le calendrier" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm cursor-pointer focus:border-cyan-500 focus:ring-cyan-500 focus:bg-white transition-colors">
                             </div>
                         </div>
 
@@ -365,7 +367,12 @@
     var historyEmpty = document.getElementById('history-empty');
 
     function isWeekend(d) { var day = d.getDay(); return day === 0 || day === 6; }
-    function fmtIso(d) { return d.toISOString().split('T')[0]; }
+    function fmtIso(d) {
+        var year = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
     function isHoliday(d) { return holidaySet.has(fmtIso(d)); }
     function isDisabled(d) { return isWeekend(d) || isHoliday(d); }
 
@@ -381,6 +388,30 @@
         return c;
     }
 
+    function getDateRangeBreakdown(s, e) {
+        var d = new Date(s.getTime());
+        var totalDays = 0;
+        var weekendDays = 0;
+        var holidayDays = 0;
+
+        while (d <= e) {
+            totalDays += 1;
+            if (isHoliday(d)) {
+                holidayDays += 1;
+            } else if (isWeekend(d)) {
+                weekendDays += 1;
+            }
+            d.setDate(d.getDate() + 1);
+        }
+
+        return {
+            totalDays: totalDays,
+            weekendDays: weekendDays,
+            holidayDays: holidayDays,
+            workingDays: totalDays - weekendDays - holidayDays,
+        };
+    }
+
     function updateSim() {
         var s = parseDate(startInput.value), e = parseDate(endInput.value);
         if (!s || !e || e < s) {
@@ -393,6 +424,7 @@
             simNote.textContent = "Selectionnez vos dates pour voir l'impact.";
             return;
         }
+        var breakdown = getDateRangeBreakdown(s, e);
         var wd = countWorkingDays(s, e), proj = availableCredit - wd;
         var ratio = availableCredit > 0 ? Math.min(100, Math.round((wd / availableCredit) * 100)) : 100;
         simDays.textContent = wd;
@@ -403,7 +435,10 @@
         simCredit.className = 'text-[13px] font-extrabold font-mono-num ' + (proj < 0 ? 'text-red-600' : 'text-emerald-600');
         simBar.className = 'h-full rounded-full transition-all duration-500 ' + (proj < 0 ? 'bg-gradient-to-r from-red-500 to-rose-400' : 'bg-gradient-to-r from-emerald-500 to-teal-400');
         simRing.style.stroke = proj < 0 ? '#ef4444' : '#10b981';
-        simNote.textContent = proj < 0 ? 'Attention: solde negatif apres validation.' : 'Selection valide - calendrier intelligent applique.';
+        simNote.textContent = breakdown.totalDays + ' jours calendaires - ' + breakdown.holidayDays + ' ferie(s) - ' + breakdown.weekendDays + ' weekend = ' + breakdown.workingDays + ' jours ouvrables.';
+        if (proj < 0) {
+            simNote.textContent += ' Attention: solde negatif apres validation.';
+        }
     }
 
     function updateType(val) {
@@ -428,7 +463,31 @@
     }
 
     if (typeof flatpickr === 'function') {
-        var opts = { dateFormat: 'Y-m-d', minDate: 'today', disable: [isDisabled], onChange: updateSim };
+        var opts = {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: false,
+            clickOpens: true,
+            disableMobile: true,
+            minDate: 'today',
+            disable: [isDisabled],
+            onDayCreate: function (_dObj, _dStr, _fp, dayElem) {
+                var date = dayElem.dateObj;
+                if (!date) {
+                    return;
+                }
+
+                if (isHoliday(date)) {
+                    dayElem.classList.add('holiday-disabled');
+                    dayElem.title = 'Jour ferie (Nager API): non selectable et non compte';
+                } else if (isWeekend(date)) {
+                    dayElem.classList.add('weekend-disabled');
+                    dayElem.title = 'Weekend: non selectable et non compte';
+                }
+            },
+            onChange: updateSim,
+        };
         flatpickr(startInput, opts);
         flatpickr(endInput, opts);
     }

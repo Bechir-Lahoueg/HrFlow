@@ -13,4 +13,10 @@ final class HomeController extends AbstractController
     {
         return $this->render('Home/LandingPage.html.twig');
     }
+
+    #[Route('/offres-emploi', name: 'app_job_offers')]
+    public function jobOffers(): Response
+    {
+        return $this->render('Home/job_offers.html.twig');
+    }
 }
