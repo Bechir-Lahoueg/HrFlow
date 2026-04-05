@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RH - {{ isEdit ? 'Modifier' : 'Créer' }} Session{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-card{transition:all .2s}
+        .form-card:hover{transform:translateY(-1px)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 max-w-4xl mx-auto">
+            <div class="mb-6">
+                <a href="{{ path('rh_formation_sessions', {id: formation.id_formation}) }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    Retour aux sessions
+                </a>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-8 shadow-sm form-card">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ isEdit ? 'Modifier la Session' : 'Créer une Nouvelle Session' }}</h1>
+                    <p class="text-zinc-600 dark:text-zinc-400 mt-1">Formation: <strong>{{ formation.titre }}</strong></p>
+                </div>
+
+                <form method="post" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="date_debut" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Date de début *</label>
+                            <input type="date" id="date_debut" name="date_debut" value="{{ session.date_debut ?? '' }}" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                        <div>
+                            <label for="date_fin" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Date de fin *</label>
+                            <input type="date" id="date_fin" name="date_fin" value="{{ session.date_fin ?? '' }}" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                        <div>
+                            <label for="lieu" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Lieu *</label>
+                            <input type="text" id="lieu" name="lieu" value="{{ session.lieu ?? '' }}" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                        <div>
+                            <label for="mode" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Mode *</label>
+                            <select id="mode" name="mode" required
+                                    class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                                <option value="">Sélectionner un mode</option>
+                                <option value="Présentiel" {{ session.mode == 'Présentiel' ? 'selected' : '' }}>Présentiel</option>
+                                <option value="En ligne" {{ session.mode == 'En ligne' ? 'selected' : '' }}>En ligne</option>
+                                <option value="Hybride" {{ session.mode == 'Hybride' ? 'selected' : '' }}>Hybride</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="capacite_max" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Capacité maximale *</label>
+                            <input type="number" id="capacite_max" name="capacite_max" value="{{ session.capacite_max ?? '' }}" min="1" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                        <div>
+                            <label for="statut" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Statut *</label>
+                            <select id="statut" name="statut" required
+                                    class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                                <option value="Planifiee" {{ session.statut == 'Planifiee' ? 'selected' : '' }}>Planifiée</option>
+                                <option value="En cours" {{ session.statut == 'En cours' ? 'selected' : '' }}>En cours</option>
+                                <option value="Terminee" {{ session.statut == 'Terminee' ? 'selected' : '' }}>Terminée</option>
+                                <option value="Annulee" {{ session.statut == 'Annulee' ? 'selected' : '' }}>Annulée</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            {{ isEdit ? 'Mettre à jour' : 'Créer la Session' }}
+                        </button>
+                        <a href="{{ path('rh_formation_sessions', {id: formation.id_formation}) }}" class="px-6 py-2.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-sm font-semibold hover:bg-zinc-50 transition-colors">
+                            Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

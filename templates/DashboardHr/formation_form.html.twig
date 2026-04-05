@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RH - {{ isEdit ? 'Modifier' : 'Créer' }} Formation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-card{transition:all .2s}
+        .form-card:hover{transform:translateY(-1px)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 max-w-4xl mx-auto">
+            <div class="mb-6">
+                <a href="{{ path('rh_formation_list') }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    Retour au catalogue
+                </a>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-8 shadow-sm form-card">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ isEdit ? 'Modifier la Formation' : 'Créer une Nouvelle Formation' }}</h1>
+                    <p class="text-zinc-600 dark:text-zinc-400 mt-1">{{ isEdit ? 'Mettez à jour les informations de la formation' : 'Remplissez les informations pour créer une nouvelle formation' }}</p>
+                </div>
+
+                <form method="post" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="titre" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Titre *</label>
+                            <input type="text" id="titre" name="titre" value="{{ formation.titre ?? '' }}" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                       <div>
+                           <label for="type" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Type *</label>
+                           <select id="type" name="type" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                               <option value="">Sélectionner un type</option>
+
+                               <option value="Technique" {{ (formation.type ?? '') == 'Technique' ? 'selected' : '' }}>Technique</option>
+                               <option value="Management" {{ (formation.type ?? '') == 'Management' ? 'selected' : '' }}>Management</option>
+                               <option value="Langues" {{ (formation.type ?? '') == 'Langues' ? 'selected' : '' }}>Langues</option>
+                               <option value="Qualité" {{ (formation.type ?? '') == 'Qualité' ? 'selected' : '' }}>Qualité</option>
+                               <option value="Sécurité" {{ (formation.type ?? '') == 'Sécurité' ? 'selected' : '' }}>Sécurité</option>
+                               <option value="Autre" {{ (formation.type ?? '') == 'Autre' ? 'selected' : '' }}>Autre</option>
+                           </select>
+                       </div>
+                        <div>
+                            <label for="duree" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Durée (heures) *</label>
+                            <input type="number" id="duree" name="duree" value="{{ formation.duree ?? '' }}" min="1" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+
+                        <div>
+                            <label for="organisme" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Organisme *</label>
+                            <input type="text" id="organisme" name="organisme" value="{{ formation.organisme ?? '' }}" required
+                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Description</label>
+                        <textarea id="description" name="description" rows="3"
+                                  class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">{{ formation.description ?? '' }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="objectifs" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Objectifs</label>
+                        <textarea id="objectifs" name="objectifs" rows="4"
+                                  class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">{{ formation.objectifs ?? '' }}</textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            {{ isEdit ? 'Mettre à jour' : 'Créer la Formation' }}
+                        </button>
+                        <a href="{{ path('rh_formation_list') }}" class="px-6 py-2.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-sm font-semibold hover:bg-zinc-50 transition-colors">
+                            Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
