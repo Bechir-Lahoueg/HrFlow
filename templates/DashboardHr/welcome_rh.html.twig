@@ -3,121 +3,261 @@
 {% block title %}HR Dashboard | HrFlow{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
-    <div class="lg:ml-72 transition-all duration-300">
+    <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
+        {# Flash messages #}
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ message }}
             </div>
         {% endfor %}
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
-            {# Welcome banner #}
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-emerald-600 to-green-700 p-8 text-white">
-                <div class="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-                <div class="absolute bottom-0 left-1/4 w-48 h-48 bg-white/5 rounded-full translate-y-1/2"></div>
-                <div class="relative">
-                    <p class="text-teal-100 text-sm font-medium mb-1">Welcome back</p>
-                    <h2 class="text-3xl font-extrabold mb-2">{{ user.userIdentifier }}</h2>
-                    <p class="text-teal-50/80 max-w-md">Manage your team, approve leave requests, and keep track of recruitment and training programs.</p>
+
+            {# ═══════════════ Welcome Banner ═══════════════ #}
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 p-8 sm:p-10 text-white animate-slide-up">
+                {# Decorative shapes #}
+                <div class="absolute inset-0 overflow-hidden">
+                    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-3xl mesh-blob"></div>
+                    <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl mesh-blob-alt"></div>
+                    <div class="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+                </div>
+                {# Content #}
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">HR Portal Active</span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">
+                        Welcome back, <span class="text-white/90">{{ user.userIdentifier }}</span>
+                    </h2>
+                    <p class="text-teal-200 max-w-lg text-[15px] leading-relaxed">
+                        Manage your team, approve leave requests, and keep track of recruitment and training programs.
+                    </p>
                 </div>
             </div>
 
-            {# Stats #}
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-                <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-teal-500/5 hover:border-teal-200 transition-all duration-300">
+            {# ═══════════════ Stats Grid ═══════════════ #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                {# Stat: My Employees #}
+                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none card-hover hover:border-teal-200 dark:hover:border-teal-500/20 animate-slide-up stagger-1">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/25">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                            </svg>
                         </div>
+                        <span class="text-[11px] font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-md">My Team</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">{{ employeeCount|default(0) }}</p>
-                    <p class="text-sm text-slate-400 mt-1">My Employees</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ employeeCount|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">My Employees</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div class="h-full w-3/4 rounded-full bg-gradient-to-r from-teal-500 to-emerald-400"></div>
+                    </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-amber-500/5 hover:border-amber-200 transition-all duration-300">
+                {# Stat: Pending Leaves #}
+                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none card-hover hover:border-amber-200 dark:hover:border-amber-500/20 animate-slide-up stagger-2">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
                         <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">{{ pendingLeaveCount|default(0) }}</p>
-                    <p class="text-sm text-slate-400 mt-1">Pending Leaves</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ pendingLeaveCount|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Pending Leaves</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div class="h-full w-1/3 rounded-full bg-gradient-to-r from-amber-500 to-orange-400"></div>
+                    </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-purple-500/5 hover:border-purple-200 transition-all duration-300">
+                {# Stat: Open Positions #}
+                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none card-hover hover:border-violet-200 dark:hover:border-violet-500/20 animate-slide-up stagger-3">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/>
+                            </svg>
                         </div>
+                        <span class="text-[11px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-2 py-0.5 rounded-md">Active</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">--</p>
-                    <p class="text-sm text-slate-400 mt-1">Open Positions</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">--</p>
+                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Open Positions</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div class="h-full w-1/2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"></div>
+                    </div>
                 </div>
 
-                <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300">
+                {# Stat: Training Sessions #}
+                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none card-hover hover:border-sky-200 dark:hover:border-sky-500/20 animate-slide-up stagger-4">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                            </svg>
                         </div>
+                        <span class="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-0.5 rounded-md">Programs</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">--</p>
-                    <p class="text-sm text-slate-400 mt-1">Training Sessions</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">--</p>
+                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Training Sessions</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                        <div class="h-full w-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"></div>
+                    </div>
                 </div>
             </div>
 
-            {# Main content #}
+            {# ═══════════════ Main Content ═══════════════ #}
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60 p-6">
+
+                {# ── Recent Activity ── #}
+                <div class="xl:col-span-2 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm dark:shadow-none animate-slide-up stagger-5">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-slate-800">Recent Activity</h3>
-                        <button class="text-xs font-semibold text-teal-500 hover:text-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition-colors">View All</button>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Recent Activity</h3>
+                        </div>
+                        <button class="text-[12px] font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 px-3 py-1.5 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-500/10 transition-colors">View All</button>
                     </div>
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 border border-slate-100">
-                            <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+
+                    {# Activity timeline #}
+                    <div class="space-y-0">
+                        <div class="flex gap-4 pb-6 relative">
+                            <div class="flex flex-col items-center">
+                                <div class="w-3 h-3 rounded-full bg-teal-500 ring-4 ring-teal-100 dark:ring-teal-500/10 shrink-0 mt-0.5"></div>
+                                <div class="w-px flex-1 bg-zinc-200 dark:bg-zinc-800 mt-2"></div>
+                            </div>
+                            <div class="pb-2">
+                                <p class="text-[13px] font-medium text-zinc-700 dark:text-zinc-300">HR portal initialized</p>
+                                <p class="text-[12px] text-zinc-400 dark:text-zinc-500 mt-0.5">Team management dashboard is active and monitoring</p>
+                                <span class="inline-block text-[11px] text-zinc-300 dark:text-zinc-600 mt-1.5">Just now</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 pb-6 relative">
+                            <div class="flex flex-col items-center">
+                                <div class="w-3 h-3 rounded-full bg-sky-500 ring-4 ring-sky-100 dark:ring-sky-500/10 shrink-0 mt-0.5"></div>
+                                <div class="w-px flex-1 bg-zinc-200 dark:bg-zinc-800 mt-2"></div>
+                            </div>
+                            <div class="pb-2">
+                                <p class="text-[13px] font-medium text-zinc-700 dark:text-zinc-300">Dashboard loaded</p>
+                                <p class="text-[12px] text-zinc-400 dark:text-zinc-500 mt-0.5">All HR modules connected and operational</p>
+                                <span class="inline-block text-[11px] text-zinc-300 dark:text-zinc-600 mt-1.5">2 minutes ago</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 relative">
+                            <div class="flex flex-col items-center">
+                                <div class="w-3 h-3 rounded-full bg-zinc-300 dark:bg-zinc-700 ring-4 ring-zinc-100 dark:ring-zinc-800 shrink-0 mt-0.5"></div>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-slate-600">No recent activity to display.</p>
-                                <p class="text-xs text-slate-400 mt-0.5">Activity will appear here as events occur</p>
+                                <p class="text-[13px] font-medium text-zinc-400 dark:text-zinc-500">No more recent activity</p>
+                                <p class="text-[12px] text-zinc-300 dark:text-zinc-600 mt-0.5">Events will appear here as they occur</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-6">
-                    <h3 class="text-lg font-bold text-slate-800 mb-6">Your Profile</h3>
+                {# ── Profile Card ── #}
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm dark:shadow-none animate-slide-up stagger-5">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Your Profile</h3>
+                    </div>
+
                     <div class="flex flex-col items-center text-center mb-6">
-                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-teal-500/20 mb-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-xl shadow-teal-500/20 mb-4 ring-4 ring-teal-100 dark:ring-teal-500/10">
                             <span class="text-2xl font-bold text-white">{{ user.userIdentifier|first|upper }}</span>
                         </div>
-                        <p class="text-lg font-bold text-slate-800">{{ user.userIdentifier }}</p>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-600 mt-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500 mr-1.5"></span>
-                            HR MANAGER
+                        <p class="text-lg font-bold text-zinc-900 dark:text-zinc-100">{{ user.userIdentifier }}</p>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 mt-2 uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-teal-400"></span>
+                            HR Manager
                         </span>
                     </div>
-                    <div class="space-y-3 pt-4 border-t border-slate-100">
+
+                    <div class="space-y-3 pt-5 border-t border-zinc-100 dark:border-zinc-800/50">
                         {% if user.email is defined and user.email %}
                         <div class="flex items-center gap-3 text-sm">
-                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            <span class="text-slate-600 truncate">{{ user.email }}</span>
+                            <div class="w-8 h-8 rounded-md bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                            </div>
+                            <span class="text-[13px] text-zinc-600 dark:text-zinc-400 truncate">{{ user.email }}</span>
                         </div>
                         {% endif %}
                         <div class="flex items-center gap-3 text-sm">
-                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <span class="text-slate-600">Team Management Access</span>
+                            <div class="w-8 h-8 rounded-md bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                            </div>
+                            <span class="text-[13px] text-zinc-600 dark:text-zinc-400">Team Management Access</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded-md bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                            </div>
+                            <span class="text-[13px] text-zinc-600 dark:text-zinc-400">Member since 2025</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {# ═══════════════ Quick Actions ═══════════════ #}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-slide-up stagger-5">
+                <a href="{{ path('app_rh_employees') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-teal-200 dark:hover:border-teal-500/20 transition-all duration-200 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20 transition-colors">
+                            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">Manage Team</p>
+                            <p class="text-[12px] text-zinc-400 dark:text-zinc-500">Add employees & view staff</p>
+                        </div>
+                        <svg class="w-4 h-4 text-zinc-300 dark:text-zinc-700 group-hover:text-teal-500 dark:group-hover:text-teal-400 ml-auto transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </div>
+                </a>
+
+                <a href="{{ path('app_rh_leave_requests') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-amber-200 dark:hover:border-amber-500/20 transition-all duration-200 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-400/10 transition-colors">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">Leave Requests</p>
+                            <p class="text-[12px] text-zinc-400 dark:text-zinc-500">Review & approve requests</p>
+                        </div>
+                        <svg class="w-4 h-4 text-zinc-300 dark:text-zinc-700 group-hover:text-amber-500 dark:group-hover:text-amber-400 ml-auto transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </div>
+                </a>
+
+                <a href="#" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-sky-200 dark:hover:border-sky-500/20 transition-all duration-200 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center group-hover:bg-sky-100 dark:group-hover:bg-sky-400/10 transition-colors">
+                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors">Generate Reports</p>
+                            <p class="text-[12px] text-zinc-400 dark:text-zinc-500">Team analytics & insights</p>
+                        </div>
+                        <svg class="w-4 h-4 text-zinc-300 dark:text-zinc-700 group-hover:text-sky-500 dark:group-hover:text-sky-400 ml-auto transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </div>
+                </a>
+            </div>
+
         </main>
     </div>
 </div>

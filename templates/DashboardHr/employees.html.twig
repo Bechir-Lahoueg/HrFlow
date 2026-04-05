@@ -3,15 +3,15 @@
 {% block title %}My Employees | HrFlow RH{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
-    <div class="lg:ml-72 transition-all duration-300">
+    <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ message }}
             </div>
         {% endfor %}

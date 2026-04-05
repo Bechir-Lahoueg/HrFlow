@@ -15,10 +15,16 @@
 
         {# Desktop CTA #}
         <div class="hidden md:flex items-center gap-3">
-            <a href="{{ path('app_login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Sign in</a>
-            <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
-                Sign up for free
-            </a>
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <a href="{{ path('app_welcome') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                    Tableau de board
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Sign in</a>
+                <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                    Sign up for free
+                </a>
+            {% endif %}
         </div>
 
         {# Mobile hamburger #}
@@ -37,8 +43,12 @@
             <a href="#testimonials" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Testimonials</a>
             <a href="#contact" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Contact</a>
             <div class="pt-3 mt-3 border-t border-slate-100 space-y-2">
-                <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Sign in</a>
-                <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Sign up for free</a>
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <a href="{{ path('app_welcome') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de board</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Sign in</a>
+                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Sign up for free</a>
+                {% endif %}
             </div>
         </div>
     </div>

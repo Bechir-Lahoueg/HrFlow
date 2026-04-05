@@ -2,123 +2,276 @@
 
 {% block title %}Leave Requests | HrFlow{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .decision-table thead th{position:sticky;top:0;z-index:10}
+        .decision-row{transition:all .2s}
+        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+        .filter-chip{transition:all .2s}
+        .filter-chip:hover{transform:translateY(-1px)}
+        .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+        .credit-card{position:relative;overflow:hidden}
+        .credit-card::before{content:'';position:absolute;top:-50%;right:-30%;width:8rem;height:8rem;border-radius:9999px;opacity:.06;pointer-events:none}
+        .credit-card:nth-child(1)::before{background:radial-gradient(circle,#14b8a6,transparent 70%)}
+        .credit-card:nth-child(2)::before{background:radial-gradient(circle,#f97316,transparent 70%)}
+        .credit-card:nth-child(3)::before{background:radial-gradient(circle,#6366f1,transparent 70%)}
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
-    <div class="lg:ml-72 transition-all duration-300">
+    <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">{{ message }}</div>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{{ message }}</div>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
         {% endfor %}
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Total</p><p class="text-3xl font-extrabold text-slate-800">{{ rhLeaveStats.total_count }}</p></div>
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Pending</p><p class="text-3xl font-extrabold text-amber-600">{{ rhLeaveStats.pending_count }}</p></div>
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Approved</p><p class="text-3xl font-extrabold text-emerald-600">{{ rhLeaveStats.approved_count }}</p></div>
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Rejected</p><p class="text-3xl font-extrabold text-red-600">{{ rhLeaveStats.rejected_count }}</p></div>
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-sky-900 to-indigo-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-sky-300/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/15 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">RH Control Center</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Pilotage des demandes de conges</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Filtrez, approuvez ou refusez rapidement avec visibilite sur l'impact credit en temps reel.</p>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Pending Queue</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ rhLeaveStats.pending_count }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">demandes en attente</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Employees</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ rhCreditStats.employees_count|default(0) }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">dans votre equipe</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Stats Grid ══════════ #}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-1">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+                        </div>
+                        <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Total</span>
+                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 font-mono-num">{{ rhLeaveStats.total_count }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Toutes demandes</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-slate-400 to-slate-300"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    </div>
+                    <p class="text-3xl font-extrabold text-amber-600 font-mono-num">{{ rhLeaveStats.pending_count }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Actions prioritaires</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/3 rounded-full bg-gradient-to-r from-amber-500 to-orange-400"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-extrabold text-emerald-600 font-mono-num">{{ rhLeaveStats.approved_count }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Demandes validees</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-extrabold text-red-500 font-mono-num">{{ rhLeaveStats.rejected_count }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Demandes refusees</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/4 rounded-full bg-gradient-to-r from-red-500 to-rose-400"></div></div>
+                </div>
             </div>
 
+            {# ══════════ Team Credit Cards ══════════ #}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
-                    <p class="text-sm text-slate-400">Team Available Credit</p>
-                    <p class="text-3xl font-extrabold text-teal-700">{{ rhCreditStats.available_sum|default(0)|number_format(1, '.', ',') }}</p>
-                    <p class="text-xs text-slate-500 mt-2">Across {{ rhCreditStats.employees_count|default(0) }} employees</p>
+                <div class="credit-card bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9"/></svg>
+                        </div>
+                        <p class="text-[12px] font-medium text-zinc-400">Team Available</p>
+                    </div>
+                    <p class="text-2xl font-extrabold text-teal-700 font-mono-num">{{ rhCreditStats.available_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-1">{{ rhCreditStats.employees_count|default(0) }} employes</p>
                 </div>
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
-                    <p class="text-sm text-slate-400">Team Used Credit</p>
-                    <p class="text-3xl font-extrabold text-orange-600">{{ rhCreditStats.used_sum|default(0)|number_format(1, '.', ',') }}</p>
-                    <p class="text-xs text-slate-500 mt-2">Approved leave days consumed</p>
+                <div class="credit-card bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15"/></svg>
+                        </div>
+                        <p class="text-[12px] font-medium text-zinc-400">Team Used</p>
+                    </div>
+                    <p class="text-2xl font-extrabold text-orange-600 font-mono-num">{{ rhCreditStats.used_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-1">jours consommes</p>
                 </div>
-                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
-                    <p class="text-sm text-slate-400">Team Accrued Credit</p>
-                    <p class="text-3xl font-extrabold text-indigo-600">{{ rhCreditStats.accrued_sum|default(0)|number_format(1, '.', ',') }}</p>
-                    <p class="text-xs text-slate-500 mt-2">Smart accrual baseline</p>
+                <div class="credit-card bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z"/></svg>
+                        </div>
+                        <p class="text-[12px] font-medium text-zinc-400">Team Accrued</p>
+                    </div>
+                    <p class="text-2xl font-extrabold text-indigo-600 font-mono-num">{{ rhCreditStats.accrued_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-1">base d'accumulation</p>
                 </div>
             </div>
 
-            <section class="bg-white rounded-2xl border border-slate-200/60 p-6">
-                <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
-                    <select name="status" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
-                        <option value="ALL" {{ statusFilter is null ? 'selected' : '' }}>All statuses</option>
+            {# ══════════ Decision Table ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Table de Decision RH</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ path('app_rh_leave_requests') }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter is null ? 'bg-slate-900 text-white border-slate-900 active' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50' }} transition-all">Tous</a>
+                        <a href="{{ path('app_rh_leave_requests', {status: 'ATTENTE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ATTENTE' ? 'bg-amber-600 text-white border-amber-600 active' : 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100' }} transition-all flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'ATTENTE' ? 'bg-white' : 'bg-amber-400' }}"></span>Pending
+                        </a>
+                        <a href="{{ path('app_rh_leave_requests', {status: 'ACCEPTE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ACCEPTE' ? 'bg-emerald-600 text-white border-emerald-600 active' : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' }} transition-all flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'ACCEPTE' ? 'bg-white' : 'bg-emerald-400' }}"></span>Approved
+                        </a>
+                        <a href="{{ path('app_rh_leave_requests', {status: 'REFUSE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'REFUSE' ? 'bg-red-600 text-white border-red-600 active' : 'border-red-200 text-red-700 bg-red-50 hover:bg-red-100' }} transition-all flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'REFUSE' ? 'bg-white' : 'bg-red-400' }}"></span>Rejected
+                        </a>
+                    </div>
+                </div>
+
+                {# Filter Form #}
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-5">
+                    <select name="status" class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                        <option value="ALL" {{ statusFilter is null ? 'selected' : '' }}>Tous les statuts</option>
                         <option value="ATTENTE" {{ statusFilter == 'ATTENTE' ? 'selected' : '' }}>ATTENTE</option>
                         <option value="ACCEPTE" {{ statusFilter == 'ACCEPTE' ? 'selected' : '' }}>ACCEPTE</option>
                         <option value="REFUSE" {{ statusFilter == 'REFUSE' ? 'selected' : '' }}>REFUSE</option>
                     </select>
-                    <input type="text" name="employee" value="{{ employeeFilter }}" placeholder="Search employee" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
-                    <input type="text" name="leave_type" value="{{ leaveTypeFilter }}" placeholder="Search leave type" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
-                    <button class="px-4 py-2.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors">Apply Filters</button>
+                    <input type="text" name="employee" value="{{ employeeFilter }}" placeholder="Rechercher employe..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                    <input type="text" name="leave_type" value="{{ leaveTypeFilter }}" placeholder="Type de conge..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                    <button class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm">Appliquer</button>
+                    <a href="{{ path('app_rh_leave_requests') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-sm font-semibold hover:bg-zinc-50 transition-colors">Reset</a>
                 </form>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
+                {# Table #}
+                <div class="overflow-x-auto rounded-lg border border-zinc-100 max-h-[70vh]">
+                    <table class="decision-table min-w-full text-sm">
                         <thead>
-                            <tr class="text-left text-slate-500 border-b border-slate-100">
-                                <th class="py-3 pr-4">Employee</th>
-                                <th class="py-3 pr-4">Period</th>
-                                <th class="py-3 pr-4">Type</th>
-                                <th class="py-3 pr-4">Days</th>
-                                <th class="py-3 pr-4">Credit</th>
-                                <th class="py-3 pr-4">Status</th>
-                                <th class="py-3 pr-4">Reason</th>
-                                <th class="py-3">Action</th>
+                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/95">
+                                <th class="py-3 px-4">Employe</th>
+                                <th class="py-3 px-4">Periode</th>
+                                <th class="py-3 px-4">Type</th>
+                                <th class="py-3 px-4">Jours</th>
+                                <th class="py-3 px-4">Impact Credit</th>
+                                <th class="py-3 px-4">Statut</th>
+                                <th class="py-3 px-4">Motif</th>
+                                <th class="py-3 px-4">Decision</th>
                             </tr>
                         </thead>
                         <tbody>
                         {% for leave in leaveRequests %}
-                            <tr class="border-b border-slate-100 align-top">
-                                <td class="py-3 pr-4 text-slate-700 font-semibold">{{ leave.employee_name }}</td>
-                                <td class="py-3 pr-4 text-slate-700">{{ leave.start_date|date('Y-m-d') }} -> {{ leave.end_date|date('Y-m-d') }}</td>
-                                <td class="py-3 pr-4 text-slate-700">{{ leave.leave_type }}</td>
-                                <td class="py-3 pr-4 text-slate-700">{{ leave.days_count }}</td>
-                                <td class="py-3 pr-4">
-                                    <div class="text-xs">
-                                        <p class="font-semibold {{ (leave.available_days - leave.days_count) < 0 ? 'text-red-600' : 'text-emerald-700' }}">
-                                            Available: {{ leave.available_days|number_format(1, '.', ',') }}
-                                        </p>
-                                        <p class="text-slate-500 mt-1">After approve: {{ (leave.available_days - leave.days_count)|number_format(1, '.', ',') }}</p>
+                            <tr class="decision-row border-b border-zinc-50 align-top">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0">
+                                            <span class="text-[11px] font-bold text-white">{{ leave.employee_name|first|upper }}</span>
+                                        </div>
+                                        <span class="text-[13px] font-semibold text-zinc-700">{{ leave.employee_name }}</span>
                                     </div>
                                 </td>
-                                <td class="py-3 pr-4">
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                        {{ leave.status == 'ATTENTE' ? 'bg-amber-100 text-amber-700' : '' }}
-                                        {{ leave.status == 'ACCEPTE' ? 'bg-emerald-100 text-emerald-700' : '' }}
-                                        {{ leave.status == 'REFUSE' ? 'bg-red-100 text-red-700' : '' }}">
+                                <td class="py-3 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ leave.start_date|date('d M') }}</p>
+                                    <p class="text-[11px] text-zinc-400">au {{ leave.end_date|date('d M Y') }}</p>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leave_type }}</span>
+                                </td>
+                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.days_count }}</td>
+                                <td class="py-3 px-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ (leave.available_days - leave.days_count) < 0 ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
+                                            <span class="text-[11px] font-bold {{ (leave.available_days - leave.days_count) < 0 ? 'text-red-600' : 'text-emerald-700' }}">{{ leave.available_days|number_format(1, '.', ',') }} dispo</span>
+                                        </div>
+                                        <p class="text-[10px] text-zinc-400 pl-3">Apres: {{ (leave.available_days - leave.days_count)|number_format(1, '.', ',') }}</p>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {{ leave.status == 'ATTENTE' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
+                                        {{ leave.status == 'ACCEPTE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ leave.status == 'REFUSE' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {{ leave.status == 'ATTENTE' ? 'bg-amber-500' : '' }}
+                                            {{ leave.status == 'ACCEPTE' ? 'bg-emerald-500' : '' }}
+                                            {{ leave.status == 'REFUSE' ? 'bg-red-500' : '' }}"></span>
                                         {{ leave.status }}
                                     </span>
                                 </td>
-                                <td class="py-3 pr-4 text-slate-500 max-w-xs">{{ leave.reason ?: '-' }}</td>
-                                <td class="py-3">
+                                <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[160px]">{{ leave.reason ?: '-' }}</td>
+                                <td class="py-3 px-4">
                                     {% if leave.status == 'ATTENTE' %}
                                         <div class="space-y-2 min-w-[220px]">
-                                            <form method="post" action="{{ path('app_rh_leave_approve', {id: leave.id}) }}" class="space-y-2">
+                                            <form method="post" action="{{ path('app_rh_leave_approve', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2.5">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_approve_' ~ leave.id) }}">
-                                                <input name="rh_comment" type="text" placeholder="Comment (optional)" class="w-full rounded-lg border-slate-200 text-xs">
-                                                <button type="submit" class="w-full text-xs px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Approve</button>
+                                                <input name="rh_comment" type="text" placeholder="Commentaire (optionnel)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-emerald-400 focus:ring-emerald-400">
+                                                <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                    Approuver
+                                                </button>
                                             </form>
-                                            <form method="post" action="{{ path('app_rh_leave_reject', {id: leave.id}) }}" class="space-y-2">
+                                            <form method="post" action="{{ path('app_rh_leave_reject', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-red-200 bg-red-50/50 p-2.5">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_reject_' ~ leave.id) }}">
-                                                <input name="rh_comment" type="text" placeholder="Comment required for reject" class="w-full rounded-lg border-slate-200 text-xs" required>
-                                                <button type="submit" class="w-full text-xs px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100">Reject</button>
+                                                <input name="rh_comment" type="text" placeholder="Motif du refus (obligatoire)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-red-400 focus:ring-red-400" required>
+                                                <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Refuser
+                                                </button>
                                             </form>
                                         </div>
                                     {% else %}
-                                        <div class="text-xs text-slate-500">
-                                            <p>Comment:</p>
-                                            <p class="mt-1">{{ leave.rh_comment ?: '-' }}</p>
+                                        <div class="text-[11px] text-zinc-400 rounded-lg border border-zinc-100 bg-zinc-50 p-2.5">
+                                            <p class="font-bold text-zinc-500 mb-0.5">Commentaire:</p>
+                                            <p>{{ leave.rh_comment ?: '-' }}</p>
                                         </div>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% else %}
-                            <tr>
-                                <td colspan="8" class="py-8 text-center text-slate-400">No leave requests for current filters.</td>
-                            </tr>
+                            <tr><td colspan="8" class="py-14 text-center text-zinc-400 text-sm">Aucune demande pour les filtres actuels.</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>

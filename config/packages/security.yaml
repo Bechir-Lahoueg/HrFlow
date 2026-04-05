@@ -13,11 +13,6 @@ security:
             provider: app_user_provider
             custom_authenticator: App\Security\LoginFormAuthenticator
             entry_point: App\Security\LoginFormAuthenticator
-            remember_me:
-                secret: '%kernel.secret%'
-                lifetime: 604800
-                path: /
-                always_remember_me: true
             logout:
                 path: app_logout
                 target: app_login
@@ -38,5 +33,5 @@ security:
         - { path: ^/welcome/admin, roles: ROLE_ADMIN }
         - { path: ^/welcome/rh, roles: ROLE_RH }
         - { path: ^/welcome/employee, roles: ROLE_EMPLOYEE }
-        - { path: ^/welcome, roles: IS_AUTHENTICATED_REMEMBERED }
-        - { path: ^/, roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/welcome, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
