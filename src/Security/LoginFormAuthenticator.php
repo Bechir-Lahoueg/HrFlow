@@ -10,7 +10,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
-use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -44,7 +43,6 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             ),
             [
                 new CsrfTokenBadge('authenticate', $csrfToken),
-                new RememberMeBadge(),
             ]
         );
     }
@@ -52,12 +50,6 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $roles = $token->getRoleNames();
-        $primaryRole = $this->detectPrimaryRole($roles);
-
-        $request->getSession()->getFlashBag()->add(
-            'success',
-            sprintf('Connexion reussie. Role detecte: %s', $primaryRole)
-        );
 
         $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
         if ($targetPath !== null) {
@@ -82,23 +74,6 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
-    }
-
-    private function detectPrimaryRole(array $roles): string
-    {
-        if (in_array('ROLE_ADMIN', $roles, true)) {
-            return 'ADMIN';
-        }
-
-        if (in_array('ROLE_RH', $roles, true)) {
-            return 'RH';
-        }
-
-        if (in_array('ROLE_EMPLOYEE', $roles, true)) {
-            return 'EMPLOYEE';
-        }
-
-        return 'UNKNOWN';
     }
 
     private function isPasswordValid(string $plainPassword, string $storedPassword): bool
