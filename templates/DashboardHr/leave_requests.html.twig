@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leave Requests | HrFlow{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-72 transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">{{ message }}</div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Total</p><p class="text-3xl font-extrabold text-slate-800">{{ rhLeaveStats.total_count }}</p></div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Pending</p><p class="text-3xl font-extrabold text-amber-600">{{ rhLeaveStats.pending_count }}</p></div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Approved</p><p class="text-3xl font-extrabold text-emerald-600">{{ rhLeaveStats.approved_count }}</p></div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5"><p class="text-sm text-slate-400">Rejected</p><p class="text-3xl font-extrabold text-red-600">{{ rhLeaveStats.rejected_count }}</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
+                    <p class="text-sm text-slate-400">Team Available Credit</p>
+                    <p class="text-3xl font-extrabold text-teal-700">{{ rhCreditStats.available_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-xs text-slate-500 mt-2">Across {{ rhCreditStats.employees_count|default(0) }} employees</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
+                    <p class="text-sm text-slate-400">Team Used Credit</p>
+                    <p class="text-3xl font-extrabold text-orange-600">{{ rhCreditStats.used_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-xs text-slate-500 mt-2">Approved leave days consumed</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 p-5">
+                    <p class="text-sm text-slate-400">Team Accrued Credit</p>
+                    <p class="text-3xl font-extrabold text-indigo-600">{{ rhCreditStats.accrued_sum|default(0)|number_format(1, '.', ',') }}</p>
+                    <p class="text-xs text-slate-500 mt-2">Smart accrual baseline</p>
+                </div>
+            </div>
+
+            <section class="bg-white rounded-2xl border border-slate-200/60 p-6">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
+                    <select name="status" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
+                        <option value="ALL" {{ statusFilter is null ? 'selected' : '' }}>All statuses</option>
+                        <option value="ATTENTE" {{ statusFilter == 'ATTENTE' ? 'selected' : '' }}>ATTENTE</option>
+                        <option value="ACCEPTE" {{ statusFilter == 'ACCEPTE' ? 'selected' : '' }}>ACCEPTE</option>
+                        <option value="REFUSE" {{ statusFilter == 'REFUSE' ? 'selected' : '' }}>REFUSE</option>
+                    </select>
+                    <input type="text" name="employee" value="{{ employeeFilter }}" placeholder="Search employee" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
+                    <input type="text" name="leave_type" value="{{ leaveTypeFilter }}" placeholder="Search leave type" class="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
+                    <button class="px-4 py-2.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors">Apply Filters</button>
+                </form>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-slate-500 border-b border-slate-100">
+                                <th class="py-3 pr-4">Employee</th>
+                                <th class="py-3 pr-4">Period</th>
+                                <th class="py-3 pr-4">Type</th>
+                                <th class="py-3 pr-4">Days</th>
+                                <th class="py-3 pr-4">Credit</th>
+                                <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4">Reason</th>
+                                <th class="py-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for leave in leaveRequests %}
+                            <tr class="border-b border-slate-100 align-top">
+                                <td class="py-3 pr-4 text-slate-700 font-semibold">{{ leave.employee_name }}</td>
+                                <td class="py-3 pr-4 text-slate-700">{{ leave.start_date|date('Y-m-d') }} -> {{ leave.end_date|date('Y-m-d') }}</td>
+                                <td class="py-3 pr-4 text-slate-700">{{ leave.leave_type }}</td>
+                                <td class="py-3 pr-4 text-slate-700">{{ leave.days_count }}</td>
+                                <td class="py-3 pr-4">
+                                    <div class="text-xs">
+                                        <p class="font-semibold {{ (leave.available_days - leave.days_count) < 0 ? 'text-red-600' : 'text-emerald-700' }}">
+                                            Available: {{ leave.available_days|number_format(1, '.', ',') }}
+                                        </p>
+                                        <p class="text-slate-500 mt-1">After approve: {{ (leave.available_days - leave.days_count)|number_format(1, '.', ',') }}</p>
+                                    </div>
+                                </td>
+                                <td class="py-3 pr-4">
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                        {{ leave.status == 'ATTENTE' ? 'bg-amber-100 text-amber-700' : '' }}
+                                        {{ leave.status == 'ACCEPTE' ? 'bg-emerald-100 text-emerald-700' : '' }}
+                                        {{ leave.status == 'REFUSE' ? 'bg-red-100 text-red-700' : '' }}">
+                                        {{ leave.status }}
+                                    </span>
+                                </td>
+                                <td class="py-3 pr-4 text-slate-500 max-w-xs">{{ leave.reason ?: '-' }}</td>
+                                <td class="py-3">
+                                    {% if leave.status == 'ATTENTE' %}
+                                        <div class="space-y-2 min-w-[220px]">
+                                            <form method="post" action="{{ path('app_rh_leave_approve', {id: leave.id}) }}" class="space-y-2">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_approve_' ~ leave.id) }}">
+                                                <input name="rh_comment" type="text" placeholder="Comment (optional)" class="w-full rounded-lg border-slate-200 text-xs">
+                                                <button type="submit" class="w-full text-xs px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Approve</button>
+                                            </form>
+                                            <form method="post" action="{{ path('app_rh_leave_reject', {id: leave.id}) }}" class="space-y-2">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_reject_' ~ leave.id) }}">
+                                                <input name="rh_comment" type="text" placeholder="Comment required for reject" class="w-full rounded-lg border-slate-200 text-xs" required>
+                                                <button type="submit" class="w-full text-xs px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100">Reject</button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-xs text-slate-500">
+                                            <p>Comment:</p>
+                                            <p class="mt-1">{{ leave.rh_comment ?: '-' }}</p>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="py-8 text-center text-slate-400">No leave requests for current filters.</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}

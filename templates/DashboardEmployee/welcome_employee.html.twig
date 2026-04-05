@@ -4,10 +4,10 @@
 
 {% block body %}
 <div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif]">
-    {% include 'Home/DashboardEmployee/components/_sidebar.html.twig' %}
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-72 transition-all duration-300">
-        {% include 'Home/DashboardEmployee/components/_header.html.twig' %}
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">
@@ -40,8 +40,9 @@
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">--</p>
+                    <p class="text-3xl font-extrabold text-slate-800">{{ availableLeaveDays|default(0)|number_format(1, '.', ',') }}</p>
                     <p class="text-sm text-slate-400 mt-1">Leave Balance</p>
+                    <p class="text-xs text-slate-500 mt-2">Accrued {{ balance.total_accrued|default(0)|number_format(1, '.', ',') }} • Used {{ balance.total_used|default(0)|number_format(1, '.', ',') }}</p>
                 </div>
 
                 <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300">
@@ -51,8 +52,9 @@
                         </div>
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
                     </div>
-                    <p class="text-3xl font-extrabold text-slate-800">--</p>
+                    <p class="text-3xl font-extrabold text-slate-800">{{ pendingLeaveCount|default(0) }}</p>
                     <p class="text-sm text-slate-400 mt-1">Pending Requests</p>
+                    <p class="text-xs text-slate-500 mt-2">Approved {{ leaveStats.approved_count|default(0) }} • Rejected {{ leaveStats.rejected_count|default(0) }}</p>
                 </div>
 
                 <div class="group bg-white rounded-2xl border border-slate-200/60 p-6 hover:shadow-lg hover:shadow-emerald-500/5 hover:border-emerald-200 transition-all duration-300">
