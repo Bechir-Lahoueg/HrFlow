@@ -30,6 +30,7 @@ security:
         - { path: ^/.*\.(?:css|js|png|jpg|jpeg|gif|svg|webp|ico)$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/offres-emploi, roles: PUBLIC_ACCESS }
         - { path: ^/welcome/admin, roles: ROLE_ADMIN }
         - { path: ^/welcome/rh, roles: ROLE_RH }
         - { path: ^/welcome/employee, roles: ROLE_EMPLOYEE }
