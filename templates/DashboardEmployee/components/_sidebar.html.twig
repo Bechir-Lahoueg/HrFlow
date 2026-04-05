@@ -34,12 +34,14 @@
             My Profile
         </a>
 
-        <a href="#" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200">
-            <div class="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-colors">
+        <a href="{{ path('app_employee_leave_requests') }}"
+           class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                  {{ app.request.get('_route') == 'app_employee_leave_requests' ? 'bg-amber-500/15 text-amber-400 shadow-lg shadow-amber-500/5' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+            <div class="w-8 h-8 rounded-lg {{ app.request.get('_route') == 'app_employee_leave_requests' ? 'bg-amber-500/20' : 'bg-white/5 group-hover:bg-white/10' }} flex items-center justify-center transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
             My Leaves
-            <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400">--</span>
+            <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full {{ (pendingLeaveCount|default(0)) > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-white/10 text-slate-400' }}">{{ pendingLeaveCount|default(0) }}</span>
         </a>
 
         <a href="#" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200">

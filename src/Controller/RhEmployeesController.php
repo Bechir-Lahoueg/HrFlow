@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Security\DbUser;
+use App\Service\LeaveRequestService;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,7 +16,7 @@ final class RhEmployeesController extends AbstractController
 {
     #[Route('/welcome/rh/employees', name: 'app_rh_employees', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function index(Request $request, Connection $connection): Response
+    public function index(Request $request, Connection $connection, LeaveRequestService $leaveRequestService): Response
     {
         if ($request->isMethod('POST')) {
             $redirect = $this->handleCreateEmployee($request, $connection);
@@ -30,9 +31,17 @@ final class RhEmployeesController extends AbstractController
             ['rhId' => $rhId]
         );
 
+        $pendingLeaveCount = 0;
+        try {
+            $pendingLeaveCount = $leaveRequestService->getRhPendingCount($rhId);
+        } catch (\Throwable) {
+            // Leave module might be unavailable during early setup.
+        }
+
         return $this->render('DashboardHr/employees.html.twig', [
             'user' => $this->getUser(),
             'employees' => $employees,
+            'pendingLeaveCount' => $pendingLeaveCount,
         ]);
     }
 
