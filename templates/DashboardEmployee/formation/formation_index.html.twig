@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Formations | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .decision-table thead th{position:sticky;top:0;z-index:10}
+        .decision-row{transition:all .2s}
+        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+        .filter-chip{transition:all .2s}
+        .filter-chip:hover{transform:translateY(-1px)}
+        .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Formation Studio</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Développez vos compétences</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Découvrez nos formations et inscrivez-vous aux sessions disponibles.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Formations</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ formations|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">disponibles</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Mes Demandes</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num"><a href="{{ path('employee_formation_requests') }}" class="hover:text-cyan-300 transition-colors">Voir</a></p>
+                            <p class="text-xs text-cyan-100/60 mt-1">suivi</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Formation Table ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Catalogue des Formations</h3>
+                    </div>
+                </div>
+
+                {# Table #}
+                <div class="overflow-x-auto rounded-lg border border-zinc-100 max-h-[70vh]">
+                    <table class="decision-table min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/95">
+                                <th class="py-3 px-4">Titre & Description</th>
+                                <th class="py-3 px-4">Type</th>
+                                <th class="py-3 px-4">Durée</th>
+                                <th class="py-3 px-4">Organisme</th>
+                                <th class="py-3 px-4">Objectifs</th>
+                                <th class="py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for formation in formations %}
+                            <tr class="decision-row border-b border-zinc-50 align-top">
+                                <td class="py-3 px-4">
+                                    <div class="text-base font-semibold text-zinc-900">{{ formation.titre }}</div>
+                                    <div class="font-normal text-zinc-500 text-xs mt-1">
+                                        {{ formation.description|length > 100 ? formation.description|slice(0, 100) ~ '...' : formation.description }}
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ formation.type }}</span>
+                                </td>
+                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ formation.duree }}h</td>
+                                <td class="py-3 px-4 font-semibold text-zinc-700">{{ formation.organisme }}</td>
+                                <td class="py-3 px-4 text-xs text-zinc-600 max-w-[200px]">
+                                    {{ formation.objectifs|length > 80 ? formation.objectifs|slice(0, 80) ~ '...' : formation.objectifs }}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <a href="{{ path('employee_formation_sessions', {id: formation.id_formation}) }}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        Sessions
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="py-14 text-center text-zinc-400 text-sm">Aucune formation disponible.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}
