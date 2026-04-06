@@ -16,7 +16,7 @@ final class RhFormationController extends AbstractController
     #[Route('/', name: 'rh_formation_list', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('DashboardHr/formation_index.html.twig', [
+        return $this->render('DashboardHr/formation/formation_index.html.twig', [
             'formations' => $this->formationService->getAllFormations(),
             'stats' => $this->formationService->getFormationStats(),
         ]);
@@ -42,7 +42,7 @@ final class RhFormationController extends AbstractController
             return $this->redirectToRoute('rh_formation_list');
         }
 
-        return $this->render('DashboardHr/formation_form.html.twig', [
+        return $this->render('DashboardHr/formation/formation_form.html.twig', [
             'formation' => null,
             'isEdit' => false,
         ]);
@@ -72,7 +72,7 @@ final class RhFormationController extends AbstractController
             return $this->redirectToRoute('rh_formation_list');
         }
 
-        return $this->render('DashboardHr/formation_form.html.twig', [
+        return $this->render('DashboardHr/formation/formation_form.html.twig', [
             'formation' => $formation,
             'isEdit' => true,
         ]);
@@ -104,7 +104,7 @@ final class RhFormationController extends AbstractController
 
         $sessions = $this->formationService->getSessionsByFormation($id);
 
-        return $this->render('DashboardHr/formation_sessions.html.twig', [
+        return $this->render('DashboardHr/formation/formation_sessions.html.twig', [
             'formation' => $formation,
             'sessions' => $sessions,
         ]);
@@ -135,7 +135,7 @@ final class RhFormationController extends AbstractController
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
         }
 
-        return $this->render('DashboardHr/session_form.html.twig', [
+        return $this->render('DashboardHr/formation/session_form.html.twig', [
             'formation' => $formation,
             'session' => null,
             'isEdit' => false,
