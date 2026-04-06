@@ -3,6 +3,8 @@
 namespace App\Controller\rh;
 
 use App\Service\FormationService;
+use App\Service\ParticipationService;
+use App\Service\SessionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -141,4 +143,43 @@ final class RhFormationController extends AbstractController
             'isEdit' => false,
         ]);
     }
+
+    #[Route('/session/{id}/participants', name: 'rh_formation_session_participants', methods: ['GET'])]
+    public function participants(int $id, SessionService $sessionService, ParticipationService $participationService): Response
+    {
+        $session = $sessionService->getSessionById($id);
+        if (!$session) {
+            throw $this->createNotFoundException('Session non trouvée');
+        }
+
+        $formation = $this->formationService->getFormationById($session['id_formation']);
+        $participations = $participationService->getSessionParticipations($id);
+
+        return $this->render('DashboardHr/formation/formation_participants.html.twig', [
+            'session' => $session,
+            'formation' => $formation,
+            'participations' => $participations,
+        ]);
+    }
+
+    #[Route('/participation/{id}/approve', name: 'rh_formation_participation_approve', methods: ['POST'])]
+    public function approveParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    {
+        if ($this->isCsrfTokenValid('approve-participation-' . $id, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($id, 'Accepte');
+            $this->addFlash('success', 'Participation acceptée.');
+        }
+        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
+    }
+
+    #[Route('/participation/{id}/reject', name: 'rh_formation_participation_reject', methods: ['POST'])]
+    public function rejectParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    {
+        if ($this->isCsrfTokenValid('reject-participation-' . $id, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($id, 'Refuse');
+            $this->addFlash('success', 'Participation refusée.');
+        }
+        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
+    }
 }
+

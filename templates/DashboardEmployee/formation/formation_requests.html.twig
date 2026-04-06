@@ -78,6 +78,7 @@
                         <select id="history-status" class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-violet-400 focus:ring-violet-400 focus:bg-white">
                             <option value="ALL">Tous</option>
                             <option value="Inscrit">Inscrit</option>
+                            <option value="Accepte">Accepté</option>
                             <option value="Refuse">Refusé</option>
                             <option value="Certificat obtenu">Certificat obtenu</option>
                         </select>
@@ -110,12 +111,14 @@
                                 <td class="py-3 px-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
                                         {{ participation.statut_participation == 'Inscrit' ? 'bg-blue-50 text-blue-700 border border-blue-200' : '' }}
+                                        {{ participation.statut_participation == 'Accepte' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
                                         {{ participation.statut_participation == 'Refuse' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
-                                        {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
+                                        {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-purple-50 text-purple-700 border border-purple-200' : '' }}">
                                         <span class="w-1.5 h-1.5 rounded-full
                                             {{ participation.statut_participation == 'Inscrit' ? 'bg-blue-500' : '' }}
+                                            {{ participation.statut_participation == 'Accepte' ? 'bg-emerald-500' : '' }}
                                             {{ participation.statut_participation == 'Refuse' ? 'bg-red-500' : '' }}
-                                            {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-emerald-500' : '' }}"></span>
+                                            {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-purple-500' : '' }}"></span>
                                         {{ participation.statut_participation }}
                                     </span>
                                 </td>

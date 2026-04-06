@@ -44,4 +44,22 @@ final class ParticipationService
             ['userId' => $userId]
         );
     }
+
+    public function getSessionParticipations(int $sessionId): array
+    {
+        return $this->connection->fetchAllAssociative(
+            'SELECT p.*, e.first_name, e.last_name, e.email
+             FROM participation_formation p
+             JOIN employees e ON p.id_utilisateur = e.id
+             WHERE p.id_session = :sessionId',
+            ['sessionId' => $sessionId]
+        );
+    }
+
+    public function updateStatus(int $participationId, string $status): void
+    {
+        $this->connection->update('participation_formation', [
+            'statut_participation' => $status
+        ], ['id_participation' => $participationId]);
+    }
 }
