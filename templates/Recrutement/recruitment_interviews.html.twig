@@ -1,0 +1,305 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Interviews | HrFlow Recruitment{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .interview-card { transition: all .2s; }
+        .interview-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px -8px rgba(15,23,42,.1); }
+        .score-bar { transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+        .timeline-line { position: relative; }
+        .timeline-line::before { content: ''; position: absolute; left: 1.25rem; top: 2.5rem; bottom: 0; width: 2px; background: linear-gradient(to bottom, #e2e8f0, transparent); }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+
+        <div class= "flex justify-center">
+            {% include 'Recrutement/_recruitment_nav.html.twig' %}
+        </div>
+
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══════════ Hero ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-indigo-400/15 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-300/15 blur-3xl"></div>
+                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-indigo-200 uppercase tracking-wider">Interview Tracker</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des entretiens</h2>
+                        {% if currentApplication is defined and currentApplication %}
+                            <p class="mt-2 text-indigo-300 text-[13px] font-semibold flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                                Candidat: {{ currentApplication.candidateName }}
+                            </p>
+                        {% else %}
+                            <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Planifiez et évaluez vos entretiens. Collaborez avec vos interviewers et prenez les meilleures décisions de recrutement.</p>
+                        {% endif %}
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-indigo-200/70 font-bold">Total entretiens</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.totalInterviews|default(0) }}</p>
+                            <p class="text-xs text-indigo-100/60 mt-1">planifiés</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-indigo-200/70 font-bold">Score moyen</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">
+                                {% if stats.averageScore %}
+                                    {{ stats.averageScore|round(1) }}/10
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-indigo-100/60 mt-1">sur les entretiens notés</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Stats ══════════ #}
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-1">
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center mb-3">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="text-3xl font-extrabold text-amber-600 font-mono-num">{{ stats.resultCounts.PENDING|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">En attente</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/3 rounded-full bg-amber-400 score-bar"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-2">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3">
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="text-3xl font-extrabold text-emerald-600 font-mono-num">{{ stats.resultCounts.PASSED|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Réussis</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-emerald-500 score-bar"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-3">
+                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center mb-3">
+                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </div>
+                    <p class="text-3xl font-extrabold text-red-500 font-mono-num">{{ stats.resultCounts.FAILED|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Échoués</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/4 rounded-full bg-red-400 score-bar"></div></div>
+                </div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-4">
+                    <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mb-3">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/></svg>
+                    </div>
+                    <p class="text-3xl font-extrabold text-slate-600 font-mono-num">{{ stats.resultCounts.NO_SHOW|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">No-show</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-[8%] rounded-full bg-slate-400 score-bar"></div></div>
+                </div>
+            </div>
+
+            {# ══════════ Main Grid ══════════ #}
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                {# Schedule Interview Form #}
+                <section class="xl:col-span-1 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800/50 p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-100">Planifier un entretien</h2>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-4'}, 'action': path('app_rh_interviews_create')}) }}
+                        {{ form_row(form.application) }}
+                        {{ form_row(form.interviewerId) }}
+                        {{ form_row(form.interviewDate) }}
+                        {{ form_row(form.type) }}
+                        {{ form_row(form.meetingLink) }}
+                        {{ form_row(form.location) }}
+
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-500 to-violet-600 text-white hover:from-indigo-400 hover:to-violet-500 shadow-lg shadow-indigo-500/20 transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Planifier l'entretien
+                        </button>
+                    {{ form_end(form) }}
+                </section>
+
+                {# Interviews Timeline #}
+                <section class="xl:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-100">Entretiens planifiés</h2>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">{{ interviews|length }} entretiens</span>
+                    </div>
+
+                    <div class="space-y-3 timeline-line">
+                        {% for interview in interviews %}
+                        <div class="interview-card bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/60 dark:border-zinc-800/50 p-5 shadow-sm ml-6 relative">
+                            {# Timeline dot #}
+                            <div class="absolute -left-[2.1rem] top-5 w-5 h-5 rounded-full border-2 border-white dark:border-zinc-950 shadow-md flex items-center justify-center
+                                {% if interview.result == 'PASSED' %}bg-emerald-500
+                                {% elseif interview.result == 'FAILED' %}bg-red-500
+                                {% elseif interview.result == 'NO_SHOW' %}bg-slate-400
+                                {% else %}bg-indigo-500{% endif %}">
+                                <span class="w-2 h-2 rounded-full bg-white/60"></span>
+                            </div>
+
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 class="text-[14px] font-bold text-slate-800 dark:text-zinc-100">
+                                            {{ interview.application.candidateName|default('Candidat') }}
+                                        </h3>
+                                        <span class="text-[11px] text-slate-400">→</span>
+                                        <span class="text-[13px] font-medium text-slate-600 dark:text-zinc-400">{{ interview.application.jobOffer.title|default('—') }}</span>
+                                        {# Interview type badge #}
+                                        <span class="px-2 py-0.5 rounded-md text-[11px] font-bold
+                                            {% if interview.type == 'VIDEO' %}bg-blue-50 text-blue-700
+                                            {% elseif interview.type == 'TECHNICAL' %}bg-violet-50 text-violet-700
+                                            {% elseif interview.type == 'PHONE' %}bg-slate-100 text-slate-600
+                                            {% elseif interview.type == 'HR' %}bg-teal-50 text-teal-700
+                                            {% else %}bg-orange-50 text-orange-700{% endif %}">
+                                            {% if interview.type == 'VIDEO' %}📹
+                                            {% elseif interview.type == 'TECHNICAL' %}💻
+                                            {% elseif interview.type == 'PHONE' %}📞
+                                            {% elseif interview.type == 'HR' %}🧑‍💼
+                                            {% else %}🏢{% endif %}
+                                            {{ interview.type }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center gap-4 flex-wrap mt-2">
+                                        <span class="flex items-center gap-1.5 text-[12px] text-slate-500">
+                                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                                            {{ interview.interviewDate|date('d M Y, H:i') }}
+                                        </span>
+                                        {% if interview.location %}
+                                            <span class="flex items-center gap-1.5 text-[12px] text-slate-500">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                                {{ interview.location }}
+                                            </span>
+                                        {% endif %}
+                                        {% if interview.meetingLink %}
+                                            <a href="{{ interview.meetingLink }}" target="_blank" class="flex items-center gap-1.5 text-[12px] text-blue-600 hover:text-blue-700 font-medium">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+                                                Rejoindre
+                                            </a>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Score Bar #}
+                                    {% if interview.score > 0 %}
+                                        <div class="mt-3 flex items-center gap-3">
+                                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Score</span>
+                                            <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                                <div class="h-full rounded-full score-bar
+                                                    {% if interview.score >= 8 %}bg-gradient-to-r from-emerald-400 to-teal-500
+                                                    {% elseif interview.score >= 5 %}bg-gradient-to-r from-amber-400 to-orange-400
+                                                    {% else %}bg-gradient-to-r from-red-400 to-rose-500{% endif %}"
+                                                     style="width: {{ (interview.score / 10 * 100)|round }}%"></div>
+                                            </div>
+                                            <span class="text-[13px] font-extrabold
+                                                {% if interview.score >= 8 %}text-emerald-600
+                                                {% elseif interview.score >= 5 %}text-amber-600
+                                                {% else %}text-red-500{% endif %}">
+                                                {{ interview.score }}/10
+                                            </span>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if interview.feedback %}
+                                        <div class="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700/50">
+                                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Feedback</p>
+                                            <p class="text-[12px] text-slate-600 dark:text-zinc-400 leading-relaxed">{{ interview.feedback|slice(0, 200) }}{% if interview.feedback|length > 200 %}...{% endif %}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {% if interview.result == 'PASSED' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                                        {% elseif interview.result == 'FAILED' %}bg-red-50 text-red-600 border border-red-200
+                                        {% elseif interview.result == 'NO_SHOW' %}bg-slate-100 text-slate-600 border border-slate-200
+                                        {% else %}bg-indigo-50 text-indigo-700 border border-indigo-200{% endif %}">
+                                        {% if interview.result == 'PASSED' %}✓
+                                        {% elseif interview.result == 'FAILED' %}✗
+                                        {% elseif interview.result == 'NO_SHOW' %}—
+                                        {% else %}⏳{% endif %}
+                                        {{ interview.result }}
+                                    </span>
+
+                                    {# Feedback form (quick update) #}
+                                    <details class="text-right">
+                                        <summary class="text-[11px] text-slate-400 cursor-pointer hover:text-indigo-600 font-medium transition-colors">Évaluer</summary>
+                                        <form method="post" action="{{ path('app_rh_interviews_evaluate', {id: interview.id}) }}" class="mt-2 space-y-2 text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3 shadow-lg w-56">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('evaluate_interview_' ~ interview.id) }}">
+                                            <div>
+                                                <label class="text-[10px] font-bold text-slate-400 uppercase">Résultat</label>
+                                                <select name="result" class="w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-300">
+                                                    <option value="PENDING" {% if interview.result == 'PENDING' %}selected{% endif %}>En attente</option>
+                                                    <option value="PASSED" {% if interview.result == 'PASSED' %}selected{% endif %}>Réussi</option>
+                                                    <option value="FAILED" {% if interview.result == 'FAILED' %}selected{% endif %}>Échoué</option>
+                                                    <option value="NO_SHOW" {% if interview.result == 'NO_SHOW' %}selected{% endif %}>No-show</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] font-bold text-slate-400 uppercase">Score /10</label>
+                                                <input type="number" name="score" min="0" max="10" value="{{ interview.score }}" class="w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-300" />
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] font-bold text-slate-400 uppercase">Feedback</label>
+                                                <textarea name="feedback" rows="2" class="w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-300 resize-none" placeholder="Commentaires...">{{ interview.feedback }}</textarea>
+                                            </div>
+                                            <button type="submit" class="w-full text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">Sauvegarder</button>
+                                        </form>
+                                    </details>
+
+                                    <a href="{{ path('app_rh_interviews_edit', {id: interview.id}) }}" class="p-1.5 rounded-lg text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Modifier">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                    </a>
+
+                                    <form method="post" action="{{ path('app_rh_interviews_delete', {id: interview.id}) }}" onsubmit="return confirm('Supprimer cet entretien ?');" class="inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_interview_' ~ interview.id) }}">
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/60 p-12 text-center ml-6">
+                            <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15z"/></svg>
+                            </div>
+                            <p class="text-slate-400 text-sm font-medium">Aucun entretien planifié.</p>
+                            <p class="text-slate-300 text-xs mt-1">Planifiez votre premier entretien avec le formulaire.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
