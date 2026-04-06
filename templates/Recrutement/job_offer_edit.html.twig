@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'offre | HrFlow Recruitment{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-card { transition: all .2s; }
+        .form-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px -8px rgba(15,23,42,.12); }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% include 'Recrutement/_recruitment_nav.html.twig' %}
+
+        <main class="p-6 max-w-4xl mx-auto">
+            {# ══════════ Header ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-violet-950 to-indigo-900 text-white p-8 mb-6 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-violet-400/15 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-indigo-300/15 blur-3xl"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <a href="{{ path('app_rh_job_offers') }}" class="text-violet-200 hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                        </a>
+                        <span class="text-[11px] font-bold text-violet-200 uppercase tracking-wider">Retour aux offres</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Modifier l'offre</h2>
+                    <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Modifiez les détails de l'offre d'emploi.</p>
+                </div>
+            </section>
+
+            {# ══════════ Edit Form ══════════ #}
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800/50 p-6 shadow-sm form-card animate-slide-up">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-100">{{ jobOffer.title }}</h2>
+                </div>
+
+                {{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
+                    {{ form_row(form.title) }}
+                    {{ form_row(form.description) }}
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        {{ form_row(form.department) }}
+                        {{ form_row(form.location) }}
+                    </div>
+                    
+                    {{ form_row(form.employmentType) }}
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        {{ form_row(form.salaryMin) }}
+                        {{ form_row(form.salaryMax) }}
+                    </div>
+                    
+                    {{ form_row(form.status) }}
+
+                    <div class="flex items-center gap-3 pt-4">
+                        <a href="{{ path('app_rh_job_offers') }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex justify-center items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-violet-500 to-indigo-600 text-white hover:from-violet-400 hover:to-indigo-500 shadow-lg shadow-violet-500/20 transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
