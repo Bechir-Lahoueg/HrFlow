@@ -61,6 +61,7 @@ final class FormationService
 
     public function getSessionsByFormation(int $formationId): array
     {
+        $this->autoUpdateSessionStatuses();
         try {
             return $this->connection->fetchAllAssociative('SELECT * FROM session_formation WHERE id_formation = ? ORDER BY date_debut DESC', [$formationId]);
         } catch (\Throwable) {
@@ -70,6 +71,8 @@ final class FormationService
 
     public function createSession(array $data): void
     {
+        $statut = $this->calculateStatut($data['date_debut'], $data['date_fin']);
+
         $this->connection->insert('session_formation', [
             'id_formation' => $data['id_formation'],
             'date_debut' => $data['date_debut'],
@@ -77,14 +80,68 @@ final class FormationService
             'lieu' => $data['lieu'],
             'mode' => $data['mode'],
             'capacite_max' => $data['capacite_max'],
-            'statut' => $data['statut'] ?? 'Planifiee',
+            'statut' => $statut,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
     }
 
+    public function updateSession(int $id, array $data): void
+    {
+        $statut = $this->calculateStatut($data['date_debut'], $data['date_fin']);
+
+        $this->connection->update('session_formation', [
+            'date_debut' => $data['date_debut'],
+            'date_fin' => $data['date_fin'],
+            'lieu' => $data['lieu'],
+            'mode' => $data['mode'],
+            'capacite_max' => $data['capacite_max'],
+            'statut' => $statut,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ], ['id_session' => $id]);
+    }
+
+    private function calculateStatut(string $dateDebut, string $dateFin): string
+    {
+        $now = new \DateTime();
+        $now->setTime(0, 0, 0);
+
+        $debut = new \DateTime($dateDebut);
+        $debut->setTime(0, 0, 0);
+
+        $fin = new \DateTime($dateFin);
+        $fin->setTime(0, 0, 0);
+
+        if ($now < $debut) {
+            return 'Planifiee';
+        } elseif ($now > $fin) {
+            return 'Terminee';
+        } else {
+            return 'En cours';
+        }
+    }
+
+    private function autoUpdateSessionStatuses(): void
+    {
+        try {
+            // Un statut s'actualise avec le temps
+            $this->connection->executeStatement("
+                UPDATE session_formation
+                SET statut = CASE
+                    WHEN DATE(date_debut) > CURRENT_DATE THEN 'Planifiee'
+                    WHEN DATE(date_fin) < CURRENT_DATE THEN 'Terminee'
+                    ELSE 'En cours'
+                END
+                WHERE statut NOT IN ('Annulee')
+            ");
+        } catch (\Throwable $e) {
+            // Ignore if error
+        }
+    }
+
     public function getFormationStats(): array
     {
+        $this->autoUpdateSessionStatuses();
         try {
             $total = $this->connection->fetchOne('SELECT COUNT(*) FROM formation');
             $activeSessions = $this->connection->fetchOne("SELECT COUNT(*) FROM session_formation WHERE statut = 'Planifiee' OR statut = 'En cours'");
