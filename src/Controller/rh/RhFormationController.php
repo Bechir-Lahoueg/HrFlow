@@ -131,6 +131,14 @@ final class RhFormationController extends AbstractController
                 'statut' => $request->request->get('statut'),
             ];
 
+            if (empty($data['date_fin'])) {
+                $debutDate = new \DateTime($data['date_debut']);
+                $duree = (int) $formation['duree'];
+                $joursToAdd = max(0, $duree - 1);
+                $debutDate->modify("+{$joursToAdd} days");
+                $data['date_fin'] = $debutDate->format('Y-m-d');
+            }
+
             $this->formationService->createSession($data);
             $this->addFlash('success', 'Session créée avec succès.');
 
@@ -141,6 +149,47 @@ final class RhFormationController extends AbstractController
             'formation' => $formation,
             'session' => null,
             'isEdit' => false,
+        ]);
+    }
+
+    #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
+    public function editSession(int $id, Request $request, SessionService $sessionService): Response
+    {
+        $session = $sessionService->getSessionById($id);
+        if (!$session) {
+            throw $this->createNotFoundException('Session non trouvée');
+        }
+
+        $formation = $this->formationService->getFormationById($session['id_formation']);
+
+        if ($request->isMethod('POST')) {
+            $data = [
+                'date_debut' => $request->request->get('date_debut'),
+                'date_fin' => $request->request->get('date_fin'),
+                'lieu' => $request->request->get('lieu'),
+                'mode' => $request->request->get('mode'),
+                'capacite_max' => (int) $request->request->get('capacite_max'),
+                'statut' => $request->request->get('statut'),
+            ];
+
+            if (empty($data['date_fin'])) {
+                $debutDate = new \DateTime($data['date_debut']);
+                $duree = (int) $formation['duree'];
+                $joursToAdd = max(0, $duree - 1);
+                $debutDate->modify("+{$joursToAdd} days");
+                $data['date_fin'] = $debutDate->format('Y-m-d');
+            }
+
+            $this->formationService->updateSession($id, $data);
+            $this->addFlash('success', 'Session modifiée avec succès.');
+
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+        }
+
+        return $this->render('DashboardHr/formation/session_form.html.twig', [
+            'formation' => $formation,
+            'session' => $session,
+            'isEdit' => true,
         ]);
     }
 
