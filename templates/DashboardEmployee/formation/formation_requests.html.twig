@@ -1,0 +1,171 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Demandes de Formation | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .decision-table thead th{position:sticky;top:0;z-index:10}
+        .decision-row{transition:all .2s}
+        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+        .filter-chip{transition:all .2s}
+        .filter-chip:hover{transform:translateY(-1px)}
+        .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Suivi Formation</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes Demandes de Formation</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Suivi de vos inscriptions et participations aux formations.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Inscriptions</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ participations|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">au total</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Formation</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num"><a href="{{ path('employee_formation_index') }}" class="hover:text-cyan-300 transition-colors">Retour</a></p>
+                            <p class="text-xs text-cyan-100/60 mt-1">catalogue</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Participation History ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Historique</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="history-search" type="text" placeholder="Rechercher..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm w-40 focus:border-violet-400 focus:ring-violet-400 focus:bg-white">
+                        <select id="history-status" class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-violet-400 focus:ring-violet-400 focus:bg-white">
+                            <option value="ALL">Tous</option>
+                            <option value="Inscrit">Inscrit</option>
+                            <option value="Refuse">Refusé</option>
+                            <option value="Certificat obtenu">Certificat obtenu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-zinc-100">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/80">
+                                <th class="py-3 px-4">Formation</th>
+                                <th class="py-3 px-4">Date Session</th>
+                                <th class="py-3 px-4">Date Inscription</th>
+                                <th class="py-3 px-4">Statut</th>
+                                <th class="py-3 px-4">Certificat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                        {% for participation in participations %}
+                            <tr class="decision-row border-b border-zinc-50 align-top" data-status="{{ participation.statut_participation }}" data-search="{{ participation.titre|lower }} {{ participation.statut_participation|lower }}">
+                                <td class="py-3 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.titre }}</p>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.date_debut|date('d M Y') }}</p>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.date_inscription|date('d M Y') }}</p>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {{ participation.statut_participation == 'Inscrit' ? 'bg-blue-50 text-blue-700 border border-blue-200' : '' }}
+                                        {{ participation.statut_participation == 'Refuse' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                        {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {{ participation.statut_participation == 'Inscrit' ? 'bg-blue-500' : '' }}
+                                            {{ participation.statut_participation == 'Refuse' ? 'bg-red-500' : '' }}
+                                            {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-emerald-500' : '' }}"></span>
+                                        {{ participation.statut_participation }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if participation.certificat_obtenu %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                            Oui
+                                        </span>
+                                    {% else %}
+                                        <span class="text-[11px] text-zinc-400">Non</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="py-12 text-center text-zinc-400 text-sm">Aucune demande de formation pour le moment.</td></tr>
+                        {% endfor %}
+                        <tr id="history-empty" class="hidden"><td colspan="5" class="py-12 text-center text-zinc-400 text-sm">Aucun résultat avec ces filtres.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+(function () {
+    var historySearch = document.getElementById('history-search');
+    var historyStatus = document.getElementById('history-status');
+    var historyBody = document.getElementById('history-body');
+    var historyEmpty = document.getElementById('history-empty');
+
+    function filterHistory() {
+        if (!historyBody) return;
+        var q = (historySearch ? historySearch.value : '').trim().toLowerCase();
+        var st = historyStatus ? historyStatus.value : 'ALL';
+        var vis = 0;
+        historyBody.querySelectorAll('tr[data-status]').forEach(function (r) {
+            var show = (st === 'ALL' || r.getAttribute('data-status') === st) && (q === '' || (r.getAttribute('data-search') || '').includes(q));
+            r.classList.toggle('hidden', !show);
+            if (show) vis++;
+        });
+        if (historyEmpty) historyEmpty.classList.toggle('hidden', vis !== 0);
+    }
+
+    if (historySearch) historySearch.addEventListener('input', filterHistory);
+    if (historyStatus) historyStatus.addEventListener('change', filterHistory);
+    filterHistory();
+})();
+</script>
+{% endblock %}
+

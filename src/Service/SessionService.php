@@ -25,4 +25,21 @@ final class SessionService
              WHERE s.statut = "Ouverte" AND s.date_debut > NOW()'
         );
     }
+
+    public function getFormationIdBySessionId(int $sessionId): int
+    {
+        $result = $this->connection->fetchOne(
+            'SELECT id_formation FROM session_formation WHERE id_session = :id',
+            ['id' => $sessionId]
+        );
+        return $result ? (int)$result : 0;
+    }
+
+    public function getSessionById(int $sessionId): ?array
+    {
+        return $this->connection->fetchAssociative(
+            'SELECT * FROM session_formation WHERE id_session = :id',
+            ['id' => $sessionId]
+        );
+    }
 }
