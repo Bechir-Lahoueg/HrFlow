@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
-use Doctrine\DBAL\Connection;
+use App\Entity\Candidate;
+use App\Form\CandidateRegistrationFormType;
+use App\Repository\CandidateRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,70 +14,47 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class CandidateAuthController extends AbstractController
 {
-    public function __construct(private readonly Connection $connection)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CandidateRepository $candidateRepository
+    ) {
     }
 
     #[Route('/candidat/inscription', name: 'app_candidate_register')]
     public function register(Request $request): Response
     {
-        $error = null;
-        $success = null;
+        $candidate = new Candidate();
+        $form = $this->createForm(CandidateRegistrationFormType::class, $candidate);
+        $form->handleRequest($request);
 
-        if ($request->isMethod('POST')) {
-            $username = trim($request->request->get('username', ''));
-            $email = trim($request->request->get('email', ''));
-            $password = $request->request->get('password', '');
-            $confirmPassword = $request->request->get('confirm_password', '');
-            $firstName = trim($request->request->get('first_name', ''));
-            $lastName = trim($request->request->get('last_name', ''));
-            $phone = trim($request->request->get('phone', ''));
-
-            // Validation
-            if (empty($username) || empty($email) || empty($password)) {
-                $error = 'Veuillez remplir tous les champs obligatoires.';
-            } elseif (strlen($password) < 6) {
-                $error = 'Le mot de passe doit contenir au moins 6 caracteres.';
-            } elseif ($password !== $confirmPassword) {
-                $error = 'Les mots de passe ne correspondent pas.';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Veuillez entrer une adresse email valide.';
-            } else {
-                // Check if username or email already exists
-                $existing = $this->connection->fetchAssociative(
-                    'SELECT id FROM candidates WHERE username = :username OR email = :email LIMIT 1',
-                    ['username' => $username, 'email' => $email]
-                );
-
-                if ($existing) {
-                    $error = 'Ce nom d\'utilisateur ou email est deja utilise.';
-                } else {
-                    // Hash password using SHA-256 (to match existing system)
-                    $hashedPassword = hash('sha256', $password);
-
-                    // Insert new candidate
-                    $this->connection->insert('candidates', [
-                        'username' => $username,
-                        'email' => $email,
-                        'password' => $hashedPassword,
-                        'first_name' => $firstName ?: null,
-                        'last_name' => $lastName ?: null,
-                        'phone' => $phone ?: null,
-                    ]);
-
-                    $success = 'Votre compte a ete cree avec succes ! Vous pouvez maintenant vous connecter.';
-                }
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Check if username or email already exists
+            if ($this->candidateRepository->existsByUsernameOrEmail(
+                $candidate->getUsername(),
+                $candidate->getEmail()
+            )) {
+                $this->addFlash('error', 'Ce nom d\'utilisateur ou email est deja utilise.');
+                return $this->render('Auth/candidate_register.html.twig', [
+                    'form' => $form->createView(),
+                ]);
             }
+
+            // Hash password using SHA-256 (to match existing system)
+            $plainPassword = $form->get('plainPassword')->getData();
+            $hashedPassword = hash('sha256', $plainPassword);
+            $candidate->setPassword($hashedPassword);
+
+            // Save candidate
+            $this->entityManager->persist($candidate);
+            $this->entityManager->flush();
+
+            // Redirect to login page with success message
+            $this->addFlash('success', 'Votre compte a ete cree avec succes ! Vous pouvez maintenant vous connecter.');
+            return $this->redirectToRoute('app_candidate_login');
         }
 
         return $this->render('Auth/candidate_register.html.twig', [
-            'error' => $error,
-            'success' => $success,
-            'last_username' => $request->request->get('username', ''),
-            'last_email' => $request->request->get('email', ''),
-            'last_first_name' => $request->request->get('first_name', ''),
-            'last_last_name' => $request->request->get('last_name', ''),
-            'last_phone' => $request->request->get('phone', ''),
+            'form' => $form->createView(),
         ]);
     }
 
