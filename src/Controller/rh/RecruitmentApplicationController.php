@@ -4,6 +4,7 @@ namespace App\Controller\rh;
 
 use App\Entity\Applicaiton;
 use App\Repository\ApplicaitonRepository;
+use App\Repository\InterviewRepository;
 use App\Repository\JobOfferRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,6 +48,7 @@ final class RecruitmentApplicationController extends AbstractController
             'allOffers' => $allOffers,
             'currentOffer' => $currentOffer,
             'stats' => $stats,
+            'deletedApplications' => $applicaitonRepository->findDeletedByRh($rh),
         ]);
     }
 
@@ -132,6 +134,75 @@ final class RecruitmentApplicationController extends AbstractController
 
         $this->addFlash('success', 'Candidature supprimée avec succès.');
         return $this->redirectToRoute('app_rh_applications');
+    }
+
+    #[Route('/rh/recruitment/applications/{id}/restore', name: 'app_rh_applications_restore', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function restore(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('restore_application_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_applications');
+        }
+
+        $rh = $this->getCurrentRh();
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$application) {
+            $this->addFlash('error', 'Candidature non trouvée.');
+            return $this->redirectToRoute('app_rh_applications');
+        }
+
+        $application->setIsDeleted(false);
+        $em->flush();
+
+        $this->addFlash('success', 'Candidature restaurée avec succès.');
+        return $this->redirectToRoute('app_rh_applications');
+    }
+
+    #[Route('/rh/recruitment/applications/{id}/delete-permanent', name: 'app_rh_applications_delete_permanent', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function deletePermanent(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('permanent_delete_application_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_applications');
+        }
+
+        $rh = $this->getCurrentRh();
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$application) {
+            $this->addFlash('error', 'Candidature non trouvée.');
+            return $this->redirectToRoute('app_rh_applications');
+        }
+
+        $em->remove($application);
+        $em->flush();
+
+        $this->addFlash('success', 'Candidature définitivement supprimée.');
+        return $this->redirectToRoute('app_rh_applications');
+    }
+
+    #[Route('/rh/recruitment/applications/{id}', name: 'app_rh_applications_show', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function show(int $id, ApplicaitonRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
+    {
+        $rh = $this->getCurrentRh();
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$application) {
+            $this->addFlash('error', 'Candidature non trouvée.');
+            return $this->redirectToRoute('app_rh_applications');
+        }
+
+        // Get interviews for this application
+        $interviews = $interviewRepository->findByApplication($application->getId());
+
+        return $this->render('Recrutement/application_details.html.twig', [
+            'application' => $application,
+            'interviews' => $interviews,
+        ]);
     }
 
     private function getCurrentRh(): DbUser

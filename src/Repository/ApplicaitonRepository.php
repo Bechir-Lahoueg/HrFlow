@@ -70,6 +70,24 @@ class ApplicaitonRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find applications by job offer (owned by RH)
+     * @return Applicaiton[]
+     */
+    public function findByJobOffer(int $jobOfferId, DbUser $rh): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.jobOffer', 'jo')
+            ->where('a.jobOffer = :jobOfferId')
+            ->andWhere('jo.createdBy = :rhId')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('jobOfferId', $jobOfferId)
+            ->setParameter('rhId', $rh->getId())
+            ->orderBy('a.appliedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Get all job offers for filter dropdown (owned by RH)
      * @return JobOffer[]
      */
@@ -139,5 +157,36 @@ class ApplicaitonRepository extends ServiceEntityRepository
             ->setParameter('pending', 'PENDING')
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Find deleted applications by RH
+     * @return Applicaiton[]
+     */
+    public function findDeletedByRh(DbUser $rh): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.jobOffer', 'jo')
+            ->where('jo.createdBy = :rhId')
+            ->andWhere('a.isDeleted = true')
+            ->setParameter('rhId', $rh->getId())
+            ->orderBy('a.appliedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find one application by RH including deleted (for restore/permanent delete)
+     */
+    public function findOneByRhIncludingDeleted(int $id, DbUser $rh): ?Applicaiton
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.jobOffer', 'jo')
+            ->where('a.id = :id')
+            ->andWhere('jo.createdBy = :rhId')
+            ->setParameter('id', $id)
+            ->setParameter('rhId', $rh->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

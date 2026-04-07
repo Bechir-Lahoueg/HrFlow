@@ -76,6 +76,9 @@ class Applicaiton
     #[Assert\Length(max: 100, maxMessage: 'Source cannot exceed 100 characters')]
     private ?string $source = null;
 
+    #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
+    private $interviews;
+
     public function getId(): ?int
     {
         return $this->id;

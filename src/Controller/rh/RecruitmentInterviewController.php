@@ -72,6 +72,7 @@ final class RecruitmentInterviewController extends AbstractController
             'currentApplication' => $currentApplication,
             'form' => $form->createView(),
             'stats' => $stats,
+            'deletedInterviews' => $interviewRepository->findDeletedByRh($rh),
         ]);
     }
 
@@ -220,6 +221,78 @@ final class RecruitmentInterviewController extends AbstractController
 
         $this->addFlash('success', 'Entretien supprimé avec succès.');
         return $this->redirectToRoute('app_rh_interviews');
+    }
+
+    #[Route('/rh/recruitment/interviews/{id}/restore', name: 'app_rh_interviews_restore', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function restore(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('restore_interview_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        $rh = $this->getCurrentRh();
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$interview) {
+            $this->addFlash('error', 'Entretien non trouvé.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        $interview->setIsDeleted(false);
+        $em->flush();
+
+        $this->addFlash('success', 'Entretien restauré avec succès.');
+        return $this->redirectToRoute('app_rh_interviews');
+    }
+
+    #[Route('/rh/recruitment/interviews/{id}/delete-permanent', name: 'app_rh_interviews_delete_permanent', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function deletePermanent(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('permanent_delete_interview_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        $rh = $this->getCurrentRh();
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$interview) {
+            $this->addFlash('error', 'Entretien non trouvé.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        $em->remove($interview);
+        $em->flush();
+
+        $this->addFlash('success', 'Entretien définitivement supprimé.');
+        return $this->redirectToRoute('app_rh_interviews');
+    }
+
+    #[Route('/rh/recruitment/interviews/{id}', name: 'app_rh_interviews_show', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function show(int $id, InterviewRepository $interviewRepository, UserRepository $userRepository): Response
+    {
+        $rh = $this->getCurrentRh();
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$interview) {
+            $this->addFlash('error', 'Entretien non trouvé.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        // Get interviewer info
+        $interviewer = null;
+        if ($interview->getInterviewerId()) {
+            $interviewer = $userRepository->find($interview->getInterviewerId());
+        }
+
+        return $this->render('Recrutement/interview_details.html.twig', [
+            'interview' => $interview,
+            'interviewer' => $interviewer,
+        ]);
     }
 
     private function getCurrentRh(): DbUser

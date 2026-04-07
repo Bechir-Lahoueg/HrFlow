@@ -130,12 +130,12 @@ class ApplicationType extends AbstractType
                 'label' => 'Experience Level',
                 'required' => false,
                 'choices' => [
-                    'Entry Level' => 'entry',
-                    'Junior' => 'junior',
-                    'Mid-Level' => 'mid',
-                    'Senior' => 'senior',
-                    'Lead' => 'lead',
-                    'Executive' => 'executive',
+                    'Entry Level' => 'ENTRY',
+                    'Junior' => 'JUNIOR',
+                    'Mid-Level' => 'MID',
+                    'Senior' => 'SENIOR',
+                    'Lead' => 'LEAD',
+                    'Executive' => 'EXECUTIVE',
                 ],
                 'placeholder' => 'Select experience level',
                 'attr' => [

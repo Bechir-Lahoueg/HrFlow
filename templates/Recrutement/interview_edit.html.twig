@@ -61,13 +61,43 @@
                 </div>
 
                 {{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
-                    {{ form_row(form.application) }}
-                    {{ form_row(form.interviewerId) }}
-                    {{ form_row(form.interviewDate) }}
-                    {{ form_row(form.type) }}
-                    {{ form_row(form.meetingLink) }}
-                    {{ form_row(form.location) }}
-                    {{ form_row(form.feedback) }}
+                    {% from 'Recrutement/form_field_with_errors.html.twig' import form_widget_with_errors %}
+                    
+                    {{ form_widget_with_errors(form.application, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.interviewerId, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.interviewDate, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.type, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.meetingLink, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.location, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.feedback, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
 
                     <div class="flex items-center gap-3 pt-4">
                         <a href="{{ path('app_rh_interviews') }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200">

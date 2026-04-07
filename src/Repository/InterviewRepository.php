@@ -75,6 +75,20 @@ class InterviewRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find interviews by application (owned by RH)
+     * @return Interview[]
+     */
+    public function findByApplication(int $applicationId): array
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.application = :applicationId')
+            ->setParameter('applicationId', $applicationId)
+            ->orderBy('i.interviewDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Count total interviews for an RH
      */
     public function countByRh(DbUser $rh): int
@@ -151,5 +165,38 @@ class InterviewRepository extends ServiceEntityRepository
         ->getSingleScalarResult();
 
         return $result ? (float) $result : null;
+    }
+
+    /**
+     * Find deleted interviews by RH
+     * @return Interview[]
+     */
+    public function findDeletedByRh(DbUser $rh): array
+    {
+        return $this->createQueryBuilder('i')
+            ->join('i.application', 'a')
+            ->join('a.jobOffer', 'jo')
+            ->where('jo.createdBy = :rhId')
+            ->andWhere('i.isDeleted = true')
+            ->setParameter('rhId', $rh->getId())
+            ->orderBy('i.interviewDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find one interview by RH including deleted (for restore/permanent delete)
+     */
+    public function findOneByRhIncludingDeleted(int $id, DbUser $rh): ?Interview
+    {
+        return $this->createQueryBuilder('i')
+            ->join('i.application', 'a')
+            ->join('a.jobOffer', 'jo')
+            ->where('i.id = :id')
+            ->andWhere('jo.createdBy = :rhId')
+            ->setParameter('id', $id)
+            ->setParameter('rhId', $rh->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
