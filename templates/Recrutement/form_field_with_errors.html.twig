@@ -1,0 +1,57 @@
+{# Form field with validation error display
+   Usage: {{ form_row(form.field, {'attr': {'class': 'input-field'}, 'label_attr': {'class': 'input-label'}}) }}
+   Or use the form_widget_with_errors macro below for custom rendering
+#}
+
+{% macro form_widget_with_errors(form_field, options = {}) %}
+    {% set container_class = options.container_class|default('mb-4') %}
+    {% set label_class = options.label_class|default('block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider') %}
+    {% set input_class = options.input_class|default('w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors') %}
+    {% set error_class = options.error_class|default('text-red-500 text-xs mt-1.5 font-medium flex items-center gap-1') %}
+    
+    <div class="{{ container_class }}">
+        {{ form_label(form_field, null, {'label_attr': {'class': label_class}}) }}
+        {{ form_widget(form_field, {'attr': {'class': input_class ~ (form_field.vars.errors|length > 0 ? ' border-red-300 focus:border-red-400 focus:ring-red-100' : '')}}) }}
+        
+        {% if form_field.vars.errors|length > 0 %}
+            <div class="{{ error_class }} animate-slide-up">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+                {% for error in form_field.vars.errors %}
+                    {{ error.message }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# Reusable form field template for consistent styling with errors #}
+<div class="form-group mb-4">
+    {% if label is defined and label is not false %}
+        <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider {{ label_class|default('') }}">
+            {{ label }}
+        </label>
+    {% endif %}
+    
+    {% if form_field is defined %}
+        {% set input_classes = 'w-full rounded-lg border bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none transition-colors ' ~ 
+            (form_field.vars.errors|length > 0 
+                ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100' 
+                : 'border-slate-200 dark:border-zinc-700 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100') ~
+            ' ' ~ (input_class|default('')) %}
+        
+        {{ form_widget(form_field, {'attr': {'class': input_classes}}) }}
+        
+        {% if form_field.vars.errors|length > 0 %}
+            <div class="text-red-500 text-xs mt-1.5 font-medium flex items-center gap-1 animate-slide-up">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+                {% for error in form_field.vars.errors %}
+                    {{ error.message }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

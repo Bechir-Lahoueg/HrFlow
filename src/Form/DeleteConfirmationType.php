@@ -13,13 +13,13 @@ class DeleteConfirmationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('confirm', HiddenType::class, [
-                'data' => '1',
+            ->add('action', HiddenType::class, [
+                'data' => $options['action_value'],
             ])
-            ->add('delete', SubmitType::class, [
+            ->add('confirm', SubmitType::class, [
                 'label' => $options['submit_label'],
                 'attr' => [
-                    'class' => 'btn btn-danger',
+                    'class' => $options['button_class'],
                 ],
             ]);
     }
@@ -27,9 +27,13 @@ class DeleteConfirmationType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'submit_label' => 'Confirm Delete',
+            'action_value' => 'delete',
+            'submit_label' => 'Confirmer',
+            'button_class' => 'inline-flex w-full justify-center rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md sm:w-auto',
         ]);
 
+        $resolver->setAllowedTypes('action_value', 'string');
         $resolver->setAllowedTypes('submit_label', 'string');
+        $resolver->setAllowedTypes('button_class', 'string');
     }
 }

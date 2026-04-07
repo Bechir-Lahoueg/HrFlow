@@ -127,4 +127,49 @@ class JobOfferRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Find deleted job offers by RH
+     * @return JobOffer[]
+     */
+    public function findDeletedByRh(DbUser $rh): array
+    {
+        return $this->createQueryBuilder('jo')
+            ->where('jo.createdBy = :rhId')
+            ->andWhere('jo.isDeleted = true')
+            ->setParameter('rhId', $rh->getId())
+            ->orderBy('jo.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find one job offer by RH including deleted (for restore/permanent delete)
+     */
+    public function findOneByRhIncludingDeleted(int $id, DbUser $rh): ?JobOffer
+    {
+        return $this->createQueryBuilder('jo')
+            ->where('jo.id = :id')
+            ->andWhere('jo.createdBy = :rhId')
+            ->setParameter('id', $id)
+            ->setParameter('rhId', $rh->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Find published job offers for public page (limited preview)
+     * @return JobOffer[]
+     */
+    public function findPublished(int $limit = 6): array
+    {
+        return $this->createQueryBuilder('jo')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->setParameter('status', 'OPEN')
+            ->orderBy('jo.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

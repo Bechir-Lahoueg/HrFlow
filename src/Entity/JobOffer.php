@@ -67,7 +67,7 @@ class JobOffer
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isDeleted = false;
 
-    #[ORM\OneToMany(targetEntity: Applicaiton::class, mappedBy: 'jobOffer')]
+    #[ORM\OneToMany(targetEntity: Applicaiton::class, mappedBy: 'jobOffer', cascade: ['remove'])]
     private $applications;
 
     public function getId(): ?int
