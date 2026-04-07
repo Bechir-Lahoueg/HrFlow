@@ -30,8 +30,15 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function supports(Request $request): bool
     {
-        return ($request->isMethod('POST') && $request->getPathInfo() === $this->urlGenerator->generate(self::LOGIN_ROUTE))
-            || ($request->isMethod('POST') && $request->getPathInfo() === $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE));
+        if (!$request->isMethod('POST')) {
+            return false;
+        }
+
+        $path = $request->getPathInfo();
+        $loginPath = $this->urlGenerator->generate(self::LOGIN_ROUTE);
+        $candidateLoginPath = $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE);
+
+        return $path === $loginPath || $path === $candidateLoginPath;
     }
 
     public function authenticate(Request $request): Passport
