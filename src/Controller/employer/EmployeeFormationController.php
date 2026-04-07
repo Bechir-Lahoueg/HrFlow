@@ -6,6 +6,7 @@ use App\Service\SessionService;
 use App\Service\ParticipationService;
 use App\Service\FormationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -19,15 +20,28 @@ final class EmployeeFormationController extends AbstractController
     ) {}
 
     #[Route('/', name: 'employee_formation_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = $this->getUser();
         $rhId = method_exists($user, 'getRhId') ? $user->getRhId() : null;
 
-        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId) : [];
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', '');
+        $sortQuery = $request->query->get('sort', 'created_at-DESC');
+
+        $sortParts = explode('-', $sortQuery);
+        $sort = $sortParts[0] ?? 'created_at';
+        $dir = $sortParts[1] ?? 'DESC';
+
+        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId, $search, $type, $sort, $dir) : [];
 
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
+            'filters' => [
+                'search' => $search,
+                'type' => $type,
+                'sort' => $sortQuery
+            ]
         ]);
     }
 

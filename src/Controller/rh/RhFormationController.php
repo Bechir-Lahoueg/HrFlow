@@ -17,13 +17,26 @@ final class RhFormationController extends AbstractController
     public function __construct(private readonly FormationService $formationService) {}
 
     #[Route('/', name: 'rh_formation_list', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $userId = $this->getUser()->getId();
 
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', '');
+        $sortQuery = $request->query->get('sort', 'created_at-DESC');
+
+        $sortParts = explode('-', $sortQuery);
+        $sort = $sortParts[0] ?? 'created_at';
+        $dir = $sortParts[1] ?? 'DESC';
+
         return $this->render('DashboardHr/formation/formation_index.html.twig', [
-            'formations' => $this->formationService->getFormationsByRhId($userId),
+            'formations' => $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir),
             'stats' => $this->formationService->getFormationStatsByRhId($userId),
+            'filters' => [
+                'search' => $search,
+                'type' => $type,
+                'sort' => $sortQuery
+            ]
         ]);
     }
 

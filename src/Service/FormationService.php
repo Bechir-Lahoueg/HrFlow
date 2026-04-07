@@ -17,10 +17,29 @@ final class FormationService
         }
     }
 
-    public function getFormationsByRhId(int $rhId): array
+    public function getFormationsByRhId(int $rhId, string $search = '', string $type = '', string $sort = 'created_at', string $dir = 'DESC'): array
     {
         try {
-            return $this->connection->fetchAllAssociative('SELECT * FROM formation WHERE id_rh = ? ORDER BY created_at DESC', [$rhId]);
+            $sql = 'SELECT * FROM formation WHERE id_rh = :rh_id';
+            $params = ['rh_id' => $rhId];
+
+            if (!empty($search)) {
+                $sql .= ' AND (titre LIKE :search OR description LIKE :search)';
+                $params['search'] = '%' . $search . '%';
+            }
+
+            if (!empty($type)) {
+                $sql .= ' AND type = :type';
+                $params['type'] = $type;
+            }
+
+            $allowedSorts = ['created_at', 'titre', 'duree'];
+            $sort = in_array($sort, $allowedSorts) ? $sort : 'created_at';
+            $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+
+            $sql .= " ORDER BY $sort $dir";
+
+            return $this->connection->fetchAllAssociative($sql, $params);
         } catch (\Throwable) {
             return [];
         }
