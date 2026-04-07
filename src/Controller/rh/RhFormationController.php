@@ -5,6 +5,7 @@ namespace App\Controller\rh;
 use App\Service\FormationService;
 use App\Service\ParticipationService;
 use App\Service\SessionService;
+use App\Service\PresenceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -230,5 +231,75 @@ final class RhFormationController extends AbstractController
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }
-}
 
+    #[Route('/session/{id}/presence', name: 'rh_formation_session_presence', methods: ['GET', 'POST'])]
+    public function presence(int $id, Request $request, SessionService $sessionService, ParticipationService $participationService, PresenceService $presenceService): Response
+    {
+        $session = $sessionService->getSessionById($id);
+        if (!$session) {
+            throw $this->createNotFoundException('Session non trouvée');
+        }
+
+        if ($session['statut'] !== 'En cours') {
+            $this->addFlash('error', 'Vous ne pouvez faire la présence que pour des sessions En cours.');
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+        }
+
+        $formation = $this->formationService->getFormationById($session['id_formation']);
+
+        $debut = new \DateTime($session['date_debut']);
+        $fin = new \DateTime($session['date_fin']);
+        $today = new \DateTime();
+
+        $maxDate = $today < $fin ? $today : $fin;
+
+        $selectedDateStr = $request->query->get('date', $maxDate->format('Y-m-d'));
+        $selectedDate = new \DateTime($selectedDateStr);
+
+        if ($selectedDate < $debut || $selectedDate > $maxDate) {
+            $selectedDate = $maxDate;
+            $selectedDateStr = $maxDate->format('Y-m-d');
+        }
+
+        $allParticipations = $participationService->getSessionParticipations($id);
+        $acceptedParticipations = array_filter($allParticipations, fn($p) => $p['statut_participation'] === 'Accepte');
+
+        $dates = [];
+        $interval = new \DateInterval('P1D');
+        $period = new \DatePeriod($debut, $interval, $maxDate->modify('+1 day'));
+        foreach ($period as $dt) {
+            $dates[] = $dt->format('Y-m-d');
+        }
+
+        if ($request->isMethod('POST')) {
+            $presencesDataAll = $request->request->all('presences');
+            // Expected format: presences[date][participationId] = 'Present'
+            if (!empty($presencesDataAll) && is_array($presencesDataAll)) {
+                try {
+                    foreach ($presencesDataAll as $date => $presencesData) {
+                        $presenceService->savePresences($date, $presencesData);
+                    }
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'enregistrement des présences.');
+                }
+
+                $this->addFlash('success', 'Présences mises à jour avec succès.');
+                return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+            }
+        }
+
+        $existingPresencesRaw = $presenceService->getPresencesBySession($id);
+        $currentPresences = [];
+        foreach ($existingPresencesRaw as $p) {
+            $currentPresences[$p['date_presence']][$p['id_participation']] = $p['statut'];
+        }
+
+        return $this->render('DashboardHr/formation/formation_presence.html.twig', [
+            'session' => $session,
+            'formation' => $formation,
+            'participations' => $acceptedParticipations,
+            'dates' => $dates,
+            'currentPresences' => $currentPresences,
+        ]);
+    }
+}

@@ -35,7 +35,7 @@ final class ParticipationService
 
     public function getEmployeeParticipations(int $userId): array
     {
-        return $this->connection->fetchAllAssociative(
+        $participations = $this->connection->fetchAllAssociative(
             'SELECT p.*, f.titre, s.date_debut
              FROM participation_formation p
              JOIN session_formation s ON p.id_session = s.id_session
@@ -43,6 +43,13 @@ final class ParticipationService
              WHERE p.id_utilisateur = :userId',
             ['userId' => $userId]
         );
+
+        $presenceService = new PresenceService($this->connection);
+        foreach ($participations as &$p) {
+            $p['pourcentage_presence'] = $presenceService->getAttendancePercentage((int)$p['id_participation']);
+        }
+
+        return $participations;
     }
 
     public function getSessionParticipations(int $sessionId): array

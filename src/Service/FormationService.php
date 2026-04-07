@@ -61,7 +61,6 @@ final class FormationService
 
     public function getSessionsByFormation(int $formationId): array
     {
-        $this->autoUpdateSessionStatuses();
         try {
             return $this->connection->fetchAllAssociative('SELECT * FROM session_formation WHERE id_formation = ? ORDER BY date_debut DESC', [$formationId]);
         } catch (\Throwable) {
@@ -121,30 +120,12 @@ final class FormationService
         }
     }
 
-    private function autoUpdateSessionStatuses(): void
-    {
-        try {
-            // Un statut s'actualise avec le temps
-            $this->connection->executeStatement("
-                UPDATE session_formation
-                SET statut = CASE
-                    WHEN DATE(date_debut) > CURRENT_DATE THEN 'Planifiee'
-                    WHEN DATE(date_fin) < CURRENT_DATE THEN 'Terminee'
-                    ELSE 'En cours'
-                END
-                WHERE statut NOT IN ('Annulee')
-            ");
-        } catch (\Throwable $e) {
-            // Ignore if error
-        }
-    }
-
     public function getFormationStats(): array
     {
-        $this->autoUpdateSessionStatuses();
         try {
             $total = $this->connection->fetchOne('SELECT COUNT(*) FROM formation');
-            $activeSessions = $this->connection->fetchOne("SELECT COUNT(*) FROM session_formation WHERE statut = 'Planifiee' OR statut = 'En cours'");
+            $activeSessions = $this->connection->fetchOne('SELECT COUNT(*) FROM session_formation WHERE statut = ?', ['En cours']);
+
             $totalParticipants = $this->connection->fetchOne('SELECT COUNT(*) FROM participation_formation');
             return [
                 'total_formations' => (int) $total,
