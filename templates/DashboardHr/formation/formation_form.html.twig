@@ -85,11 +85,24 @@
                                   class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">{{ formation.description ?? '' }}</textarea>
                     </div>
 
-                    <div>
-                        <label for="objectifs" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Objectifs</label>
-                        <textarea id="objectifs" name="objectifs" rows="4"
-                                  class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3">{{ formation.objectifs ?? '' }}</textarea>
-                    </div>
+
+                  <div>
+                      <div class="flex items-center justify-between mb-2">
+                          <label for="objectifs" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Objectifs</label>
+
+                          <button type="button" id="btn-generate-ai"
+                                  class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                              </svg>
+                              Générer avec l'IA
+                          </button>
+                      </div>
+
+                      <textarea id="objectifs" name="objectifs" rows="4"
+                                class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white py-2.5 px-3 transition-all"
+                                placeholder="Cliquez sur le bouton pour générer des objectifs automatiquement...">{{ formation.objectifs ?? '' }}</textarea>
+                  </div>
 
                     <div class="flex gap-3 pt-4">
                         <button type="submit" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
@@ -105,4 +118,55 @@
         </main>
     </div>
 </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('turbo:load', function() {
+            const btn = document.getElementById('btn-generate-ai');
+            const objectifsTextarea = document.getElementById('objectifs');
+            const titreInput = document.getElementById('titre');
+
+            if (btn) {
+                btn.addEventListener('click', async function() {
+                    const titre = titreInput.value;
+
+                    if (!titre) {
+                        alert("Veuillez d'abord saisir un titre de formation.");
+                        return;
+                    }
+
+                    const originalContent = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = `Génération...`;
+                    objectifsTextarea.placeholder = "L'IA réfléchit...";
+
+                    try {
+                        const response = await fetch("{{ path('rh_formation_generate_ai') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `titre=${encodeURIComponent(titre)}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.objectifs) {
+                            objectifsTextarea.value = data.objectifs;
+                        } else {
+                            alert("Erreur : " + (data.error || "Impossible de générer."));
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        alert("Une erreur de connexion est survenue.");
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                        objectifsTextarea.placeholder = "";
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}
