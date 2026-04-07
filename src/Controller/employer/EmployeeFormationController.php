@@ -21,8 +21,13 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/', name: 'employee_formation_index')]
     public function index(): Response
     {
+        $user = $this->getUser();
+        $rhId = method_exists($user, 'getRhId') ? $user->getRhId() : null;
+
+        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId) : [];
+
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
-            'formations' => $this->formationService->getAllFormations(),
+            'formations' => $formations,
         ]);
     }
 

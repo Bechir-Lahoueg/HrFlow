@@ -19,9 +19,11 @@ final class RhFormationController extends AbstractController
     #[Route('/', name: 'rh_formation_list', methods: ['GET'])]
     public function index(): Response
     {
+        $userId = $this->getUser()->getId();
+
         return $this->render('DashboardHr/formation/formation_index.html.twig', [
-            'formations' => $this->formationService->getAllFormations(),
-            'stats' => $this->formationService->getFormationStats(),
+            'formations' => $this->formationService->getFormationsByRhId($userId),
+            'stats' => $this->formationService->getFormationStatsByRhId($userId),
         ]);
     }
 
