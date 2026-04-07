@@ -11,9 +11,18 @@ final class SessionService
     public function getSessionsByFormation(int $formationId): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT * FROM session_formation WHERE id_formation = :id',
-            ['id' => $formationId]
-        );
+                   'SELECT s.*,
+                           (
+                               SELECT COUNT(*)
+                               FROM participation_formation p
+                               WHERE p.id_session = s.id_session
+                               AND p.statut_participation = "Accepte"
+                           ) AS places_prises
+                    FROM session_formation s
+                    WHERE s.id_formation = :id
+                    ORDER BY s.date_debut DESC',
+                   ['id' => $formationId]
+               );
     }
 
     public function getAvailableSessions(): array
