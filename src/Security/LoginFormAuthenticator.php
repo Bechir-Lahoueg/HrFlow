@@ -20,11 +20,18 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     use TargetPathTrait;
 
     public const LOGIN_ROUTE = 'app_login';
+    public const CANDIDATE_LOGIN_ROUTE = 'app_candidate_login';
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly DbUserProvider $userProvider,
     ) {
+    }
+
+    public function supports(Request $request): bool
+    {
+        return ($request->isMethod('POST') && $request->getPathInfo() === $this->urlGenerator->generate(self::LOGIN_ROUTE))
+            || ($request->isMethod('POST') && $request->getPathInfo() === $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE));
     }
 
     public function authenticate(Request $request): Passport
@@ -68,11 +75,19 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($this->urlGenerator->generate('app_welcome_employee'));
         }
 
+        if (in_array('ROLE_CANDIDATE', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_candidate_dashboard'));
+        }
+
         return new RedirectResponse($this->urlGenerator->generate('app_welcome'));
     }
 
     protected function getLoginUrl(Request $request): string
     {
+        // Check if request came from candidate login page
+        if ($request->getPathInfo() === $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE)) {
+            return $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE);
+        }
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
 

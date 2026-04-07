@@ -99,6 +99,7 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
             'ADMIN' => 'ROLE_ADMIN',
             'RH' => 'ROLE_RH',
             'EMPLOYEE' => 'ROLE_EMPLOYEE',
+            'CANDIDATE' => 'ROLE_CANDIDATE',
             default => str_starts_with($normalizedRole, 'ROLE_') ? $normalizedRole : 'ROLE_USER',
         };
 

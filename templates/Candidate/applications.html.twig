@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Candidatures | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {# Navigation #}
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
+                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[2.5] origin-left">
+                </a>
+
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="{{ path('app_candidate_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Tableau de bord
+                    </a>
+                    <a href="{{ path('app_candidate_applications') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50">
+                        Mes candidatures
+                    </a>
+                    <a href="{{ path('app_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Offres d'emploi
+                    </a>
+                    <a href="{{ path('app_candidate_profile') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Mon profil
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-600 hidden sm:block">{{ app.user.username }}</span>
+                    <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <h1 class="text-2xl font-bold text-slate-900 mb-6">Mes candidatures</h1>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+            <svg class="w-20 h-20 mx-auto mb-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <h2 class="text-xl font-bold text-slate-900 mb-2">Aucune candidature</h2>
+            <p class="text-slate-600 mb-6">Vous n'avez pas encore postule a une offre.</p>
+            <a href="{{ path('app_job_offers') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Voir les offres disponibles
+            </a>
+        </div>
+    </main>
+</div>
+{% endblock %}

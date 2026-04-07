@@ -108,17 +108,34 @@
                     {% endfor %}
                 </div>
                 
-                {# Sign in CTA Section #}
+                {# Sign in CTA Section - Only show for non-authenticated users #}
+                {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
                 <div class="mt-16 pt-10 border-t border-slate-200 text-center">
                     <div class="bg-slate-900 rounded-2xl p-8 text-white max-w-2xl mx-auto">
                         <h3 class="text-xl font-bold mb-3">Interesse par l'une de ces offres ?</h3>
-                        <p class="text-slate-400 mb-6">Connectez-vous pour postuler et rejoindre notre equipe.</p>
-                        <a href="{{ path('app_login') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold transition-all duration-200">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                            Se connecter pour postuler
-                        </a>
+                        <p class="text-slate-400 mb-6">Connectez-vous ou creez un compte pour postuler.</p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <a href="{{ path('app_candidate_login') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold transition-all duration-200">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                                Se connecter
+                            </a>
+                            <a href="{{ path('app_candidate_register') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-semibold transition-all duration-200">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+                                S'inscrire
+                            </a>
+                        </div>
                     </div>
                 </div>
+                {% elseif is_granted('ROLE_CANDIDATE') %}
+                {# Show message for logged in candidates #}
+                <div class="mt-16 pt-10 border-t border-slate-200 text-center">
+                    <div class="bg-emerald-50 rounded-2xl p-8 text-slate-900 max-w-2xl mx-auto border border-emerald-200">
+                        <h3 class="text-xl font-bold mb-3">Vous etes connecte en tant que candidat</h3>
+                        <p class="text-slate-600 mb-6">Vous pouvez maintenant postuler aux offres qui vous interessent.</p>
+                        <p class="text-sm text-slate-500">Connecte en tant que <span class="font-semibold">{{ app.user.username }}</span></p>
+                    </div>
+                </div>
+                {% endif %}
             {% else %}
                 {# Empty State #}
                 <div class="text-center py-20">

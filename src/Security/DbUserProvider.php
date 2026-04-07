@@ -36,6 +36,16 @@ final class DbUserProvider implements UserProviderInterface
             return $this->hydrateEmployee($empRow);
         }
 
+        // Finally try the candidates table (external applicants)
+        $candidateRow = $this->connection->fetchAssociative(
+            'SELECT id, username, email, password, first_name, last_name, phone FROM candidates WHERE username = :identifier OR email = :identifier LIMIT 1',
+            ['identifier' => $identifier]
+        );
+
+        if ($candidateRow) {
+            return $this->hydrateCandidate($candidateRow);
+        }
+
         throw new UserNotFoundException(sprintf('User "%s" was not found.', $identifier));
     }
 
@@ -56,6 +66,19 @@ final class DbUserProvider implements UserProviderInterface
             }
 
             return $this->hydrateEmployee($row);
+        }
+
+        if ($user->getSource() === 'candidates') {
+            $row = $this->connection->fetchAssociative(
+                'SELECT id, username, email, password, first_name, last_name, phone FROM candidates WHERE id = :id LIMIT 1',
+                ['id' => $user->getId()]
+            );
+
+            if (!$row) {
+                throw new UserNotFoundException(sprintf('Candidate id "%d" was not found.', $user->getId()));
+            }
+
+            return $this->hydrateCandidate($row);
         }
 
         $row = $this->connection->fetchAssociative(
@@ -104,6 +127,23 @@ final class DbUserProvider implements UserProviderInterface
             (string) $row['job_title'],
             (int) $row['age'],
             $row['rh_id'] ? (int) $row['rh_id'] : null
+        );
+    }
+
+    private function hydrateCandidate(array $row): DbUser
+    {
+        return new DbUser(
+            (int) $row['id'],
+            (string) $row['username'],
+            (string) $row['email'],
+            (string) $row['password'],
+            'CANDIDATE',
+            'candidates',
+            isset($row['first_name']) ? (string) $row['first_name'] : null,
+            isset($row['last_name']) ? (string) $row['last_name'] : null,
+            null,
+            null,
+            null
         );
     }
 }
