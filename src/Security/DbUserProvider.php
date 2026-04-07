@@ -28,7 +28,7 @@ final class DbUserProvider implements UserProviderInterface
 
         // Then try the employees table (like the Java app)
         $empRow = $this->connection->fetchAssociative(
-            'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE email = :identifier LIMIT 1',
+            'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
@@ -47,7 +47,7 @@ final class DbUserProvider implements UserProviderInterface
 
         if ($user->getSource() === 'employees') {
             $row = $this->connection->fetchAssociative(
-                'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE id = :id LIMIT 1',
+                'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE id = :id LIMIT 1',
                 ['id' => $user->getId()]
             );
 
@@ -102,7 +102,8 @@ final class DbUserProvider implements UserProviderInterface
             $firstName,
             $lastName,
             (string) $row['job_title'],
-            (int) $row['age']
+            (int) $row['age'],
+            $row['rh_id'] ? (int) $row['rh_id'] : null
         );
     }
 }

@@ -17,6 +17,45 @@ final class FormationService
         }
     }
 
+    public function getFormationsByRhId(int $rhId): array
+    {
+        try {
+            return $this->connection->fetchAllAssociative('SELECT * FROM formation WHERE id_rh = ? ORDER BY created_at DESC', [$rhId]);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    public function getFormationStatsByRhId(int $rhId): array
+    {
+        try {
+            $total = $this->connection->fetchOne('SELECT COUNT(*) FROM formation WHERE id_rh = ?', [$rhId]);
+
+            $activeSessions = $this->connection->fetchOne(
+                'SELECT COUNT(*) FROM session_formation sf
+                 JOIN formation f ON sf.id_formation = f.id_formation
+                 WHERE sf.statut = ? AND f.id_rh = ?',
+                ['En cours', $rhId]
+            );
+
+            $totalParticipants = $this->connection->fetchOne(
+                'SELECT COUNT(*) FROM participation_formation pf
+                 JOIN session_formation sf ON pf.id_session = sf.id_session
+                 JOIN formation f ON sf.id_formation = f.id_formation
+                 WHERE f.id_rh = ?',
+                [$rhId]
+            );
+
+            return [
+                'total_formations' => (int) $total,
+                'active_sessions' => (int) $activeSessions,
+                'total_participants' => (int) $totalParticipants,
+            ];
+        } catch (\Throwable) {
+            return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
+        }
+    }
+
     public function createFormation(array $data): void
     {
         $this->connection->insert('formation', [
