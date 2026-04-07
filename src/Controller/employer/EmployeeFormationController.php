@@ -80,6 +80,6 @@ final class EmployeeFormationController extends AbstractController
             $this->addFlash('error', 'Vous êtes déjà inscrit à cette session.');
         }
 
-        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getFormationIdBySessionId($id)]);
+        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getIdFormationBySessionId($id)]);
     }
 }

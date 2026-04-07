@@ -125,7 +125,8 @@
                 {# Grid des Formations #}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
-                        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between">
+                        <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id_formation}) }}'"
+                             class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 <div class="flex justify-between items-start mb-3">
                                     <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
@@ -157,10 +158,7 @@
                                 </div>
                             </div>
 
-                            <div class="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto">
-                                <a href="{{ path('rh_formation_sessions', {id: formation.id_formation}) }}" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-800 flex items-center justify-center transition-colors" title="Sessions">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                </a>
+                            <div class="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto" onclick="event.stopPropagation()">
                                 <a href="{{ path('rh_formation_edit', {id: formation.id_formation}) }}" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-800 flex items-center justify-center transition-colors" title="Modifier">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
