@@ -10,7 +10,6 @@ final class SessionService
 
     public function getSessionsByFormation(int $formationId): array
     {
-        $this->autoUpdateSessionStatuses();
         return $this->connection->fetchAllAssociative(
             'SELECT * FROM session_formation WHERE id_formation = :id',
             ['id' => $formationId]
@@ -30,22 +29,14 @@ final class SessionService
 
     private function autoUpdateSessionStatuses(): void
     {
-        try {
-            $this->connection->executeStatement("
-                UPDATE session_formation
-                SET statut = CASE
-                    WHEN DATE(date_debut) > CURRENT_DATE THEN 'Planifiee'
-                    WHEN DATE(date_fin) < CURRENT_DATE THEN 'Terminee'
-                    ELSE 'En cours'
-                END
-                WHERE statut NOT IN ('Annulee')
-            ");
-        } catch (\Throwable $e) {
-            // Ignore if error
-        }
+        $now = new \DateTime();
+        $this->connection->executeStatement(
+            'UPDATE session_formation SET statut = "Cloturee" WHERE date_fin < :now',
+            ['now' => $now->format('Y-m-d H:i:s')]
+        );
     }
 
-    public function getFormationIdBySessionId(int $sessionId): int
+    public function getIdFormationBySessionId(int $sessionId): int
     {
         $result = $this->connection->fetchOne(
             'SELECT id_formation FROM session_formation WHERE id_session = :id',

@@ -49,16 +49,18 @@ final class EmployeeFormationController extends AbstractController
         $userId = $this->getUser()->getId();
         $myParticipations = $this->participationService->getEmployeeParticipations($userId);
 
-        // Créer un map des sessions où l'employé est inscrit
-        $mySessionIds = [];
+        $mySessionStats = [];
         foreach ($myParticipations as $participation) {
-            $mySessionIds[$participation['id_session']] = $participation['statut_participation'];
+            $mySessionStats[$participation['id_session']] = [
+                'statut' => $participation['statut_participation'],
+                'pourcentage' => $participation['pourcentage_presence'] ?? 0
+            ];
         }
 
         return $this->render('DashboardEmployee/formation/formation_sessions.html.twig', [
             'formation' => $formation,
             'sessions' => $sessions,
-            'mySessionIds' => $mySessionIds,
+            'mySessionStats' => $mySessionStats,
         ]);
     }
 
