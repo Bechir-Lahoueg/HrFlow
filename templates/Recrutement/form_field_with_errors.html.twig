@@ -28,7 +28,7 @@
 
 {# Reusable form field template for consistent styling with errors #}
 <div class="form-group mb-4">
-    {% if label is defined and label is not false %}
+    {% if label is defined and label %}
         <label class="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider {{ label_class|default('') }}">
             {{ label }}
         </label>
