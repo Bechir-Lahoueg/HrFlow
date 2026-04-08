@@ -20,10 +20,10 @@ class Interview
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Applicaiton::class)]
+    #[ORM\ManyToOne(targetEntity: Application::class, inversedBy: 'interviews')]
     #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false)]
     #[Assert\NotNull(message: 'Application is required')]
-    private ?Applicaiton $application = null;
+    private ?Application $application = null;
 
     #[ORM\Column(name: 'interviewer_id', type: Types::INTEGER, nullable: false)]
     #[Assert\NotNull(message: 'Interviewer is required')]
@@ -69,12 +69,12 @@ class Interview
         return $this->id;
     }
 
-    public function getApplication(): ?Applicaiton
+    public function getApplication(): ?Application
     {
         return $this->application;
     }
 
-    public function setApplication(?Applicaiton $application): static
+    public function setApplication(?Application $application): static
     {
         $this->application = $application;
         return $this;

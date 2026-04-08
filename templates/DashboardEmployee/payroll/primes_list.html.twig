@@ -1,0 +1,68 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Mes Primes{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900 dark:to-zinc-800 py-8 px-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">Mes Primes</h1>
+            <p class="text-slate-600 dark:text-slate-400">Visualisez toutes les primes accordées</p>
+        </div>
+
+        <!-- Primes Table -->
+        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 dark:bg-zinc-700 border-b border-slate-200 dark:border-zinc-600">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Type</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Motif</th>
+                            <th class="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-white">Montant</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-zinc-600">
+                        {% for prime in primes %}
+                            <tr class="hover:bg-slate-50 dark:hover:bg-zinc-700 transition-colors">
+                                <td class="px-6 py-4 text-slate-900 dark:text-white font-semibold">{{ prime.typePrime }}</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">{{ prime.motif ?? '—' }}</td>
+                                <td class="px-6 py-4 text-right text-green-600 font-bold text-lg">{{ prime.montant }} TND</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ prime.dateAttribution|date('d/m/Y') }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center text-slate-600 dark:text-slate-400">
+                                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-lg font-semibold">Aucune prime accordée</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Total Primes Card -->
+        {% if primes|length > 0 %}
+            <div class="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-lg p-6">
+                <p class="text-green-700 dark:text-green-400 text-sm font-semibold">TOTAL PRIMES</p>
+                <p class="text-4xl font-bold text-green-600 mt-2">{{ totalPrimes }} TND</p>
+            </div>
+        {% endif %}
+
+        <!-- Navigation Links -->
+        <div class="flex gap-4 mt-8">
+            <a href="{{ path('app_employee_payroll_fiches') }}" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all">
+                Mes Fiches de Paie
+            </a>
+            <a href="{{ path('app_employee_payroll_deductions') }}" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-all">
+                Mes Déductions
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

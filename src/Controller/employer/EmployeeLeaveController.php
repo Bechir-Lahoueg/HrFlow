@@ -53,16 +53,17 @@ final class EmployeeLeaveController extends AbstractController
     #[Route('/welcome/employee/leaves/{id}/delete', name: 'app_employee_leave_request_delete', methods: ['POST'])]
     #[IsGranted('ROLE_EMPLOYEE')]
     public function delete(
-        int $id,
+        string $id,
         Request $request,
         LeaveRequestService $leaveRequestService,
     ): RedirectResponse {
-        if (!$this->isCsrfTokenValid('employee_leave_delete_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('employee_leave_delete_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_employee_leave_requests');
         }
 
-        $deleted = $leaveRequestService->deleteEmployeePendingRequest($this->getCurrentEmployeeId(), $id);
+        $deleted = $leaveRequestService->deleteEmployeePendingRequest($this->getCurrentEmployeeId(), $idInt);
 
         if (!$deleted) {
             $this->addFlash('error', 'Seules les demandes en attente peuvent etre supprimees.');

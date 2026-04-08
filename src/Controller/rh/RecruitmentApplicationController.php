@@ -2,8 +2,8 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Applicaiton;
-use App\Repository\ApplicaitonRepository;
+use App\Entity\Application;
+use App\Repository\ApplicationRepository;
 use App\Repository\InterviewRepository;
 use App\Repository\JobOfferRepository;
 use App\Security\DbUser;
@@ -21,7 +21,7 @@ final class RecruitmentApplicationController extends AbstractController
     #[IsGranted('ROLE_RH')]
     public function index(
         Request $request,
-        ApplicaitonRepository $applicaitonRepository,
+        ApplicationRepository $applicaitonRepository,
         JobOfferRepository $jobOfferRepository
     ): Response {
         $rh = $this->getCurrentRh();
@@ -54,9 +54,10 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/status', name: 'app_rh_applications_status', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function updateStatus(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function updateStatus(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('application_status_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('application_status_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
@@ -70,7 +71,7 @@ final class RecruitmentApplicationController extends AbstractController
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($id, $rh);
+        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -86,10 +87,11 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/edit', name: 'app_rh_applications_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
+    public function edit(string $id, Request $request, ApplicationRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
     {
+        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($id, $rh);
+        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -113,15 +115,16 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete', name: 'app_rh_applications_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function delete(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function delete(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('delete_application_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('delete_application_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($id, $rh);
+        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -138,15 +141,16 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/restore', name: 'app_rh_applications_restore', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function restore(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function restore(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('restore_application_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('restore_application_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -162,15 +166,16 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete-permanent', name: 'app_rh_applications_delete_permanent', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function deletePermanent(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function deletePermanent(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('permanent_delete_application_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('permanent_delete_application_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -186,10 +191,11 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}', name: 'app_rh_applications_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(int $id, ApplicaitonRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
+    public function show(string $id, ApplicationRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
     {
+        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');

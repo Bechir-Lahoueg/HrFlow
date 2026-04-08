@@ -2,20 +2,20 @@
 
 namespace App\Entity;
 
-use App\Repository\ApplicaitonRepository;
+use App\Repository\ApplicationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: ApplicaitonRepository::class)]
+#[ORM\Entity(repositoryClass: ApplicationRepository::class)]
 #[ORM\Table(name: 'applications')]
 #[ORM\Index(name: 'idx_applications_status', columns: ['status'])]
 #[ORM\Index(name: 'idx_applications_applied_at', columns: ['applied_at'])]
 #[ORM\Index(name: 'idx_applications_is_deleted', columns: ['is_deleted'])]
 #[ORM\Index(name: 'idx_applications_department', columns: ['Department'])]
 #[ORM\Index(name: 'idx_applications_email', columns: ['EmailAddress'])]
-    #[ORM\Index(name: 'idx_applications_candidate', columns: ['candidate_id'])]
-class Applicaiton
+#[ORM\Index(name: 'idx_applications_candidate', columns: ['candidate_id'])]
+class Application
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -27,7 +27,7 @@ class Applicaiton
     #[Assert\Length(max: 255, maxMessage: 'Candidate name cannot exceed 255 characters')]
     private ?string $candidateName = null;
 
-    #[ORM\ManyToOne(targetEntity: JobOffer::class)]
+    #[ORM\ManyToOne(targetEntity: JobOffer::class, inversedBy: 'applications')]
     #[ORM\JoinColumn(name: 'job_offer_id', referencedColumnName: 'id', nullable: false)]
     #[Assert\NotNull(message: 'Job offer is required')]
     private ?JobOffer $jobOffer = null;

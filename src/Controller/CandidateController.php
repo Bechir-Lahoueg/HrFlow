@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\Applicaiton;
+use App\Entity\Application;
 use App\Entity\Candidate;
 use App\Entity\JobOffer;
 use App\Form\CandidateApplicationType;
 use App\Form\CandidateProfileType;
-use App\Repository\ApplicaitonRepository;
+use App\Repository\ApplicationRepository;
 use App\Repository\CandidateRepository;
 use App\Repository\JobOfferRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,7 +22,7 @@ final class CandidateController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly ApplicaitonRepository $applicationRepository,
+        private readonly ApplicationRepository $applicationRepository,
         private readonly CandidateRepository $candidateRepository,
         private readonly JobOfferRepository $jobOfferRepository,
         private readonly string $uploadDir = '/uploads/cv/'
@@ -120,7 +120,7 @@ final class CandidateController extends AbstractController
             return $this->redirectToRoute('app_candidate_job_offers');
         }
 
-        $application = new Applicaiton();
+        $application = new Application();
         $form = $this->createForm(CandidateApplicationType::class, $application);
         $form->handleRequest($request);
 

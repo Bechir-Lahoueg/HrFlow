@@ -2,10 +2,11 @@
 
 namespace App\Controller\employer;
 
-use App\Service\SessionService;
-use App\Service\ParticipationService;
 use App\Service\FormationService;
+use App\Service\ParticipationService;
+use App\Service\SessionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -15,19 +16,33 @@ final class EmployeeFormationController extends AbstractController
     public function __construct(
         private readonly SessionService $sessionService,
         private readonly ParticipationService $participationService,
-        private readonly FormationService $formationService
-    ) {}
+        private readonly FormationService $formationService,
+    ) {
+    }
 
     #[Route('/', name: 'employee_formation_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = $this->getUser();
         $rhId = method_exists($user, 'getRhId') ? $user->getRhId() : null;
 
-        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId) : [];
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', '');
+        $sortQuery = $request->query->get('sort', 'created_at-DESC');
+
+        $sortParts = explode('-', $sortQuery);
+        $sort = $sortParts[0] ?? 'created_at';
+        $dir = $sortParts[1] ?? 'DESC';
+
+        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId, $search, $type, $sort, $dir) : [];
 
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
+            'filters' => [
+                'search' => $search,
+                'type' => $type,
+                'sort' => $sortQuery,
+            ],
         ]);
     }
 
@@ -37,28 +52,35 @@ final class EmployeeFormationController extends AbstractController
         $userId = $this->getUser()->getId();
         $participations = $this->participationService->getEmployeeParticipations($userId);
 
+        $attendanceMap = [];
+        foreach ($participations as $p) {
+            $attendanceMap[$p->getId()] = $this->participationService->getAttendancePercentage($p->getId());
+        }
+
         return $this->render('DashboardEmployee/formation/formation_requests.html.twig', [
             'participations' => $participations,
+            'attendanceMap' => $attendanceMap,
         ]);
     }
 
     #[Route('/{id}/sessions', name: 'employee_formation_sessions')]
-    public function sessions(int $id): Response
+    public function sessions(string $id): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        $sessions = $this->sessionService->getSessionsByFormation($id);
+        $sessions = $this->sessionService->getSessionsByFormation($idInt);
         $userId = $this->getUser()->getId();
         $myParticipations = $this->participationService->getEmployeeParticipations($userId);
 
         $mySessionStats = [];
         foreach ($myParticipations as $participation) {
-            $mySessionStats[$participation['id_session']] = [
-                'statut' => $participation['statut_participation'],
-                'pourcentage' => $participation['pourcentage_presence'] ?? 0
+            $mySessionStats[$participation->getSession()->getId()] = [
+                'statut' => $participation->getStatutParticipation(),
+                'pourcentage' => $this->participationService->getAttendancePercentage($participation->getId()),
             ];
         }
 
@@ -70,16 +92,17 @@ final class EmployeeFormationController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'employee_formation_register', methods: ['POST'])]
-    public function register(int $id): Response
+    public function register(string $id): Response
     {
+        $idInt = (int) $id;
         $userId = $this->getUser()->getId();
 
-        if ($this->participationService->registerEmployee($userId, $id)) {
+        if ($this->participationService->registerEmployee($userId, $idInt)) {
             $this->addFlash('success', 'Inscription confirmée.');
         } else {
             $this->addFlash('error', 'Vous êtes déjà inscrit à cette session.');
         }
 
-        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getFormationIdBySessionId($id)]);
+        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getIdFormationBySessionId($idInt)]);
     }
 }

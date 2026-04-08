@@ -17,7 +17,7 @@
 
         <main class="p-6 max-w-5xl mx-auto">
             <div class="mb-6">
-                <a href="{{ path('rh_formation_sessions', {id: formation.id_formation}) }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
+                <a href="{{ path('rh_formation_sessions', {id: formation.id}) }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     Retour aux sessions
                 </a>
@@ -25,7 +25,7 @@
 
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm mb-6">
                 <h1 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Gestion des Présences</h1>
-                <p class="text-zinc-600 dark:text-zinc-400 mt-1">Formation : {{ formation.titre }} | Période : {{ session.date_debut|date('d/m/Y') }} au {{ session.date_fin|date('d/m/Y') }}</p>
+                <p class="text-zinc-600 dark:text-zinc-400 mt-1">Formation : {{ formation.titre }} | Période : {{ session.dateDebut|date('d/m/Y') }} au {{ session.dateFin|date('d/m/Y') }}</p>
             </div>
 
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm overflow-hidden">
@@ -33,7 +33,7 @@
                     <h2 class="font-bold text-zinc-800">Tableau des présences</h2>
                 </div>
 
-                <form method="post" action="{{ path('rh_formation_session_presence', {id: session.id_session}) }}" class="p-0 overflow-x-auto">
+                <form method="post" action="{{ path('rh_formation_session_presence', {id: session.id}) }}" class="p-0 overflow-x-auto">
                     <table class="w-full text-sm text-left whitespace-nowrap">
                         <thead class="bg-zinc-50/50 text-zinc-500 font-medium uppercase tracking-wide text-xs border-b border-zinc-100">
                             <tr>
@@ -47,13 +47,13 @@
                             {% for p in participations %}
                                 <tr class="hover:bg-zinc-50/50 transition-colors">
                                     <td class="px-6 py-4 font-semibold text-zinc-800 sticky left-0 bg-white dark:bg-zinc-900 z-10 border-r border-zinc-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                                        {{ p.first_name }} {{ p.last_name }}
-                                        <div class="text-xs font-normal text-zinc-500">{{ p.email }}</div>
+                                        {{ p.employee.firstName }} {{ p.employee.lastName }}
+                                        <div class="text-xs font-normal text-zinc-500">{{ p.employee.email }}</div>
                                     </td>
                                     {% for d in dates %}
-                                        {% set currentStatut = currentPresences[d][p.id_participation] ?? 'Absent' %}
+                                        {% set currentStatut = currentPresences[d][p.id] ?? 'Absent' %}
                                         <td class="px-2 py-4 text-center border-l border-zinc-100">
-                                            <select name="presences[{{ d }}][{{ p.id_participation }}]"
+                                            <select name="presences[{{ d }}][{{ p.id }}]"
                                                     class="text-xs border-zinc-200 rounded-md focus:ring-teal-500 focus:border-teal-500 p-1.5
                                                            {{ currentStatut == 'Present' ? 'bg-emerald-50 text-emerald-700 font-medium' :
                                                               (currentStatut == 'Absent' ? 'bg-red-50 text-red-700 font-medium' : 'bg-amber-50 text-amber-700 font-medium') }}">
