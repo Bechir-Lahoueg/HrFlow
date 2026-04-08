@@ -102,9 +102,25 @@ final class LeaveRequestService
     }
 
     /** @return LeaveRequest[] */
-    public function getRhRequests(int $rhId, ?string $statusFilter, string $employeeSearch = '', string $leaveTypeSearch = ''): array
+    public function getRhRequests(
+        int $rhId,
+        ?string $statusFilter,
+        string $employeeSearch = '',
+        string $leaveTypeSearch = '',
+        string $search = '',
+        string $sort = 'request_date',
+        string $direction = 'DESC'
+    ): array
     {
-        return $this->leaveRequestRepository->findByRh($rhId, $statusFilter, $employeeSearch, $leaveTypeSearch);
+        return $this->leaveRequestRepository->findByRh(
+            $rhId,
+            $statusFilter,
+            $employeeSearch,
+            $leaveTypeSearch,
+            $search,
+            $sort,
+            $direction
+        );
     }
 
     public function getRhPendingCount(int $rhId): int
