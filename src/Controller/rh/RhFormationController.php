@@ -6,6 +6,10 @@ use App\Service\FormationService;
 use App\Service\ParticipationService;
 use App\Service\PresenceService;
 use App\Service\SessionService;
+use App\Form\FormationType;
+use App\Form\SessionFormationType;
+use App\Entity\Formation;
+use App\Entity\SessionFormation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,56 +45,48 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/create', name: 'rh_formation_create', methods: ['GET', 'POST'])]
-    public function create(Request $request): Response
+    public function create(Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
-        if ($request->isMethod('POST')) {
-            $data = [
-                'titre' => $request->request->get('titre'),
-                'description' => $request->request->get('description'),
-                'type' => $request->request->get('type'),
-                'duree' => (int) $request->request->get('duree'),
-                'organisme' => $request->request->get('organisme'),
-                'objectifs' => $request->request->get('objectifs'),
-                'id_rh' => $this->getUser()->getId(),
-            ];
+        $formation = new Formation();
+        $formation->setRhId($this->getUser()->getId());
 
-            $this->formationService->createFormation($data);
+        $form = $this->createForm(FormationType::class, $formation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($formation);
+            $em->flush();
+
             $this->addFlash('success', 'Formation créée avec succès.');
-
             return $this->redirectToRoute('rh_formation_list');
         }
 
         return $this->render('DashboardHr/formation/formation_form.html.twig', [
-            'formation' => null,
+            'formationForm' => $form->createView(),
             'isEdit' => false,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'rh_formation_edit', methods: ['GET', 'POST'])]
-    public function edit(int $id, Request $request): Response
+    public function edit(int $id, Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $formation = $this->formationService->getFormationById($id);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($request->isMethod('POST')) {
-            $data = [
-                'titre' => $request->request->get('titre'),
-                'description' => $request->request->get('description'),
-                'type' => $request->request->get('type'),
-                'duree' => (int) $request->request->get('duree'),
-                'organisme' => $request->request->get('organisme'),
-                'objectifs' => $request->request->get('objectifs'),
-            ];
+        $form = $this->createForm(FormationType::class, $formation);
+        $form->handleRequest($request);
 
-            $this->formationService->updateFormation($id, $data);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+
             $this->addFlash('success', 'Formation mise à jour avec succès.');
-
             return $this->redirectToRoute('rh_formation_list');
         }
 
         return $this->render('DashboardHr/formation/formation_form.html.twig', [
+            'formationForm' => $form->createView(),
             'formation' => $formation,
             'isEdit' => true,
         ]);
@@ -127,77 +123,86 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/sessions/create', name: 'rh_formation_session_create', methods: ['GET', 'POST'])]
-    public function createSession(int $id, Request $request): Response
+    public function createSession(int $id, Request $request, \App\Service\FormationService $fs, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $formation = $this->formationService->getFormationById($id);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($request->isMethod('POST')) {
-            $data = [
-                'id_formation' => $id,
-                'date_debut' => $request->request->get('date_debut'),
-                'date_fin' => $request->request->get('date_fin'),
-                'lieu' => $request->request->get('lieu'),
-                'mode' => $request->request->get('mode'),
-                'capacite_max' => (int) $request->request->get('capacite_max'),
-            ];
+        $session = new SessionFormation();
+        $session->setFormation($formation);
 
-            if (empty($data['date_fin'])) {
-                $debutDate = new \DateTime($data['date_debut']);
+        $form = $this->createForm(SessionFormationType::class, $session);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!$session->getDateFin()) {
+                $debutDate = clone $session->getDateDebut();
                 $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
-                $data['date_fin'] = $debutDate->format('Y-m-d');
+                $session->setDateFin($debutDate);
             }
 
-            $this->formationService->createSession($data);
-            $this->addFlash('success', 'Session créée avec succès.');
+            $now = new \DateTime(); $now->setTime(0,0,0);
+            $debut = clone $session->getDateDebut(); $debut->setTime(0,0,0);
+            $fin = clone $session->getDateFin(); $fin->setTime(0,0,0);
 
+            if ($now < $debut) { $session->setStatut('Planifiee'); }
+            elseif ($now > $fin) { $session->setStatut('Terminee'); }
+            else { $session->setStatut('En cours'); }
+
+            $em->persist($session);
+            $em->flush();
+
+            $this->addFlash('success', 'Session créée avec succès.');
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
         }
 
         return $this->render('DashboardHr/formation/session_form.html.twig', [
             'formation' => $formation,
-            'session' => null,
+            'sessionForm' => $form->createView(),
             'isEdit' => false,
         ]);
     }
 
     #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
-    public function editSession(int $id, Request $request, SessionService $sessionService): Response
+    public function editSession(int $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $session = $sessionService->getSessionById($id);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
-
         $formation = $session->getFormation();
 
-        if ($request->isMethod('POST')) {
-            $data = [
-                'date_debut' => $request->request->get('date_debut'),
-                'date_fin' => $request->request->get('date_fin'),
-                'lieu' => $request->request->get('lieu'),
-                'mode' => $request->request->get('mode'),
-                'capacite_max' => (int) $request->request->get('capacite_max'),
-            ];
+        $form = $this->createForm(SessionFormationType::class, $session);
+        $form->handleRequest($request);
 
-            if (empty($data['date_fin'])) {
-                $debutDate = new \DateTime($data['date_debut']);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!$session->getDateFin()) {
+                $debutDate = clone $session->getDateDebut();
                 $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
-                $data['date_fin'] = $debutDate->format('Y-m-d');
+                $session->setDateFin($debutDate);
             }
 
-            $this->formationService->updateSession($id, $data);
-            $this->addFlash('success', 'Session modifiée avec succès.');
+            $now = new \DateTime(); $now->setTime(0,0,0);
+            $debut = clone $session->getDateDebut(); $debut->setTime(0,0,0);
+            $fin = clone $session->getDateFin(); $fin->setTime(0,0,0);
 
+            if ($now < $debut) { $session->setStatut('Planifiee'); }
+            elseif ($now > $fin) { $session->setStatut('Terminee'); }
+            else { $session->setStatut('En cours'); }
+
+            $em->flush();
+
+            $this->addFlash('success', 'Session modifiée avec succès.');
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
         }
 
         return $this->render('DashboardHr/formation/session_form.html.twig', [
             'formation' => $formation,
+            'sessionForm' => $form->createView(),
             'session' => $session,
             'isEdit' => true,
         ]);
@@ -297,7 +302,6 @@ final class RhFormationController extends AbstractController
             }
         }
 
-        // Build presence map: [date][participationId] => statut
         $existingPresences = $presenceService->getPresencesBySession($id);
         $currentPresences = [];
         foreach ($existingPresences as $p) {
