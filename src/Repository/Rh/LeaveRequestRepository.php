@@ -69,13 +69,32 @@ class LeaveRequestRepository extends ServiceEntityRepository
     }
 
     /** @return LeaveRequest[] */
-    public function findByRh(int $rhId, ?string $statusFilter, string $employeeSearch = '', string $leaveTypeSearch = ''): array
+    public function findByRh(
+        int $rhId,
+        ?string $statusFilter,
+        string $employeeSearch = '',
+        string $leaveTypeSearch = '',
+        string $search = '',
+        string $sort = 'request_date',
+        string $direction = 'DESC'
+    ): array
     {
+        $sortMap = [
+            'request_date' => 'lr.requestDate',
+            'start_date' => 'lr.startDate',
+            'days' => 'lr.daysCount',
+            'employee' => 'lr.employeeName',
+            'status' => 'lr.status',
+        ];
+
+        $orderByField = $sortMap[$sort] ?? 'lr.requestDate';
+        $orderDirection = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+
         $qb = $this->createQueryBuilder('lr')
             ->join('lr.employee', 'e')
             ->where('e.rhId = :rhId')
             ->setParameter('rhId', $rhId)
-            ->orderBy('lr.requestDate', 'DESC')
+            ->orderBy($orderByField, $orderDirection)
             ->addOrderBy('lr.id', 'DESC');
 
         if ($statusFilter !== null && in_array($statusFilter, ['ATTENTE', 'ACCEPTE', 'REFUSE'], true)) {
@@ -91,6 +110,17 @@ class LeaveRequestRepository extends ServiceEntityRepository
         if (trim($leaveTypeSearch) !== '') {
             $qb->andWhere('lr.leaveType LIKE :typeSearch')
                ->setParameter('typeSearch', '%' . trim($leaveTypeSearch) . '%');
+        }
+
+        if (trim($search) !== '') {
+            $term = '%' . trim($search) . '%';
+            $qb->andWhere('(
+                lr.employeeName LIKE :globalSearch
+                OR lr.leaveType LIKE :globalSearch
+                OR lr.reason LIKE :globalSearch
+                OR lr.status LIKE :globalSearch
+            )')
+            ->setParameter('globalSearch', $term);
         }
 
         return $qb->getQuery()->getResult();
