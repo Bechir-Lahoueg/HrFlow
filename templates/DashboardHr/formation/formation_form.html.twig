@@ -158,8 +158,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const btnAi = document.getElementById('btn-generate-ai');
-            const titreInput = document.getElementById('formation_titre');
-            const objectifsTextarea = document.getElementById('formation_objectifs');
+            const titreInput = document.querySelector('input[id$="_titre"]');
+            const objectifsTextarea = document.querySelector('textarea[id$="_objectifs"]');
 
             if (btnAi && titreInput && objectifsTextarea) {
                 btnAi.addEventListener('click', async (e) => {
