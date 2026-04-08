@@ -2,14 +2,14 @@
 
 namespace App\Controller;
 
-use App\Entity\Application;
-use App\Entity\Candidate;
-use App\Entity\JobOffer;
-use App\Form\CandidateApplicationType;
-use App\Form\CandidateProfileType;
-use App\Repository\ApplicationRepository;
-use App\Repository\CandidateRepository;
-use App\Repository\JobOfferRepository;
+use App\Entity\Recrutement\Application;
+use App\Entity\Recrutement\Candidate;
+use App\Entity\Recrutement\JobOffer;
+use App\Form\Recrutement\CandidateApplicationType;
+use App\Form\Recrutement\CandidateProfileType;
+use App\Repository\Recrutement\ApplicationRepository;
+use App\Repository\Recrutement\CandidateRepository;
+use App\Repository\Recrutement\JobOfferRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

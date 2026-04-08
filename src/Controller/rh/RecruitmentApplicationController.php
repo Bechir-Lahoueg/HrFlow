@@ -2,10 +2,11 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Application;
-use App\Repository\ApplicationRepository;
-use App\Repository\InterviewRepository;
-use App\Repository\JobOfferRepository;
+use App\Entity\Recrutement\Application;
+use App\Form\Recrutement\ApplicationType;
+use App\Repository\Recrutement\ApplicationRepository;
+use App\Repository\Recrutement\InterviewRepository;
+use App\Repository\Recrutement\JobOfferRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

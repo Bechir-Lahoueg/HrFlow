@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Candidate;
-use App\Form\CandidateRegistrationFormType;
-use App\Repository\CandidateRepository;
+use App\Entity\Recrutement\Candidate;
+use App\Form\Recrutement\CandidateRegistrationFormType;
+use App\Repository\Recrutement\CandidateRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

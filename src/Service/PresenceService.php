@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use App\Entity\PresenceFormation;
-use App\Repository\ParticipationFormationRepository;
-use App\Repository\PresenceFormationRepository;
+use App\Entity\Formation\PresenceFormation;
+use App\Repository\Formation\ParticipationFormationRepository;
+use App\Repository\Formation\PresenceFormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class PresenceService

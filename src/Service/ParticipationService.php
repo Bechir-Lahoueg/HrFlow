@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\ParticipationFormation;
-use App\Repository\EmployeeRepository;
-use App\Repository\ParticipationFormationRepository;
-use App\Repository\SessionFormationRepository;
+use App\Entity\Formation\ParticipationFormation;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Formation\ParticipationFormationRepository;
+use App\Repository\Formation\SessionFormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ParticipationService

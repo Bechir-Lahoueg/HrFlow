@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\EmployeeRepository;
+use App\Repository\Rh\EmployeeRepository;
 use App\Service\LeaveBalanceService;
 use App\Service\LeaveRequestService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
