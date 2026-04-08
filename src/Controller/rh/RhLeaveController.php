@@ -53,15 +53,16 @@ final class RhLeaveController extends AbstractController
 
     #[Route('/welcome/rh/leaves/{id}/approve', name: 'app_rh_leave_approve', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function approve(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function approve(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $id, $comment);
+        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -69,15 +70,16 @@ final class RhLeaveController extends AbstractController
 
     #[Route('/welcome/rh/leaves/{id}/reject', name: 'app_rh_leave_reject', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function reject(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function reject(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $id, $comment);
+        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');

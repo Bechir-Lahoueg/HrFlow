@@ -68,18 +68,26 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'rh_formation_edit', methods: ['GET', 'POST'])]
-    public function edit(int $id, Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
+    public function edit(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        $form = $this->createForm(FormationType::class, $formation);
-        $form->handleRequest($request);
+        if ($request->isMethod('POST')) {
+            $data = [
+                'titre' => $request->request->get('titre'),
+                'description' => $request->request->get('description'),
+                'type' => $request->request->get('type'),
+                'duree' => (int) $request->request->get('duree'),
+                'organisme' => $request->request->get('organisme'),
+                'objectifs' => $request->request->get('objectifs'),
+            ];
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
+            $this->formationService->updateFormation($idInt, $data);
+            $this->addFlash('success', 'Formation mise à jour avec succès.');
 
             $this->addFlash('success', 'Formation mise à jour avec succès.');
             return $this->redirectToRoute('rh_formation_list');
@@ -93,15 +101,16 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'rh_formation_delete', methods: ['POST'])]
-    public function delete(int $id, Request $request): Response
+    public function delete(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($this->isCsrfTokenValid('delete-formation-' . $id, $request->request->get('_token'))) {
-            $this->formationService->deleteFormation($id);
+        if ($this->isCsrfTokenValid('delete-formation-' . $idInt, $request->request->get('_token'))) {
+            $this->formationService->deleteFormation($idInt);
             $this->addFlash('success', 'Formation supprimée avec succès.');
         }
 
@@ -109,36 +118,41 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/sessions', name: 'rh_formation_sessions', methods: ['GET'])]
-    public function sessions(int $id): Response
+    public function sessions(string $id): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
         return $this->render('DashboardHr/formation/formation_sessions.html.twig', [
             'formation' => $formation,
-            'sessions' => $this->formationService->getSessionsByFormation($id),
+            'sessions' => $this->formationService->getSessionsByFormation($idInt),
         ]);
     }
 
     #[Route('/{id}/sessions/create', name: 'rh_formation_session_create', methods: ['GET', 'POST'])]
-    public function createSession(int $id, Request $request, \App\Service\FormationService $fs, \Doctrine\ORM\EntityManagerInterface $em): Response
+    public function createSession(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        $session = new SessionFormation();
-        $session->setFormation($formation);
+        if ($request->isMethod('POST')) {
+            $data = [
+                'id_formation' => $idInt,
+                'date_debut' => $request->request->get('date_debut'),
+                'date_fin' => $request->request->get('date_fin'),
+                'lieu' => $request->request->get('lieu'),
+                'mode' => $request->request->get('mode'),
+                'capacite_max' => (int) $request->request->get('capacite_max'),
+            ];
 
-        $form = $this->createForm(SessionFormationType::class, $session);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            if (!$session->getDateFin()) {
-                $debutDate = clone $session->getDateDebut();
+            if (empty($data['date_fin'])) {
+                $debutDate = new \DateTime($data['date_debut']);
                 $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
@@ -167,9 +181,10 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
-    public function editSession(int $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
+    public function editSession(string $id, Request $request, SessionService $sessionService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
@@ -186,13 +201,8 @@ final class RhFormationController extends AbstractController
                 $session->setDateFin($debutDate);
             }
 
-            $now = new \DateTime(); $now->setTime(0,0,0);
-            $debut = clone $session->getDateDebut(); $debut->setTime(0,0,0);
-            $fin = clone $session->getDateFin(); $fin->setTime(0,0,0);
-
-            if ($now < $debut) { $session->setStatut('Planifiee'); }
-            elseif ($now > $fin) { $session->setStatut('Terminee'); }
-            else { $session->setStatut('En cours'); }
+            $this->formationService->updateSession($idInt, $data);
+            $this->addFlash('success', 'Session modifiée avec succès.');
 
             $em->flush();
 
@@ -209,9 +219,10 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/participants', name: 'rh_formation_session_participants', methods: ['GET'])]
-    public function participants(int $id, SessionService $sessionService, ParticipationService $participationService): Response
+    public function participants(string $id, SessionService $sessionService, ParticipationService $participationService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
@@ -219,34 +230,37 @@ final class RhFormationController extends AbstractController
         return $this->render('DashboardHr/formation/formation_participants.html.twig', [
             'session' => $session,
             'formation' => $session->getFormation(),
-            'participations' => $participationService->getSessionParticipations($id),
+            'participations' => $participationService->getSessionParticipations($idInt),
         ]);
     }
 
     #[Route('/participation/{id}/approve', name: 'rh_formation_participation_approve', methods: ['POST'])]
-    public function approveParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    public function approveParticipation(string $id, Request $request, ParticipationService $participationService): Response
     {
-        if ($this->isCsrfTokenValid('approve-participation-' . $id, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($id, 'Accepte');
+        $idInt = (int) $id;
+        if ($this->isCsrfTokenValid('approve-participation-' . $idInt, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($idInt, 'Accepte');
             $this->addFlash('success', 'Participation acceptée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }
 
     #[Route('/participation/{id}/reject', name: 'rh_formation_participation_reject', methods: ['POST'])]
-    public function rejectParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    public function rejectParticipation(string $id, Request $request, ParticipationService $participationService): Response
     {
-        if ($this->isCsrfTokenValid('reject-participation-' . $id, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($id, 'Refuse');
+        $idInt = (int) $id;
+        if ($this->isCsrfTokenValid('reject-participation-' . $idInt, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($idInt, 'Refuse');
             $this->addFlash('success', 'Participation refusée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }
 
     #[Route('/session/{id}/presence', name: 'rh_formation_session_presence', methods: ['GET', 'POST'])]
-    public function presence(int $id, Request $request, SessionService $sessionService, ParticipationService $participationService, PresenceService $presenceService): Response
+    public function presence(string $id, Request $request, SessionService $sessionService, ParticipationService $participationService, PresenceService $presenceService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
