@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Applicaiton;
+use App\Entity\Candidate;
 use App\Entity\JobOffer;
 use App\Security\DbUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -16,6 +17,71 @@ class ApplicaitonRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Applicaiton::class);
+    }
+
+    /**
+     * Find applications by candidate
+     * @return Applicaiton[]
+     */
+    public function findByCandidate(Candidate $candidate): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.jobOffer', 'jo')
+            ->addSelect('jo')
+            ->where('a.candidate = :candidate')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('candidate', $candidate)
+            ->orderBy('a.appliedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Count applications by candidate and status
+     */
+    public function countByCandidateAndStatus(Candidate $candidate, string $status): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidate')
+            ->andWhere('a.status = :status')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('candidate', $candidate)
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Count all applications by candidate
+     */
+    public function countAllByCandidate(Candidate $candidate): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidate')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('candidate', $candidate)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Check if candidate has already applied to a job offer
+     */
+    public function hasCandidateApplied(Candidate $candidate, int $jobOfferId): bool
+    {
+        $count = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidate')
+            ->andWhere('a.jobOffer = :jobOfferId')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('candidate', $candidate)
+            ->setParameter('jobOfferId', $jobOfferId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
     }
 
     /**

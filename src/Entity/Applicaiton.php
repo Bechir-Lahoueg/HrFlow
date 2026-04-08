@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_applications_is_deleted', columns: ['is_deleted'])]
 #[ORM\Index(name: 'idx_applications_department', columns: ['Department'])]
 #[ORM\Index(name: 'idx_applications_email', columns: ['EmailAddress'])]
+    #[ORM\Index(name: 'idx_applications_candidate', columns: ['candidate_id'])]
 class Applicaiton
 {
     #[ORM\Id]
@@ -67,6 +68,10 @@ class Applicaiton
     #[Assert\Length(max: 255, maxMessage: 'Email cannot exceed 255 characters')]
     #[Assert\Email(message: 'Please enter a valid email address')]
     private ?string $emailAddress = null;
+
+    #[ORM\ManyToOne(targetEntity: Candidate::class)]
+    #[ORM\JoinColumn(name: 'candidate_id', referencedColumnName: 'id', nullable: true)]
+    private ?Candidate $candidate = null;
 
     #[ORM\ManyToOne(targetEntity: Employee::class)]
     #[ORM\JoinColumn(name: 'employee_id', referencedColumnName: 'id', nullable: true)]
@@ -205,6 +210,17 @@ class Applicaiton
         return $this;
     }
 
+    public function getCandidate(): ?Candidate
+    {
+        return $this->candidate;
+    }
+
+    public function setCandidate(?Candidate $candidate): static
+    {
+        $this->candidate = $candidate;
+        return $this;
+    }
+
     public function getEmployee(): ?Employee
     {
         return $this->employee;
@@ -225,5 +241,31 @@ class Applicaiton
     {
         $this->source = $source;
         return $this;
+    }
+
+    public function getStatusLabel(): string
+    {
+        return match($this->status) {
+            'PENDING' => 'En attente',
+            'REVIEWING' => 'En revue',
+            'INTERVIEW' => 'Entretien',
+            'OFFER' => 'Offre',
+            'HIRED' => 'Recrute',
+            'REJECTED' => 'Rejete',
+            default => $this->status,
+        };
+    }
+
+    public function getStatusColor(): string
+    {
+        return match($this->status) {
+            'PENDING' => 'amber',
+            'REVIEWING' => 'blue',
+            'INTERVIEW' => 'purple',
+            'OFFER' => 'emerald',
+            'HIRED' => 'teal',
+            'REJECTED' => 'red',
+            default => 'slate',
+        };
     }
 }
