@@ -2,10 +2,10 @@
 
 namespace App\Controller\rh;
 
+use App\Repository\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\LeaveBalanceService;
 use App\Service\LeaveRequestService;
-use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,25 +21,26 @@ final class RhLeaveController extends AbstractController
         Request $request,
         LeaveRequestService $leaveRequestService,
         LeaveBalanceService $leaveBalanceService,
-        Connection $connection
-    ): Response
-    {
+        EmployeeRepository $employeeRepository,
+    ): Response {
         $rhId = $this->getCurrentRhId();
         $status = $this->normalizeStatus((string) $request->query->get('status', 'ATTENTE'));
         $employeeSearch = trim((string) $request->query->get('employee', ''));
         $leaveTypeSearch = trim((string) $request->query->get('leave_type', ''));
 
-        $employees = $connection->fetchAllAssociative(
-            'SELECT id, first_name, last_name FROM employees WHERE rh_id = :rhId ORDER BY first_name ASC, last_name ASC',
-            ['rhId' => $rhId]
-        );
+        $employees = $employeeRepository->findBy(['rhId' => $rhId], ['firstName' => 'ASC', 'lastName' => 'ASC']);
 
-        // Refresh accruals and credit snapshots for RH team before rendering.
-        $leaveBalanceService->getBalancesByRh($rhId);
+        // Refresh accruals and build balance map keyed by employee ID
+        $balances = $leaveBalanceService->getBalancesByRh($rhId);
+        $balanceMap = [];
+        foreach ($balances as $lb) {
+            $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
+        }
 
         return $this->render('DashboardHr/leave_requests.html.twig', [
             'user' => $this->getUser(),
             'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch),
+            'balanceMap' => $balanceMap,
             'rhLeaveStats' => $leaveRequestService->getRhDashboardStats($rhId),
             'rhCreditStats' => $leaveRequestService->getRhCreditSummary($rhId),
             'pendingLeaveCount' => $leaveRequestService->getRhPendingCount($rhId),

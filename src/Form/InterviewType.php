@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\Applicaiton;
+use App\Entity\Application;
 use App\Entity\Interview;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -24,8 +24,8 @@ class InterviewType extends AbstractType
         $builder
             ->add('application', EntityType::class, [
                 'label' => 'Candidature',
-                'class' => Applicaiton::class,
-                'query_builder' => function (\App\Repository\ApplicaitonRepository $er) use ($options) {
+                'class' => Application::class,
+                'query_builder' => function (\App\Repository\ApplicationRepository $er) use ($options) {
                     $qb = $er->createQueryBuilder('a')
                         ->join('a.jobOffer', 'jo')
                         ->where('jo.createdBy = :rhId')
@@ -41,7 +41,7 @@ class InterviewType extends AbstractType
                     
                     return $qb;
                 },
-                'choice_label' => function (Applicaiton $application) {
+                'choice_label' => function (Application $application) {
                     return $application->getCandidateName() . ' - ' . ($application->getJobOffer()?->getTitle() ?? '—');
                 },
                 'placeholder' => '-- Sélectionner un candidat --',

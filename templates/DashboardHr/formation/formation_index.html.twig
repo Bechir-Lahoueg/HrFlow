@@ -159,7 +159,7 @@
                 {# Grid des Formations #}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
-                        <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id_formation}) }}'"
+                        <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 <div class="flex justify-between items-start mb-3">
@@ -193,11 +193,11 @@
                             </div>
 
                             <div class="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto" onclick="event.stopPropagation()">
-                                <a href="{{ path('rh_formation_edit', {id: formation.id_formation}) }}" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-800 flex items-center justify-center transition-colors" title="Modifier">
+                                <a href="{{ path('rh_formation_edit', {id: formation.id}) }}" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-800 flex items-center justify-center transition-colors" title="Modifier">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                <form method="post" action="{{ path('rh_formation_delete', {id: formation.id_formation}) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-formation-' ~ formation.id_formation) }}">
+                                <form method="post" action="{{ path('rh_formation_delete', {id: formation.id}) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-formation-' ~ formation.id) }}">
                                     <button type="submit" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 flex items-center justify-center transition-colors" title="Supprimer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>

@@ -4,7 +4,7 @@ namespace App\Controller\rh;
 
 use App\Entity\JobOffer;
 use App\Form\JobOfferType;
-use App\Repository\ApplicaitonRepository;
+use App\Repository\ApplicationRepository;
 use App\Repository\JobOfferRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
@@ -177,7 +177,7 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}', name: 'app_rh_job_offers_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(int $id, JobOfferRepository $jobOfferRepository, ApplicaitonRepository $applicaitonRepository): Response
+    public function show(int $id, JobOfferRepository $jobOfferRepository, ApplicationRepository $applicaitonRepository): Response
     {
         $rh = $this->getCurrentRh();
         $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);

@@ -207,26 +207,26 @@
                                 <td class="py-3 px-4">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0">
-                                            <span class="text-[11px] font-bold text-white">{{ leave.employee_name|first|upper }}</span>
+                                            <span class="text-[11px] font-bold text-white">{{ leave.employeeName|first|upper }}</span>
                                         </div>
-                                        <span class="text-[13px] font-semibold text-zinc-700">{{ leave.employee_name }}</span>
+                                        <span class="text-[13px] font-semibold text-zinc-700">{{ leave.employeeName }}</span>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ leave.start_date|date('d M') }}</p>
-                                    <p class="text-[11px] text-zinc-400">au {{ leave.end_date|date('d M Y') }}</p>
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ leave.startDate|date('d M') }}</p>
+                                    <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leave_type }}</span>
+                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leaveType }}</span>
                                 </td>
-                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.days_count }}</td>
+                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.daysCount }}</td>
                                 <td class="py-3 px-4">
                                     <div class="space-y-1">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ (leave.available_days - leave.days_count) < 0 ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
-                                            <span class="text-[11px] font-bold {{ (leave.available_days - leave.days_count) < 0 ? 'text-red-600' : 'text-emerald-700' }}">{{ leave.available_days|number_format(1, '.', ',') }} dispo</span>
+                                            <span class="w-1.5 h-1.5 rounded-full {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount) < 0 ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
+                                            <span class="text-[11px] font-bold {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount) < 0 ? 'text-red-600' : 'text-emerald-700' }}">{{ balanceMap[leave.employee.id]|default(0)|number_format(1, '.', ',') }} dispo</span>
                                         </div>
-                                        <p class="text-[10px] text-zinc-400 pl-3">Apres: {{ (leave.available_days - leave.days_count)|number_format(1, '.', ',') }}</p>
+                                        <p class="text-[10px] text-zinc-400 pl-3">Apres: {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount)|number_format(1, '.', ',') }}</p>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
@@ -265,7 +265,7 @@
                                     {% else %}
                                         <div class="text-[11px] text-zinc-400 rounded-lg border border-zinc-100 bg-zinc-50 p-2.5">
                                             <p class="font-bold text-zinc-500 mb-0.5">Commentaire:</p>
-                                            <p>{{ leave.rh_comment ?: '-' }}</p>
+                                            <p>{{ leave.rhComment ?: '-' }}</p>
                                         </div>
                                     {% endif %}
                                 </td>

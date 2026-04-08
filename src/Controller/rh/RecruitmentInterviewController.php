@@ -4,11 +4,10 @@ namespace App\Controller\rh;
 
 use App\Entity\Interview;
 use App\Form\InterviewType;
-use App\Repository\ApplicaitonRepository;
+use App\Repository\ApplicationRepository;
 use App\Repository\InterviewRepository;
 use App\Repository\UserRepository;
 use App\Security\DbUser;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -24,7 +23,7 @@ final class RecruitmentInterviewController extends AbstractController
     public function index(
         Request $request,
         InterviewRepository $interviewRepository,
-        ApplicaitonRepository $applicaitonRepository,
+        ApplicationRepository $applicaitonRepository,
         UserRepository $userRepository
     ): Response {
         $rh = $this->getCurrentRh();
@@ -33,14 +32,12 @@ final class RecruitmentInterviewController extends AbstractController
         $interviews = $interviewRepository->findByRh($rh, $applicationId ?: null);
         $allApplications = $applicaitonRepository->findByRh($rh);
         
-        // Fetch interviewers from users table via repository
         $interviewers = $userRepository->findInterviewers();
-        
-        // Build interviewer choices for form
+
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = (int) $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
 
         // Get current application info if filtering
@@ -78,18 +75,16 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/create', name: 'app_rh_interviews_create', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function create(Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em, Connection $connection, UserRepository $userRepository): RedirectResponse
+    public function create(Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em, UserRepository $userRepository): RedirectResponse
     {
         $rh = $this->getCurrentRh();
-        
-        // Fetch filtered data for form
+
         $interviewers = $userRepository->findInterviewers();
-        
-        // Build interviewer choices
+
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = (int) $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
         
         $interview = new Interview();
@@ -160,7 +155,7 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/edit', name: 'app_rh_interviews_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicaitonRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
         $rh = $this->getCurrentRh();
         $interview = $interviewRepository->findOneByRh($id, $rh);
@@ -170,12 +165,11 @@ final class RecruitmentInterviewController extends AbstractController
             return $this->redirectToRoute('app_rh_interviews');
         }
 
-        // Fetch interviewers for dropdown
         $interviewers = $userRepository->findInterviewers();
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = (int) $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [
@@ -283,11 +277,9 @@ final class RecruitmentInterviewController extends AbstractController
             return $this->redirectToRoute('app_rh_interviews');
         }
 
-        // Get interviewer info
-        $interviewer = null;
-        if ($interview->getInterviewerId()) {
-            $interviewer = $userRepository->find($interview->getInterviewerId());
-        }
+        $interviewer = $interview->getInterviewerId()
+            ? $userRepository->find($interview->getInterviewerId())
+            : null;
 
         return $this->render('Recrutement/interview_details.html.twig', [
             'interview' => $interview,
