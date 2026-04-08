@@ -9,6 +9,7 @@ use App\Form\Recrutement\CandidateApplicationType;
 use App\Form\Recrutement\CandidateProfileType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\CandidateRepository;
+use App\Repository\Recrutement\InterviewRepository;
 use App\Repository\Recrutement\JobOfferRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +26,7 @@ final class CandidateController extends AbstractController
         private readonly ApplicationRepository $applicationRepository,
         private readonly CandidateRepository $candidateRepository,
         private readonly JobOfferRepository $jobOfferRepository,
+        private readonly InterviewRepository $interviewRepository,
         private readonly string $uploadDir = '/uploads/cv/'
     ) {
     }
@@ -46,10 +48,12 @@ final class CandidateController extends AbstractController
         ];
 
         $recentApplications = $this->applicationRepository->findByCandidate($candidate);
+        $upcomingInterviews = $this->interviewRepository->findUpcomingByCandidate($candidate->getId());
 
         return $this->render('Candidate/dashboard.html.twig', [
             'stats' => $stats,
             'recentApplications' => array_slice($recentApplications, 0, 5),
+            'upcomingInterviews' => array_slice($upcomingInterviews, 0, 3),
         ]);
     }
 
@@ -86,10 +90,16 @@ final class CandidateController extends AbstractController
 
     #[Route('/candidat/offres-emploi', name: 'app_candidate_job_offers')]
     #[IsGranted('ROLE_CANDIDATE')]
-    public function jobOffers(): Response
+    public function jobOffers(Request $request): Response
     {
         $candidate = $this->getCurrentCandidate();
-        $jobOffers = $this->jobOfferRepository->findPublished(100);
+
+        $search = $request->query->get('search');
+        $department = $request->query->get('department');
+        $location = $request->query->get('location');
+        $employmentType = $request->query->get('employmentType');
+
+        $jobOffers = $this->jobOfferRepository->searchForCandidates($search, $department, $location, $employmentType);
 
         $appliedJobIds = [];
         foreach ($jobOffers as $offer) {
@@ -98,9 +108,34 @@ final class CandidateController extends AbstractController
             }
         }
 
+        $departments = $this->jobOfferRepository->getDistinctDepartments();
+        $locations = $this->jobOfferRepository->getDistinctLocations();
+        $employmentTypes = $this->jobOfferRepository->getDistinctEmploymentTypes();
+
         return $this->render('Candidate/job_offers.html.twig', [
             'jobOffers' => $jobOffers,
             'appliedJobIds' => $appliedJobIds,
+            'departments' => $departments,
+            'locations' => $locations,
+            'employmentTypes' => $employmentTypes,
+            'filters' => [
+                'search' => $search,
+                'department' => $department,
+                'location' => $location,
+                'employmentType' => $employmentType,
+            ],
+        ]);
+    }
+
+    #[Route('/candidat/mes-entretiens', name: 'app_candidate_interviews')]
+    #[IsGranted('ROLE_CANDIDATE')]
+    public function interviews(): Response
+    {
+        $candidate = $this->getCurrentCandidate();
+        $interviews = $this->interviewRepository->findByCandidate($candidate->getId());
+
+        return $this->render('Candidate/interviews.html.twig', [
+            'interviews' => $interviews,
         ]);
     }
 
