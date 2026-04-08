@@ -2,7 +2,7 @@
 
 namespace App\Controller\rh;
 
-use App\Repository\EmployeeRepository;
+use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\FichePaieService;
 use App\Service\PrimeService;

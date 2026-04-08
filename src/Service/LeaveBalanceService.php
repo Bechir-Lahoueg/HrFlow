@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use App\Entity\LeaveBalance;
-use App\Repository\EmployeeRepository;
-use App\Repository\LeaveBalanceRepository;
+use App\Entity\Rh\LeaveBalance;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\LeaveBalanceRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 

@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Prime;
-use App\Entity\Employee;
-use App\Repository\PrimeRepository;
-use App\Repository\EmployeeRepository;
+use App\Entity\Paie\Prime;
+use App\Entity\Rh\Employee;
+use App\Repository\Paie\PrimeRepository;
+use App\Repository\Rh\EmployeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class PrimeService

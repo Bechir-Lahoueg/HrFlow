@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
-use App\Entity\SessionFormation;
-use App\Repository\SessionFormationRepository;
+use App\Entity\Formation\SessionFormation;
+use App\Repository\Formation\SessionFormationRepository;
 
 final class SessionService
 {

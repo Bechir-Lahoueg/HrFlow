@@ -2,12 +2,12 @@
 
 namespace App\Service;
 
-use App\Entity\FichePaie;
-use App\Entity\Employee;
-use App\Repository\FichePaieRepository;
-use App\Repository\PrimeRepository;
-use App\Repository\DeductionRepository;
-use App\Repository\EmployeeRepository;
+use App\Entity\Paie\FichePaie;
+use App\Entity\Rh\Employee;
+use App\Repository\Paie\FichePaieRepository;
+use App\Repository\Paie\PrimeRepository;
+use App\Repository\Paie\DeductionRepository;
+use App\Repository\Rh\EmployeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class FichePaieService

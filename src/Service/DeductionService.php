@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Deduction;
-use App\Entity\Employee;
-use App\Repository\DeductionRepository;
-use App\Repository\EmployeeRepository;
+use App\Entity\Paie\Deduction;
+use App\Entity\Rh\Employee;
+use App\Repository\Paie\DeductionRepository;
+use App\Repository\Rh\EmployeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class DeductionService
