@@ -52,7 +52,7 @@
                     <p class="text-[13px] font-semibold text-slate-800 leading-tight">{{ user.firstName|default(user.userIdentifier) }}</p>
                     <p class="text-[11px] text-emerald-600 font-medium">Candidat</p>
                 </div>
-                <a href="{{ path('app_logout') }}" class="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Deconnexion">
+                <a href="{{ path('app_candidate_login') }}" class="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Deconnexion">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 </a>
             </div>
