@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Abonnements | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    <section class="relative pt-52 pb-20 lg:pt-60 lg:pb-28 overflow-hidden">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute top-16 left-[8%] w-72 h-72 bg-emerald-200/30 rounded-full blur-3xl"></div>
+            <div class="absolute top-28 right-[12%] w-80 h-80 bg-cyan-200/25 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[34rem] h-[34rem] bg-sky-100/40 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-sm font-bold text-slate-700 mb-6">
+                    Plans & Tarifs
+                </span>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-5">
+                    Choisissez l'abonnement
+                    <span class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">qui suit votre croissance</span>
+                </h1>
+                <p class="text-lg text-slate-500 leading-relaxed">
+                    Trois solutions concues pour les equipes RH de toutes tailles, avec support, securite et evolution incluse.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                <article class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-extrabold text-slate-900">Starter</h2>
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">PME</span>
+                    </div>
+                    <p class="text-slate-500 mb-6">Ideal pour structurer vos process RH avec l'essentiel.</p>
+                    <div class="mb-7">
+                        <p class="text-4xl font-extrabold text-slate-900">39 DT<span class="text-lg font-semibold text-slate-500">/mois</span></p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
+                        <li>Jusqu'a 25 employes</li>
+                        <li>Recrutement et suivi candidats</li>
+                        <li>Gestion des conges</li>
+                        <li>Support email sous 24h</li>
+                    </ul>
+                    <a href="{{ path('app_login') }}" class="block text-center px-6 py-3.5 rounded-full bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">
+                        Choisir Starter
+                    </a>
+                </article>
+
+                <article class="relative bg-slate-900 border border-slate-900 rounded-3xl p-8 shadow-2xl shadow-slate-900/20 hover:-translate-y-1 transition-all duration-300">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-extrabold uppercase tracking-wider rounded-full bg-emerald-400 text-slate-900">Le plus populaire</span>
+                    <div class="flex items-center justify-between mb-6 mt-3">
+                        <h2 class="text-2xl font-extrabold text-white">Growth</h2>
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-white/15 text-emerald-300">Scale-up</span>
+                    </div>
+                    <p class="text-slate-300 mb-6">Pour les equipes qui accelerent et veulent automatiser.</p>
+                    <div class="mb-7">
+                        <p class="text-4xl font-extrabold text-white">89 DT<span class="text-lg font-semibold text-slate-300">/mois</span></p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-200 mb-8">
+                        <li>Jusqu'a 120 employes</li>
+                        <li>Paie et bulletins automatisees</li>
+                        <li>Tableaux de bord avances</li>
+                        <li>Support prioritaire</li>
+                    </ul>
+                    <a href="{{ path('app_login') }}" class="block text-center px-6 py-3.5 rounded-full bg-emerald-400 text-slate-900 font-extrabold hover:bg-emerald-300 transition-colors">
+                        Choisir Growth
+                    </a>
+                </article>
+
+                <article class="bg-white border border-cyan-200 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-extrabold text-slate-900">Enterprise</h2>
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-cyan-50 text-cyan-700">Grand compte</span>
+                    </div>
+                    <p class="text-slate-500 mb-6">Une offre sur-mesure pour la gouvernance RH multi-sites.</p>
+                    <div class="mb-7">
+                        <p class="text-4xl font-extrabold text-slate-900">179 DT<span class="text-lg font-semibold text-slate-500">/mois</span></p>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
+                        <li>Employes illimites</li>
+                        <li>Workflows personnalises</li>
+                        <li>SSO et securite avancee</li>
+                        <li>Customer Success dedie</li>
+                    </ul>
+                    <a href="{{ path('app_login') }}" class="block text-center px-6 py-3.5 rounded-full bg-cyan-600 text-white font-bold hover:bg-cyan-500 transition-colors">
+                        Choisir Enterprise
+                    </a>
+                </article>
+            </div>
+
+            <div class="mt-12 text-center text-sm text-slate-500">
+                Besoin d'un accompagnement pour choisir ?
+                <a href="mailto:contact@hrflow.tn" class="font-semibold text-slate-900 hover:text-cyan-700 transition-colors">Parler a un expert</a>
+            </div>
+        </div>
+    </section>
+
+    {% include 'Components/footer.html.twig' %}
+</div>
+{% endblock %}
