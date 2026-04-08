@@ -74,11 +74,10 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}/edit', name: 'app_rh_job_offers_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(string $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $jobOffer = $jobOfferRepository->findOneByRh($idInt, $rh);
+        $jobOffer = $jobOfferRepository->findOneByRh($id, $rh);
 
         if (!$jobOffer) {
             $this->addFlash('error', 'Offre d\'emploi non trouvée.');
@@ -103,16 +102,15 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}/delete', name: 'app_rh_job_offers_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function delete(string $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
+    public function delete(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('delete_job_offer_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_job_offer_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_job_offers');
         }
 
         $rh = $this->getCurrentRh();
-        $jobOffer = $jobOfferRepository->findOneByRh($idInt, $rh);
+        $jobOffer = $jobOfferRepository->findOneByRh($id, $rh);
 
         if (!$jobOffer) {
             $this->addFlash('error', 'Offre d\'emploi non trouvée.');
@@ -129,17 +127,16 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}/restore', name: 'app_rh_job_offers_restore', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function restore(string $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
+    public function restore(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('restore_job_offer_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('restore_job_offer_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_job_offers');
         }
 
         $rh = $this->getCurrentRh();
         // Find including deleted
-        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$jobOffer) {
             $this->addFlash('error', 'Offre d\'emploi non trouvée.');
@@ -155,17 +152,16 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}/delete-permanent', name: 'app_rh_job_offers_delete_permanent', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function deletePermanent(string $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
+    public function deletePermanent(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('permanent_delete_job_offer_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('permanent_delete_job_offer_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_job_offers');
         }
 
         $rh = $this->getCurrentRh();
         // Find including deleted
-        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$jobOffer) {
             $this->addFlash('error', 'Offre d\'emploi non trouvée.');
@@ -181,11 +177,10 @@ final class RecruitmentJobOfferController extends AbstractController
 
     #[Route('/rh/recruitment/job-offers/{id}', name: 'app_rh_job_offers_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(string $id, JobOfferRepository $jobOfferRepository, ApplicationRepository $applicaitonRepository): Response
+    public function show(int $id, JobOfferRepository $jobOfferRepository, ApplicationRepository $applicaitonRepository): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$jobOffer) {
             $this->addFlash('error', 'Offre d\'emploi non trouvée.');

@@ -113,10 +113,9 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/evaluate', name: 'app_rh_interviews_evaluate', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function evaluate(string $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    public function evaluate(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('evaluate_interview_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('evaluate_interview_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_interviews');
         }
@@ -156,11 +155,10 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/edit', name: 'app_rh_interviews_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(string $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRh($idInt, $rh);
+        $interview = $interviewRepository->findOneByRh($id, $rh);
 
         if (!$interview) {
             $this->addFlash('error', 'Entretien non trouvé.');
@@ -196,16 +194,15 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/delete', name: 'app_rh_interviews_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function delete(string $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    public function delete(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('delete_interview_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_interview_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
         $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRh($idInt, $rh);
+        $interview = $interviewRepository->findOneByRh($id, $rh);
 
         if (!$interview) {
             $this->addFlash('error', 'Entretien non trouvé.');
@@ -222,16 +219,15 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/restore', name: 'app_rh_interviews_restore', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function restore(string $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    public function restore(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('restore_interview_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('restore_interview_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
         $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$interview) {
             $this->addFlash('error', 'Entretien non trouvé.');
@@ -247,16 +243,15 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/delete-permanent', name: 'app_rh_interviews_delete_permanent', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function deletePermanent(string $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
+    public function deletePermanent(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('permanent_delete_interview_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('permanent_delete_interview_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
         $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$interview) {
             $this->addFlash('error', 'Entretien non trouvé.');
@@ -272,11 +267,10 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}', name: 'app_rh_interviews_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(string $id, InterviewRepository $interviewRepository, UserRepository $userRepository): Response
+    public function show(int $id, InterviewRepository $interviewRepository, UserRepository $userRepository): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$interview) {
             $this->addFlash('error', 'Entretien non trouvé.');
