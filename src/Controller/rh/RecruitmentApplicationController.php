@@ -55,10 +55,9 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/status', name: 'app_rh_applications_status', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function updateStatus(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function updateStatus(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('application_status_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('application_status_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
@@ -72,7 +71,7 @@ final class RecruitmentApplicationController extends AbstractController
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRh($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -88,11 +87,10 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/edit', name: 'app_rh_applications_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(string $id, Request $request, ApplicationRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, ApplicationRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRh($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -116,16 +114,15 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete', name: 'app_rh_applications_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function delete(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function delete(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('delete_application_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRh($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRh($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -142,16 +139,15 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/restore', name: 'app_rh_applications_restore', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function restore(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function restore(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('restore_application_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('restore_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -167,16 +163,15 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete-permanent', name: 'app_rh_applications_delete_permanent', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function deletePermanent(string $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function deletePermanent(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('permanent_delete_application_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('permanent_delete_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
         }
 
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');
@@ -192,11 +187,10 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}', name: 'app_rh_applications_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(string $id, ApplicationRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
+    public function show(int $id, ApplicationRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
     {
-        $idInt = (int) $id;
         $rh = $this->getCurrentRh();
-        $application = $applicaitonRepository->findOneByRhIncludingDeleted($idInt, $rh);
+        $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);
 
         if (!$application) {
             $this->addFlash('error', 'Candidature non trouvée.');

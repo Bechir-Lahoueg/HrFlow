@@ -172,4 +172,96 @@ class JobOfferRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Search and filter job offers for candidates
+     * @return JobOffer[]
+     */
+    public function searchForCandidates(?string $search = null, ?string $department = null, ?string $location = null, ?string $employmentType = null): array
+    {
+        $qb = $this->createQueryBuilder('jo')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->setParameter('status', 'OPEN')
+            ->orderBy('jo.createdAt', 'DESC');
+
+        if ($search) {
+            $qb->andWhere('(jo.title LIKE :search OR jo.description LIKE :search)')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($department) {
+            $qb->andWhere('jo.department = :department')
+               ->setParameter('department', $department);
+        }
+
+        if ($location) {
+            $qb->andWhere('jo.location = :location')
+               ->setParameter('location', $location);
+        }
+
+        if ($employmentType) {
+            $qb->andWhere('jo.employmentType = :employmentType')
+               ->setParameter('employmentType', $employmentType);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get distinct departments for filter dropdown
+     * @return string[]
+     */
+    public function getDistinctDepartments(): array
+    {
+        $results = $this->createQueryBuilder('jo')
+            ->select('DISTINCT jo.department')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->andWhere('jo.department IS NOT NULL')
+            ->setParameter('status', 'OPEN')
+            ->orderBy('jo.department', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'department');
+    }
+
+    /**
+     * Get distinct locations for filter dropdown
+     * @return string[]
+     */
+    public function getDistinctLocations(): array
+    {
+        $results = $this->createQueryBuilder('jo')
+            ->select('DISTINCT jo.location')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->andWhere('jo.location IS NOT NULL')
+            ->setParameter('status', 'OPEN')
+            ->orderBy('jo.location', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'location');
+    }
+
+    /**
+     * Get distinct employment types for filter dropdown
+     * @return string[]
+     */
+    public function getDistinctEmploymentTypes(): array
+    {
+        $results = $this->createQueryBuilder('jo')
+            ->select('DISTINCT jo.employmentType')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->andWhere('jo.employmentType IS NOT NULL')
+            ->setParameter('status', 'OPEN')
+            ->orderBy('jo.employmentType', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'employmentType');
+    }
 }

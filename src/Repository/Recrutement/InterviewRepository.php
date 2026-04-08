@@ -199,4 +199,38 @@ class InterviewRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Find interviews by candidate
+     * @return Interview[]
+     */
+    public function findByCandidate(int $candidateId): array
+    {
+        return $this->createQueryBuilder('i')
+            ->join('i.application', 'a')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('i.isDeleted = false')
+            ->setParameter('candidateId', $candidateId)
+            ->orderBy('i.interviewDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find upcoming interviews by candidate
+     * @return Interview[]
+     */
+    public function findUpcomingByCandidate(int $candidateId): array
+    {
+        return $this->createQueryBuilder('i')
+            ->join('i.application', 'a')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('i.isDeleted = false')
+            ->andWhere('i.interviewDate >= :now')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('now', new \DateTime())
+            ->orderBy('i.interviewDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

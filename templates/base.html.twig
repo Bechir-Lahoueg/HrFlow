@@ -3,6 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        {# Cache control - prevents back button from showing authenticated content after logout #}
+        <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
+        
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +18,35 @@
         <script>
             (function(){
                 if(localStorage.getItem('hrflow-theme')==='dark') document.documentElement.classList.add('dark');
+            })();
+        </script>
+        
+        {# Back button protection - force page reload when navigating back to authenticated pages #}
+        <script>
+            (function() {
+                if (window.history && window.history.pushState) {
+                    // Mark pages as authenticated
+                    if (document.cookie.indexOf('PHPSESSID') !== -1) {
+                        window.history.pushState('authenticated', '', window.location.href);
+                    }
+                    
+                    // Listen for back button navigation
+                    window.addEventListener('popstate', function(event) {
+                        // If navigating back to an authenticated page, force reload
+                        // This ensures the server checks authentication again
+                        if (event.state === 'authenticated' || document.cookie.indexOf('PHPSESSID') === -1) {
+                            window.location.reload();
+                        }
+                    });
+                }
+                
+                // Additional protection: if session cookie is gone, force reload on next user action
+                document.addEventListener('click', function(e) {
+                    if (document.cookie.indexOf('PHPSESSID') === -1 && !e.target.closest('a[href*="login"]')) {
+                        // Session gone, reload to check auth status
+                        window.location.reload();
+                    }
+                }, { once: true });
             })();
         </script>
 
