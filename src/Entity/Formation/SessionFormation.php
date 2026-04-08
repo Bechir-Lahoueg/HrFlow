@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SessionFormationRepository::class)]
 #[ORM\Table(name: 'session_formation')]
@@ -20,24 +21,47 @@ class SessionFormation
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'sessions')]
     #[ORM\JoinColumn(name: 'id_formation', referencedColumnName: 'id_formation', nullable: false)]
+    #[Assert\NotNull(message: "La formation est obligatoire.")]
     private ?Formation $formation = null;
 
     #[ORM\Column(name: 'date_debut', type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(name: 'date_fin', type: Types::DATE_MUTABLE)]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'dateDebut',
+        message: "La date de fin doit être supérieure ou égale à la date de début."
+    )]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "Le lieu de la session est obligatoire.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le lieu ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $lieu = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Veuillez choisir un mode.")]
+    #[Assert\Length(
+        max: 50,
+        maxMessage: "Le mode ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $mode = null;
 
     #[ORM\Column(name: 'capacite_max')]
+    #[Assert\NotNull(message: "La capacité maximale est obligatoire.")]
+    #[Assert\Positive(message: "La capacité maximale doit être un nombre positif.")]
     private ?int $capaciteMax = null;
 
     #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire.")]
+    #[Assert\Length(
+        max: 30,
+        maxMessage: "Le statut ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $statut = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -76,7 +100,7 @@ class SessionFormation
         return $this->dateDebut;
     }
 
-    public function setDateDebut(\DateTimeInterface $dateDebut): static
+    public function setDateDebut(?\DateTimeInterface $dateDebut): static
     {
         $this->dateDebut = $dateDebut;
         return $this;
@@ -87,7 +111,7 @@ class SessionFormation
         return $this->dateFin;
     }
 
-    public function setDateFin(\DateTimeInterface $dateFin): static
+    public function setDateFin(?\DateTimeInterface $dateFin): static
     {
         $this->dateFin = $dateFin;
         return $this;
@@ -109,7 +133,7 @@ class SessionFormation
         return $this->mode;
     }
 
-    public function setMode(string $mode): static
+    public function setMode(?string $mode): static
     {
         $this->mode = $mode;
         return $this;

@@ -21,33 +21,20 @@
             })();
         </script>
         
-        {# Back button protection - force page reload when navigating back to authenticated pages #}
+        {#
+            Protection "bouton retour" SANS rechargements intempestifs.
+            L'ancien script écoutait popstate/click et déclenchait window.location.reload() trop
+            agressivement, ce qui provoquait des reload lors du focus/saisie dans certains formulaires.
+
+            Ici on se contente de recharger uniquement quand la page revient du cache navigateur (bfcache).
+        #}
         <script>
-            (function() {
-                if (window.history && window.history.pushState) {
-                    // Mark pages as authenticated
-                    if (document.cookie.indexOf('PHPSESSID') !== -1) {
-                        window.history.pushState('authenticated', '', window.location.href);
-                    }
-                    
-                    // Listen for back button navigation
-                    window.addEventListener('popstate', function(event) {
-                        // If navigating back to an authenticated page, force reload
-                        // This ensures the server checks authentication again
-                        if (event.state === 'authenticated' || document.cookie.indexOf('PHPSESSID') === -1) {
-                            window.location.reload();
-                        }
-                    });
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    // La page a été restaurée depuis le cache (bouton retour). Recharger pour revalider la session.
+                    window.location.reload();
                 }
-                
-                // Additional protection: if session cookie is gone, force reload on next user action
-                document.addEventListener('click', function(e) {
-                    if (document.cookie.indexOf('PHPSESSID') === -1 && !e.target.closest('a[href*="login"]')) {
-                        // Session gone, reload to check auth status
-                        window.location.reload();
-                    }
-                }, { once: true });
-            })();
+            });
         </script>
 
         {% block stylesheets %}

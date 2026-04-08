@@ -53,6 +53,8 @@
 {% endblock %}
 
 {% block body %}
+
+
 <div class="min-h-screen bg-[#F9FBFF] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
@@ -91,32 +93,37 @@
             </div>
 
             <div class="bg-white rounded-[2rem] shadow-xl p-8 md:p-12 form-card">
-                {{ form_start(formationForm, {'attr': {'id': 'formationForm', 'class': 'space-y-8', 'novalidate': 'novalidate'}}) }}
+                {{ form_start(formationForm, {'attr': {'id': 'formationForm', 'class': 'space-y-8', 'novalidate': 'novalidate' }}) }}
 
                     <div class="space-y-2">
                         <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Titre de la formation</label>
                         {{ form_widget(formationForm.titre, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 text-base transition-all', 'placeholder': 'Ex: Management de Projet Agile'}}) }}
+                        <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.titre) }}</div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Catégorie</label>
                             {{ form_widget(formationForm.type, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.type) }}</div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Durée (en jours)</label>
                             {{ form_widget(formationForm.duree, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.duree) }}</div>
                         </div>
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Organisme </label>
                         {{ form_widget(formationForm.organisme, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'placeholder': "Nom de l'organisme formateur"}}) }}
+                        <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.organisme) }}</div>
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Description</label>
                         {{ form_widget(formationForm.description, {'attr': {'rows': 3, 'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                        <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.description) }}</div>
                     </div>
 
                     <div class="bg-zinc-50 rounded-2xl p-6 border border-zinc-100 space-y-4">
@@ -132,7 +139,7 @@
                             </button>
                         </div>
                         {{ form_widget(formationForm.objectifs, {'attr': {'rows': 5, 'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all shadow-inner', 'placeholder': 'Compétences attendues...'}}) }}
-                        {{ form_errors(formationForm.objectifs) }}
+                        <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(formationForm.objectifs) }}</div>
                     </div>
 
                     <div class="flex flex-col md:flex-row items-center justify-end gap-4 pt-8 border-t border-gray-100">
@@ -156,7 +163,7 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('turbo:load', () => {
             const btnAi = document.getElementById('btn-generate-ai');
             const titreInput = document.querySelector('input[id$="_titre"]');
             const objectifsTextarea = document.querySelector('textarea[id$="_objectifs"]');

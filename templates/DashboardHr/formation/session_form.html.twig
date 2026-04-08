@@ -90,12 +90,13 @@
             </div>
 
             <div class="bg-white rounded-[2rem] shadow-xl p-8 md:p-12 form-card">
-                {{ form_start(sessionForm, {'attr': {'id': 'sessionForm', 'class': 'space-y-8', 'novalidate': 'novalidate'}}) }}
+                {{ form_start(sessionForm, {'attr': {'id': 'sessionForm', 'class': 'space-y-8', 'novalidate': 'novalidate' }}) }}
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Date de début</label>
                             {{ form_widget(sessionForm.dateDebut, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.dateDebut) }}</div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1 flex justify-between">
@@ -103,6 +104,7 @@
                                 <span class="text-[10px] text-accent-blue lowercase tracking-normal bg-blue-50 px-2 flex items-center rounded">Calcul auto</span>
                             </label>
                             {{ form_widget(sessionForm.dateFin, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all bg-gray-50 cursor-not-allowed', 'readonly': 'readonly'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.dateFin) }}</div>
                             <p class="text-[11px] text-zinc-400 ml-1 italic">Basée sur la durée de {{ formation.duree }} jours.</p>
                         </div>
                     </div>
@@ -111,16 +113,19 @@
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Lieu de la session</label>
                             {{ form_widget(sessionForm.lieu, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'placeholder': 'Ex: Salle Polyvalente, Paris ou Distanciel'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.lieu) }}</div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Mode</label>
                             {{ form_widget(sessionForm.mode, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                            <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.mode) }}</div>
                         </div>
                     </div>
 
                     <div class="space-y-2 max-w-xs">
                         <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Capacité maximale</label>
                         {{ form_widget(sessionForm.capaciteMax, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'min': '1'}}) }}
+                        <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.capaciteMax) }}</div>
                     </div>
 
                     <div class="flex flex-col md:flex-row items-center justify-end gap-4 pt-8 border-t border-gray-100">
