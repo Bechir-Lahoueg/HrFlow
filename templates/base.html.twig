@@ -21,20 +21,27 @@
             })();
         </script>
         
-        {# Back button protection - force page reload when navigating back to authenticated pages #}
+        {# Back button protection - prevent cached authenticated content after logout #}
         <script>
             (function() {
-                if (window.history && window.history.pushState) {
-                    // Mark pages as authenticated
-                    if (document.cookie.indexOf('PHPSESSID') !== -1) {
-                        window.history.pushState('authenticated', '', window.location.href);
-                    }
+                // Only apply on pages that require authentication (not login pages)
+                var path = window.location.pathname;
+                var isLoginPage = path.includes('/login') || path.includes('/connexion') || path.includes('/inscription');
+                
+                if (!isLoginPage && window.history && window.history.pushState) {
+                    // Mark authenticated pages in history
+                    window.history.pushState({page: 'authenticated'}, '', window.location.href);
                     
                     // Listen for back button navigation
                     window.addEventListener('popstate', function(event) {
-                        // If navigating back to an authenticated page, force reload
-                        // This ensures the server checks authentication again
-                        if (event.state === 'authenticated' || document.cookie.indexOf('PHPSESSID') === -1) {
+                        // Check if navigating back to an authenticated page after logout
+                        // by checking if PHPSESSID cookie is missing
+                        var hasSession = document.cookie.split(';').some(function(c) {
+                            return c.trim().startsWith('PHPSESSID=');
+                        });
+                        
+                        if (!hasSession && event.state && event.state.page === 'authenticated') {
+                            // Force reload to let server redirect to login
                             window.location.reload();
                         }
                     });

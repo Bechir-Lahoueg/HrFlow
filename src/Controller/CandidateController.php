@@ -146,8 +146,19 @@ final class CandidateController extends AbstractController
         $candidate = $this->getCurrentCandidate();
         $jobOffer = $this->jobOfferRepository->find($id);
 
-        if (!$jobOffer || $jobOffer->isDeleted() || $jobOffer->getStatus() !== 'OPEN') {
-            throw $this->createNotFoundException('Cette offre d\'emploi n\'existe pas ou n\'est plus disponible.');
+        // Debug and validate job offer availability
+        if (!$jobOffer) {
+            throw $this->createNotFoundException('Cette offre d\'emploi n\'existe pas (ID: ' . $id . ').');
+        }
+        
+        if ($jobOffer->isDeleted()) {
+            $this->addFlash('error', 'Cette offre d\'emploi a ete supprimee et n\'est plus disponible.');
+            return $this->redirectToRoute('app_candidate_job_offers');
+        }
+        
+        if ($jobOffer->getStatus() !== 'OPEN') {
+            $this->addFlash('error', 'Cette offre d\'emploi n\'est plus ouverte aux candidatures (Statut: ' . $jobOffer->getStatus() . ').');
+            return $this->redirectToRoute('app_candidate_job_offers');
         }
 
         if ($this->applicationRepository->hasCandidateApplied($candidate, $id)) {
@@ -156,6 +167,17 @@ final class CandidateController extends AbstractController
         }
 
         $application = new Application();
+        // Pre-populate required fields before form validation to avoid entity constraint errors
+        $application->setJobOffer($jobOffer);
+        $application->setCandidate($candidate);
+        $application->setCandidateName($candidate->getFirstName() . ' ' . $candidate->getLastName());
+        $application->setEmailAddress($candidate->getEmail());
+        $application->setStatus('PENDING');
+        $application->setAppliedAt(new \DateTime());
+        $application->setSource('Candidate Portal');
+        // Set temporary CV path - will be overwritten with actual file after upload
+        $application->setCvPath('temp_' . uniqid());
+        
         $form = $this->createForm(CandidateApplicationType::class, $application);
         $form->handleRequest($request);
 
@@ -172,14 +194,6 @@ final class CandidateController extends AbstractController
                 $coverLetterFilename = $this->uploadFile($coverLetterFile, 'cover_letter');
                 $application->setCoverLetterPath($coverLetterFilename);
             }
-
-            $application->setCandidate($candidate);
-            $application->setJobOffer($jobOffer);
-            $application->setCandidateName($candidate->getFirstName() . ' ' . $candidate->getLastName());
-            $application->setEmailAddress($candidate->getEmail());
-            $application->setStatus('PENDING');
-            $application->setAppliedAt(new \DateTime());
-            $application->setSource('Candidate Portal');
 
             $this->entityManager->persist($application);
             $this->entityManager->flush();
@@ -209,8 +223,26 @@ final class CandidateController extends AbstractController
     private function uploadFile(UploadedFile $file, string $prefix): string
     {
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-        $newFilename = $prefix . '_' . $safeFilename . '_' . uniqid() . '.' . $file->guessExtension();
+        
+        // Sanitize filename - works with or without intl extension
+        $safeFilename = $this->sanitizeFilename($originalFilename);
+        
+        // Use guessExtension() if available, fallback to client original extension
+        try {
+            $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
+        } catch (\Exception $e) {
+            // If MIME guessing fails (fileinfo not available), use client extension
+            $extension = $file->getClientOriginalExtension() ?: 'bin';
+        }
+        
+        // Validate extension for security
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf'];
+        $extension = strtolower($extension);
+        if (!in_array($extension, $allowedExtensions)) {
+            $extension = 'pdf'; // Default to pdf if extension not allowed
+        }
+        
+        $newFilename = $prefix . '_' . $safeFilename . '_' . uniqid() . '.' . $extension;
 
         $uploadPath = $this->getParameter('kernel.project_dir') . '/public' . $this->uploadDir;
         if (!is_dir($uploadPath)) {
@@ -220,5 +252,44 @@ final class CandidateController extends AbstractController
         $file->move($uploadPath, $newFilename);
 
         return $this->uploadDir . $newFilename;
+    }
+
+    /**
+     * Sanitize filename to be safe for filesystem - works without intl extension
+     */
+    private function sanitizeFilename(string $filename): string
+    {
+        // Transliterate if intl is available, otherwise use iconv or basic replacement
+        if (function_exists('transliterator_transliterate')) {
+            $filename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $filename);
+        } elseif (function_exists('iconv')) {
+            // Fallback to iconv if available
+            $filename = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filename);
+            $filename = strtolower($filename);
+            $filename = preg_replace('/[^a-z0-9_]/', '_', $filename);
+        } else {
+            // Basic fallback - just remove/replace unsafe characters
+            $filename = strtolower($filename);
+            // Replace common accented chars
+            $replacements = [
+                'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a',
+                'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
+                'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+                'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o',
+                'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u',
+                'ñ' => 'n', 'ç' => 'c', 'ß' => 'ss',
+                'ÿ' => 'y', 'ý' => 'y',
+            ];
+            $filename = strtr($filename, $replacements);
+            // Replace any remaining non-alphanumeric chars with underscore
+            $filename = preg_replace('/[^a-z0-9_]/', '_', $filename);
+        }
+        
+        // Ensure we don't have multiple underscores
+        $filename = preg_replace('/_+/', '_', $filename);
+        // Trim underscores from ends
+        $filename = trim($filename, '_');
+        
+        return $filename ?: 'file';
     }
 }

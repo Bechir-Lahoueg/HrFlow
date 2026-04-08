@@ -389,4 +389,65 @@
         </main>
     </div>
 </div>
+
+<script>
+// Modal functions - included once for all modals
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.remove('hidden');
+    
+    const backdrop = modal.querySelector('.modal-backdrop');
+    if (backdrop) {
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            backdrop.classList.add('opacity-100');
+        }, 10);
+    }
+    
+    const panel = modal.querySelector('.modal-panel');
+    if (panel) {
+        setTimeout(() => {
+            panel.classList.remove('opacity-0', 'scale-95');
+            panel.classList.add('opacity-100', 'scale-100');
+        }, 10);
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    const backdrop = modal.querySelector('.modal-backdrop');
+    const panel = modal.querySelector('.modal-panel');
+    
+    if (backdrop) {
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0');
+    }
+    if (panel) {
+        panel.classList.remove('opacity-100', 'scale-100');
+        panel.classList.add('opacity-0', 'scale-95');
+    }
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-backdrop')) {
+        const modal = e.target.closest('[id$="Modal"]');
+        if (modal) closeModal(modal.id);
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const openModal = document.querySelector('[id$="Modal"]:not(.hidden)');
+        if (openModal) closeModal(openModal.id);
+    }
+});
+</script>
 {% endblock %}
