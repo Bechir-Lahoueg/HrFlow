@@ -204,6 +204,35 @@ final class RhFormationController extends AbstractController
         ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
+    #[Route('/session/{id}/delete', name: 'rh_formation_session_delete', methods: ['POST'])]
+    public function deleteSession(string $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
+    {
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
+        if (!$session) {
+            throw $this->createNotFoundException('Session non trouvée');
+        }
+
+        $formationId = $session->getFormation()->getId();
+
+        if (!$this->isCsrfTokenValid('delete-session-' . $idInt, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
+        }
+
+        if ($session->getParticipations()->count() > 0) {
+            $this->addFlash('error', 'Impossible de supprimer cette session: des participants sont déjà inscrits.');
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
+        }
+
+        $em->remove($session);
+        $em->flush();
+
+        $this->addFlash('success', 'Session supprimée avec succès.');
+
+        return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
+    }
+
     #[Route('/session/{id}/participants', name: 'rh_formation_session_participants', methods: ['GET'])]
     public function participants(string $id, SessionService $sessionService, ParticipationService $participationService): Response
     {
