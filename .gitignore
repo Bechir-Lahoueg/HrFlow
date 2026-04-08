@@ -9,6 +9,9 @@
 /public/bundles/
 /var/
 .idea/
+*.iml
+*.ipr
+*.iws
 /vendor/
 ###< symfony/framework-bundle ###
 
