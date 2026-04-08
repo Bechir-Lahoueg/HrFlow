@@ -2,9 +2,9 @@
 
 namespace App\Controller\admin;
 
-use App\Entity\User;
-use App\Repository\EmployeeRepository;
-use App\Repository\UserRepository;
+use App\Entity\Rh\User;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;

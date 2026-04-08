@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Employee;
-use App\Entity\LeaveRequest;
-use App\Repository\EmployeeRepository;
-use App\Repository\LeaveRequestRepository;
+use App\Entity\Rh\Employee;
+use App\Entity\Rh\LeaveRequest;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\LeaveRequestRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 

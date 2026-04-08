@@ -2,10 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Formation;
-use App\Entity\SessionFormation;
-use App\Repository\FormationRepository;
-use App\Repository\SessionFormationRepository;
+use App\Entity\Formation\Formation;
+use App\Entity\Formation\SessionFormation;
+use App\Repository\Formation\FormationRepository;
+use App\Repository\Formation\SessionFormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class FormationService

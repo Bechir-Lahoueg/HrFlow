@@ -2,10 +2,10 @@
 
 namespace App\Controller\employee;
 
-use App\Repository\EmployeeRepository;
-use App\Repository\FichePaieRepository;
-use App\Repository\PrimeRepository;
-use App\Repository\DeductionRepository;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Paie\FichePaieRepository;
+use App\Repository\Paie\PrimeRepository;
+use App\Repository\Paie\DeductionRepository;
 use App\Security\DbUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;

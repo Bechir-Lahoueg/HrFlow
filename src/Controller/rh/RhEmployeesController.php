@@ -2,9 +2,9 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Employee;
-use App\Repository\EmployeeRepository;
-use App\Repository\UserRepository;
+use App\Entity\Rh\Employee;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\UserRepository;
 use App\Security\DbUser;
 use App\Service\LeaveRequestService;
 use Doctrine\ORM\EntityManagerInterface;
