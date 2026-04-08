@@ -21,40 +21,20 @@
             })();
         </script>
         
-        {# Back button protection - prevent cached authenticated content after logout #}
+        {#
+            Protection "bouton retour" SANS rechargements intempestifs.
+            L'ancien script écoutait popstate/click et déclenchait window.location.reload() trop
+            agressivement, ce qui provoquait des reload lors du focus/saisie dans certains formulaires.
+
+            Ici on se contente de recharger uniquement quand la page revient du cache navigateur (bfcache).
+        #}
         <script>
-            (function() {
-                // Only apply on pages that require authentication (not login pages)
-                var path = window.location.pathname;
-                var isLoginPage = path.includes('/login') || path.includes('/connexion') || path.includes('/inscription');
-                
-                if (!isLoginPage && window.history && window.history.pushState) {
-                    // Mark authenticated pages in history
-                    window.history.pushState({page: 'authenticated'}, '', window.location.href);
-                    
-                    // Listen for back button navigation
-                    window.addEventListener('popstate', function(event) {
-                        // Check if navigating back to an authenticated page after logout
-                        // by checking if PHPSESSID cookie is missing
-                        var hasSession = document.cookie.split(';').some(function(c) {
-                            return c.trim().startsWith('PHPSESSID=');
-                        });
-                        
-                        if (!hasSession && event.state && event.state.page === 'authenticated') {
-                            // Force reload to let server redirect to login
-                            window.location.reload();
-                        }
-                    });
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    // La page a été restaurée depuis le cache (bouton retour). Recharger pour revalider la session.
+                    window.location.reload();
                 }
-                
-                // Additional protection: if session cookie is gone, force reload on next user action
-                document.addEventListener('click', function(e) {
-                    if (document.cookie.indexOf('PHPSESSID') === -1 && !e.target.closest('a[href*="login"]')) {
-                        // Session gone, reload to check auth status
-                        window.location.reload();
-                    }
-                }, { once: true });
-            })();
+            });
         </script>
 
         {% block stylesheets %}
