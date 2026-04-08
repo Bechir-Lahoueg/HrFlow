@@ -6,10 +6,10 @@
     {{ parent() }}
     <style>
         :root {
-            --primary-dark: #022E69;   /* Sidebar / Header / Titres */
-            --primary-blue: #145EB7;   /* Boutons principaux */
-            --accent-blue: #3FA9F5;    /* Accents / Hover */
-            --border-gray: #D0D0D0;    /* Bordures secondaires */
+            --primary-dark: #022E69;
+            --primary-blue: #145EB7;
+            --accent-blue: #3FA9F5;
+            --border-gray: #D0D0D0;
         }
 
         .dot-grid {
@@ -17,7 +17,6 @@
             background-size: 24px 24px;
         }
 
-        /* Style des champs personnalisé : Cadre bleu très fin */
         .custom-input {
             border: 1px solid var(--primary-dark) !important;
             background-color: #ffffff !important;
@@ -41,7 +40,6 @@
         .bg-primary-dark { background-color: var(--primary-dark); }
         .bg-primary-blue { background-color: var(--primary-blue); }
 
-        /* Animation d'entrée */
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out;
         }
@@ -61,7 +59,6 @@
 
         <main class="px-8 mt-10 pb-16 w-full max-w-5xl mx-auto animate-fade-in">
 
-            {# Flash Messages #}
             {% for label, messages in app.flashes %}
                 {% for message in messages %}
                     <div class="mb-6 px-5 py-4 rounded-2xl border flex items-center gap-3 shadow-sm bg-white
@@ -143,34 +140,45 @@
     </div>
 </div>
 {% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
+{% block extra_js %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        function initCalculSession() {
+            console.log("--- Initialisation du calcul ---");
+
             const dateDebutInput = document.querySelector('input[id$="_dateDebut"]');
             const dateFinInput = document.querySelector('input[id$="_dateFin"]');
-            const duree = {{ formation.duree ?? 1 }};
-
-            function mettreAJourDateFin() {
-                if (dateDebutInput.value) {
-                    const dateDebut = new Date(dateDebutInput.value);
-                    const dateFin = new Date(dateDebut);
-
-                    dateFin.setDate(dateFin.getDate() + Math.max(0, duree - 1));
-
-                    const annee = dateFin.getFullYear();
-                    const mois = String(dateFin.getMonth() + 1).padStart(2, '0');
-                    const jour = String(dateFin.getDate()).padStart(2, '0');
-
-                    dateFinInput.value = `${annee}-${mois}-${jour}`;
-                }
-            }
+            const duree = parseInt("{{ formation.duree }}", 10) || 1;
 
             if (dateDebutInput && dateFinInput) {
-                dateDebutInput.addEventListener('change', mettreAJourDateFin);
-                if(dateDebutInput.value) mettreAJourDateFin();
+                console.log("Champs trouvés !");
+
+                const calculer = () => {
+                    if (dateDebutInput.value) {
+                        const start = new Date(dateDebutInput.value);
+                        if (!isNaN(start.getTime())) {
+                            const end = new Date(start);
+                            end.setDate(end.getDate() + (duree - 1));
+
+                            const y = end.getFullYear();
+                            const m = String(end.getMonth() + 1).padStart(2, '0');
+                            const d = String(end.getDate()).padStart(2, '0');
+
+                            dateFinInput.value = `${y}-${m}-${d}`;
+                            console.log("Date de fin mise à jour :", dateFinInput.value);
+                        }
+                    }
+                };
+
+                dateDebutInput.addEventListener('input', calculer);
+
+                if (dateDebutInput.value) calculer();
+            } else {
+                console.log("Champs introuvables dans le DOM actuel.");
             }
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initCalculSession);
+
+        document.addEventListener('turbo:load', initCalculSession);
     </script>
 {% endblock %}
