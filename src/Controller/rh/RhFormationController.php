@@ -133,7 +133,7 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/sessions/create', name: 'rh_formation_session_create', methods: ['GET', 'POST'])]
-    public function createSession(string $id, Request $request): Response
+    public function createSession(string $id, Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $idInt = (int) $id;
         $formation = $this->formationService->getFormationById($idInt);
@@ -141,18 +141,15 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($request->isMethod('POST')) {
-            $data = [
-                'id_formation' => $idInt,
-                'date_debut' => $request->request->get('date_debut'),
-                'date_fin' => $request->request->get('date_fin'),
-                'lieu' => $request->request->get('lieu'),
-                'mode' => $request->request->get('mode'),
-                'capacite_max' => (int) $request->request->get('capacite_max'),
-            ];
+        $session = new SessionFormation();
+        $session->setFormation($formation);
 
-            if (empty($data['date_fin'])) {
-                $debutDate = new \DateTime($data['date_debut']);
+        $form = $this->createForm(SessionFormationType::class, $session);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (empty($session->getDateFin())) {
+                $debutDate = clone $session->getDateDebut();
                 $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
@@ -181,7 +178,7 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
-    public function editSession(string $id, Request $request, SessionService $sessionService): Response
+    public function editSession(string $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $idInt = (int) $id;
         $session = $sessionService->getSessionById($idInt);
@@ -200,9 +197,6 @@ final class RhFormationController extends AbstractController
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
             }
-
-            $this->formationService->updateSession($idInt, $data);
-            $this->addFlash('success', 'Session modifiée avec succès.');
 
             $em->flush();
 
