@@ -35,7 +35,7 @@ class SessionFormation
     )]
     private ?\DateTimeInterface $dateFin = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le lieu de la session est obligatoire.")]
     #[Assert\Length(
         max: 255,
@@ -57,7 +57,6 @@ class SessionFormation
     private ?int $capaciteMax = null;
 
     #[ORM\Column(length: 30)]
-    #[Assert\NotBlank(message: "Le statut est obligatoire.")]
     #[Assert\Length(
         max: 30,
         maxMessage: "Le statut ne doit pas dépasser {{ limit }} caractères."

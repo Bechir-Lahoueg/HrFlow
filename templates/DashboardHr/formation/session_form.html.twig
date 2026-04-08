@@ -92,6 +92,23 @@
             <div class="bg-white rounded-[2rem] shadow-xl p-8 md:p-12 form-card">
                 {{ form_start(sessionForm, {'attr': {'id': 'sessionForm', 'class': 'space-y-8', 'novalidate': 'novalidate' }}) }}
 
+                    {# Erreurs globales (utile quand Symfony renvoie 422) #}
+                    {% if not sessionForm.vars.valid %}
+                        <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-800">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-0.5 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-extrabold">Veuillez corriger les erreurs ci-dessous.</p>
+                                    <div class="mt-2 text-sm font-semibold">
+                                        {{ form_errors(sessionForm) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Date de début</label>
