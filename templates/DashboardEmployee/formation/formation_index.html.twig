@@ -112,7 +112,7 @@
                 {# Grid des Formations #}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
-                        <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: formation.id_formation}) }}'"
+                        <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 <div class="flex justify-between items-start mb-3">

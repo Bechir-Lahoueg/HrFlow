@@ -99,10 +99,10 @@
                             <tbody class="divide-y divide-slate-100">
                                 {% for employee in employees %}
                                     <tr class="hover:bg-slate-50">
-                                        <td class="px-6 py-3.5 text-[13px] font-medium text-slate-800">{{ employee.first_name }}</td>
-                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.last_name }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] font-medium text-slate-800">{{ employee.firstName }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.lastName }}</td>
                                         <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.email }}</td>
-                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.job_title }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.jobTitle }}</td>
                                         <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.age }}</td>
                                     </tr>
                                 {% else %}

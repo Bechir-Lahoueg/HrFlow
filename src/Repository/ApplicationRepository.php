@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\Applicaiton;
+use App\Entity\Application;
 use App\Entity\JobOffer;
 use App\Security\DbUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Applicaiton>
+ * @extends ServiceEntityRepository<Application>
  */
-class ApplicaitonRepository extends ServiceEntityRepository
+class ApplicationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Applicaiton::class);
+        parent::__construct($registry, Application::class);
     }
 
     /**
      * Find applications by RH with optional filters
-     * @return Applicaiton[]
+     * @return Application[]
      */
     public function findByRh(
         DbUser $rh,
@@ -56,7 +56,7 @@ class ApplicaitonRepository extends ServiceEntityRepository
     /**
      * Find one application by RH (ownership verification)
      */
-    public function findOneByRh(int $id, DbUser $rh): ?Applicaiton
+    public function findOneByRh(int $id, DbUser $rh): ?Application
     {
         return $this->createQueryBuilder('a')
             ->join('a.jobOffer', 'jo')
@@ -71,7 +71,7 @@ class ApplicaitonRepository extends ServiceEntityRepository
 
     /**
      * Find applications by job offer (owned by RH)
-     * @return Applicaiton[]
+     * @return Application[]
      */
     public function findByJobOffer(int $jobOfferId, DbUser $rh): array
     {
@@ -111,7 +111,7 @@ class ApplicaitonRepository extends ServiceEntityRepository
     {
         $results = $this->getEntityManager()->createQuery(
             'SELECT a.status, COUNT(a.id) as count
-             FROM App\Entity\Applicaiton a
+             FROM App\Entity\Application a
              JOIN a.jobOffer jo
              WHERE jo.createdBy = :rhId
              AND a.isDeleted = false
@@ -161,7 +161,7 @@ class ApplicaitonRepository extends ServiceEntityRepository
 
     /**
      * Find deleted applications by RH
-     * @return Applicaiton[]
+     * @return Application[]
      */
     public function findDeletedByRh(DbUser $rh): array
     {
@@ -178,7 +178,7 @@ class ApplicaitonRepository extends ServiceEntityRepository
     /**
      * Find one application by RH including deleted (for restore/permanent delete)
      */
-    public function findOneByRhIncludingDeleted(int $id, DbUser $rh): ?Applicaiton
+    public function findOneByRhIncludingDeleted(int $id, DbUser $rh): ?Application
     {
         return $this->createQueryBuilder('a')
             ->join('a.jobOffer', 'jo')

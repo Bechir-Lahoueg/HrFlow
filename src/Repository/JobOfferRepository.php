@@ -82,7 +82,7 @@ class JobOfferRepository extends ServiceEntityRepository
     {
         return (int) $this->getEntityManager()->createQuery(
             'SELECT COUNT(a.id) 
-             FROM App\Entity\Applicaiton a
+             FROM App\Entity\Application a
              JOIN a.jobOffer jo
              WHERE jo.createdBy = :rhId
              AND a.isDeleted = false'

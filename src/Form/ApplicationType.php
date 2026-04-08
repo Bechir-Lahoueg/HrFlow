@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\Applicaiton;
+use App\Entity\Application;
 use App\Entity\Employee;
 use App\Entity\JobOffer;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -183,7 +183,7 @@ class ApplicationType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Applicaiton::class,
+            'data_class' => Application::class,
             'is_edit' => false,
         ]);
 

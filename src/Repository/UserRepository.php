@@ -2,54 +2,48 @@
 
 namespace App\Repository;
 
-use Doctrine\DBAL\Connection;
+use App\Entity\User;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class UserRepository
+/**
+ * @extends ServiceEntityRepository<User>
+ */
+class UserRepository extends ServiceEntityRepository
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(ManagerRegistry $registry)
     {
-        $this->connection = $connection;
+        parent::__construct($registry, User::class);
     }
 
-    /**
-     * Find interviewers (users with RH or ADMIN role)
-     *
-     * @return array<int, array{id: int, username: string, email: string|null}>
-     */
+    /** @return User[] */
     public function findInterviewers(): array
     {
-        return $this->connection->fetchAllAssociative(
-            "SELECT id, username, email FROM users WHERE role IN ('RH', 'ADMIN') ORDER BY username"
-        );
+        return $this->createQueryBuilder('u')
+            ->where('u.role IN (:roles)')
+            ->setParameter('roles', ['RH', 'ADMIN'])
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
-    /**
-     * Check if a user exists by ID
-     */
-    public function exists(int $id): bool
+    public function existsByEmail(string $email): bool
     {
-        $count = $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM users WHERE id = :id',
-            ['id' => $id]
-        );
-
-        return (bool) $count;
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.email = :email')
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 
-    /**
-     * Find a single user by ID
-     *
-     * @return array{id: int, username: string, email: string|null, role: string}|null
-     */
-    public function find(int $id): ?array
+    public function existsByUsername(string $username): bool
     {
-        $result = $this->connection->fetchAssociative(
-            'SELECT id, username, email, role FROM users WHERE id = :id',
-            ['id' => $id]
-        );
-
-        return $result ?: null;
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.username = :username')
+            ->setParameter('username', $username)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 }

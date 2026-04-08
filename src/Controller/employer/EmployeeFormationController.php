@@ -2,9 +2,9 @@
 
 namespace App\Controller\employer;
 
-use App\Service\SessionService;
-use App\Service\ParticipationService;
 use App\Service\FormationService;
+use App\Service\ParticipationService;
+use App\Service\SessionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +16,9 @@ final class EmployeeFormationController extends AbstractController
     public function __construct(
         private readonly SessionService $sessionService,
         private readonly ParticipationService $participationService,
-        private readonly FormationService $formationService
-    ) {}
+        private readonly FormationService $formationService,
+    ) {
+    }
 
     #[Route('/', name: 'employee_formation_index')]
     public function index(Request $request): Response
@@ -40,8 +41,8 @@ final class EmployeeFormationController extends AbstractController
             'filters' => [
                 'search' => $search,
                 'type' => $type,
-                'sort' => $sortQuery
-            ]
+                'sort' => $sortQuery,
+            ],
         ]);
     }
 
@@ -51,8 +52,14 @@ final class EmployeeFormationController extends AbstractController
         $userId = $this->getUser()->getId();
         $participations = $this->participationService->getEmployeeParticipations($userId);
 
+        $attendanceMap = [];
+        foreach ($participations as $p) {
+            $attendanceMap[$p->getId()] = $this->participationService->getAttendancePercentage($p->getId());
+        }
+
         return $this->render('DashboardEmployee/formation/formation_requests.html.twig', [
             'participations' => $participations,
+            'attendanceMap' => $attendanceMap,
         ]);
     }
 
@@ -70,9 +77,9 @@ final class EmployeeFormationController extends AbstractController
 
         $mySessionStats = [];
         foreach ($myParticipations as $participation) {
-            $mySessionStats[$participation['id_session']] = [
-                'statut' => $participation['statut_participation'],
-                'pourcentage' => $participation['pourcentage_presence'] ?? 0
+            $mySessionStats[$participation->getSession()->getId()] = [
+                'statut' => $participation->getStatutParticipation(),
+                'pourcentage' => $this->participationService->getAttendancePercentage($participation->getId()),
             ];
         }
 

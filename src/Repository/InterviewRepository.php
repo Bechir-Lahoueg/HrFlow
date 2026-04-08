@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Applicaiton;
+use App\Entity\Application;
 use App\Entity\Interview;
 use App\Security\DbUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -59,12 +59,12 @@ class InterviewRepository extends ServiceEntityRepository
 
     /**
      * Get all applications for dropdown (owned by RH)
-     * @return Applicaiton[]
+     * @return Application[]
      */
     public function findApplicationsForDropdown(DbUser $rh): array
     {
         return $this->getEntityManager()->createQuery(
-            'SELECT a, jo FROM App\Entity\Applicaiton a
+            'SELECT a, jo FROM App\Entity\Application a
              JOIN a.jobOffer jo
              WHERE jo.createdBy = :rhId
              AND a.isDeleted = false

@@ -4,8 +4,8 @@ namespace App\Controller\rh;
 
 use App\Service\FormationService;
 use App\Service\ParticipationService;
-use App\Service\SessionService;
 use App\Service\PresenceService;
+use App\Service\SessionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,8 +35,8 @@ final class RhFormationController extends AbstractController
             'filters' => [
                 'search' => $search,
                 'type' => $type,
-                'sort' => $sortQuery
-            ]
+                'sort' => $sortQuery,
+            ],
         ]);
     }
 
@@ -120,11 +120,9 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        $sessions = $this->formationService->getSessionsByFormation($id);
-
         return $this->render('DashboardHr/formation/formation_sessions.html.twig', [
             'formation' => $formation,
-            'sessions' => $sessions,
+            'sessions' => $this->formationService->getSessionsByFormation($id),
         ]);
     }
 
@@ -144,13 +142,11 @@ final class RhFormationController extends AbstractController
                 'lieu' => $request->request->get('lieu'),
                 'mode' => $request->request->get('mode'),
                 'capacite_max' => (int) $request->request->get('capacite_max'),
-                'statut' => $request->request->get('statut'),
             ];
 
             if (empty($data['date_fin'])) {
                 $debutDate = new \DateTime($data['date_debut']);
-                $duree = (int) $formation['duree'];
-                $joursToAdd = max(0, $duree - 1);
+                $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $data['date_fin'] = $debutDate->format('Y-m-d');
             }
@@ -176,7 +172,7 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
-        $formation = $this->formationService->getFormationById($session['id_formation']);
+        $formation = $session->getFormation();
 
         if ($request->isMethod('POST')) {
             $data = [
@@ -185,13 +181,11 @@ final class RhFormationController extends AbstractController
                 'lieu' => $request->request->get('lieu'),
                 'mode' => $request->request->get('mode'),
                 'capacite_max' => (int) $request->request->get('capacite_max'),
-                'statut' => $request->request->get('statut'),
             ];
 
             if (empty($data['date_fin'])) {
                 $debutDate = new \DateTime($data['date_debut']);
-                $duree = (int) $formation['duree'];
-                $joursToAdd = max(0, $duree - 1);
+                $joursToAdd = max(0, $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $data['date_fin'] = $debutDate->format('Y-m-d');
             }
@@ -199,7 +193,7 @@ final class RhFormationController extends AbstractController
             $this->formationService->updateSession($id, $data);
             $this->addFlash('success', 'Session modifiée avec succès.');
 
-            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
         }
 
         return $this->render('DashboardHr/formation/session_form.html.twig', [
@@ -217,13 +211,10 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
-        $formation = $this->formationService->getFormationById($session['id_formation']);
-        $participations = $participationService->getSessionParticipations($id);
-
         return $this->render('DashboardHr/formation/formation_participants.html.twig', [
             'session' => $session,
-            'formation' => $formation,
-            'participations' => $participations,
+            'formation' => $session->getFormation(),
+            'participations' => $participationService->getSessionParticipations($id),
         ]);
     }
 
@@ -255,64 +246,68 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
-        if ($session['statut'] !== 'En cours') {
+        if ($session->getStatut() !== 'En cours') {
             $this->addFlash('error', 'Vous ne pouvez faire la présence que pour des sessions En cours.');
-            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session->getFormation()->getId()]);
         }
 
-        $formation = $this->formationService->getFormationById($session['id_formation']);
+        $formation = $session->getFormation();
 
-        $debut = new \DateTime($session['date_debut']);
-        $fin = new \DateTime($session['date_fin']);
+        $debut = $session->getDateDebut();
+        $fin = $session->getDateFin();
         $today = new \DateTime();
 
-        $maxDate = $today < $fin ? $today : $fin;
+        $maxDate = $today < $fin ? clone $today : clone $fin;
 
         $selectedDateStr = $request->query->get('date', $maxDate->format('Y-m-d'));
         $selectedDate = new \DateTime($selectedDateStr);
 
         if ($selectedDate < $debut || $selectedDate > $maxDate) {
-            $selectedDate = $maxDate;
+            $selectedDate = clone $maxDate;
             $selectedDateStr = $maxDate->format('Y-m-d');
         }
 
         $allParticipations = $participationService->getSessionParticipations($id);
-        $acceptedParticipations = array_filter($allParticipations, fn($p) => $p['statut_participation'] === 'Accepte');
+        $acceptedParticipations = array_filter(
+            $allParticipations,
+            fn($p) => $p->getStatutParticipation() === 'Accepte'
+        );
 
         $dates = [];
         $interval = new \DateInterval('P1D');
-        $period = new \DatePeriod($debut, $interval, $maxDate->modify('+1 day'));
+        $endDateForPeriod = (clone $maxDate)->modify('+1 day');
+        $period = new \DatePeriod($debut, $interval, $endDateForPeriod);
         foreach ($period as $dt) {
             $dates[] = $dt->format('Y-m-d');
         }
 
         if ($request->isMethod('POST')) {
             $presencesDataAll = $request->request->all('presences');
-            // Expected format: presences[date][participationId] = 'Present'
             if (!empty($presencesDataAll) && is_array($presencesDataAll)) {
                 try {
                     foreach ($presencesDataAll as $date => $presencesData) {
                         $presenceService->savePresences($date, $presencesData);
                     }
-                } catch (\Throwable $e) {
+                } catch (\Throwable) {
                     $this->addFlash('error', 'Erreur lors de l\'enregistrement des présences.');
                 }
 
                 $this->addFlash('success', 'Présences mises à jour avec succès.');
-                return $this->redirectToRoute('rh_formation_sessions', ['id' => $session['id_formation']]);
+                return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
             }
         }
 
-        $existingPresencesRaw = $presenceService->getPresencesBySession($id);
+        // Build presence map: [date][participationId] => statut
+        $existingPresences = $presenceService->getPresencesBySession($id);
         $currentPresences = [];
-        foreach ($existingPresencesRaw as $p) {
-            $currentPresences[$p['date_presence']][$p['id_participation']] = $p['statut'];
+        foreach ($existingPresences as $p) {
+            $currentPresences[$p->getDatePresence()->format('Y-m-d')][$p->getParticipation()->getId()] = $p->getStatut();
         }
 
         return $this->render('DashboardHr/formation/formation_presence.html.twig', [
             'session' => $session,
             'formation' => $formation,
-            'participations' => $acceptedParticipations,
+            'participations' => array_values($acceptedParticipations),
             'dates' => $dates,
             'currentPresences' => $currentPresences,
         ]);
