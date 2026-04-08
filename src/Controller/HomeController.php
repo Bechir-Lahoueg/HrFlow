@@ -24,4 +24,10 @@ final class HomeController extends AbstractController
             'jobOffers' => $jobOffers,
         ]);
     }
+
+    #[Route('/abonnements', name: 'app_subscriptions')]
+    public function subscriptions(): Response
+    {
+        return $this->render('Home/subscribtions.htm.twig');
+    }
 }
