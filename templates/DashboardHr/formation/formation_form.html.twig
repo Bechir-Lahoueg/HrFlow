@@ -163,15 +163,21 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('turbo:load', () => {
+        function initFormationAiButton() {
             const btnAi = document.getElementById('btn-generate-ai');
             const titreInput = document.querySelector('input[id$="_titre"]');
             const objectifsTextarea = document.querySelector('textarea[id$="_objectifs"]');
 
+            // évite les doubles bindings si Turbo ré-exécute les scripts
+            if (!btnAi || btnAi.dataset.aiBound === '1') {
+                return;
+            }
+            btnAi.dataset.aiBound = '1';
+
             if (btnAi && titreInput && objectifsTextarea) {
                 btnAi.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    const titre = titreInput.value.trim();
+                    const titre = (titreInput.value || '').trim();
 
                     if (!titre) {
                         titreInput.style.borderColor = "#ef4444";
@@ -194,10 +200,10 @@
                         });
 
                         const data = await response.json();
-                        if (data.objectifs) {
+                        if (response.ok && data.objectifs) {
                             objectifsTextarea.value = data.objectifs;
                         } else {
-                            alert("Erreur de génération.");
+                            alert(data.error || "Erreur de génération.");
                         }
                     } catch (error) {
                         alert("Erreur réseau.");
@@ -208,6 +214,9 @@
                     }
                 });
             }
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initFormationAiButton);
+        document.addEventListener('turbo:load', initFormationAiButton);
     </script>
 {% endblock %}
