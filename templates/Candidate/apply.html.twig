@@ -1,0 +1,205 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Postuler - {{ jobOffer.title }} | Espace Candidat{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {# Navigation #}
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                {# Logo #}
+                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
+                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[2.5] origin-left">
+                </a>
+
+                {# Nav Links #}
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="{{ path('app_candidate_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Tableau de bord
+                    </a>
+                    <a href="{{ path('app_candidate_applications') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Mes candidatures
+                    </a>
+                    <a href="{{ path('app_candidate_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50">
+                        Offres d'emploi
+                    </a>
+                    <a href="{{ path('app_candidate_interviews') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Mes entretiens
+                    </a>
+                    <a href="{{ path('app_candidate_profile') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                        Mon profil
+                    </a>
+                </div>
+
+                {# User Menu #}
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-600 hidden sm:block">{{ app.user.username }}</span>
+                    <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Deconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {# Main Content #}
+    <main class="max-w-4xl mx-auto px-6 py-8">
+        {# Breadcrumb #}
+        <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+            <a href="{{ path('app_candidate_job_offers') }}" class="hover:text-emerald-600 transition-colors">Offres d'emploi</a>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-slate-900 font-medium">Postuler</span>
+        </div>
+
+        {# Job Summary Card #}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shrink-0">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <h1 class="text-2xl font-bold text-slate-900 mb-2">{{ jobOffer.title }}</h1>
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                        {% if jobOffer.department %}
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+                                {{ jobOffer.department }}
+                            </span>
+                        {% endif %}
+                        {% if jobOffer.location %}
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                {{ jobOffer.location }}
+                            </span>
+                        {% endif %}
+                        {% if jobOffer.employmentType %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                {{ jobOffer.employmentType|upper }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Application Form #}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="text-xl font-bold text-slate-900 mb-2">Votre candidature</h2>
+                <p class="text-slate-600">Completez les informations ci-dessous pour postuler a cette offre.</p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'p-6 space-y-6', 'data-turbo': 'false'}}) }}
+                
+                {# Global Form Errors #}
+                {% if form.vars.errors|length > 0 %}
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                        <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>
+                            <h3 class="font-semibold text-red-900">Veuillez corriger les erreurs suivantes</h3>
+                            <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+                                {{ form_errors(form) }}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {# Auto-filled Info Notice #}
+                <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-blue-900 mb-1">Informations pre-remplies</h3>
+                            <p class="text-sm text-blue-700">
+                                Votre nom (<strong>{{ app.user.fullName|default(app.user.username) }}</strong>) et votre email (<strong>{{ app.user.email }}</strong>) 
+                                seront automatiquement transmis au recruteur depuis votre profil.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {# CV Upload - Required #}
+                <div>
+                    {{ form_label(form.cvFile) }}
+                    <div class="mt-2">
+                        {{ form_widget(form.cvFile) }}
+                        {% if form.cvFile.vars.errors|length > 0 %}
+                            <div class="mt-2 text-sm text-red-600 font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ form_errors(form.cvFile) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="mt-2 text-sm text-slate-500">
+                        Formats acceptes : PDF, Word (DOC, DOCX) - Taille maximale : 5 Mo
+                    </p>
+                </div>
+
+                {# Cover Letter Upload - Optional #}
+                <div>
+                    {{ form_label(form.coverLetterFile) }}
+                    <div class="mt-2">
+                        {{ form_widget(form.coverLetterFile) }}
+                        {% if form.coverLetterFile.vars.errors|length > 0 %}
+                            <div class="mt-2 text-sm text-red-600 font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ form_errors(form.coverLetterFile) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="mt-2 text-sm text-slate-500">
+                        Optionnel. Une lettre de motivation bien redigee augmente vos chances.
+                    </p>
+                </div>
+
+                {# Additional Notes #}
+                <div>
+                    {{ form_label(form.notes) }}
+                    <div class="mt-2">
+                        {{ form_widget(form.notes) }}
+                        {% if form.notes.vars.errors|length > 0 %}
+                            <div class="mt-2 text-sm text-red-600 font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ form_errors(form.notes) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="mt-2 text-sm text-slate-500">
+                        Optionnel. Partagez votre motivation, vos experiences pertinentes ou toute autre information utile.
+                    </p>
+                </div>
+
+                {# Submit Actions #}
+                <div class="flex items-center justify-between pt-6 border-t border-slate-100">
+                    <a href="{{ path('app_candidate_job_offers') }}" class="px-6 py-3 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold transition-colors">
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-all hover:shadow-lg hover:shadow-emerald-500/30">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Confirmer ma candidature
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        {# Privacy Notice #}
+        <div class="mt-6 text-center">
+            <p class="text-sm text-slate-500">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                Vos informations sont traitees de maniere confidentielle conformement a notre politique de confidentialite.
+            </p>
+        </div>
+    </main>
+</div>
+{% endblock %}
