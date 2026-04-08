@@ -67,9 +67,10 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'rh_formation_edit', methods: ['GET', 'POST'])]
-    public function edit(int $id, Request $request): Response
+    public function edit(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
@@ -84,7 +85,7 @@ final class RhFormationController extends AbstractController
                 'objectifs' => $request->request->get('objectifs'),
             ];
 
-            $this->formationService->updateFormation($id, $data);
+            $this->formationService->updateFormation($idInt, $data);
             $this->addFlash('success', 'Formation mise à jour avec succès.');
 
             return $this->redirectToRoute('rh_formation_list');
@@ -97,15 +98,16 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'rh_formation_delete', methods: ['POST'])]
-    public function delete(int $id, Request $request): Response
+    public function delete(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($this->isCsrfTokenValid('delete-formation-' . $id, $request->request->get('_token'))) {
-            $this->formationService->deleteFormation($id);
+        if ($this->isCsrfTokenValid('delete-formation-' . $idInt, $request->request->get('_token'))) {
+            $this->formationService->deleteFormation($idInt);
             $this->addFlash('success', 'Formation supprimée avec succès.');
         }
 
@@ -113,30 +115,32 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/{id}/sessions', name: 'rh_formation_sessions', methods: ['GET'])]
-    public function sessions(int $id): Response
+    public function sessions(string $id): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
         return $this->render('DashboardHr/formation/formation_sessions.html.twig', [
             'formation' => $formation,
-            'sessions' => $this->formationService->getSessionsByFormation($id),
+            'sessions' => $this->formationService->getSessionsByFormation($idInt),
         ]);
     }
 
     #[Route('/{id}/sessions/create', name: 'rh_formation_session_create', methods: ['GET', 'POST'])]
-    public function createSession(int $id, Request $request): Response
+    public function createSession(string $id, Request $request): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
         if ($request->isMethod('POST')) {
             $data = [
-                'id_formation' => $id,
+                'id_formation' => $idInt,
                 'date_debut' => $request->request->get('date_debut'),
                 'date_fin' => $request->request->get('date_fin'),
                 'lieu' => $request->request->get('lieu'),
@@ -165,9 +169,10 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
-    public function editSession(int $id, Request $request, SessionService $sessionService): Response
+    public function editSession(string $id, Request $request, SessionService $sessionService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
@@ -190,7 +195,7 @@ final class RhFormationController extends AbstractController
                 $data['date_fin'] = $debutDate->format('Y-m-d');
             }
 
-            $this->formationService->updateSession($id, $data);
+            $this->formationService->updateSession($idInt, $data);
             $this->addFlash('success', 'Session modifiée avec succès.');
 
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
@@ -204,9 +209,10 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/participants', name: 'rh_formation_session_participants', methods: ['GET'])]
-    public function participants(int $id, SessionService $sessionService, ParticipationService $participationService): Response
+    public function participants(string $id, SessionService $sessionService, ParticipationService $participationService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }
@@ -214,34 +220,37 @@ final class RhFormationController extends AbstractController
         return $this->render('DashboardHr/formation/formation_participants.html.twig', [
             'session' => $session,
             'formation' => $session->getFormation(),
-            'participations' => $participationService->getSessionParticipations($id),
+            'participations' => $participationService->getSessionParticipations($idInt),
         ]);
     }
 
     #[Route('/participation/{id}/approve', name: 'rh_formation_participation_approve', methods: ['POST'])]
-    public function approveParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    public function approveParticipation(string $id, Request $request, ParticipationService $participationService): Response
     {
-        if ($this->isCsrfTokenValid('approve-participation-' . $id, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($id, 'Accepte');
+        $idInt = (int) $id;
+        if ($this->isCsrfTokenValid('approve-participation-' . $idInt, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($idInt, 'Accepte');
             $this->addFlash('success', 'Participation acceptée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }
 
     #[Route('/participation/{id}/reject', name: 'rh_formation_participation_reject', methods: ['POST'])]
-    public function rejectParticipation(int $id, Request $request, ParticipationService $participationService): Response
+    public function rejectParticipation(string $id, Request $request, ParticipationService $participationService): Response
     {
-        if ($this->isCsrfTokenValid('reject-participation-' . $id, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($id, 'Refuse');
+        $idInt = (int) $id;
+        if ($this->isCsrfTokenValid('reject-participation-' . $idInt, (string) $request->request->get('_token'))) {
+            $participationService->updateStatus($idInt, 'Refuse');
             $this->addFlash('success', 'Participation refusée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }
 
     #[Route('/session/{id}/presence', name: 'rh_formation_session_presence', methods: ['GET', 'POST'])]
-    public function presence(int $id, Request $request, SessionService $sessionService, ParticipationService $participationService, PresenceService $presenceService): Response
+    public function presence(string $id, Request $request, SessionService $sessionService, ParticipationService $participationService, PresenceService $presenceService): Response
     {
-        $session = $sessionService->getSessionById($id);
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
         if (!$session) {
             throw $this->createNotFoundException('Session non trouvée');
         }

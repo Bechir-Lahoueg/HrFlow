@@ -64,14 +64,15 @@ final class EmployeeFormationController extends AbstractController
     }
 
     #[Route('/{id}/sessions', name: 'employee_formation_sessions')]
-    public function sessions(int $id): Response
+    public function sessions(string $id): Response
     {
-        $formation = $this->formationService->getFormationById($id);
+        $idInt = (int) $id;
+        $formation = $this->formationService->getFormationById($idInt);
         if (!$formation) {
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        $sessions = $this->sessionService->getSessionsByFormation($id);
+        $sessions = $this->sessionService->getSessionsByFormation($idInt);
         $userId = $this->getUser()->getId();
         $myParticipations = $this->participationService->getEmployeeParticipations($userId);
 
@@ -91,16 +92,17 @@ final class EmployeeFormationController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'employee_formation_register', methods: ['POST'])]
-    public function register(int $id): Response
+    public function register(string $id): Response
     {
+        $idInt = (int) $id;
         $userId = $this->getUser()->getId();
 
-        if ($this->participationService->registerEmployee($userId, $id)) {
+        if ($this->participationService->registerEmployee($userId, $idInt)) {
             $this->addFlash('success', 'Inscription confirmée.');
         } else {
             $this->addFlash('error', 'Vous êtes déjà inscrit à cette session.');
         }
 
-        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getIdFormationBySessionId($id)]);
+        return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getIdFormationBySessionId($idInt)]);
     }
 }
