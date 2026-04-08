@@ -46,6 +46,14 @@
                         }
                     });
                 }
+                
+                // Additional protection: if session cookie is gone, force reload on next user action
+                document.addEventListener('click', function(e) {
+                    if (document.cookie.indexOf('PHPSESSID') === -1 && !e.target.closest('a[href*="login"]')) {
+                        // Session gone, reload to check auth status
+                        window.location.reload();
+                    }
+                }, { once: true });
             })();
         </script>
 
