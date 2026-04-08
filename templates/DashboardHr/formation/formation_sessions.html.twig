@@ -72,7 +72,7 @@
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Sessions Programmées</h3>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ path('rh_formation_session_create', {id: formation.id_formation}) }}" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
+                        <a href="{{ path('rh_formation_session_create', {id: formation.id}) }}" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                             Nouvelle Session
                         </a>
@@ -96,14 +96,22 @@
                         {% for session in sessions %}
                             <tr class="decision-row border-b border-zinc-50 align-top">
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ session.date_debut|date('d M Y') }}</p>
-                                    <p class="text-[11px] text-zinc-400">au {{ session.date_fin|date('d M Y') }}</p>
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ session.dateDebut|date('d M Y') }}</p>
+                                    <p class="text-[11px] text-zinc-400">au {{ session.dateFin|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4 font-semibold text-zinc-700">{{ session.lieu }}</td>
                                 <td class="py-3 px-4">
                                     <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ session.mode }}</span>
                                 </td>
-                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ session.capacite_max }}</td>
+                               <td class="py-3 px-4">
+                                   <div class="flex flex-col">
+                                       {% set occupees = session.acceptedCount|default(0) %}
+                                       <span class="font-bold text-zinc-800 font-mono-num">
+                                           {{ max(0, session.capaciteMax - occupees) }} / {{ session.capaciteMax }}
+                                       </span>
+                                       <span class="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">places dispo</span>
+                                   </div>
+                               </td>
                                 <td class="py-3 px-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
                                         {% if session.statut == 'Planifiee' %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}
@@ -120,17 +128,17 @@
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="flex gap-2">
-                                        <a href="{{ path('rh_formation_session_participants', {id: session.id_session}) }}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium flex items-center gap-1">
+                                        <a href="{{ path('rh_formation_session_participants', {id: session.id}) }}" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                             Participants
                                         </a>
                                         {% if session.statut == 'En cours' %}
-                                        <a href="{{ path('rh_formation_session_presence', {id: session.id_session}) }}" class="text-teal-600 hover:text-teal-800 text-xs font-medium flex items-center gap-1">
+                                        <a href="{{ path('rh_formation_session_presence', {id: session.id}) }}" class="text-teal-600 hover:text-teal-800 text-xs font-medium flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                                             Présences
                                         </a>
                                         {% endif %}
-                                        <a href="{{ path('rh_formation_session_edit', {id: session.id_session}) }}" class="text-amber-600 hover:text-amber-800 text-xs font-medium flex items-center gap-1">
+                                        <a href="{{ path('rh_formation_session_edit', {id: session.id}) }}" class="text-amber-600 hover:text-amber-800 text-xs font-medium flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             Modifier
                                         </a>

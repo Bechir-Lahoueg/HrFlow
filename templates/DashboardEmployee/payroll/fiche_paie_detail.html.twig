@@ -1,0 +1,144 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Détail Fiche de Paie{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900 dark:to-zinc-800 py-8 px-4">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-4xl font-bold text-slate-900 dark:text-white">Détail Fiche de Paie</h1>
+                <a href="{{ path('app_employee_payroll_fiches') }}" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-all">
+                    Retour
+                </a>
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">{{ fiche.periodLabel }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Information -->
+            <div class="lg:col-span-2">
+                <!-- Employee Info -->
+                <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Vos Informations</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm mb-1">Nom Complet</p>
+                            <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ fiche.employee.fullName }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm mb-1">Poste</p>
+                            <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ fiche.employee.jobTitle }}</p>
+                        </div>
+                        <div colspan="2">
+                            <p class="text-slate-600 dark:text-slate-400 text-sm mb-1">Email</p>
+                            <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ fiche.employee.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Breakdown -->
+                <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-8">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Détail Rémunération</h2>
+                    
+                    <!-- Primes -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Primes
+                        </h3>
+                        {% if primes %}
+                            <div class="space-y-2">
+                                {% for prime in primes %}
+                                    <div class="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/10 rounded">
+                                        <div>
+                                            <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ prime.typePrime }}</span>
+                                            {% if prime.motif %}<p class="text-xs text-slate-600 dark:text-slate-400 mt-1">{{ prime.motif }}</p>{% endif %}
+                                        </div>
+                                        <span class="font-semibold text-green-600">+{{ prime.montant }} TND</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-zinc-700">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold text-slate-900 dark:text-white">Total Primes</span>
+                                    <span class="text-xl font-bold text-green-600">{{ totalPrimes }} TND</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-slate-600 dark:text-slate-400 italic">Aucune prime pour cette période</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Deductions -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17H3v-2h10v2zm-2-4H3v-2h8v2zm4-4H3V7h12v2z"/>
+                            </svg>
+                            Déductions
+                        </h3>
+                        {% if deductions %}
+                            <div class="space-y-2">
+                                {% for deduction in deductions %}
+                                    <div class="flex justify-between items-center p-3 bg-orange-50 dark:bg-orange-900/10 rounded">
+                                        <div>
+                                            <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ deduction.typeDeduction }}</span>
+                                            {% if deduction.motif %}<p class="text-xs text-slate-600 dark:text-slate-400 mt-1">{{ deduction.motif }}</p>{% endif %}
+                                        </div>
+                                        <span class="font-semibold text-orange-600">-{{ deduction.montant }} TND</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-zinc-700">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold text-slate-900 dark:text-white">Total Déductions</span>
+                                    <span class="text-xl font-bold text-orange-600">{{ totalDeductions }} TND</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-slate-600 dark:text-slate-400 italic">Aucune déduction pour cette période</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Summary Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-8 sticky top-8">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Récapitulatif</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Salary Brut -->
+                        <div class="p-4 bg-slate-50 dark:bg-zinc-700 rounded-lg">
+                            <p class="text-slate-600 dark:text-slate-400 text-sm mb-1">Salaire Brut</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ fiche.salaireBrut }} TND</p>
+                        </div>
+
+                        <!-- Primes -->
+                        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-600">
+                            <p class="text-green-700 dark:text-green-400 text-sm mb-1">+ Primes</p>
+                            <p class="text-2xl font-bold text-green-600">{{ totalPrimes }} TND</p>
+                        </div>
+
+                        <!-- Deductions -->
+                        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-l-4 border-orange-600">
+                            <p class="text-orange-700 dark:text-orange-400 text-sm mb-1">- Déductions</p>
+                            <p class="text-2xl font-bold text-orange-600">{{ totalDeductions }} TND</p>
+                        </div>
+
+                        <!-- Salary Net -->
+                        <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border-l-4 border-indigo-600">
+                            <p class="text-indigo-700 dark:text-indigo-400 text-sm mb-1">Salaire Net à Recevoir</p>
+                            <p class="text-3xl font-bold text-indigo-600">{{ fiche.salaireNet }} TND</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,10 +2,10 @@
 
 namespace App\Controller\rh;
 
+use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\LeaveBalanceService;
 use App\Service\LeaveRequestService;
-use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,25 +21,26 @@ final class RhLeaveController extends AbstractController
         Request $request,
         LeaveRequestService $leaveRequestService,
         LeaveBalanceService $leaveBalanceService,
-        Connection $connection
-    ): Response
-    {
+        EmployeeRepository $employeeRepository,
+    ): Response {
         $rhId = $this->getCurrentRhId();
         $status = $this->normalizeStatus((string) $request->query->get('status', 'ATTENTE'));
         $employeeSearch = trim((string) $request->query->get('employee', ''));
         $leaveTypeSearch = trim((string) $request->query->get('leave_type', ''));
 
-        $employees = $connection->fetchAllAssociative(
-            'SELECT id, first_name, last_name FROM employees WHERE rh_id = :rhId ORDER BY first_name ASC, last_name ASC',
-            ['rhId' => $rhId]
-        );
+        $employees = $employeeRepository->findBy(['rhId' => $rhId], ['firstName' => 'ASC', 'lastName' => 'ASC']);
 
-        // Refresh accruals and credit snapshots for RH team before rendering.
-        $leaveBalanceService->getBalancesByRh($rhId);
+        // Refresh accruals and build balance map keyed by employee ID
+        $balances = $leaveBalanceService->getBalancesByRh($rhId);
+        $balanceMap = [];
+        foreach ($balances as $lb) {
+            $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
+        }
 
         return $this->render('DashboardHr/leave_requests.html.twig', [
             'user' => $this->getUser(),
             'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch),
+            'balanceMap' => $balanceMap,
             'rhLeaveStats' => $leaveRequestService->getRhDashboardStats($rhId),
             'rhCreditStats' => $leaveRequestService->getRhCreditSummary($rhId),
             'pendingLeaveCount' => $leaveRequestService->getRhPendingCount($rhId),
@@ -52,15 +53,16 @@ final class RhLeaveController extends AbstractController
 
     #[Route('/welcome/rh/leaves/{id}/approve', name: 'app_rh_leave_approve', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function approve(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function approve(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $id, $comment);
+        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -68,15 +70,16 @@ final class RhLeaveController extends AbstractController
 
     #[Route('/welcome/rh/leaves/{id}/reject', name: 'app_rh_leave_reject', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function reject(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function reject(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $id, (string) $request->request->get('_token', ''))) {
+        $idInt = (int) $id;
+        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $idInt, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $id, $comment);
+        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');

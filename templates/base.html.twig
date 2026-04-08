@@ -3,6 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        {# Cache control - prevents back button from showing authenticated content after logout #}
+        <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
+        
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +18,34 @@
         <script>
             (function(){
                 if(localStorage.getItem('hrflow-theme')==='dark') document.documentElement.classList.add('dark');
+            })();
+        </script>
+        
+        {# Back button protection - prevent cached authenticated content after logout #}
+        <script>
+            (function() {
+                // Only apply on pages that require authentication (not login pages)
+                var path = window.location.pathname;
+                var isLoginPage = path.includes('/login') || path.includes('/connexion') || path.includes('/inscription');
+                
+                if (!isLoginPage && window.history && window.history.pushState) {
+                    // Mark authenticated pages in history
+                    window.history.pushState({page: 'authenticated'}, '', window.location.href);
+                    
+                    // Listen for back button navigation
+                    window.addEventListener('popstate', function(event) {
+                        // Check if navigating back to an authenticated page after logout
+                        // by checking if PHPSESSID cookie is missing
+                        var hasSession = document.cookie.split(';').some(function(c) {
+                            return c.trim().startsWith('PHPSESSID=');
+                        });
+                        
+                        if (!hasSession && event.state && event.state.page === 'authenticated') {
+                            // Force reload to let server redirect to login
+                            window.location.reload();
+                        }
+                    });
+                }
             })();
         </script>
 
@@ -50,5 +84,6 @@
                 }
             }
         </script>
+    {% block extra_js %}{% endblock %}
     </body>
 </html>

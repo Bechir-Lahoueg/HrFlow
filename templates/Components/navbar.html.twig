@@ -16,9 +16,23 @@
         {# Desktop CTA #}
         <div class="hidden md:flex items-center gap-3">
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                <a href="{{ path('app_welcome') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
-                    Tableau de bord
-                </a>
+                {% if is_granted('ROLE_CANDIDATE') %}
+                    <a href="{{ path('app_candidate_dashboard') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                        Espace Candidat
+                    </a>
+                {% elseif is_granted('ROLE_EMPLOYEE') %}
+                    <a href="{{ path('app_welcome_employee') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                        Espace Employee
+                    </a>
+                {% elseif is_granted('ROLE_RH') %}
+                    <a href="{{ path('app_welcome_rh') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                        Espace RH
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_welcome') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
+                        Espace Admin
+                    </a>
+                {% endif %}
             {% else %}
                 <a href="{{ path('app_login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Sign in</a>
                 <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
@@ -44,7 +58,15 @@
             <a href="#contact" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Contact</a>
             <div class="pt-3 mt-3 border-t border-slate-100 space-y-2">
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                    <a href="{{ path('app_welcome') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
+                    {% if is_granted('ROLE_CANDIDATE') %}
+                        <a href="{{ path('app_candidate_dashboard') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
+                    {% elseif is_granted('ROLE_EMPLOYEE') %}
+                        <a href="{{ path('app_welcome_employee') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
+                    {% elseif is_granted('ROLE_RH') %}
+                        <a href="{{ path('app_welcome_rh') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
+                    {% else %}
+                        <a href="{{ path('app_welcome') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
+                    {% endif %}
                 {% else %}
                     <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Sign in</a>
                     <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Sign up for free</a>

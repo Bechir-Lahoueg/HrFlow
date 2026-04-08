@@ -2,10 +2,11 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Applicaiton;
-use App\Repository\ApplicaitonRepository;
-use App\Repository\InterviewRepository;
-use App\Repository\JobOfferRepository;
+use App\Entity\Recrutement\Application;
+use App\Form\Recrutement\ApplicationType;
+use App\Repository\Recrutement\ApplicationRepository;
+use App\Repository\Recrutement\InterviewRepository;
+use App\Repository\Recrutement\JobOfferRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,7 +22,7 @@ final class RecruitmentApplicationController extends AbstractController
     #[IsGranted('ROLE_RH')]
     public function index(
         Request $request,
-        ApplicaitonRepository $applicaitonRepository,
+        ApplicationRepository $applicaitonRepository,
         JobOfferRepository $jobOfferRepository
     ): Response {
         $rh = $this->getCurrentRh();
@@ -54,7 +55,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/status', name: 'app_rh_applications_status', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function updateStatus(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function updateStatus(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('application_status_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -86,7 +87,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/edit', name: 'app_rh_applications_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, ApplicationRepository $applicaitonRepository, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): Response
     {
         $rh = $this->getCurrentRh();
         $application = $applicaitonRepository->findOneByRh($id, $rh);
@@ -113,7 +114,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete', name: 'app_rh_applications_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function delete(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function delete(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('delete_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -138,7 +139,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/restore', name: 'app_rh_applications_restore', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function restore(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function restore(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('restore_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -162,7 +163,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/delete-permanent', name: 'app_rh_applications_delete_permanent', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function deletePermanent(int $id, Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
+    public function deletePermanent(int $id, Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('permanent_delete_application_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -186,7 +187,7 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}', name: 'app_rh_applications_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function show(int $id, ApplicaitonRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
+    public function show(int $id, ApplicationRepository $applicaitonRepository, InterviewRepository $interviewRepository): Response
     {
         $rh = $this->getCurrentRh();
         $application = $applicaitonRepository->findOneByRhIncludingDeleted($id, $rh);

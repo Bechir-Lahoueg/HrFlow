@@ -1,0 +1,61 @@
+{% set user = app.user %}
+<header class="sticky top-0 z-10 bg-white/80 backdrop-blur-2xl border-b border-slate-200">
+    <div class="flex items-center justify-between px-6 h-16">
+
+        {# Mobile menu toggle #}
+        <button class="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden');">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+            </svg>
+        </button>
+
+        {# Breadcrumb #}
+        <div class="hidden lg:flex items-center gap-2 text-sm">
+            <span class="text-slate-400">Espace Candidat</span>
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            <span class="font-semibold text-slate-800">
+                {% if app.request.get('_route') == 'app_candidate_applications' %}Mes Candidatures
+                {% elseif app.request.get('_route') == 'app_candidate_profile' %}Mon Profil
+                {% elseif app.request.get('_route') == 'app_candidate_job_offers' %}Offres d'emploi
+                {% elseif app.request.get('_route') == 'app_candidate_apply' %}Postuler
+                {% else %}Tableau de bord{% endif %}
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+
+            {# Search #}
+            <div class="hidden md:flex items-center gap-2 px-3.5 py-2 bg-slate-100 rounded-lg w-64 border border-transparent focus-within:border-emerald-300 focus-within:bg-white transition-colors">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+                <input type="text" placeholder="Rechercher..." class="bg-transparent text-sm text-slate-700 outline-none w-full placeholder-slate-400">
+            </div>
+
+            {# Notifications #}
+            <button class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+                </svg>
+            </button>
+
+            {# Divider #}
+            <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
+
+            {# User menu #}
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                    <span class="text-xs font-bold text-white">{{ user.userIdentifier|first|upper }}</span>
+                </div>
+                <div class="hidden sm:block">
+                    <p class="text-[13px] font-semibold text-slate-800 leading-tight">{{ user.firstName|default(user.userIdentifier) }}</p>
+                    <p class="text-[11px] text-emerald-600 font-medium">Candidat</p>
+                </div>
+                <a href="{{ path('app_candidate_login') }}" class="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Deconnexion">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>

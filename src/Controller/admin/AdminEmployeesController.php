@@ -2,7 +2,10 @@
 
 namespace App\Controller\admin;
 
-use Doctrine\DBAL\Connection;
+use App\Entity\Rh\User;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,28 +17,23 @@ final class AdminEmployeesController extends AbstractController
 {
     #[Route('/welcome/admin/employees', name: 'app_admin_employees', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function index(Request $request, Connection $connection): Response
-    {
+    public function index(
+        Request $request,
+        EmployeeRepository $employeeRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+    ): Response {
         if ($request->isMethod('POST')) {
-            $redirect = $this->handleCreateRh($request, $connection);
-
+            $redirect = $this->handleCreateRh($request, $userRepository, $em);
             if ($redirect !== null) {
                 return $redirect;
             }
         }
 
-        $employees = $connection->fetchAllAssociative(
-            'SELECT first_name, last_name, job_title, email, rh_id FROM employees ORDER BY id DESC'
-        );
-
-        $users = $connection->fetchAllAssociative(
-            'SELECT id, username, email, role, created_at FROM users ORDER BY id DESC'
-        );
-
         return $this->render('DashboardAdmin/employees.html.twig', [
             'user' => $this->getUser(),
-            'employees' => $employees,
-            'users' => $users,
+            'employees' => $employeeRepository->findBy([], ['id' => 'DESC']),
+            'users' => $userRepository->findBy([], ['id' => 'DESC']),
             'form' => [
                 'first_name' => '',
                 'last_name' => '',
@@ -46,7 +44,7 @@ final class AdminEmployeesController extends AbstractController
         ]);
     }
 
-    private function handleCreateRh(Request $request, Connection $connection): ?RedirectResponse
+    private function handleCreateRh(Request $request, UserRepository $userRepository, EntityManagerInterface $em): ?RedirectResponse
     {
         if (!$this->isCsrfTokenValid('create_rh', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide. Reessayez.');
@@ -57,42 +55,29 @@ final class AdminEmployeesController extends AbstractController
         $email = strtolower(trim((string) $request->request->get('email', '')));
         $password = (string) $request->request->get('password', '');
 
-        if (
-            $username === ''
-            || $email === ''
-            || $password === ''
-        ) {
+        if ($username === '' || $email === '' || $password === '') {
             $this->addFlash('error', 'Tous les champs sont obligatoires.');
             return $this->redirectToRoute('app_admin_employees');
         }
 
-        $existingByEmail = $connection->fetchOne('SELECT COUNT(*) FROM users WHERE email = :email', [
-            'email' => $email,
-        ]);
-
-        $existingByUsername = $connection->fetchOne('SELECT COUNT(*) FROM users WHERE username = :username', [
-            'username' => $username,
-        ]);
-
-        if ((int) $existingByEmail > 0) {
+        if ($userRepository->existsByEmail($email)) {
             $this->addFlash('error', sprintf('Email deja utilise: %s', $email));
             return $this->redirectToRoute('app_admin_employees');
         }
 
-        if ((int) $existingByUsername > 0) {
+        if ($userRepository->existsByUsername($username)) {
             $this->addFlash('error', sprintf('Username deja utilise: %s', $username));
             return $this->redirectToRoute('app_admin_employees');
         }
 
-        // Keep compatibility with the Java module strategy: SHA-256 lower-case hex.
-        $hashedPassword = hash('sha256', $password);
+        $user = new User();
+        $user->setUsername($username)
+             ->setEmail($email)
+             ->setPassword(hash('sha256', $password))
+             ->setRole('RH');
 
-        $connection->insert('users', [
-            'username' => $username,
-            'email' => $email,
-            'password' => $hashedPassword,
-            'role' => 'RH',
-        ]);
+        $em->persist($user);
+        $em->flush();
 
         $this->addFlash('success', 'RH cree avec succes.');
         return $this->redirectToRoute('app_admin_employees');
