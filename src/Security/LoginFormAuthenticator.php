@@ -68,6 +68,10 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($this->urlGenerator->generate('app_welcome_employee'));
         }
 
+        if (in_array('ROLE_CANDIDATE', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_candidate_dashboard'));
+        }
+
         return new RedirectResponse($this->urlGenerator->generate('app_welcome'));
     }
 

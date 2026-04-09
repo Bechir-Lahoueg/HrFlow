@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}A propos | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    {# Hero Section #}
+    <section class="pt-32 pb-16 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold mb-6">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 01-.659 1.591L9.75 14.5M9.75 3.104c-1.017.097-2.019.25-3.001.452m9.001 12.448a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Notre Histoire
+            </span>
+
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+                Simplifier la <span class="text-emerald-600">gestion RH</span> pour tous
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+                HrFlow est une plateforme tout-en-one concue pour accompagner les entreprises tunisiennes dans leur transformation digitale des ressources humaines.
+            </p>
+        </div>
+    </section>
+
+    {# Mission Section #}
+    <section class="py-16 px-6 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-6">Notre Mission</h2>
+                    <p class="text-slate-600 mb-4">
+                        Nous croyons que la gestion des ressources humaines devrait etre simple, accessible et efficace pour toutes les entreprises, quelle que soit leur taille.
+                    </p>
+                    <p class="text-slate-600 mb-6">
+                        C'est pourquoi nous avons cree HrFlow, une solution complete qui centralise tous vos processus RH : recrutement, paie, conges, formations et bien plus encore.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-slate-700">
+                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Solution 100% Tunisienne
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-700">
+                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Paiement unique, sans abonnement
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-700">
+                            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Support client dedie
+                        </li>
+                    </ul>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-200 to-cyan-200 rounded-3xl transform rotate-3"></div>
+                    <div class="relative bg-slate-900 rounded-3xl p-8 text-white">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="text-center">
+                                <p class="text-4xl font-bold text-emerald-400">500+</p>
+                                <p class="text-sm text-slate-400 mt-1">Entreprises</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-4xl font-bold text-emerald-400">50k+</p>
+                                <p class="text-sm text-slate-400 mt-1">Employes geres</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-4xl font-bold text-emerald-400">98%</p>
+                                <p class="text-sm text-slate-400 mt-1">Satisfaction</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-4xl font-bold text-emerald-400">24/7</p>
+                                <p class="text-sm text-slate-400 mt-1">Support</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Values Section #}
+    <section class="py-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-900 text-center mb-12">Nos Valeurs</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Simplicite</h3>
+                    <p class="text-slate-600">Une interface intuitive qui ne requiert aucune formation technique pour demarrer.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Securite</h3>
+                    <p class="text-slate-600">Vos donnees sont protegees avec les plus hauts standards de securite.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Innovation</h3>
+                    <p class="text-slate-600">Des mises a jour constantes pour rester a la pointe de la technologie RH.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# CTA Section #}
+    <section class="py-16 px-6 bg-slate-900">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Pret a transformer votre gestion RH ?
+            </h2>
+            <p class="text-slate-400 text-lg mb-8 max-w-xl mx-auto">
+                Rejoignez les entreprises qui font confiance a HrFlow pour leurs ressources humaines.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{{ path('app_subscriptions') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.207.024.405.036.603.036 1.58 0 2.956-.643 4.03-1.61l.293-.294a2.25 2.25 0 01.59-.59l1.591-1.59a2.25 2.25 0 01.59-.59l.293-.293a2.25 2.25 0 011.61-.83c.198 0 .395.012.603.036A60.07 60.07 0 0121.75 18.75M2.25 18.75V7.5a2.25 2.25 0 012.25-2.25h.621a2.25 2.25 0 001.06-.265l.455-.227a2.25 2.25 0 011.178-.132l1.62.27a2.25 2.25 0 001.506-.032l1.06-.32a2.25 2.25 0 001.244-1.244l.32-1.06a2.25 2.25 0 00.032-1.506l-.27-1.62a2.25 2.25 0 01.132-1.178l.227-.455a2.25 2.25 0 01.265-1.06V3a2.25 2.25 0 012.25-2.25h.993c.113 0 .226.005.339.014a60.11 60.11 0 014.932 0c.113-.009.226-.014.339-.014h.993a2.25 2.25 0 012.25 2.25v.207c.035.357.131.703.265 1.06l.227.455c.191.386.398.753.62 1.106l.27 1.62a2.25 2.25 0 00.032 1.506l.32 1.06a2.25 2.25 0 001.244 1.244l1.06.32a2.25 2.25 0 001.506.032l1.62-.27a2.25 2.25 0 011.178.132l.455.227a2.25 2.25 0 001.06.265h.621a2.25 2.25 0 012.25 2.25v11.25"/></svg>
+                    Voir nos tarifs
+                </a>
+                <a href="{{ path('app_contact') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                    Nous contacter
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% include 'Components/footer.html.twig' %}
+</div>
+{% endblock %}
