@@ -2,10 +2,10 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Interview;
-use App\Form\InterviewType;
-use App\Repository\ApplicaitonRepository;
-use App\Repository\InterviewRepository;
+use App\Entity\Recrutement\Interview;
+use App\Form\Recrutement\InterviewType;
+use App\Repository\Recrutement\ApplicationRepository;
+use App\Repository\Recrutement\InterviewRepository;
 use App\Repository\UserRepository;
 use App\Security\DbUser;
 use Doctrine\DBAL\Connection;
@@ -24,14 +24,14 @@ final class RecruitmentInterviewController extends AbstractController
     public function index(
         Request $request,
         InterviewRepository $interviewRepository,
-        ApplicaitonRepository $applicaitonRepository,
+        ApplicationRepository $applicationRepository,
         UserRepository $userRepository
     ): Response {
         $rh = $this->getCurrentRh();
         $applicationId = $request->query->getInt('application_id');
 
         $interviews = $interviewRepository->findByRh($rh, $applicationId ?: null);
-        $allApplications = $applicaitonRepository->findByRh($rh);
+        $allApplications = $applicationRepository->findByRh($rh);
         
         // Fetch interviewers from users table via repository
         $interviewers = $userRepository->findInterviewers();
@@ -46,7 +46,7 @@ final class RecruitmentInterviewController extends AbstractController
         // Get current application info if filtering
         $currentApplication = null;
         if ($applicationId) {
-            $currentApplication = $applicaitonRepository->findOneByRh($applicationId, $rh);
+            $currentApplication = $applicationRepository->findOneByRh($applicationId, $rh);
         }
 
         // Create form for new interview
@@ -77,7 +77,7 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/create', name: 'app_rh_interviews_create', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function create(Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em, Connection $connection, UserRepository $userRepository): RedirectResponse
+    public function create(Request $request, ApplicationRepository $applicationRepository, EntityManagerInterface $em, Connection $connection, UserRepository $userRepository): RedirectResponse
     {
         $rh = $this->getCurrentRh();
         
@@ -159,7 +159,7 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/edit', name: 'app_rh_interviews_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicaitonRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicationRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
         $rh = $this->getCurrentRh();
         $interview = $interviewRepository->findOneByRh($id, $rh);
