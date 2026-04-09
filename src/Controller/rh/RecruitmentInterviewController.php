@@ -6,7 +6,7 @@ use App\Entity\Recrutement\Interview;
 use App\Form\Recrutement\InterviewType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
-use App\Repository\Rh\UserRepository;
+use App\Repository\UserRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,8 +36,8 @@ final class RecruitmentInterviewController extends AbstractController
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
 
         // Get current application info if filtering
@@ -83,8 +83,8 @@ final class RecruitmentInterviewController extends AbstractController
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
         
         $interview = new Interview();
@@ -168,8 +168,8 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewers = $userRepository->findInterviewers();
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [
