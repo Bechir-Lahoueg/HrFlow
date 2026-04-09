@@ -176,9 +176,17 @@
                         </div>
                     </div>
 
-                    <form method="post" class="space-y-4">
+                    <form method="post" enctype="multipart/form-data" class="space-y-4">
                         <input type="hidden" name="_token" value="{{ csrf_token('employee_leave_submit') }}">
                         <input type="hidden" name="leave_type" id="leave_type" value="Conge annuel">
+                        <input type="hidden" name="request_mode" id="request_mode" value="NORMAL">
+
+                        {% if balance.available_days <= 0 %}
+                            <div class="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                                <p class="text-sm font-semibold text-amber-800">Credit a 0 jour: le conge normal est bloque.</p>
+                                <p class="text-xs text-amber-700 mt-1">Vous pouvez envoyer une demande exceptionnelle avec justificatif pour validation RH puis Admin.</p>
+                            </div>
+                        {% endif %}
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -229,6 +237,55 @@
                             <textarea id="reason" name="reason" rows="3" placeholder="Contexte utile pour votre RH..." class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:bg-white transition-colors"></textarea>
                         </div>
 
+                        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-bold text-zinc-800">Demande exceptionnelle</p>
+                                    <p class="text-xs text-zinc-500">Activez si votre credit est insuffisant ou egal a 0.</p>
+                                </div>
+                                <label class="inline-flex items-center gap-2 text-sm font-semibold text-zinc-700">
+                                    <input type="checkbox" id="is_exception_request" class="rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500">
+                                    Activer
+                                </label>
+                            </div>
+
+                            <div id="exception-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2">
+                                    <p class="text-[11px] text-cyan-800">
+                                        Pour la demande exceptionnelle, precisez la periode de conge prevue
+                                        (date debut et date fin ci-dessus).
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="urgency_level" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Urgence</label>
+                                    <select id="urgency_level" name="urgency_level" class="w-full rounded-lg border-zinc-200 bg-white text-sm focus:border-cyan-500 focus:ring-cyan-500">
+                                        <option value="">Choisir</option>
+                                        <option value="LOW">Faible</option>
+                                        <option value="MEDIUM">Moyenne</option>
+                                        <option value="HIGH">Haute</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2 rounded-lg border border-zinc-200 bg-white p-3">
+                                    <label for="justification_mode" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Mode justificatif</label>
+                                    <select id="justification_mode" class="w-full rounded-lg border-zinc-200 bg-white text-sm focus:border-cyan-500 focus:ring-cyan-500">
+                                        <option value="TEXT">Texte uniquement</option>
+                                        <option value="FILE">Fichier uniquement</option>
+                                        <option value="BOTH">Texte + Fichier</option>
+                                    </select>
+                                    <p class="text-[11px] text-zinc-500 mt-1.5">Choisissez la facon de justifier votre demande exceptionnelle.</p>
+                                </div>
+                                <div id="justificatif-text-wrap" class="md:col-span-2">
+                                    <label for="justificatif_text" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Justificatif texte</label>
+                                    <textarea id="justificatif_text" name="justificatif_text" rows="3" placeholder="Expliquez votre justificatif si vous n'envoyez pas de fichier..." class="w-full rounded-lg border-zinc-200 bg-white text-sm focus:border-cyan-500 focus:ring-cyan-500"></textarea>
+                                    <p class="text-[11px] text-zinc-500 mt-1.5">Exemple: contexte personnel, medical, familial ou administratif.</p>
+                                </div>
+                                <div id="justificatif-file-wrap" class="md:col-span-2">
+                                    <label for="justificatif" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Justificatif fichier (PDF/JPG/PNG - max 3 Mo)</label>
+                                    <input id="justificatif" name="justificatif" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="w-full rounded-lg border-zinc-200 bg-white text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-white" />
+                                </div>
+                            </div>
+                        </div>
+
                         {# Live Simulation #}
                         <div class="rounded-xl border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-4">
                             <div class="flex items-center gap-4">
@@ -258,7 +315,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
+                        <button id="leave-submit-btn" type="submit" class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
                             Soumettre la demande
                         </button>
                     </form>
@@ -292,21 +349,22 @@
                                     <th class="py-3 px-4">Type</th>
                                     <th class="py-3 px-4">Jours</th>
                                     <th class="py-3 px-4">Statut</th>
+                                    <th class="py-3 px-4">Phase</th>
                                     <th class="py-3 px-4">Commentaire RH</th>
                                     <th class="py-3 px-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="history-body">
                             {% for leave in leaveRequests %}
-                                <tr class="history-row border-b border-zinc-50 align-top" data-status="{{ leave.status }}" data-search="{{ leave.leave_type|lower }} {{ leave.start_date|date('Y-m-d') }} {{ leave.end_date|date('Y-m-d') }} {{ leave.status|lower }}">
+                                <tr class="history-row border-b border-zinc-50 align-top" data-status="{{ leave.status }}" data-search="{{ leave.leaveType|lower }} {{ leave.startDate|date('Y-m-d') }} {{ leave.endDate|date('Y-m-d') }} {{ leave.status|lower }}">
                                     <td class="py-3 px-4">
-                                        <p class="text-[13px] font-medium text-zinc-700">{{ leave.start_date|date('d M Y') }}</p>
-                                        <p class="text-[11px] text-zinc-400">au {{ leave.end_date|date('d M Y') }}</p>
+                                        <p class="text-[13px] font-medium text-zinc-700">{{ leave.startDate|date('d M Y') }}</p>
+                                        <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d M Y') }}</p>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leave_type }}</span>
+                                        <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leaveType }}</span>
                                     </td>
-                                    <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.days_count }}</td>
+                                    <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.daysCount }}</td>
                                     <td class="py-3 px-4">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
                                             {{ leave.status == 'ATTENTE' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
@@ -319,22 +377,41 @@
                                             {{ leave.status }}
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[180px]">{{ leave.rh_comment ?: '-' }}</td>
+                                    <td class="py-3 px-4 text-[11px]">
+                                        {% if leave.requestCategory == 'EXCEPTION' %}
+                                            {% if leave.workflowStatus == 'RH_PENDING' %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">En attente RH</span>
+                                            {% elseif leave.workflowStatus == 'ADMIN_PENDING' %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold bg-violet-50 text-violet-700 border border-violet-200">En attente Admin</span>
+                                            {% elseif leave.workflowStatus == 'ADMIN_APPROVED' %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Validee Admin</span>
+                                            {% elseif leave.workflowStatus == 'FROZEN_UNPROCESSED' %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold bg-slate-100 text-slate-700 border border-slate-300">Gelee (non traitee)</span>
+                                            {% else %}
+                                                <span class="text-zinc-400">-</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-zinc-400">Conge normal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[180px]">{{ leave.rhComment ?: '-' }}</td>
                                     <td class="py-3 px-4">
-                                        {% if leave.status == 'ATTENTE' %}
+                                        {% if leave.status == 'ATTENTE' and leave.workflowStatus != 'FROZEN_UNPROCESSED' %}
                                             <form method="post" action="{{ path('app_employee_leave_request_delete', {id: leave.id}) }}" onsubmit="return confirm('Supprimer cette demande ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('employee_leave_delete_' ~ leave.id) }}">
                                                 <button type="submit" class="text-[11px] font-semibold px-3 py-1.5 rounded-lg text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors">Supprimer</button>
                                             </form>
+                                        {% elseif leave.workflowStatus == 'FROZEN_UNPROCESSED' %}
+                                            <span class="text-[11px] text-slate-500">Gelee automatiquement</span>
                                         {% else %}
                                             <span class="text-[11px] text-zinc-300">-</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="6" class="py-12 text-center text-zinc-400 text-sm">Aucune demande pour le moment.</td></tr>
+                                <tr><td colspan="7" class="py-12 text-center text-zinc-400 text-sm">Aucune demande pour le moment.</td></tr>
                             {% endfor %}
-                            <tr id="history-empty" class="hidden"><td colspan="6" class="py-12 text-center text-zinc-400 text-sm">Aucun resultat avec ces filtres.</td></tr>
+                            <tr id="history-empty" class="hidden"><td colspan="7" class="py-12 text-center text-zinc-400 text-sm">Aucun resultat avec ces filtres.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -365,6 +442,55 @@
     var historyStatus = document.getElementById('history-status');
     var historyBody = document.getElementById('history-body');
     var historyEmpty = document.getElementById('history-empty');
+    var exceptionToggle = document.getElementById('is_exception_request');
+    var exceptionFields = document.getElementById('exception-fields');
+    var requestModeInput = document.getElementById('request_mode');
+    var urgencyInput = document.getElementById('urgency_level');
+    var justificationModeInput = document.getElementById('justification_mode');
+    var justificatifTextWrap = document.getElementById('justificatif-text-wrap');
+    var justificatifFileWrap = document.getElementById('justificatif-file-wrap');
+    var justificatifTextInput = document.getElementById('justificatif_text');
+    var justificatifInput = document.getElementById('justificatif');
+    var submitBtn = document.getElementById('leave-submit-btn');
+
+    function syncJustificationMode() {
+        if (!justificationModeInput) return;
+
+        var mode = justificationModeInput.value || 'TEXT';
+        var showText = mode === 'TEXT' || mode === 'BOTH';
+        var showFile = mode === 'FILE' || mode === 'BOTH';
+
+        if (justificatifTextWrap) justificatifTextWrap.classList.toggle('hidden', !showText);
+        if (justificatifFileWrap) justificatifFileWrap.classList.toggle('hidden', !showFile);
+
+        if (justificatifTextInput) justificatifTextInput.required = !!(exceptionToggle && exceptionToggle.checked && showText);
+        if (justificatifInput) justificatifInput.required = !!(exceptionToggle && exceptionToggle.checked && showFile);
+    }
+
+    function syncExceptionMode() {
+        var enabled = !!(exceptionToggle && exceptionToggle.checked);
+        requestModeInput.value = enabled ? 'EXCEPTION' : 'NORMAL';
+
+        if (exceptionFields) {
+            exceptionFields.classList.toggle('hidden', !enabled);
+        }
+
+        if (urgencyInput) urgencyInput.required = enabled;
+        syncJustificationMode();
+
+        if (submitBtn) {
+            submitBtn.textContent = enabled ? 'Soumettre la demande exceptionnelle' : 'Soumettre la demande';
+        }
+    }
+
+    if (exceptionToggle) {
+        exceptionToggle.addEventListener('change', syncExceptionMode);
+        syncExceptionMode();
+    }
+    if (justificationModeInput) {
+        justificationModeInput.addEventListener('change', syncJustificationMode);
+        syncJustificationMode();
+    }
 
     function isWeekend(d) { var day = d.getDay(); return day === 0 || day === 6; }
     function fmtIso(d) {

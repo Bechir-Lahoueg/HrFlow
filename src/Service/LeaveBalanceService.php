@@ -2,15 +2,21 @@
 
 namespace App\Service;
 
+use App\Entity\Rh\LeaveBalance;
+use App\Repository\Rh\EmployeeRepository;
+use App\Repository\Rh\LeaveBalanceRepository;
 use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class LeaveBalanceService
 {
     private const MONTHLY_ACCRUAL_DAYS = 1.8;
 
-    public function __construct(private readonly Connection $connection)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly LeaveBalanceRepository $leaveBalanceRepository,
+        private readonly EmployeeRepository $employeeRepository,
+    ) {
     }
 
     public function getEmployeeBalance(int $employeeId): array
@@ -18,140 +24,113 @@ final class LeaveBalanceService
         try {
             $this->accrueIfNeeded($employeeId);
 
-            $balance = $this->connection->fetchAssociative(
-                'SELECT available_days, total_accrued, total_used FROM leave_balance WHERE employee_id = :employeeId LIMIT 1',
-                ['employeeId' => $employeeId]
-            );
+            $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
         } catch (\Throwable) {
-            return [
-                'available_days' => 0.0,
-                'total_accrued' => 0.0,
-                'total_used' => 0.0,
-            ];
+            return ['available_days' => 0.0, 'total_accrued' => 0.0, 'total_used' => 0.0];
         }
 
         if (!$balance) {
-            return [
-                'available_days' => 0.0,
-                'total_accrued' => 0.0,
-                'total_used' => 0.0,
-            ];
+            return ['available_days' => 0.0, 'total_accrued' => 0.0, 'total_used' => 0.0];
         }
 
         return [
-            'available_days' => (float) $balance['available_days'],
-            'total_accrued' => (float) $balance['total_accrued'],
-            'total_used' => (float) $balance['total_used'],
+            'available_days' => $balance->getAvailableDays(),
+            'total_accrued' => $balance->getTotalAccrued(),
+            'total_used' => $balance->getTotalUsed(),
         ];
     }
 
-    public function deductApprovedDays(int $employeeId, int $daysCount): void
+    public function deductApprovedDays(int $employeeId, int $daysCount, bool $allowNegative = false): bool
     {
         try {
-            $balance = $this->getEmployeeBalance($employeeId);
+            $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
+            if (!$balance) {
+                return false;
+            }
 
-            $this->connection->update('leave_balance', [
-                'available_days' => round($balance['available_days'] - $daysCount, 2),
-                'total_used' => round($balance['total_used'] + $daysCount, 2),
-            ], [
-                'employee_id' => $employeeId,
-            ]);
+            if (!$allowNegative && $balance->getAvailableDays() < $daysCount) {
+                return false;
+            }
+
+            $balance->setAvailableDays($balance->getAvailableDays() - $daysCount);
+            $balance->setTotalUsed($balance->getTotalUsed() + $daysCount);
+            $this->em->flush();
+            return true;
         } catch (\Throwable) {
-            // Keep workflow functional if leave_balance schema is not yet aligned.
+            return false;
         }
     }
 
     public function refundApprovedDays(int $employeeId, int $daysCount): void
     {
         try {
-            $balance = $this->getEmployeeBalance($employeeId);
+            $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
+            if (!$balance) {
+                return;
+            }
 
-            $this->connection->update('leave_balance', [
-                'available_days' => round($balance['available_days'] + $daysCount, 2),
-                'total_used' => round(max(0, $balance['total_used'] - $daysCount), 2),
-            ], [
-                'employee_id' => $employeeId,
-            ]);
+            $balance->setAvailableDays($balance->getAvailableDays() + $daysCount);
+            $balance->setTotalUsed(max(0, $balance->getTotalUsed() - $daysCount));
+            $this->em->flush();
         } catch (\Throwable) {
-            // Keep workflow functional if leave_balance schema is not yet aligned.
         }
     }
 
     public function getBalancesByRh(int $rhId): array
     {
         try {
-            $employees = $this->connection->fetchAllAssociative(
-                'SELECT id FROM employees WHERE rh_id = :rhId',
-                ['rhId' => $rhId]
-            );
+            $employees = $this->employeeRepository->findBy(['rhId' => $rhId]);
 
             foreach ($employees as $employee) {
-                $this->accrueIfNeeded((int) ($employee['id'] ?? 0));
+                $this->accrueIfNeeded($employee->getId());
             }
 
-            return $this->connection->fetchAllAssociative(
-                'SELECT
-                    e.id AS employee_id,
-                    CONCAT(e.first_name, " ", e.last_name) AS employee_name,
-                    COALESCE(lb.available_days, 0) AS available_days,
-                    COALESCE(lb.total_accrued, 0) AS total_accrued,
-                    COALESCE(lb.total_used, 0) AS total_used
-                 FROM employees e
-                 LEFT JOIN leave_balance lb ON lb.employee_id = e.id
-                 WHERE e.rh_id = :rhId
-                 ORDER BY e.first_name ASC, e.last_name ASC',
-                ['rhId' => $rhId]
-            );
+            return $this->leaveBalanceRepository->findByRh($rhId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    public function getCreditSummaryByRh(int $rhId): array
+    {
+        try {
+            return $this->leaveBalanceRepository->getCreditSummaryByRh($rhId);
+        } catch (\Throwable) {
+            return ['available_sum' => 0.0, 'used_sum' => 0.0, 'accrued_sum' => 0.0, 'employees_count' => 0];
+        }
+    }
+
     private function accrueIfNeeded(int $employeeId): void
     {
-        $employee = $this->connection->fetchAssociative(
-            'SELECT first_name, last_name, created_at FROM employees WHERE id = :employeeId LIMIT 1',
-            ['employeeId' => $employeeId]
-        );
-
+        $employee = $this->employeeRepository->find($employeeId);
         if (!$employee) {
             return;
         }
 
-        $employeeName = trim(((string) $employee['first_name']) . ' ' . ((string) $employee['last_name']));
-        $hireDate = new DateTimeImmutable(substr((string) $employee['created_at'], 0, 10));
+        $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
 
-        $existing = $this->connection->fetchAssociative(
-            'SELECT id, available_days, total_accrued, total_used, hire_date, last_accrual_date
-             FROM leave_balance WHERE employee_id = :employeeId LIMIT 1',
-            ['employeeId' => $employeeId]
-        );
+        if (!$balance) {
+            $hireDate = $employee->getCreatedAt()
+                ? new DateTimeImmutable($employee->getCreatedAt()->format('Y-m-d'))
+                : new DateTimeImmutable('today');
 
-        if (!$existing) {
-            $this->connection->insert('leave_balance', [
-                'employee_id' => $employeeId,
-                'employee_name' => $employeeName,
-                'available_days' => 0,
-                'total_accrued' => 0,
-                'total_used' => 0,
-                'last_accrual_date' => null,
-                'hire_date' => $hireDate->format('Y-m-d'),
-            ]);
+            $balance = new LeaveBalance();
+            $balance->setEmployee($employee)
+                ->setEmployeeName($employee->getFullName())
+                ->setAvailableDays(0)
+                ->setTotalAccrued(0)
+                ->setTotalUsed(0)
+                ->setHireDate($hireDate);
 
-            $existing = $this->connection->fetchAssociative(
-                'SELECT id, available_days, total_accrued, total_used, hire_date, last_accrual_date
-                 FROM leave_balance WHERE employee_id = :employeeId LIMIT 1',
-                ['employeeId' => $employeeId]
-            );
-
-            if (!$existing) {
-                return;
-            }
+            $this->em->persist($balance);
+            $this->em->flush();
         }
 
-        $referenceDate = !empty($existing['last_accrual_date'])
-            ? new DateTimeImmutable((string) $existing['last_accrual_date'])
-            : new DateTimeImmutable((string) $existing['hire_date']);
+        $referenceDate = $balance->getLastAccrualDate()
+            ? new DateTimeImmutable($balance->getLastAccrualDate()->format('Y-m-d'))
+            : ($balance->getHireDate()
+                ? new DateTimeImmutable($balance->getHireDate()->format('Y-m-d'))
+                : new DateTimeImmutable('today'));
 
         $today = new DateTimeImmutable('today');
         $months = $this->getCompletedMonths($referenceDate, $today);
@@ -161,17 +140,13 @@ final class LeaveBalanceService
         }
 
         $accruedDays = round(self::MONTHLY_ACCRUAL_DAYS * $months, 2);
-        $availableDays = (float) $existing['available_days'] + $accruedDays;
-        $totalAccrued = (float) $existing['total_accrued'] + $accruedDays;
 
-        $this->connection->update('leave_balance', [
-            'employee_name' => $employeeName,
-            'available_days' => round($availableDays, 2),
-            'total_accrued' => round($totalAccrued, 2),
-            'last_accrual_date' => $today->format('Y-m-d'),
-        ], [
-            'id' => (int) $existing['id'],
-        ]);
+        $balance->setEmployeeName($employee->getFullName());
+        $balance->setAvailableDays($balance->getAvailableDays() + $accruedDays);
+        $balance->setTotalAccrued($balance->getTotalAccrued() + $accruedDays);
+        $balance->setLastAccrualDate($today);
+
+        $this->em->flush();
     }
 
     private function getCompletedMonths(DateTimeImmutable $fromDate, DateTimeImmutable $toDate): int
@@ -181,12 +156,7 @@ final class LeaveBalanceService
         }
 
         $interval = $fromDate->diff($toDate);
-        $months = ($interval->y * 12) + $interval->m;
 
-        if ($interval->d <= 0) {
-            return max(0, $months);
-        }
-
-        return max(0, $months);
+        return max(0, ($interval->y * 12) + $interval->m);
     }
 }

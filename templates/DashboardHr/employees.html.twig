@@ -26,7 +26,6 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-2xl font-extrabold text-slate-800">Employees</h1>
-                    <p class="text-sm text-slate-500 mt-1">Add employees linked to your RH account. Password hashing is SHA-256 Java-compatible.</p>
                 </div>
             </div>
 
@@ -82,7 +81,37 @@
                 <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60">
                     <div class="flex items-center justify-between p-6 pb-0 mb-4">
                         <h2 class="text-lg font-bold text-slate-800">My Employees</h2>
-                        <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md">{{ employees|length }} total</span>
+                        <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md">{{ employees|length }} visible / {{ totalEmployees|default(employees|length) }} total</span>
+                    </div>
+
+                    <div class="px-6 pb-4">
+                        <form method="get" action="{{ path('app_rh_employees') }}" class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div class="relative flex-1">
+                                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <input
+                                    type="text"
+                                    name="q"
+                                    value="{{ searchTerm|default('') }}"
+                                    placeholder="Search by first name, last name, email or position"
+                                    class="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
+                                />
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors">
+                                    Search
+                                </button>
+                                {% if searchTerm is defined and searchTerm is not empty %}
+                                    <a href="{{ path('app_rh_employees') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                                        Reset
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                        {% if searchTerm is defined and searchTerm is not empty %}
+                            <p class="mt-2 text-xs text-slate-500">
+                                Filter applied for: <span class="font-semibold text-slate-700">"{{ searchTerm }}"</span>
+                            </p>
+                        {% endif %}
                     </div>
 
                     <div class="overflow-x-auto">
@@ -98,16 +127,31 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 {% for employee in employees %}
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-6 py-3.5 text-[13px] font-medium text-slate-800">{{ employee.first_name }}</td>
-                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.last_name }}</td>
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="px-6 py-3.5 text-[13px] font-medium text-slate-800">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 text-xs font-bold inline-flex items-center justify-center">
+                                                    {{ employee.firstName|first|upper }}{{ employee.lastName|first|upper }}
+                                                </span>
+                                                {{ employee.firstName }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600 font-medium">{{ employee.lastName }}</td>
                                         <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.email }}</td>
-                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">{{ employee.job_title }}</td>
-                                        <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.age }}</td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-600">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">{{ employee.jobTitle }}</span>
+                                        </td>
+                                        <td class="px-6 py-3.5 text-[13px] text-slate-500">{{ employee.age }} yrs</td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-400">No employees added yet.</td>
+                                        <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-400">
+                                            {% if searchTerm is defined and searchTerm is not empty %}
+                                                No employees match your search.
+                                            {% else %}
+                                                No employees added yet.
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

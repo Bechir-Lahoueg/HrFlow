@@ -48,6 +48,39 @@ class LeaveRequest
     #[ORM\Column(name: 'days_count')]
     private ?int $daysCount = null;
 
+    #[ORM\Column(name: 'request_category', length: 20, options: ['default' => 'NORMAL'])]
+    private string $requestCategory = 'NORMAL';
+
+    #[ORM\Column(name: 'workflow_status', length: 50, nullable: true)]
+    private ?string $workflowStatus = null;
+
+    #[ORM\Column(name: 'urgency_level', length: 20, nullable: true)]
+    private ?string $urgencyLevel = null;
+
+    #[ORM\Column(name: 'expected_return_date', type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $expectedReturnDate = null;
+
+    #[ORM\Column(name: 'attachment_path', length: 255, nullable: true)]
+    private ?string $attachmentPath = null;
+
+    #[ORM\Column(name: 'admin_comment', type: Types::TEXT, nullable: true)]
+    private ?string $adminComment = null;
+
+    #[ORM\Column(name: 'rh_decision_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $rhDecisionAt = null;
+
+    #[ORM\Column(name: 'rh_decision_by', length: 120, nullable: true)]
+    private ?string $rhDecisionBy = null;
+
+    #[ORM\Column(name: 'admin_decision_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $adminDecisionAt = null;
+
+    #[ORM\Column(name: 'admin_decision_by', length: 120, nullable: true)]
+    private ?string $adminDecisionBy = null;
+
+    #[ORM\Column(name: 'audit_log', type: Types::TEXT, nullable: true)]
+    private ?string $auditLog = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -160,6 +193,144 @@ class LeaveRequest
     public function setDaysCount(int $daysCount): static
     {
         $this->daysCount = $daysCount;
+        return $this;
+    }
+
+    public function getRequestCategory(): string
+    {
+        return $this->requestCategory;
+    }
+
+    public function setRequestCategory(string $requestCategory): static
+    {
+        $this->requestCategory = $requestCategory;
+        return $this;
+    }
+
+    public function getWorkflowStatus(): ?string
+    {
+        return $this->workflowStatus;
+    }
+
+    public function setWorkflowStatus(?string $workflowStatus): static
+    {
+        $this->workflowStatus = $workflowStatus;
+        return $this;
+    }
+
+    public function getUrgencyLevel(): ?string
+    {
+        return $this->urgencyLevel;
+    }
+
+    public function setUrgencyLevel(?string $urgencyLevel): static
+    {
+        $this->urgencyLevel = $urgencyLevel;
+        return $this;
+    }
+
+    public function getExpectedReturnDate(): ?\DateTimeInterface
+    {
+        return $this->expectedReturnDate;
+    }
+
+    public function setExpectedReturnDate(?\DateTimeInterface $expectedReturnDate): static
+    {
+        $this->expectedReturnDate = $expectedReturnDate;
+        return $this;
+    }
+
+    public function getAttachmentPath(): ?string
+    {
+        return $this->attachmentPath;
+    }
+
+    public function setAttachmentPath(?string $attachmentPath): static
+    {
+        $this->attachmentPath = $attachmentPath;
+        return $this;
+    }
+
+    public function getAdminComment(): ?string
+    {
+        return $this->adminComment;
+    }
+
+    public function setAdminComment(?string $adminComment): static
+    {
+        $this->adminComment = $adminComment;
+        return $this;
+    }
+
+    public function getRhDecisionAt(): ?\DateTimeInterface
+    {
+        return $this->rhDecisionAt;
+    }
+
+    public function setRhDecisionAt(?\DateTimeInterface $rhDecisionAt): static
+    {
+        $this->rhDecisionAt = $rhDecisionAt;
+        return $this;
+    }
+
+    public function getRhDecisionBy(): ?string
+    {
+        return $this->rhDecisionBy;
+    }
+
+    public function setRhDecisionBy(?string $rhDecisionBy): static
+    {
+        $this->rhDecisionBy = $rhDecisionBy;
+        return $this;
+    }
+
+    public function getAdminDecisionAt(): ?\DateTimeInterface
+    {
+        return $this->adminDecisionAt;
+    }
+
+    public function setAdminDecisionAt(?\DateTimeInterface $adminDecisionAt): static
+    {
+        $this->adminDecisionAt = $adminDecisionAt;
+        return $this;
+    }
+
+    public function getAdminDecisionBy(): ?string
+    {
+        return $this->adminDecisionBy;
+    }
+
+    public function setAdminDecisionBy(?string $adminDecisionBy): static
+    {
+        $this->adminDecisionBy = $adminDecisionBy;
+        return $this;
+    }
+
+    public function getAuditLog(): ?string
+    {
+        return $this->auditLog;
+    }
+
+    public function setAuditLog(?string $auditLog): static
+    {
+        $this->auditLog = $auditLog;
+        return $this;
+    }
+
+    public function appendAuditLog(string $actor, string $action, ?string $comment = null): static
+    {
+        $line = sprintf(
+            "[%s] %s | %s%s",
+            (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s'),
+            $actor,
+            $action,
+            $comment !== null && $comment !== '' ? ' | ' . $comment : ''
+        );
+
+        $this->auditLog = trim((string) $this->auditLog) === ''
+            ? $line
+            : ((string) $this->auditLog) . "\n" . $line;
+
         return $this;
     }
 }
