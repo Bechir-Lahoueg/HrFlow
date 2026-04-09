@@ -5,9 +5,22 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .decision-table thead th{position:sticky;top:0;z-index:10}
-        .decision-row{transition:all .2s}
-        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+        :root {
+            --primary-dark: #022E69;
+            --primary-blue: #145EB7;
+            --accent-blue: #3FA9F5;
+            --border-gray: #D0D0D0;
+        }
+
+        .session-card{transition:transform .2s, box-shadow .2s}
+        .session-card:hover{transform:translateY(-2px); box-shadow:0 18px 40px -20px rgba(2, 46, 105, .35)}
+        .mono-num{font-variant-numeric:tabular-nums}
+
+        .btn-primary{
+            background: var(--primary-blue);
+            color: #fff;
+        }
+        .btn-primary:hover{background: var(--primary-dark)}
     </style>
 {% endblock %}
 
@@ -59,7 +72,7 @@
                 </div>
             </section>
 
-            {# ══════════ Sessions Table ══════════ #}
+            {# ══════════ Sessions Cards ══════════ #}
             <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
                     <div class="flex items-center gap-3">
@@ -70,92 +83,128 @@
                     </div>
                 </div>
 
-                {# Table #}
-                <div class="overflow-x-auto rounded-lg border border-zinc-100 max-h-[70vh]">
-                    <table class="decision-table min-w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/95">
-                                <th class="py-3 px-4">Période</th>
-                                <th class="py-3 px-4">Lieu</th>
-                                <th class="py-3 px-4">Mode</th>
-                                <th class="py-3 px-4">Capacité</th>
-                                <th class="py-3 px-4">Statut</th>
-                                <th class="py-3 px-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for session in sessions %}
-                            <tr class="decision-row border-b border-zinc-50 align-top">
-                                <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ session.date_debut|date('d M Y') }}</p>
-                                    <p class="text-[11px] text-zinc-400">au {{ session.date_fin|date('d M Y') }}</p>
-                                </td>
-                                <td class="py-3 px-4 font-semibold text-zinc-700">{{ session.lieu }}</td>
-                                <td class="py-3 px-4">
-                                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ session.mode }}</span>
-                                </td>
-                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ session.capacite_max }}</td>
-                                <td class="py-3 px-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
-                                        {% if session.statut == 'Planifiee' %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}
-                                        {% if session.statut == 'En cours' %}bg-amber-50 text-amber-700 border border-amber-200{% endif %}
-                                        {% if session.statut == 'Terminee' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}
-                                        {% if session.statut == 'Annulee' %}bg-red-50 text-red-700 border border-red-200{% endif %}">
-                                        <span class="w-1.5 h-1.5 rounded-full
-                                            {% if session.statut == 'Planifiee' %}bg-blue-500{% endif %}
-                                            {% if session.statut == 'En cours' %}bg-amber-500{% endif %}
-                                            {% if session.statut == 'Terminee' %}bg-emerald-500{% endif %}
-                                            {% if session.statut == 'Annulee' %}bg-red-500{% endif %}"></span>
-                                        {{ session.statut }}
-                                    </span>
-                                <td class="py-3 px-4">
-                                    {# 1. On vérifie d'abord si l'employé est déjà inscrit #}
-                                    {% if mySessionIds is defined and mySessionIds[session.id_session] is defined %}
-                                        {% set p_statut = mySessionIds[session.id_session] %}
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
-                                            {% if p_statut == 'Inscrit' %}bg-amber-50 text-amber-700 border border-amber-200
-                                            {% elseif p_statut == 'Accepte' %}bg-emerald-50 text-emerald-700 border border-emerald-200
-                                            {% elseif p_statut == 'Refuse' %}bg-red-50 text-red-700 border border-red-200
-                                            {% elseif p_statut == 'Certificat obtenu' %}bg-purple-50 text-purple-700 border border-purple-200
-                                            {% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                {% if p_statut == 'Refuse' %}
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                                {% elseif p_statut == 'Inscrit' %}
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                {% else %}
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                                {% endif %}
-                                            </svg>
-                                            {% if p_statut == 'Inscrit' %}En attente{% else %}{{ p_statut }}{% endif %}
-                                        </span>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {% for session in sessions %}
+                        {% set occupees = session.acceptedCount|default(0) %}
+                        {% set dispo = max(0, session.capaciteMax - occupees) %}
 
-                                    {# 2. Si pas inscrit, on vérifie si la session est ouverte à l'inscription (Planifiée) #}
-                                    {% elseif session.statut == 'Planifiee' %}
-                                        <form method="post" action="{{ path('employee_formation_register', {id: session.id_session}) }}" class="inline">
-                                            <button type="submit" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                                                </svg>
+                        <article class="session-card group rounded-2xl border border-zinc-100 dark:border-zinc-800/60 bg-gradient-to-b from-white to-zinc-50/40 dark:from-zinc-950 dark:to-zinc-900 p-5">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-zinc-400">Période</p>
+                                    <p class="mt-1 text-[15px] font-bold text-zinc-900 dark:text-zinc-100 mono-num">{{ session.dateDebut|date('d M Y') }}</p>
+                                    <p class="text-[12px] text-zinc-500 mono-num">au {{ session.dateFin|date('d M Y') }}</p>
+                                </div>
+
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold shrink-0
+                                    {% if session.statut == 'Planifiee' %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}
+                                    {% if session.statut == 'En cours' %}bg-amber-50 text-amber-700 border border-amber-200{% endif %}
+                                    {% if session.statut == 'Terminee' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}
+                                    {% if session.statut == 'Annulee' %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+                                    <span class="w-1.5 h-1.5 rounded-full
+                                        {% if session.statut == 'Planifiee' %}bg-blue-500{% endif %}
+                                        {% if session.statut == 'En cours' %}bg-amber-500{% endif %}
+                                        {% if session.statut == 'Terminee' %}bg-emerald-500{% endif %}
+                                        {% if session.statut == 'Annulee' %}bg-red-500{% endif %}"></span>
+                                    {{ session.statut }}
+                                </span>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
+                                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lieu</p>
+                                    <p class="mt-1 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">{{ session.lieu ?: '—' }}</p>
+                                </div>
+
+                                <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
+                                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Mode</p>
+                                    <div class="mt-1">
+                                        <span class="inline-flex text-xs font-bold px-2.5 py-0.5 rounded-lg" style="background: rgba(63, 169, 245, .14); color: var(--primary-dark)">{{ session.mode }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 rounded-xl border border-zinc-100 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-950/50 p-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div>
+                                        <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Capacité</p>
+                                        <p class="mt-1 font-extrabold text-zinc-900 dark:text-zinc-100 mono-num">{{ dispo }} / {{ session.capaciteMax }}</p>
+                                        <p class="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">places dispo</p>
+                                    </div>
+                                    <div class="w-16">
+                                        {% set percent = session.capaciteMax > 0 ? ((dispo / session.capaciteMax) * 100) : 0 %}
+                                        <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                                            <div class="h-2 rounded-full" style="background: var(--accent-blue); width: {{ percent }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 rounded-xl border border-zinc-100 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/40 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Mon taux de présence</p>
+                                {% if mySessionStats is defined and mySessionStats[session.id] is defined and mySessionStats[session.id].statut == 'Accepte' %}
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <div class="flex-1 bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                                            <div class="h-2 rounded-full" style="background: var(--accent-blue); width: {{ mySessionStats[session.id].pourcentage }}%"></div>
+                                        </div>
+                                        <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 mono-num">{{ mySessionStats[session.id].pourcentage }}%</span>
+                                    </div>
+                                {% else %}
+                                    <p class="mt-2 text-xs text-zinc-400">-</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap items-center gap-2">
+                                {# 1) Déjà inscrit #}
+                                {% if mySessionStats is defined and mySessionStats[session.id] is defined %}
+                                    {% set p_statut = mySessionStats[session.id].statut %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-extrabold
+                                        {% if p_statut == 'Inscrit' %}bg-amber-50 text-amber-700 border border-amber-200
+                                        {% elseif p_statut == 'Accepte' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                                        {% elseif p_statut == 'Refuse' %}bg-red-50 text-red-700 border border-red-200
+                                        {% elseif p_statut == 'Certificat obtenu' %}bg-purple-50 text-purple-700 border border-purple-200
+                                        {% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            {% if p_statut == 'Refuse' %}
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            {% elseif p_statut == 'Inscrit' %}
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            {% else %}
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                            {% endif %}
+                                        </svg>
+                                        {% if p_statut == 'Inscrit' %}En attente{% else %}{{ p_statut }}{% endif %}
+                                    </span>
+
+                                {# 2) Inscription possible si Planifiée #}
+                                {% elseif session.statut == 'Planifiee' %}
+                                    {% if occupees >= session.capaciteMax %}
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-extrabold bg-red-50 text-red-700 border border-red-200">
+                                            Session complète
+                                        </span>
+                                    {% else %}
+                                        <form method="post" action="{{ path('employee_formation_register', {id: session.id}) }}" class="inline">
+                                            <button type="submit" class="btn-primary px-3 py-2 rounded-xl text-xs font-extrabold inline-flex items-center gap-2 transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                                 S'inscrire
                                             </button>
                                         </form>
-
-                                    {# 3. Sinon, on affiche que ce n'est pas disponible (session en cours, terminée ou annulée) #}
-                                    {% else %}
-                                        <span class="text-[11px] text-zinc-400">Non disponible</span>
                                     {% endif %}
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr><td colspan="6" class="py-14 text-center text-zinc-400 text-sm">Aucune session programmée pour cette formation.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                                {% else %}
+                                    <span class="text-[11px] text-zinc-400">Non disponible</span>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% else %}
+                        <div class="col-span-full">
+                            <div class="rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 p-10 text-center bg-white/60 dark:bg-zinc-950/30">
+                                <p class="text-zinc-500 font-medium">Aucune session programmée pour cette formation.</p>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </section>
         </main>
     </div>
 </div>
 {% endblock %}
-
