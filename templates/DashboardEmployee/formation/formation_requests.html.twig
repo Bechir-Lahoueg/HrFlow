@@ -92,51 +92,38 @@
                                 <th class="py-3 px-4">Formation</th>
                                 <th class="py-3 px-4">Date Session</th>
                                 <th class="py-3 px-4">Date Inscription</th>
-                                <th class="py-3 px-4">Présence</th>
                                 <th class="py-3 px-4">Statut</th>
                                 <th class="py-3 px-4">Certificat</th>
                             </tr>
                         </thead>
                         <tbody id="history-body">
                         {% for participation in participations %}
-                            <tr class="decision-row border-b border-zinc-50 align-top" data-status="{{ participation.statutParticipation }}" data-search="{{ participation.session.formation.titre|lower }} {{ participation.statutParticipation|lower }}">
+                            <tr class="decision-row border-b border-zinc-50 align-top" data-status="{{ participation.statut_participation }}" data-search="{{ participation.titre|lower }} {{ participation.statut_participation|lower }}">
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.session.formation.titre }}</p>
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.titre }}</p>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.session.dateDebut|date('d M Y') }}</p>
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.date_debut|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.dateInscription|date('d M Y') }}</p>
-                                </td>
-                                <td class="py-3 px-4">
-                                    {% if participation.statutParticipation == 'Accepte' %}
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-16 bg-zinc-200 rounded-full h-1.5 overflow-hidden">
-                                                <div class="bg-teal-500 h-1.5 rounded-full" style="width: {{ attendanceMap[participation.id] }}%"></div>
-                                            </div>
-                                            <span class="text-xs font-semibold text-zinc-600">{{ attendanceMap[participation.id] }}%</span>
-                                        </div>
-                                    {% else %}
-                                        <span class="text-xs text-zinc-400">-</span>
-                                    {% endif %}
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ participation.date_inscription|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
-                                        {{ participation.statutParticipation == 'Inscrit' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
-                                        {{ participation.statutParticipation == 'Accepte' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
-                                        {{ participation.statutParticipation == 'Refuse' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
-                                        {{ participation.statutParticipation == 'Certificat obtenu' ? 'bg-purple-50 text-purple-700 border border-purple-200' : '' }}">
+                                        {{ participation.statut_participation == 'Inscrit' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
+                                        {{ participation.statut_participation == 'Accepte' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ participation.statut_participation == 'Refuse' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                        {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-purple-50 text-purple-700 border border-purple-200' : '' }}">
                                         <span class="w-1.5 h-1.5 rounded-full
-                                            {{ participation.statutParticipation == 'Inscrit' ? 'bg-amber-500' : '' }}
-                                            {{ participation.statutParticipation == 'Accepte' ? 'bg-emerald-500' : '' }}
-                                            {{ participation.statutParticipation == 'Refuse' ? 'bg-red-500' : '' }}
-                                            {{ participation.statutParticipation == 'Certificat obtenu' ? 'bg-purple-500' : '' }}"></span>
-                                        {% if participation.statutParticipation == 'Inscrit' %}En attente{% else %}{{ participation.statutParticipation }}{% endif %}
+                                            {{ participation.statut_participation == 'Inscrit' ? 'bg-amber-500' : '' }}
+                                            {{ participation.statut_participation == 'Accepte' ? 'bg-emerald-500' : '' }}
+                                            {{ participation.statut_participation == 'Refuse' ? 'bg-red-500' : '' }}
+                                            {{ participation.statut_participation == 'Certificat obtenu' ? 'bg-purple-500' : '' }}"></span>
+                                        {% if participation.statut_participation == 'Inscrit' %}En attente{% else %}{{ participation.statut_participation }}{% endif %}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4">
-                                    {% if participation.certificatObtenu %}
+                                    {% if participation.certificat_obtenu %}
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                             Oui
@@ -147,9 +134,9 @@
                                 </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="6" class="py-12 text-center text-zinc-400 text-sm">Aucune demande de formation pour le moment.</td></tr>
+                            <tr><td colspan="5" class="py-12 text-center text-zinc-400 text-sm">Aucune demande de formation pour le moment.</td></tr>
                         {% endfor %}
-                        <tr id="history-empty" class="hidden"><td colspan="6" class="py-12 text-center text-zinc-400 text-sm">Aucun résultat avec ces filtres.</td></tr>
+                        <tr id="history-empty" class="hidden"><td colspan="5" class="py-12 text-center text-zinc-400 text-sm">Aucun résultat avec ces filtres.</td></tr>
                         </tbody>
                     </table>
                 </div>

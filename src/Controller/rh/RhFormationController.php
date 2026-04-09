@@ -62,13 +62,13 @@ final class RhFormationController extends AbstractController
         }
 
         return $this->render('DashboardHr/formation/formation_form.html.twig', [
-            'formationForm' => $form->createView(),
+            'formationForm' => $form,
             'isEdit' => false,
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/{id}/edit', name: 'rh_formation_edit', methods: ['GET', 'POST'])]
-    public function edit(string $id, Request $request): Response
+    public function edit(string $id, Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $idInt = (int) $id;
         $formation = $this->formationService->getFormationById($idInt);
@@ -76,28 +76,20 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($request->isMethod('POST')) {
-            $data = [
-                'titre' => $request->request->get('titre'),
-                'description' => $request->request->get('description'),
-                'type' => $request->request->get('type'),
-                'duree' => (int) $request->request->get('duree'),
-                'organisme' => $request->request->get('organisme'),
-                'objectifs' => $request->request->get('objectifs'),
-            ];
+        $form = $this->createForm(FormationType::class, $formation);
+        $form->handleRequest($request);
 
-            $this->formationService->updateFormation($idInt, $data);
-            $this->addFlash('success', 'Formation mise à jour avec succès.');
-
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
             $this->addFlash('success', 'Formation mise à jour avec succès.');
             return $this->redirectToRoute('rh_formation_list');
         }
 
         return $this->render('DashboardHr/formation/formation_form.html.twig', [
-            'formationForm' => $form->createView(),
+            'formationForm' => $form,
             'formation' => $formation,
             'isEdit' => true,
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/{id}/delete', name: 'rh_formation_delete', methods: ['POST'])]
@@ -172,9 +164,9 @@ final class RhFormationController extends AbstractController
 
         return $this->render('DashboardHr/formation/session_form.html.twig', [
             'formation' => $formation,
-            'sessionForm' => $form->createView(),
+            'sessionForm' => $form,
             'isEdit' => false,
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/session/{id}/edit', name: 'rh_formation_session_edit', methods: ['GET', 'POST'])]
@@ -206,10 +198,39 @@ final class RhFormationController extends AbstractController
 
         return $this->render('DashboardHr/formation/session_form.html.twig', [
             'formation' => $formation,
-            'sessionForm' => $form->createView(),
+            'sessionForm' => $form,
             'session' => $session,
             'isEdit' => true,
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
+    }
+
+    #[Route('/session/{id}/delete', name: 'rh_formation_session_delete', methods: ['POST'])]
+    public function deleteSession(string $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
+    {
+        $idInt = (int) $id;
+        $session = $sessionService->getSessionById($idInt);
+        if (!$session) {
+            throw $this->createNotFoundException('Session non trouvée');
+        }
+
+        $formationId = $session->getFormation()->getId();
+
+        if (!$this->isCsrfTokenValid('delete-session-' . $idInt, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
+        }
+
+        if ($session->getParticipations()->count() > 0) {
+            $this->addFlash('error', 'Impossible de supprimer cette session: des participants sont déjà inscrits.');
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
+        }
+
+        $em->remove($session);
+        $em->flush();
+
+        $this->addFlash('success', 'Session supprimée avec succès.');
+
+        return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
     }
 
     #[Route('/session/{id}/participants', name: 'rh_formation_session_participants', methods: ['GET'])]
@@ -305,7 +326,7 @@ final class RhFormationController extends AbstractController
                     $this->addFlash('error', 'Erreur lors de l\'enregistrement des présences.');
                 }
 
-                $this->addFlash('success', 'Présences mises à jour avec succès.');
+                $this->addFlash('success', 'Présences mises  à jour avec succès.');
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
             }
         }
@@ -325,3 +346,5 @@ final class RhFormationController extends AbstractController
         ]);
     }
 }
+
+

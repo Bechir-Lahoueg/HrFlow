@@ -69,13 +69,32 @@ class LeaveRequestRepository extends ServiceEntityRepository
     }
 
     /** @return LeaveRequest[] */
-    public function findByRh(int $rhId, ?string $statusFilter, string $employeeSearch = '', string $leaveTypeSearch = ''): array
+    public function findByRh(
+        int $rhId,
+        ?string $statusFilter,
+        string $employeeSearch = '',
+        string $leaveTypeSearch = '',
+        string $search = '',
+        string $sort = 'request_date',
+        string $direction = 'DESC'
+    ): array
     {
+        $sortMap = [
+            'request_date' => 'lr.requestDate',
+            'start_date' => 'lr.startDate',
+            'days' => 'lr.daysCount',
+            'employee' => 'lr.employeeName',
+            'status' => 'lr.status',
+        ];
+
+        $orderByField = $sortMap[$sort] ?? 'lr.requestDate';
+        $orderDirection = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+
         $qb = $this->createQueryBuilder('lr')
             ->join('lr.employee', 'e')
             ->where('e.rhId = :rhId')
             ->setParameter('rhId', $rhId)
-            ->orderBy('lr.requestDate', 'DESC')
+            ->orderBy($orderByField, $orderDirection)
             ->addOrderBy('lr.id', 'DESC');
 
         if ($statusFilter !== null && in_array($statusFilter, ['ATTENTE', 'ACCEPTE', 'REFUSE'], true)) {
@@ -91,6 +110,17 @@ class LeaveRequestRepository extends ServiceEntityRepository
         if (trim($leaveTypeSearch) !== '') {
             $qb->andWhere('lr.leaveType LIKE :typeSearch')
                ->setParameter('typeSearch', '%' . trim($leaveTypeSearch) . '%');
+        }
+
+        if (trim($search) !== '') {
+            $term = '%' . trim($search) . '%';
+            $qb->andWhere('(
+                lr.employeeName LIKE :globalSearch
+                OR lr.leaveType LIKE :globalSearch
+                OR lr.reason LIKE :globalSearch
+                OR lr.status LIKE :globalSearch
+            )')
+            ->setParameter('globalSearch', $term);
         }
 
         return $qb->getQuery()->getResult();
@@ -162,5 +192,36 @@ class LeaveRequestRepository extends ServiceEntityRepository
             ->setParameter('rhId', $rhId)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /** @return LeaveRequest[] */
+    public function findAdminExceptionPending(): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->join('lr.employee', 'e')
+            ->where('lr.requestCategory = :category')
+            ->andWhere('lr.workflowStatus = :workflowStatus')
+            ->setParameter('category', 'EXCEPTION')
+            ->setParameter('workflowStatus', 'ADMIN_PENDING')
+            ->orderBy('lr.requestDate', 'DESC')
+            ->addOrderBy('lr.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return LeaveRequest[] */
+    public function findExpiredExceptionalPending(\DateTimeInterface $today): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->where('lr.requestCategory = :category')
+            ->andWhere('lr.status = :status')
+            ->andWhere('lr.workflowStatus IN (:workflows)')
+            ->andWhere('lr.startDate <= :today')
+            ->setParameter('category', 'EXCEPTION')
+            ->setParameter('status', 'ATTENTE')
+            ->setParameter('workflows', ['RH_PENDING', 'ADMIN_PENDING'])
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getResult();
     }
 }

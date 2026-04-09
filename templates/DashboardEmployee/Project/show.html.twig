@@ -1,0 +1,467 @@
+{# templates/project_employee/show.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root {
+    --c-primary: #4f46e5; --c-primary-light: #eef2ff;
+    --c-success: #10b981; --c-warn: #f59e0b; --c-danger: #ef4444;
+    --c-muted: #6b7280; --c-border: #e5e7eb; --c-bg: #f8fafc;
+}
+.proj-layout { background: var(--c-bg); min-height: 100vh; }
+
+/* Header */
+.proj-header { background: #fff; border-bottom: 1px solid var(--c-border); padding: 1.5rem 2rem; }
+.proj-title { font-size: 1.4rem; font-weight: 700; color: #111827; margin: 0 0 .4rem; }
+.proj-sub { font-size: .8rem; color: var(--c-muted); display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.proj-sub span { display: flex; align-items: center; gap: .3rem; }
+.badge { display: inline-flex; align-items: center; padding: .18rem .55rem; border-radius: 20px; font-size: .68rem; font-weight: 600; }
+.badge-active { background: #d1fae5; color: #065f46; }
+.badge-planning { background: #f3f4f6; color: #6b7280; }
+.badge-on_hold { background: #fef3c7; color: #92400e; }
+.badge-completed { background: #dbeafe; color: #1e40af; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; }
+.badge-todo { background: #f1f5f9; color: #475569; }
+.badge-in_progress { background: #dbeafe; color: #1d4ed8; }
+.badge-review { background: #fef3c7; color: #92400e; }
+.badge-done { background: #d1fae5; color: #065f46; }
+.badge-critical { background: #fee2e2; color: #991b1b; }
+.badge-high { background: #ffedd5; color: #9a3412; }
+.badge-medium { background: #fef9c3; color: #854d0e; }
+.badge-low { background: #d1fae5; color: #065f46; }
+
+/* Progress */
+.prog-wrap { margin-top: .85rem; max-width: 400px; }
+.prog-bg { background: #f3f4f6; border-radius: 99px; height: 6px; }
+.prog-fill { height: 100%; border-radius: 99px; background: var(--c-primary); }
+.prog-label { display: flex; justify-content: space-between; font-size: .72rem; color: var(--c-muted); margin-bottom: .25rem; }
+
+/* Tabs */
+.proj-tabs { background: #fff; border-bottom: 1px solid var(--c-border); padding: 0 2rem; display: flex; }
+.proj-tab { padding: .8rem 1.1rem; font-size: .86rem; font-weight: 500; color: var(--c-muted); border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; transition: .15s; display: flex; align-items: center; gap: .35rem; }
+.proj-tab:hover { color: var(--c-primary); }
+.proj-tab.active { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+
+.proj-content { padding: 1.5rem 2rem; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Mini stats */
+.mini-stats { display: flex; gap: .85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.mini-stat { background: #fff; border: 1px solid var(--c-border); border-radius: 10px; padding: .75rem 1.1rem; display: flex; align-items: center; gap: .6rem; }
+.mini-stat-val { font-size: 1.2rem; font-weight: 700; color: #111827; line-height: 1; }
+.mini-stat-lbl { font-size: .68rem; color: var(--c-muted); }
+
+/* Toggle: my tasks vs all tasks */
+.view-toggle { display: flex; gap: .4rem; background: #f3f4f6; border-radius: 8px; padding: .3rem; margin-bottom: 1.25rem; width: fit-content; }
+.view-toggle button { padding: .35rem .85rem; border-radius: 6px; border: none; font-size: .8rem; font-weight: 500; cursor: pointer; background: none; color: #6b7280; transition: .15s; }
+.view-toggle button.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* Kanban */
+.kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 1200px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px)  { .kanban-board { grid-template-columns: 1fr; } }
+
+.kanban-col { background: #f1f5f9; border-radius: 12px; padding: .85rem; min-height: 180px; }
+.kanban-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; padding-bottom: .6rem; border-bottom: 2px solid #e2e8f0; }
+.kcol-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #475569; display: flex; align-items: center; gap: .4rem; }
+.col-dot { width: 8px; height: 8px; border-radius: 50%; }
+.col-dot.todo { background: #94a3b8; }
+.col-dot.in_progress { background: #3b82f6; }
+.col-dot.review { background: #f59e0b; }
+.col-dot.done { background: #10b981; }
+.kcol-count { background: #fff; color: #64748b; font-size: .7rem; font-weight: 700; padding: .12rem .45rem; border-radius: 20px; border: 1px solid #e2e8f0; }
+.kanban-tasks { display: flex; flex-direction: column; gap: .6rem; min-height: 50px; }
+.kanban-tasks.drag-over { background: #e0e7ff; border-radius: 8px; }
+
+/* Task card */
+.task-card { background: #fff; border-radius: 10px; padding: .85rem; border: 1px solid var(--c-border); box-shadow: 0 1px 2px rgba(0,0,0,.04); position: relative; }
+.task-card.mine { cursor: grab; }
+.task-card.mine:active { cursor: grabbing; }
+.task-card.dragging { opacity: .5; transform: rotate(1.5deg); }
+.task-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.09); }
+.task-prio-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 10px 0 0 10px; }
+.task-prio-bar.critical { background: #ef4444; }
+.task-prio-bar.high { background: #f97316; }
+.task-prio-bar.medium { background: #f59e0b; }
+.task-prio-bar.low { background: #10b981; }
+.task-inner { padding-left: .5rem; }
+.task-title { font-size: .84rem; font-weight: 600; color: #111827; margin-bottom: .35rem; }
+.task-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.task-due { font-size: .7rem; }
+.task-due.overdue { color: var(--c-danger); font-weight: 600; }
+.av-xs { width: 20px; height: 20px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; font-size: .6rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; text-transform: uppercase; }
+
+/* Not-mine overlay */
+.task-card.not-mine { opacity: .65; }
+
+/* Quick status buttons */
+.quick-actions { display: flex; gap: .3rem; margin-top: .5rem; }
+.qa-btn { padding: .2rem .5rem; border-radius: 5px; border: 1px solid var(--c-border); background: #fff; font-size: .68rem; cursor: pointer; color: #374151; transition: .15s; }
+.qa-btn:hover { background: #f3f4f6; }
+.qa-btn.active { background: var(--c-primary-light); color: var(--c-primary); border-color: #c7d2fe; }
+
+/* Hours log form */
+.log-hours-form { display: flex; gap: .35rem; align-items: center; margin-top: .4rem; }
+.log-hours-form input { width: 60px; padding: .2rem .4rem; border: 1px solid var(--c-border); border-radius: 5px; font-size: .75rem; }
+.log-hours-form button { padding: .2rem .5rem; background: var(--c-primary); color: #fff; border: none; border-radius: 5px; font-size: .72rem; cursor: pointer; }
+
+/* Activity */
+.feed { display: flex; flex-direction: column; gap: 0; }
+.feed-item { display: flex; gap: .8rem; align-items: flex-start; padding: .8rem 0; border-bottom: 1px solid #f3f4f6; }
+.feed-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c-primary); flex-shrink: 0; margin-top: 4px; }
+.feed-dot.green { background: var(--c-success); }
+.feed-dot.amber { background: var(--c-warn); }
+.feed-content { font-size: .8rem; color: #374151; }
+.feed-meta { font-size: .7rem; color: var(--c-muted); margin-top: 2px; }
+
+/* Team */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem; }
+.team-card { background: #fff; border: 1px solid var(--c-border); border-radius: 10px; padding: .9rem; display: flex; align-items: center; gap: .75rem; }
+.team-av { width: 40px; height: 40px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; font-size: .9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; text-transform: uppercase; flex-shrink: 0; }
+.team-name { font-weight: 600; font-size: .84rem; color: #111827; }
+.team-meta { font-size: .72rem; color: var(--c-muted); }
+
+/* Milestones */
+.ms-list { display: flex; flex-direction: column; gap: .75rem; }
+.ms-item { background: #fff; border: 1px solid var(--c-border); border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 1rem; }
+.ms-icon { font-size: 1.2rem; flex-shrink: 0; }
+.ms-name { font-weight: 600; font-size: .85rem; color: #111827; }
+.ms-desc { font-size: .74rem; color: var(--c-muted); }
+.ms-date { font-size: .75rem; color: var(--c-muted); white-space: nowrap; margin-left: auto; }
+
+/* Comment box */
+.comment-box { background: #fff; border: 1px solid var(--c-border); border-radius: 12px; padding: 1.25rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="proj-layout">
+
+    {# Flash #}
+    {% for label, messages in app.flashes %}{% for msg in messages %}
+    <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show m-3">{{ msg }}<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}{% endfor %}
+
+    {# Header #}
+    <div class="proj-header">
+        <div style="font-size:.78rem;color:var(--c-muted);margin-bottom:.3rem">
+            <a href="{{ path('employee_project_index') }}" style="color:inherit;text-decoration:none">← Mes projets</a>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+            <div style="flex:1">
+                <h1 class="proj-title">{{ project.name }}</h1>
+                <div class="proj-sub">
+                    <span>
+                        {% set sL = {planning:'Planification', active:'Actif', on_hold:'En attente', completed:'Terminé', cancelled:'Annulé'} %}
+                        <span class="badge badge-{{ project.status }}">{{ sL[project.status] ?? project.status }}</span>
+                    </span>
+                    {% if project.end_date %}
+                    <span><i class="fas fa-calendar-alt"></i> Fin: {{ project.end_date|date('d/m/Y') }}</span>
+                    {% endif %}
+                    <span><i class="fas fa-users"></i> {{ stats.active_collaborators }} membres</span>
+                </div>
+                <div class="prog-wrap">
+                    <div class="prog-label"><span>Avancement</span><strong>{{ project.completion_rate }}%</strong></div>
+                    <div class="prog-bg"><div class="prog-fill" style="width:{{ project.completion_rate }}%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Tabs #}
+    <div class="proj-tabs">
+        <a class="proj-tab active" data-tab="kanban" href="#"><i class="fas fa-columns"></i> Kanban</a>
+        <a class="proj-tab" data-tab="milestones" href="#"><i class="fas fa-flag"></i> Jalons</a>
+        <a class="proj-tab" data-tab="team" href="#"><i class="fas fa-users"></i> Équipe</a>
+        <a class="proj-tab" data-tab="activity" href="#"><i class="fas fa-history"></i> Activité</a>
+    </div>
+
+    <div class="proj-content">
+
+        {# ═══════ KANBAN ═══════ #}
+        <div class="tab-panel active" id="tab-kanban">
+
+            <div class="mini-stats">
+                <div class="mini-stat"><span>📋</span><div><div class="mini-stat-val">{{ stats.total_tasks }}</div><div class="mini-stat-lbl">Total</div></div></div>
+                <div class="mini-stat"><span>⏳</span><div><div class="mini-stat-val">{{ stats.inprogress_tasks }}</div><div class="mini-stat-lbl">En cours</div></div></div>
+                <div class="mini-stat"><span>✅</span><div><div class="mini-stat-val">{{ stats.done_tasks }}</div><div class="mini-stat-lbl">Terminées</div></div></div>
+                {% if stats.overdue_tasks > 0 %}
+                <div class="mini-stat"><span>⚠️</span><div><div class="mini-stat-val" style="color:#ef4444">{{ stats.overdue_tasks }}</div><div class="mini-stat-lbl">En retard</div></div></div>
+                {% endif %}
+            </div>
+
+            {# Toggle #}
+            <div class="view-toggle">
+                <button class="active" id="btnMyTasks">Mes tâches</button>
+                <button id="btnAllTasks">Toutes les tâches</button>
+            </div>
+
+            <div class="kanban-board" id="kanbanBoard">
+                {% set columns = {todo: 'À faire', in_progress: 'En cours', review: 'En révision', done: 'Terminé'} %}
+                {% for colKey, colLabel in columns %}
+                <div class="kanban-col" data-column="{{ colKey }}">
+                    <div class="kanban-col-header">
+                        <span class="kcol-title"><span class="col-dot {{ colKey }}"></span>{{ colLabel }}</span>
+                        <span class="kcol-count" id="count-{{ colKey }}">{{ tasks[colKey]|length }}</span>
+                    </div>
+                    <div class="kanban-tasks" id="col-{{ colKey }}" data-status="{{ colKey }}">
+                        {% for task in tasks[colKey] %}
+                        {% set isMine = task.assigned_to == empId %}
+                        <div class="task-card {{ isMine ? 'mine' : 'not-mine' }}"
+                             draggable="{{ isMine ? 'true' : 'false' }}"
+                             data-task-id="{{ task.id }}"
+                             data-mine="{{ isMine ? '1' : '0' }}"
+                             data-status="{{ task.status }}"
+                             data-priority="{{ task.priority }}">
+                            <div class="task-prio-bar {{ task.priority }}"></div>
+                            <div class="task-inner">
+                                <div class="task-title">{{ task.title }}</div>
+                                <div class="task-meta">
+                                    <span class="badge badge-{{ task.priority }}">
+                                        {% set pL = {low:'Basse',medium:'Moyenne',high:'Haute',critical:'Critique'} %}
+                                        {{ pL[task.priority] ?? task.priority }}
+                                    </span>
+                                    {% if task.assignee_name %}
+                                    <span style="display:flex;align-items:center;gap:.25rem;font-size:.72rem;color:var(--c-muted)">
+                                        <span class="av-xs">{{ task.assignee_name|slice(0,1) }}</span>
+                                        {{ task.assignee_name|split(' ')|first }}
+                                    </span>
+                                    {% endif %}
+                                    {% if task.due_date %}
+                                    <span class="task-due {{ task.due_date < 'now'|date('Y-m-d') and task.status != 'done' ? 'overdue' : '' }}">
+                                        <i class="fas fa-clock"></i> {{ task.due_date|date('d/m') }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% if isMine %}
+                                {# Quick status change #}
+                                <div class="quick-actions">
+                                    {% for s, l in {todo:'À faire', in_progress:'En cours', review:'Révision', done:'Terminé'} %}
+                                    <button class="qa-btn {{ task.status == s ? 'active' : '' }}"
+                                            onclick="quickStatus({{ task.id }}, '{{ s }}', this)">{{ l }}</button>
+                                    {% endfor %}
+                                </div>
+                                {# Log hours #}
+                                <form class="log-hours-form" onsubmit="logHours(event, {{ task.id }})">
+                                    <input type="number" placeholder="h" min="0" value="{{ task.actual_hours ?? 0 }}">
+                                    <button type="submit"><i class="fas fa-save"></i> h</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# ═══════ MILESTONES ═══════ #}
+        <div class="tab-panel" id="tab-milestones">
+            <div class="ms-list">
+                {% if milestones is empty %}
+                <div style="text-align:center;padding:3rem;color:var(--c-muted)">
+                    <i class="fas fa-flag" style="font-size:2rem;opacity:.3;display:block;margin-bottom:.5rem"></i>Aucun jalon
+                </div>
+                {% else %}
+                {% for ms in milestones %}
+                <div class="ms-item">
+                    <div class="ms-icon">{{ ms.status == 'completed' ? '✅' : (ms.target_date < 'now'|date('Y-m-d') ? '⚠️' : '🏁') }}</div>
+                    <div>
+                        <div class="ms-name">{{ ms.name }}</div>
+                        {% if ms.description %}<div class="ms-desc">{{ ms.description }}</div>{% endif %}
+                        <span class="badge badge-{{ ms.status == 'completed' ? 'completed' : (ms.status == 'in_progress' ? 'in_progress' : 'planning') }}" style="margin-top:.35rem">
+                            {{ ms.status == 'completed' ? 'Terminé' : (ms.status == 'in_progress' ? 'En cours' : 'En attente') }}
+                        </span>
+                    </div>
+                    <div class="ms-date">
+                        <div><i class="fas fa-bullseye"></i> {{ ms.target_date|date('d/m/Y') }}</div>
+                        {% if ms.completion_date %}
+                        <div style="color:var(--c-success);margin-top:.2rem"><i class="fas fa-check"></i> {{ ms.completion_date|date('d/m/Y') }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        {# ═══════ TEAM ═══════ #}
+        <div class="tab-panel" id="tab-team">
+            <div class="team-grid">
+                {% for c in collaborators %}{% if c.is_active %}
+                <div class="team-card">
+                    <div class="team-av">{{ c.employee_name|slice(0,1) }}</div>
+                    <div>
+                        <div class="team-name">{{ c.employee_name }}</div>
+                        <div class="team-meta">
+                            {% set rL = {member:'Membre',lead:'Chef de projet',reviewer:'Relecteur',observer:'Observateur'} %}
+                            {{ rL[c.role] ?? c.role }}
+                        </div>
+                        <div class="team-meta">{{ c.done_tasks }}/{{ c.open_tasks + c.done_tasks }} tâches</div>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+
+        {# ═══════ ACTIVITY ═══════ #}
+        <div class="tab-panel" id="tab-activity">
+            <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start">
+                <div class="feed">
+                    {% for upd in updates %}
+                    <div class="feed-item">
+                        <div class="feed-dot {{ upd.update_type == 'task_moved' ? 'amber' : (upd.update_type == 'project_created' ? 'green' : '') }}"></div>
+                        <div>
+                            <div class="feed-content">{{ upd.content }}</div>
+                            <div class="feed-meta">{{ upd.author_name ?? 'Système' }} · {{ upd.created_at|date('d/m/Y H:i') }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="text-align:center;padding:2rem;color:var(--c-muted)">Aucune activité</div>
+                    {% endfor %}
+                </div>
+                <div class="comment-box">
+                    <h6 style="font-weight:600;color:#111827;margin-bottom:.85rem"><i class="fas fa-comment-dots me-2" style="color:#4f46e5"></i>Commentaire</h6>
+                    <form method="POST" action="{{ path('employee_project_comment', {id: project.id}) }}">
+                        <textarea name="content" class="form-control" rows="4" style="font-size:.84rem;border-radius:8px" placeholder="Votre message..."></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">
+                            <i class="fas fa-paper-plane"></i> Publier
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+const PROJECT_ID  = {{ project.id }};
+const EMP_ID      = {{ empId }};
+const MOVE_URL    = id => `/employee/projects/${PROJECT_ID}/tasks/${id}/move`;
+const STATUS_URL  = id => `/employee/projects/${PROJECT_ID}/tasks/${id}/status`;
+const HOURS_URL   = id => `/employee/projects/${PROJECT_ID}/tasks/${id}/hours`;
+
+// ── Tabs ──
+document.querySelectorAll('.proj-tab').forEach(tab => {
+    tab.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.proj-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// ── View toggle: my tasks / all tasks ──
+let showOnlyMine = true;
+document.getElementById('btnMyTasks').addEventListener('click', () => {
+    showOnlyMine = true;
+    document.getElementById('btnMyTasks').classList.add('active');
+    document.getElementById('btnAllTasks').classList.remove('active');
+    applyView();
+});
+document.getElementById('btnAllTasks').addEventListener('click', () => {
+    showOnlyMine = false;
+    document.getElementById('btnAllTasks').classList.add('active');
+    document.getElementById('btnMyTasks').classList.remove('active');
+    applyView();
+});
+function applyView() {
+    document.querySelectorAll('.task-card').forEach(c => {
+        c.style.display = (!showOnlyMine || c.dataset.mine === '1') ? '' : 'none';
+    });
+    updateCounts();
+}
+
+function updateCounts() {
+    ['todo','in_progress','review','done'].forEach(s => {
+        const visible = document.querySelectorAll(`#col-${s} .task-card:not([style*="none"])`).length;
+        document.getElementById(`count-${s}`).textContent = visible;
+    });
+}
+
+applyView();
+
+// ── Drag & drop (only own tasks) ──
+let draggedTask = null;
+
+document.querySelectorAll('.task-card.mine').forEach(card => {
+    card.addEventListener('dragstart', e => {
+        draggedTask = card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.kanban-tasks').forEach(c => c.classList.remove('drag-over'));
+    });
+});
+
+document.querySelectorAll('.kanban-tasks').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', async e => {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        if (!draggedTask || draggedTask.dataset.mine !== '1') return;
+
+        const taskId = draggedTask.dataset.taskId;
+        const newStatus = col.dataset.status;
+        const cards = [...col.querySelectorAll('.task-card:not(.dragging)')];
+        let insertBefore = null;
+        for (const c of cards) {
+            if (e.clientY < c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2) { insertBefore = c; break; }
+        }
+        if (insertBefore) col.insertBefore(draggedTask, insertBefore);
+        else col.appendChild(draggedTask);
+        const newOrder = [...col.querySelectorAll('.task-card')].indexOf(draggedTask);
+        updateCounts();
+
+        // Update quick-action buttons
+        draggedTask.querySelectorAll('.qa-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === statusLabel(newStatus)));
+
+        const fd = new FormData(); fd.append('status', newStatus); fd.append('order', newOrder);
+        await fetch(MOVE_URL(taskId), { method: 'POST', body: fd });
+    });
+});
+
+function statusLabel(s) {
+    return {todo:'À faire', in_progress:'En cours', review:'Révision', done:'Terminé'}[s] ?? s;
+}
+
+// ── Quick status change ──
+async function quickStatus(taskId, newStatus, btn) {
+    const card = btn.closest('.task-card');
+    card.querySelectorAll('.qa-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Move card in DOM
+    const oldCol = card.closest('.kanban-tasks');
+    const newCol = document.getElementById('col-' + newStatus);
+    if (oldCol !== newCol) { newCol.appendChild(card); updateCounts(); }
+
+    const fd = new FormData(); fd.append('status', newStatus);
+    await fetch(STATUS_URL(taskId), { method: 'POST', body: fd });
+}
+
+// ── Log hours ──
+async function logHours(e, taskId) {
+    e.preventDefault();
+    const hours = e.target.querySelector('input').value;
+    const fd = new FormData(); fd.append('hours', hours);
+    const r = await fetch(HOURS_URL(taskId), { method: 'POST', body: fd });
+    if ((await r.json()).success) {
+        const btn = e.target.querySelector('button');
+        btn.innerHTML = '✅';
+        setTimeout(() => btn.innerHTML = '<i class="fas fa-save"></i> h', 1500);
+    }
+}
+</script>
+{% endblock %}

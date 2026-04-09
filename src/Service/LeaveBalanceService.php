@@ -40,18 +40,24 @@ final class LeaveBalanceService
         ];
     }
 
-    public function deductApprovedDays(int $employeeId, int $daysCount): void
+    public function deductApprovedDays(int $employeeId, int $daysCount, bool $allowNegative = false): bool
     {
         try {
             $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
             if (!$balance) {
-                return;
+                return false;
+            }
+
+            if (!$allowNegative && $balance->getAvailableDays() < $daysCount) {
+                return false;
             }
 
             $balance->setAvailableDays($balance->getAvailableDays() - $daysCount);
             $balance->setTotalUsed($balance->getTotalUsed() + $daysCount);
             $this->em->flush();
+            return true;
         } catch (\Throwable) {
+            return false;
         }
     }
 

@@ -27,6 +27,9 @@ final class RhLeaveController extends AbstractController
         $status = $this->normalizeStatus((string) $request->query->get('status', 'ATTENTE'));
         $employeeSearch = trim((string) $request->query->get('employee', ''));
         $leaveTypeSearch = trim((string) $request->query->get('leave_type', ''));
+        $search = trim((string) $request->query->get('q', ''));
+        $sort = $this->normalizeSort((string) $request->query->get('sort', 'request_date'));
+        $direction = $this->normalizeDirection((string) $request->query->get('dir', 'DESC'));
 
         $employees = $employeeRepository->findBy(['rhId' => $rhId], ['firstName' => 'ASC', 'lastName' => 'ASC']);
 
@@ -37,9 +40,9 @@ final class RhLeaveController extends AbstractController
             $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
         }
 
-        return $this->render('DashboardHr/leave_requests.html.twig', [
+        return $this->render('DashboardHr/Congé/leave_requests.html.twig', [
             'user' => $this->getUser(),
-            'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch),
+            'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch, $search, $sort, $direction),
             'balanceMap' => $balanceMap,
             'rhLeaveStats' => $leaveRequestService->getRhDashboardStats($rhId),
             'rhCreditStats' => $leaveRequestService->getRhCreditSummary($rhId),
@@ -47,6 +50,9 @@ final class RhLeaveController extends AbstractController
             'statusFilter' => $status,
             'employeeFilter' => $employeeSearch,
             'leaveTypeFilter' => $leaveTypeSearch,
+            'searchFilter' => $search,
+            'sortFilter' => $sort,
+            'dirFilter' => $direction,
             'employees' => $employees,
         ]);
     }
@@ -62,7 +68,7 @@ final class RhLeaveController extends AbstractController
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment, (string) $this->getUser()?->getUserIdentifier());
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -79,7 +85,7 @@ final class RhLeaveController extends AbstractController
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment, (string) $this->getUser()?->getUserIdentifier());
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -105,5 +111,18 @@ final class RhLeaveController extends AbstractController
         }
 
         return in_array($status, ['ATTENTE', 'ACCEPTE', 'REFUSE'], true) ? $status : 'ATTENTE';
+    }
+
+    private function normalizeSort(string $sort): string
+    {
+        $sort = strtolower(trim($sort));
+        $allowed = ['request_date', 'start_date', 'days', 'employee', 'status'];
+
+        return in_array($sort, $allowed, true) ? $sort : 'request_date';
+    }
+
+    private function normalizeDirection(string $direction): string
+    {
+        return strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
     }
 }

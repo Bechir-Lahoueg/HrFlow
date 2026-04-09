@@ -8,6 +8,7 @@ use App\Service\PublicHolidayService;
 use App\Service\LeaveRequestService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -85,13 +86,53 @@ final class EmployeeLeaveController extends AbstractController
         $endDate = trim((string) $request->request->get('end_date', ''));
         $leaveType = trim((string) $request->request->get('leave_type', ''));
         $reason = trim((string) $request->request->get('reason', ''));
+        $requestMode = strtoupper(trim((string) $request->request->get('request_mode', LeaveRequestService::CATEGORY_NORMAL)));
+        $urgencyLevel = trim((string) $request->request->get('urgency_level', ''));
+        $justificatifText = trim((string) $request->request->get('justificatif_text', ''));
+
+        $attachmentPath = null;
+        if ($requestMode === LeaveRequestService::CATEGORY_EXCEPTION) {
+            $file = $request->files->get('justificatif');
+
+            $hasTextJustification = $justificatifText !== '';
+            $hasFileJustification = $file instanceof UploadedFile;
+            if (!$hasTextJustification && !$hasFileJustification) {
+                $this->addFlash('error', 'Ajoutez un justificatif texte ou un fichier pour la demande exceptionnelle.');
+                return $this->redirectToRoute('app_employee_leave_requests');
+            }
+
+            if ($hasFileJustification) {
+                $validation = $this->validateAttachment($file);
+                if (!$validation['success']) {
+                    $this->addFlash('error', (string) $validation['message']);
+                    return $this->redirectToRoute('app_employee_leave_requests');
+                }
+
+                $upload = $this->storeAttachment($file);
+                if (!$upload['success']) {
+                    $this->addFlash('error', (string) $upload['message']);
+                    return $this->redirectToRoute('app_employee_leave_requests');
+                }
+
+                $attachmentPath = (string) $upload['path'];
+            }
+
+            if ($hasTextJustification) {
+                $reason = $reason !== ''
+                    ? $reason . "\n\nJustificatif texte: " . $justificatifText
+                    : 'Justificatif texte: ' . $justificatifText;
+            }
+        }
 
         $result = $leaveRequestService->submitEmployeeRequest(
             $this->getCurrentEmployeeId(),
             $startDate,
             $endDate,
             $leaveType,
-            $reason
+            $reason,
+            $requestMode,
+            $urgencyLevel,
+            $attachmentPath,
         );
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
@@ -107,5 +148,44 @@ final class EmployeeLeaveController extends AbstractController
         }
 
         return $user->getId();
+    }
+
+    /** @return array{success: bool, message?: string} */
+    private function validateAttachment(mixed $file): array
+    {
+        if (!$file->isValid()) {
+            return ['success' => false, 'message' => 'Le justificatif est invalide.'];
+        }
+
+        if (($file->getSize() ?? 0) > 3 * 1024 * 1024) {
+            return ['success' => false, 'message' => 'Le justificatif depasse 3 Mo.'];
+        }
+
+        $mime = (string) $file->getMimeType();
+        $allowed = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (!in_array($mime, $allowed, true)) {
+            return ['success' => false, 'message' => 'Format non autorise. Utilisez PDF, JPG ou PNG.'];
+        }
+
+        return ['success' => true];
+    }
+
+    /** @return array{success: bool, path?: string, message?: string} */
+    private function storeAttachment(UploadedFile $file): array
+    {
+        try {
+            $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/leave-exceptions';
+            if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+                return ['success' => false, 'message' => 'Impossible de creer le dossier justificatifs.'];
+            }
+
+            $extension = $file->guessExtension() ?: 'bin';
+            $fileName = 'leave_exception_' . uniqid('', true) . '.' . $extension;
+            $file->move($targetDir, $fileName);
+
+            return ['success' => true, 'path' => '/uploads/leave-exceptions/' . $fileName];
+        } catch (\Throwable) {
+            return ['success' => false, 'message' => 'Echec de televersement du justificatif.'];
+        }
     }
 }
