@@ -2,9 +2,10 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\JobOffer;
-use App\Form\JobOfferType;
-use App\Repository\JobOfferRepository;
+use App\Entity\Recrutement\JobOffer;
+use App\Form\Recrutement\JobOfferType;
+use App\Repository\Recrutement\ApplicationRepository;
+use App\Repository\Recrutement\JobOfferRepository;
 use App\Security\DbUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,6 +41,7 @@ final class RecruitmentJobOfferController extends AbstractController
             'jobOffers' => $jobOffers,
             'stats' => $stats,
             'form' => $form->createView(),
+            'deletedJobOffers' => $jobOfferRepository->findDeletedByRh($rh),
         ]);
     }
 
@@ -121,6 +123,77 @@ final class RecruitmentJobOfferController extends AbstractController
 
         $this->addFlash('success', 'Offre d\'emploi supprimée avec succès.');
         return $this->redirectToRoute('app_rh_job_offers');
+    }
+
+    #[Route('/rh/recruitment/job-offers/{id}/restore', name: 'app_rh_job_offers_restore', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function restore(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('restore_job_offer_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_job_offers');
+        }
+
+        $rh = $this->getCurrentRh();
+        // Find including deleted
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$jobOffer) {
+            $this->addFlash('error', 'Offre d\'emploi non trouvée.');
+            return $this->redirectToRoute('app_rh_job_offers');
+        }
+
+        $jobOffer->setIsDeleted(false);
+        $em->flush();
+
+        $this->addFlash('success', 'Offre d\'emploi restaurée avec succès.');
+        return $this->redirectToRoute('app_rh_job_offers');
+    }
+
+    #[Route('/rh/recruitment/job-offers/{id}/delete-permanent', name: 'app_rh_job_offers_delete_permanent', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function deletePermanent(int $id, Request $request, JobOfferRepository $jobOfferRepository, EntityManagerInterface $em): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('permanent_delete_job_offer_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_job_offers');
+        }
+
+        $rh = $this->getCurrentRh();
+        // Find including deleted
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$jobOffer) {
+            $this->addFlash('error', 'Offre d\'emploi non trouvée.');
+            return $this->redirectToRoute('app_rh_job_offers');
+        }
+
+        $em->remove($jobOffer);
+        $em->flush();
+
+        $this->addFlash('success', 'Offre d\'emploi définitivement supprimée.');
+        return $this->redirectToRoute('app_rh_job_offers');
+    }
+
+    #[Route('/rh/recruitment/job-offers/{id}', name: 'app_rh_job_offers_show', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function show(int $id, JobOfferRepository $jobOfferRepository, ApplicationRepository $applicaitonRepository): Response
+    {
+        $rh = $this->getCurrentRh();
+        $jobOffer = $jobOfferRepository->findOneByRhIncludingDeleted($id, $rh);
+
+        if (!$jobOffer) {
+            $this->addFlash('error', 'Offre d\'emploi non trouvée.');
+            return $this->redirectToRoute('app_rh_job_offers');
+        }
+
+        // Get applications for this job offer
+        $applications = $applicaitonRepository->findByJobOffer($jobOffer->getId(), $rh);
+
+        return $this->render('Recrutement/job_offer_details.html.twig', [
+            'jobOffer' => $jobOffer,
+            'applications' => $applications,
+        ]);
     }
 
     private function getCurrentRh(): DbUser
