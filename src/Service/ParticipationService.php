@@ -2,77 +2,64 @@
 
 namespace App\Service;
 
-use App\Entity\Formation\ParticipationFormation;
-use App\Repository\Rh\EmployeeRepository;
-use App\Repository\Formation\ParticipationFormationRepository;
-use App\Repository\Formation\SessionFormationRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 
 final class ParticipationService
 {
-    public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly ParticipationFormationRepository $participationRepository,
-        private readonly SessionFormationRepository $sessionFormationRepository,
-        private readonly EmployeeRepository $employeeRepository,
-        private readonly PresenceService $presenceService,
-    ) {
-    }
+    public function __construct(private readonly Connection $connection) {}
 
-    public function registerEmployee(int $employeeId, int $sessionId): bool
+    public function registerEmployee(int $userId, int $sessionId): bool
     {
         try {
-            if ($this->participationRepository->findByEmployeeAndSession($employeeId, $sessionId)) {
-                return false;
-            }
+            // Vérifier si déjà inscrit
+            $existing = $this->connection->fetchOne(
+                'SELECT id_participation FROM participation_formation WHERE id_utilisateur = :u AND id_session = :s',
+                ['u' => $userId, 's' => $sessionId]
+            );
 
-            $employee = $this->employeeRepository->find($employeeId);
-            $session = $this->sessionFormationRepository->find($sessionId);
-            if (!$employee || !$session) {
-                return false;
-            }
+            if ($existing) return false;
 
-            $participation = new ParticipationFormation();
-            $participation->setEmployee($employee)
-                ->setSession($session)
-                ->setDateInscription(new \DateTime())
-                ->setStatutParticipation('Inscrit')
-                ->setCertificatObtenu(false);
-
-            $this->em->persist($participation);
-            $this->em->flush();
-
+            $this->connection->insert('participation_formation', [
+                'id_utilisateur' => $userId,
+                'id_session' => $sessionId,
+                'date_inscription' => date('Y-m-d'),
+                'statut_participation' => 'Inscrit',
+                'certificat_obtenu' => 0,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
         }
     }
 
-    /** @return ParticipationFormation[] */
-    public function getEmployeeParticipations(int $employeeId): array
+    public function getEmployeeParticipations(int $userId): array
     {
-        return $this->participationRepository->findByEmployee($employeeId);
+        return $this->connection->fetchAllAssociative(
+            'SELECT p.*, f.titre, s.date_debut
+             FROM participation_formation p
+             JOIN session_formation s ON p.id_session = s.id_session
+             JOIN formation f ON s.id_formation = f.id_formation
+             WHERE p.id_utilisateur = :userId',
+            ['userId' => $userId]
+        );
     }
 
-    /** @return ParticipationFormation[] */
     public function getSessionParticipations(int $sessionId): array
     {
-        return $this->participationRepository->findBySession($sessionId);
+        return $this->connection->fetchAllAssociative(
+            'SELECT p.*, e.first_name, e.last_name, e.email
+             FROM participation_formation p
+             JOIN employees e ON p.id_utilisateur = e.id
+             WHERE p.id_session = :sessionId',
+            ['sessionId' => $sessionId]
+        );
     }
 
     public function updateStatus(int $participationId, string $status): void
     {
-        $participation = $this->participationRepository->find($participationId);
-        if (!$participation) {
-            return;
-        }
-
-        $participation->setStatutParticipation($status);
-        $this->em->flush();
-    }
-
-    public function getAttendancePercentage(int $participationId): float
-    {
-        return $this->presenceService->getAttendancePercentage($participationId);
+        $this->connection->update('participation_formation', [
+            'statut_participation' => $status
+        ], ['id_participation' => $participationId]);
     }
 }

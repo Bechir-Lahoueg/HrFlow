@@ -256,26 +256,15 @@
                                         <a href="{{ path('app_rh_interviews', {application_id: app.id}) }}" class="p-1.5 rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors" title="Voir les entretiens">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"/></svg>
                                         </a>
-                                        <a href="{{ path('app_rh_applications_show', {id: app.id}) }}" class="p-1.5 rounded-lg text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-colors" title="Voir détails">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        </a>
                                         <a href="{{ path('app_rh_applications_edit', {id: app.id}) }}" class="p-1.5 rounded-lg text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-colors" title="Modifier">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                                         </a>
-                                        <button type="button" onclick="openModal('deleteApplicationModal{{ app.id }}')" class="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-                                        </button>
-
-                                        {# Soft Delete Confirmation Modal #}
-                                        {% include 'Recrutement/confirmation_modal.html.twig' with {
-                                            modal_id: 'deleteApplicationModal' ~ app.id,
-                                            title: 'Supprimer la candidature',
-                                            message: 'Êtes-vous sûr de vouloir supprimer la candidature de "' ~ app.candidateName ~ '" ? Cette action peut être annulée.',
-                                            confirm_button_text: 'Supprimer',
-                                            confirm_button_class: 'bg-rose-600 hover:bg-rose-700',
-                                            form_action: path('app_rh_applications_delete', {id: app.id}),
-                                            csrf_token: csrf_token('delete_application_' ~ app.id)
-                                        } %}
+                                        <form method="post" action="{{ path('app_rh_applications_delete', {id: app.id}) }}" onsubmit="return confirm('Supprimer cette candidature ?');" class="inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_application_' ~ app.id) }}">
+                                            <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -295,143 +284,7 @@
                     </table>
                 </div>
             </section>
-
-            {# ══════════ Deleted Applications Section ══════════ #}
-            {% if deletedApplications is defined and deletedApplications|length > 0 %}
-            <div class="mt-8">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h9.75m-15 0V6a2.25 2.25 0 012.25-2.25h6a2.25 2.25 0 012.25 2.25v1.5"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-zinc-100">Candidatures supprimées</h3>
-                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">{{ deletedApplications|length }}</span>
-                </div>
-
-                <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-rose-200/60 dark:border-rose-900/30 shadow-sm overflow-hidden">
-                    <div class="divide-y divide-slate-50 dark:divide-zinc-800/50">
-                        {% for app in deletedApplications %}
-                        <div class="p-5 hover:bg-rose-50/30 dark:hover:bg-rose-900/10 transition-colors">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center shrink-0">
-                                    <span class="text-[12px] font-bold text-rose-600">{{ app.candidateName|first|upper }}</span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between gap-4">
-                                        <div>
-                                            <h4 class="text-[14px] font-bold text-slate-800 dark:text-zinc-300 line-through decoration-rose-400/50">{{ app.candidateName }}</h4>
-                                            <p class="text-[12px] text-slate-400 mt-0.5">{{ app.jobOffer.title|default('—') }} • {{ app.department }}</p>
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            {# Restore button #}
-                                            <button type="button" onclick="openModal('restoreApplicationModal{{ app.id }}')" class="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" title="Restaurer">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/>
-                                                </svg>
-                                            </button>
-                                            {# Permanent delete button #}
-                                            <button type="button" onclick="openModal('permanentDeleteApplicationModal{{ app.id }}')" class="p-2 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Supprimer définitivement">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p class="mt-2 text-[12px] text-slate-400">Supprimée le {{ app.updatedAt|default(app.appliedAt)|date('d M Y à H:i') }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {# Restore Confirmation Modal #}
-                        {% include 'Recrutement/confirmation_modal.html.twig' with {
-                            modal_id: 'restoreApplicationModal' ~ app.id,
-                            title: 'Restaurer la candidature',
-                            message: 'Êtes-vous sûr de vouloir restaurer la candidature de "' ~ app.candidateName ~ '" ?',
-                            confirm_button_text: 'Restaurer',
-                            confirm_button_class: 'bg-emerald-600 hover:bg-emerald-700',
-                            form_action: path('app_rh_applications_restore', {id: app.id}),
-                            csrf_token: csrf_token('restore_application_' ~ app.id)
-                        } %}
-
-                        {# Permanent Delete Confirmation Modal #}
-                        {% include 'Recrutement/confirmation_modal.html.twig' with {
-                            modal_id: 'permanentDeleteApplicationModal' ~ app.id,
-                            title: 'Suppression définitive',
-                            message: 'Cette action est irréversible. La candidature de "' ~ app.candidateName ~ '" sera définitivement supprimée.',
-                            confirm_button_text: 'Supprimer définitivement',
-                            confirm_button_class: 'bg-rose-600 hover:bg-rose-700',
-                            form_action: path('app_rh_applications_delete_permanent', {id: app.id}),
-                            csrf_token: csrf_token('permanent_delete_application_' ~ app.id)
-                        } %}
-                        {% endfor %}
-                    </div>
-                </section>
-            </div>
-            {% endif %}
         </main>
     </div>
 </div>
-
-<script>
-// Modal functions - included once for all modals
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    modal.classList.remove('hidden');
-    
-    const backdrop = modal.querySelector('.modal-backdrop');
-    if (backdrop) {
-        setTimeout(() => {
-            backdrop.classList.remove('opacity-0');
-            backdrop.classList.add('opacity-100');
-        }, 10);
-    }
-    
-    const panel = modal.querySelector('.modal-panel');
-    if (panel) {
-        setTimeout(() => {
-            panel.classList.remove('opacity-0', 'scale-95');
-            panel.classList.add('opacity-100', 'scale-100');
-        }, 10);
-    }
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    const backdrop = modal.querySelector('.modal-backdrop');
-    const panel = modal.querySelector('.modal-panel');
-    
-    if (backdrop) {
-        backdrop.classList.remove('opacity-100');
-        backdrop.classList.add('opacity-0');
-    }
-    if (panel) {
-        panel.classList.remove('opacity-100', 'scale-100');
-        panel.classList.add('opacity-0', 'scale-95');
-    }
-    
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 200);
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-backdrop')) {
-        const modal = e.target.closest('[id$="Modal"]');
-        if (modal) closeModal(modal.id);
-    }
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const openModal = document.querySelector('[id$="Modal"]:not(.hidden)');
-        if (openModal) closeModal(openModal.id);
-    }
-});
-</script>
 {% endblock %}

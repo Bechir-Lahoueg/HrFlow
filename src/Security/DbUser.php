@@ -18,7 +18,6 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
         private readonly ?string $lastName = null,
         private readonly ?string $jobTitle = null,
         private readonly ?int $age = null,
-        private readonly ?int $rhId = null,
     ) {
     }
 
@@ -76,11 +75,6 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->age;
     }
 
-    public function getRhId(): ?int
-    {
-        return $this->rhId;
-    }
-
     public function isEmployee(): bool
     {
         return $this->source === 'employees';
@@ -99,7 +93,6 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
             'ADMIN' => 'ROLE_ADMIN',
             'RH' => 'ROLE_RH',
             'EMPLOYEE' => 'ROLE_EMPLOYEE',
-            'CANDIDATE' => 'ROLE_CANDIDATE',
             default => str_starts_with($normalizedRole, 'ROLE_') ? $normalizedRole : 'ROLE_USER',
         };
 

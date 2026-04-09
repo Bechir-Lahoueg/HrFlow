@@ -1,0 +1,386 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Projets — HRFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-dark: #3730a3;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --surface: #ffffff;
+    --bg: #f8fafc;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+    --radius: 12px;
+}
+body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); }
+
+.page-header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+    border-radius: var(--radius);
+    padding: 2rem 2.5rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+.page-header h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+.page-header p { margin: .3rem 0 0; opacity: .8; font-size: .9rem; }
+
+.stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: transform .2s, box-shadow .2s;
+    height: 100%;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card .stat-icon { font-size: 2rem; margin-bottom: .5rem; }
+.stat-card .stat-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+.stat-card .stat-label { font-size: .8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .25rem; }
+
+.filter-bar {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+
+.project-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: all .25s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+.project-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary-light); }
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.project-card.priority-low::before { background: var(--success); }
+.project-card.priority-medium::before { background: var(--warning); }
+.project-card.priority-high::before { background: #f97316; }
+.project-card.priority-critical::before { background: var(--danger); }
+
+.project-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+.project-desc { font-size: .85rem; color: var(--text-muted); flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+.progress-bar-custom {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: .75rem 0;
+}
+.progress-bar-custom .fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    transition: width .5s ease;
+}
+
+.badge-status {
+    font-size: .7rem;
+    padding: .3em .7em;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.badge-planning { background: #ede9fe; color: #6d28d9; }
+.badge-in_progress { background: #d1fae5; color: #065f46; }
+.badge-on_hold { background: #fef3c7; color: #92400e; }
+.badge-completed { background: #dbeafe; color: #1e40af; }
+.badge-cancelled { background: #f3f4f6; color: #6b7280; }
+
+.badge-priority { font-size: .7rem; padding: .3em .7em; border-radius: 999px; font-weight: 600; }
+.badge-low { background: #d1fae5; color: #065f46; }
+.badge-medium { background: #fef3c7; color: #92400e; }
+.badge-high { background: #fee2e2; color: #991b1b; }
+.badge-critical { background: #fce7f3; color: #9d174d; }
+
+.card-actions { display: flex; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; }
+.btn-action {
+    font-size: .75rem;
+    padding: .4em .9em;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all .15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+}
+.btn-view { background: var(--primary); color: white; }
+.btn-view:hover { background: var(--primary-dark); color: white; }
+.btn-edit { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+.btn-edit:hover { background: #e2e8f0; }
+.btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.btn-danger:hover { background: var(--danger); color: white; }
+
+.card-meta { display: flex; gap: 1rem; font-size: .78rem; color: var(--text-muted); margin-top: .5rem; flex-wrap: wrap; }
+.card-meta span { display: flex; align-items: center; gap: .3rem; }
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+.empty-state .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: .65rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    box-shadow: 0 4px 15px rgba(79,70,229,.3);
+}
+.btn-primary-custom:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,.4); color: white; }
+
+.form-control, .form-select {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .875rem;
+    padding: .5rem .75rem;
+    transition: border-color .15s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+}
+
+.overdue-chip {
+    background: #fef2f2;
+    color: var(--danger);
+    font-size: .7rem;
+    padding: .2em .6em;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid #fecaca;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+    {# Flash messages #}
+    {% for type, messages in app.flashes %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 shadow-sm mb-3" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# HEADER #}
+    <div class="page-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1>🗂️ Gestion des Projets</h1>
+                <p>Pilotez vos projets, équipes et objectifs en temps réel</p>
+            </div>
+            <a href="{{ path('rh_project_new') }}" class="btn-primary-custom">
+                ＋ Nouveau Projet
+            </a>
+        </div>
+    </div>
+
+    {# STATS CARDS #}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value text-primary">{{ stats.total_projects }}</div>
+                <div class="stat-label">Total Projets</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-value" style="color:var(--success)">{{ stats.active_projects }}</div>
+                <div class="stat-label">En cours</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" style="color:var(--info)">{{ stats.completed_projects }}</div>
+                <div class="stat-label">Terminés</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" style="color:var(--warning)">{{ stats.completion_rate }}%</div>
+                <div class="stat-label">Taux global</div>
+            </div>
+        </div>
+    </div>
+
+    {# FILTRES #}
+    <div class="filter-bar">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" style="font-size:.8rem">🔍 Recherche</label>
+                <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Nom ou description...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" style="font-size:.8rem">Statut</label>
+                <select name="status" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if statusFilter == s %}selected{% endif %}>{{ s|replace({'_': ' '})|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" style="font-size:.8rem">Priorité</label>
+                <select name="priority" class="form-select">
+                    <option value="">Toutes les priorités</option>
+                    {% for p in priorities %}
+                    <option value="{{ p }}" {% if priorityFilter == p %}selected{% endif %}>{{ p|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">Filtrer</button>
+                <a href="{{ path('rh_project_index') }}" class="btn btn-outline-secondary">✕</a>
+            </div>
+        </form>
+    </div>
+
+    {# GRILLE DES PROJETS #}
+    {% if projects is empty %}
+    <div class="empty-state">
+        <span class="icon">📭</span>
+        <h5 class="fw-bold">Aucun projet trouvé</h5>
+        <p>Créez votre premier projet pour commencer.</p>
+        <a href="{{ path('rh_project_new') }}" class="btn-primary-custom">＋ Nouveau Projet</a>
+    </div>
+    {% else %}
+    <div class="row g-3">
+        {% for project in projects %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="project-card priority-{{ project.priority }}">
+
+                {# Header badges #}
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge-status badge-{{ project.status }}">
+                        {% if project.status == 'planning' %}📋
+                        {% elseif project.status == 'in_progress' %}🟢
+                        {% elseif project.status == 'on_hold' %}🟡
+                        {% elseif project.status == 'completed' %}✅
+                        {% else %}❌{% endif %}
+                        {{ project.status|replace({'_': ' '})|capitalize }}
+                    </span>
+                    <div class="d-flex gap-1 align-items-center">
+                        <span class="badge-priority badge-{{ project.priority }}">{{ project.priority|upper }}</span>
+                        {% if project.is_overdue ?? false %}
+                        <span class="overdue-chip">⚠️ Retard</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="project-title">{{ project.name }}</div>
+                <div class="project-desc">{{ project.description ?? 'Aucune description.' }}</div>
+
+                {# Barre de progression #}
+                <div class="progress-bar-custom">
+                    <div class="fill" style="width: {{ project.completion_rate ?? 0 }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:.75rem; color:var(--text-muted);">
+                    <span>Avancement</span>
+                    <span class="fw-bold">{{ project.completion_rate ?? 0 }}%</span>
+                </div>
+
+                {# Meta infos #}
+                <div class="card-meta">
+                    <span>👥 {{ project.team_count ?? 0 }} membres</span>
+                    <span>✅ {{ project.tasks_completed ?? 0 }}/{{ project.tasks_count ?? 0 }} tâches</span>
+                    {% if project.end_date %}
+                    <span>📅 {{ project.end_date|date('d/m/Y') }}</span>
+                    {% endif %}
+                </div>
+
+                {# Actions #}
+                <div class="card-actions">
+                    <a href="{{ path('rh_project_show', {id: project.id}) }}" class="btn-action btn-view">
+                        👁️ Détails
+                    </a>
+                    <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="btn-action btn-edit">
+                        ✏️ Modifier
+                    </a>
+                    <form action="{{ path('rh_project_delete', {id: project.id}) }}" method="POST" class="d-inline"
+                          onsubmit="return confirm('Supprimer ce projet et toutes ses données ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                        <button type="submit" class="btn-action btn-danger">🗑️</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+        </main>
+
+    </div>
+</div>
+{% endblock %}
