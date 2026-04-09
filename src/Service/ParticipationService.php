@@ -60,6 +60,12 @@ final class ParticipationService
         return $this->participationRepository->findBySession($sessionId);
     }
 
+    /** @return ParticipationFormation[] */
+    public function getRhParticipations(int $rhId): array
+    {
+        return $this->participationRepository->findByRhId($rhId);
+    }
+
     public function updateStatus(int $participationId, string $status): void
     {
         $participation = $this->participationRepository->find($participationId);
