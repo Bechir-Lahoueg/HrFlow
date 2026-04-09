@@ -61,9 +61,9 @@ final class ParticipationService
     }
 
     /** @return ParticipationFormation[] */
-    public function getRhParticipations(int $rhId): array
+    public function getRhParticipations(int $rhId, string $status = ''): array
     {
-        return $this->participationRepository->findByRhId($rhId);
+        return $this->participationRepository->findByRhId($rhId, $status);
     }
 
     public function updateStatus(int $participationId, string $status): void
