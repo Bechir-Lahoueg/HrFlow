@@ -40,7 +40,7 @@ final class RhLeaveController extends AbstractController
             $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
         }
 
-        return $this->render('DashboardHr/leave_requests.html.twig', [
+        return $this->render('DashboardHr/Congé/leave_requests.html.twig', [
             'user' => $this->getUser(),
             'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch, $search, $sort, $direction),
             'balanceMap' => $balanceMap,
@@ -68,7 +68,7 @@ final class RhLeaveController extends AbstractController
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment, (string) $this->getUser()?->getUserIdentifier());
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -85,7 +85,7 @@ final class RhLeaveController extends AbstractController
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment, (string) $this->getUser()?->getUserIdentifier());
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
