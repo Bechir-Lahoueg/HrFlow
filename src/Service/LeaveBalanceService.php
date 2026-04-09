@@ -100,6 +100,42 @@ final class LeaveBalanceService
         }
     }
 
+    public function grantManualCreditByRh(int $rhId, int $employeeId, float $creditDays): array
+    {
+        if ($creditDays <= 0) {
+            return ['success' => false, 'message' => 'Le credit doit etre superieur a 0 jour.'];
+        }
+
+        try {
+            $employee = $this->employeeRepository->find($employeeId);
+
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                return ['success' => false, 'message' => 'Employe introuvable dans votre equipe.'];
+            }
+
+            $this->accrueIfNeeded($employeeId);
+
+            $balance = $this->leaveBalanceRepository->findByEmployee($employeeId);
+            if (!$balance) {
+                return ['success' => false, 'message' => 'Solde conge introuvable pour cet employe.'];
+            }
+
+            $creditDays = round($creditDays, 2);
+
+            $balance->setAvailableDays($balance->getAvailableDays() + $creditDays);
+            $balance->setTotalAccrued($balance->getTotalAccrued() + $creditDays);
+
+            $this->em->flush();
+
+            return [
+                'success' => true,
+                'message' => sprintf('%.2f jour(s) ajoute(s) au solde de %s.', $creditDays, $employee->getFullName()),
+            ];
+        } catch (\Throwable) {
+            return ['success' => false, 'message' => 'Impossible d\'ajouter le credit pour le moment.'];
+        }
+    }
+
     private function accrueIfNeeded(int $employeeId): void
     {
         $employee = $this->employeeRepository->find($employeeId);
