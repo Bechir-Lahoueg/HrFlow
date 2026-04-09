@@ -41,9 +41,28 @@ final class RhEmployeesController extends AbstractController
         } catch (\Throwable) {
         }
 
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $employees = $employeeRepository->findBy(['rhId' => $rhId], ['id' => 'DESC']);
+        $totalEmployees = count($employees);
+
+        if ($searchTerm !== '') {
+            $needle = mb_strtolower($searchTerm);
+            $employees = array_values(array_filter(
+                $employees,
+                static function (Employee $employee) use ($needle): bool {
+                    return str_contains(mb_strtolower($employee->getFirstName()), $needle)
+                        || str_contains(mb_strtolower($employee->getLastName()), $needle)
+                        || str_contains(mb_strtolower($employee->getEmail()), $needle)
+                        || str_contains(mb_strtolower($employee->getJobTitle()), $needle);
+                }
+            ));
+        }
+
         return $this->render('DashboardHr/employees.html.twig', [
             'user' => $this->getUser(),
-            'employees' => $employeeRepository->findBy(['rhId' => $rhId], ['id' => 'DESC']),
+            'employees' => $employees,
+            'searchTerm' => $searchTerm,
+            'totalEmployees' => $totalEmployees,
             'pendingLeaveCount' => $pendingLeaveCount,
         ]);
     }

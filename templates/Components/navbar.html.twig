@@ -8,9 +8,12 @@
         {# Desktop nav #}
         <nav class="hidden md:flex items-center gap-1">
             <a href="{{ path('app_home') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Accueil</a>
-            <a href="#features" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">A propos</a>
+            <a href="{{ path('app_about') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">A propos</a>
             <a href="{{ path('app_job_offers') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Offres d'emploi</a>
-            <a href="#contact" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Contact</a>
+            {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+                <a href="{{ path('app_subscriptions') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Tarification</a>
+            {% endif %}
+            <a href="{{ path('app_contact') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Contact</a>
         </nav>
 
         {# Desktop CTA #}
@@ -34,9 +37,8 @@
                     </a>
                 {% endif %}
             {% else %}
-                <a href="{{ path('app_login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">Sign in</a>
-                <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-lg">
-                    Sign up for free
+                <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">
+                    Vous avez deja une solution HrFlow ?
                 </a>
             {% endif %}
         </div>
@@ -53,9 +55,12 @@
     <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-slate-100 shadow-xl">
         <div class="px-6 py-4 space-y-1">
             <a href="{{ path('app_home') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Accueil</a>
-            <a href="#features" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">A propos</a>
+            <a href="{{ path('app_about') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">A propos</a>
             <a href="{{ path('app_job_offers') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Offres d'emploi</a>
-            <a href="#contact" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Contact</a>
+            {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+                <a href="{{ path('app_subscriptions') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Tarification</a>
+            {% endif %}
+            <a href="{{ path('app_contact') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Contact</a>
             <div class="pt-3 mt-3 border-t border-slate-100 space-y-2">
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     {% if is_granted('ROLE_CANDIDATE') %}
@@ -68,8 +73,7 @@
                         <a href="{{ path('app_welcome') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
                     {% endif %}
                 {% else %}
-                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Sign in</a>
-                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Sign up for free</a>
+                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Vous avez deja une solution HrFlow ?</a>
                 {% endif %}
             </div>
         </div>

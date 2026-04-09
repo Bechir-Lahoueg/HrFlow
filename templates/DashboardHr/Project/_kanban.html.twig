@@ -1,0 +1,75 @@
+<div class="kanban-board d-flex gap-4 overflow-auto pb-3">
+
+{% set columns = {
+    'todo':'À faire',
+    'inprogress':'En cours',
+    'review':'Review',
+    'done':'Terminé'
+} %}
+
+{% for status, label in columns %}
+
+<div class="kanban-column flex-shrink-0" style="width:300px">
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-light fw-bold">
+            {{ label }}
+        </div>
+
+        <div class="card-body kanban-column-body"
+             data-status="{{ status }}"
+             style="min-height:300px">
+
+            {% for task in tasks %}
+
+                {% if task.status|default('') == status %}
+
+                <div class="card mb-3 shadow-sm task-card"
+                     data-id="{{ task.id }}">
+
+                    <div class="card-body p-2">
+
+                        <div class="fw-semibold mb-1">
+                            {{ task.title }}
+                        </div>
+
+                        {% if task.description %}
+                        <div class="text-muted small mb-2">
+                            {{ task.description|slice(0,80) }}
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between small">
+
+                            {% if task.priority %}
+                            <span class="badge bg-secondary">
+                                {{ task.priority }}
+                            </span>
+                            {% endif %}
+
+                            {% if task.due_date %}
+                            <span class="text-danger">
+                                {{ task.due_date|date('d M') }}
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>

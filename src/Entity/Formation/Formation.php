@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+// IMPORTANT : On importe le validateur Symfony
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
 #[ORM\Table(name: 'formation')]
@@ -19,18 +21,29 @@ class Formation
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre de la formation est obligatoire.")]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: "Le titre doit faire au moins {{ limit }} caractères."
+    )]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: "Veuillez fournir une description de la formation.")]
     private ?string $description = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Veuillez choisir une catégorie.")]
     private ?string $type = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "La durée est obligatoire.")]
+    #[Assert\Positive(message: "La durée doit être un nombre positif.")]
     private ?int $duree = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "L'organisme formateur est obligatoire.")]
     private ?string $organisme = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

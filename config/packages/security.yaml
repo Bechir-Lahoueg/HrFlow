@@ -33,6 +33,9 @@ security:
         - { path: ^/candidat/connexion, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/offres-emploi, roles: PUBLIC_ACCESS }
+        - { path: ^/abonnements, roles: PUBLIC_ACCESS }
+        - { path: ^/a-propos, roles: PUBLIC_ACCESS }
+        - { path: ^/contact, roles: PUBLIC_ACCESS }
         - { path: ^/candidat, roles: ROLE_CANDIDATE }
         - { path: ^/welcome/admin, roles: ROLE_ADMIN }
         - { path: ^/welcome/rh, roles: ROLE_RH }
