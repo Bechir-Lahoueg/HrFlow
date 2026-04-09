@@ -1,0 +1,827 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.name }} — HRFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-dark: #3730a3;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --surface: #ffffff;
+    --bg: #f8fafc;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
+    --radius: 12px;
+}
+body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+.project-hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, var(--primary) 60%, var(--primary-light) 100%);
+    border-radius: var(--radius);
+    padding: 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-lg);
+}
+.project-hero h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: .3rem; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: .85rem; opacity: .9; margin-top: .75rem; }
+.hero-meta span { display: flex; align-items: center; gap: .4rem; }
+
+.tab-nav {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: .5rem;
+    display: flex;
+    gap: .25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.tab-btn {
+    padding: .6rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: .875rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.tab-btn.active, .tab-btn:hover { background: var(--primary); color: white; }
+
+.tab-content-panel { display: none; }
+.tab-content-panel.active { display: block; }
+
+.card-panel {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 1rem;
+}
+.section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+
+/* Progress */
+.progress-hero { height: 10px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
+.progress-hero .fill { height: 100%; background: white; border-radius: 999px; transition: width .5s ease; }
+
+/* Kanban */
+.kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; min-height: 500px; }
+@media (max-width: 1200px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .kanban-board { grid-template-columns: 1fr; } }
+
+.kanban-col {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 1rem;
+    border: 2px dashed var(--border);
+    min-height: 400px;
+    transition: border-color .2s, background .2s;
+}
+.kanban-col.drag-over { border-color: var(--primary); background: #ede9fe; }
+.kanban-col-header { font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: .75rem; display: flex; justify-content: space-between; align-items: center; }
+.col-todo .kanban-col-header { color: #6b7280; }
+.col-in_progress .kanban-col-header { color: #d97706; }
+.col-review .kanban-col-header { color: #7c3aed; }
+.col-done .kanban-col-header { color: #059669; }
+
+.task-card {
+    background: white;
+    border-radius: 10px;
+    padding: .9rem;
+    margin-bottom: .6rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    cursor: grab;
+    transition: all .2s;
+    position: relative;
+}
+.task-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.task-card:active { cursor: grabbing; }
+.task-card .task-title { font-weight: 600; font-size: .875rem; margin-bottom: .4rem; }
+.task-card .task-assignee { font-size: .75rem; color: var(--text-muted); }
+.task-card .task-due { font-size: .72rem; margin-top: .4rem; }
+.task-card .task-due.overdue { color: var(--danger); font-weight: 600; }
+.task-priority-indicator {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+}
+.task-priority-low .task-priority-indicator { background: var(--success); }
+.task-priority-medium .task-priority-indicator { background: var(--warning); }
+.task-priority-high .task-priority-indicator { background: var(--danger); }
+
+.col-count-badge {
+    background: var(--border);
+    color: var(--text-muted);
+    font-size: .7rem;
+    padding: .2em .6em;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* Team */
+.team-member-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: .5rem;
+    background: var(--bg);
+    transition: all .2s;
+}
+.team-member-row:hover { background: #ede9fe; border-color: var(--primary-light); }
+.member-avatar {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: .9rem;
+    flex-shrink: 0;
+}
+.member-hours-bar { height: 4px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: .3rem; }
+.member-hours-bar .fill { height: 100%; background: linear-gradient(90deg, var(--success), #6ee7b7); border-radius: 999px; }
+
+/* Milestones */
+.milestone-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: .75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: .5rem;
+    background: var(--bg);
+}
+.milestone-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: .3rem; }
+.milestone-dot.pending { background: #9ca3af; }
+.milestone-dot.in_progress { background: var(--warning); }
+.milestone-dot.completed { background: var(--success); }
+.milestone-dot.delayed { background: var(--danger); }
+
+/* Activity */
+.activity-item {
+    display: flex;
+    gap: .75rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.activity-icon { width: 32px; height: 32px; border-radius: 50%; background: #ede9fe; display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+
+/* Analytics */
+.health-score-circle {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 900;
+    border: 6px solid;
+    margin: 0 auto 1rem;
+}
+.health-excellent { border-color: var(--success); color: var(--success); }
+.health-good { border-color: var(--warning); color: var(--warning); }
+.health-warning { border-color: #f97316; color: #f97316; }
+.health-critical { border-color: var(--danger); color: var(--danger); }
+
+.risk-card { border-radius: 10px; padding: 1rem; margin-bottom: .75rem; border: 2px solid; }
+.risk-medium { background: #fffbeb; border-color: #fde68a; }
+.risk-high { background: #fef2f2; border-color: #fecaca; }
+.risk-critical { background: #fff1f2; border-color: #fecdd3; }
+.risk-low { background: #f0fdf4; border-color: #bbf7d0; }
+
+.modal-custom .modal-content { border-radius: var(--radius); border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+.modal-custom .modal-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius) var(--radius) 0 0; }
+.form-label { font-weight: 600; font-size: .825rem; color: var(--text); margin-bottom: .35rem; }
+.form-control, .form-select { border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; font-size: .875rem; }
+.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+
+.btn-prim { background: var(--primary); color: white; border: none; padding: .6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all .2s; }
+.btn-prim:hover { background: var(--primary-dark); transform: translateY(-1px); color: white; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+    {% for type, messages in app.flashes %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 shadow-sm mb-3">
+            {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# HERO #}
+    <div class="project-hero">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div style="flex:1">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <a href="{{ path('rh_project_index') }}" style="color:rgba(255,255,255,.7); text-decoration:none; font-size:.85rem;">← Projets</a>
+                </div>
+                <h1>
+                    {% if project.status == 'in_progress' %}🟢
+                    {% elseif project.status == 'completed' %}✅
+                    {% elseif project.status == 'on_hold' %}🟡
+                    {% elseif project.status == 'cancelled' %}❌
+                    {% else %}📋{% endif %}
+                    {{ project.name }}
+                </h1>
+                <div class="hero-meta">
+                    <span>📅 {{ project.start_date|date('d/m/Y') }} → {{ project.end_date|date('d/m/Y') }}</span>
+                    {% if project.budget %}<span>💰 {{ project.budget|number_format(0, ',', ' ') }} €</span>{% endif %}
+                    {% if project.estimated_hours %}<span>⏱️ {{ project.actual_hours ?? 0 }}h / {{ project.estimated_hours }}h</span>{% endif %}
+                </div>
+                <div class="mt-2" style="max-width:400px">
+                    <div style="font-size:.8rem; opacity:.8; margin-bottom:.3rem">Avancement: {{ project.completion_rate ?? 0 }}%</div>
+                    <div class="progress-hero"><div class="fill" style="width:{{ project.completion_rate ?? 0 }}%"></div></div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="btn btn-light btn-sm fw-semibold">✏️ Modifier</a>
+                <form action="{{ path('rh_project_delete', {id: project.id}) }}" method="POST"
+                      onsubmit="return confirm('Supprimer ce projet ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                    <button class="btn btn-danger btn-sm fw-semibold">🗑️ Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# TABS #}
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('kanban', this)">📋 Kanban</button>
+        <button class="tab-btn" onclick="switchTab('team', this)">👥 Équipe ({{ team|length }})</button>
+        <button class="tab-btn" onclick="switchTab('milestones', this)">🎯 Jalons ({{ milestones|length }})</button>
+        <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
+        <button class="tab-btn" onclick="switchTab('activity', this)">📝 Activités</button>
+    </div>
+
+    {# ── TAB : KANBAN ────────────────────────────── #}
+    <div id="tab-kanban" class="tab-content-panel active">
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title">📋 Tableau Kanban
+                    <small class="text-muted fw-normal" style="font-size:.8rem">— {{ analytics.completed_tasks }}/{{ analytics.total_tasks }} tâches terminées</small>
+                </div>
+                <button class="btn-prim" onclick="openModal('modalNewTask')">＋ Nouvelle tâche</button>
+            </div>
+
+            <div class="kanban-board">
+                {% set columns = {
+                    'todo': {label: '📋 À FAIRE', class: 'col-todo'},
+                    'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
+                    'review': {label: '👁️ REVIEW', class: 'col-review'},
+                    'done': {label: '✅ TERMINÉ', class: 'col-done'}
+                } %}
+                {% for statusKey, col in columns %}
+                <div class="kanban-col {{ col.class }}" id="col-{{ statusKey }}"
+                     ondragover="handleDragOver(event)"
+                     ondrop="handleDrop(event, '{{ statusKey }}')"
+                     ondragleave="handleDragLeave(event)">
+                    <div class="kanban-col-header">
+                        <span>{{ col.label }}</span>
+                        <span class="col-count-badge">{{ tasksByStatus[statusKey]|length }}</span>
+                    </div>
+                    {% for task in tasksByStatus[statusKey] %}
+                    <div class="task-card task-priority-{{ task.priority }}"
+                         draggable="true"
+                         ondragstart="handleDragStart(event, {{ task.id }})"
+                         id="task-{{ task.id }}">
+                        <div class="task-priority-indicator"></div>
+                        <div class="ps-1">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-assignee">
+                                {% if task.assigned_to_name %}👤 {{ task.assigned_to_name }}
+                                {% else %}<span style="color:#ef4444">⚠️ Non assigné</span>{% endif %}
+                            </div>
+                            {% if task.due_date %}
+                            <div class="task-due {% if task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}overdue{% endif %}">
+                                📅 {{ task.due_date|date('d/m/Y') }}
+                            </div>
+                            {% endif %}
+                            <div class="mt-2 d-flex gap-1 flex-wrap">
+                                <button onclick="openEditTask({{ task|json_encode|e('html_attr') }})"
+                                        class="btn btn-outline-secondary btn-sm" style="font-size:.7rem; padding:.2em .6em;">✏️</button>
+                                <form action="{{ path('rh_project_task_delete', {id: project.id, taskId: task.id}) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Supprimer cette tâche ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('task-delete' ~ task.id) }}">
+                                    <button class="btn btn-outline-danger btn-sm" style="font-size:.7rem; padding:.2em .6em;">🗑️</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ── TAB : ÉQUIPE ────────────────────────────── #}
+    <div id="tab-team" class="tab-content-panel" id="team">
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title">👥 Équipe du Projet</div>
+                <button class="btn-prim" onclick="openModal('modalAddMember')">＋ Ajouter un membre</button>
+            </div>
+
+            {% if team is empty %}
+            <div class="text-center py-4 text-muted">
+                <div style="font-size:2.5rem">👤</div>
+                <p>Aucun membre dans l'équipe pour l'instant.</p>
+            </div>
+            {% else %}
+            {% for member in team %}
+            <div class="team-member-row">
+                <div class="member-avatar">{{ member.username|first|upper }}</div>
+                <div style="flex:1">
+                    <div class="fw-semibold">{{ member.username }}</div>
+                    <div style="font-size:.8rem; color:var(--text-muted)">{{ member.role ?? 'Membre' }} · Depuis {{ member.joined_date|date('d/m/Y') }}</div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span style="font-size:.75rem; color:var(--text-muted)">
+                            {{ member.worked_hours ?? 0 }}h / {{ member.assigned_hours ?? '∞' }}h
+                        </span>
+                        {% if member.assigned_hours %}
+                        <div class="member-hours-bar" style="width:80px">
+                            <div class="fill" style="width:{{ min(((member.worked_hours ?? 0) / member.assigned_hours * 100)|round, 100) }}%"></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <form action="{{ path('rh_project_team_remove', {id: project.id, collabId: member.id}) }}" method="POST"
+                      onsubmit="return confirm('Retirer {{ member.username }} du projet ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('collab-remove' ~ member.id) }}">
+                    <button class="btn btn-sm btn-outline-danger">Retirer</button>
+                </form>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── TAB : JALONS ────────────────────────────── #}
+    <div id="tab-milestones" class="tab-content-panel">
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title">🎯 Jalons ({{ milestones|length }})</div>
+                <button class="btn-prim" onclick="openModal('modalNewMilestone')">＋ Nouveau Jalon</button>
+            </div>
+            <div class="row g-2 mb-3 text-center">
+                <div class="col-4"><div class="bg-light rounded p-2"><div class="fw-bold text-success">{{ milestoneStats.completed_milestones }}</div><div style="font-size:.75rem" class="text-muted">Terminés</div></div></div>
+                <div class="col-4"><div class="bg-light rounded p-2"><div class="fw-bold text-primary">{{ milestoneStats.total_milestones }}</div><div style="font-size:.75rem" class="text-muted">Total</div></div></div>
+                <div class="col-4"><div class="bg-light rounded p-2"><div class="fw-bold text-danger">{{ milestoneStats.overdue_milestones }}</div><div style="font-size:.75rem" class="text-muted">En retard</div></div></div>
+            </div>
+            {% if milestones is empty %}
+            <div class="text-center py-4 text-muted"><div style="font-size:2.5rem">🎯</div><p>Aucun jalon défini.</p></div>
+            {% endif %}
+            {% for milestone in milestones %}
+            {% set overdue = milestone.status != 'completed' and milestone.target_date < 'now'|date('Y-m-d') %}
+            <div class="milestone-item {% if overdue %}border-danger{% endif %}">
+                <div class="milestone-dot {{ milestone.status }}"></div>
+                <div style="flex:1">
+                    <div class="fw-semibold">{{ milestone.name }}</div>
+                    <div style="font-size:.8rem; color:var(--text-muted)">{{ milestone.description }}</div>
+                    <div class="d-flex gap-2 align-items-center mt-1 flex-wrap">
+                        <span style="font-size:.75rem">📅 {{ milestone.target_date|date('d/m/Y') }}</span>
+                        <span class="badge bg-{{ milestone.status == 'completed' ? 'success' : (overdue ? 'danger' : 'secondary') }} text-white" style="font-size:.7rem">
+                            {{ milestone.status|replace({'_': ' '})|capitalize }}
+                        </span>
+                        <div style="font-size:.75rem; color:var(--text-muted)">{{ milestone.completion_rate ?? 0 }}%</div>
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-1">
+                    {% if milestone.status != 'completed' %}
+                    <form action="{{ path('rh_project_milestone_complete', {id: project.id, milestoneId: milestone.id}) }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token('ms-complete' ~ milestone.id) }}">
+                        <button class="btn btn-sm btn-success" style="font-size:.72rem; white-space:nowrap">✅ Terminer</button>
+                    </form>
+                    {% endif %}
+                    <button onclick="openEditMilestone({{ milestone|json_encode|e('html_attr') }})"
+                            class="btn btn-sm btn-outline-secondary" style="font-size:.72rem">✏️</button>
+                    <form action="{{ path('rh_project_milestone_delete', {id: project.id, milestoneId: milestone.id}) }}" method="POST"
+                          onsubmit="return confirm('Supprimer ce jalon ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('ms-delete' ~ milestone.id) }}">
+                        <button class="btn btn-sm btn-outline-danger" style="font-size:.72rem">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ── TAB : ANALYTICS ─────────────────────────── #}
+    <div id="tab-analytics" class="tab-content-panel">
+        <div class="row g-3">
+            {# Santé #}
+            <div class="col-md-4">
+                <div class="card-panel text-center">
+                    <div class="section-title justify-content-center">💚 Santé du Projet</div>
+                    <div class="health-score-circle health-{{ analytics.health_status }}">
+                        {{ analytics.health_score }}
+                        <div style="font-size:.6rem; font-weight:500">/ 100</div>
+                    </div>
+                    {% if analytics.criticals is not empty %}
+                    {% for c in analytics.criticals %}
+                    <div class="alert alert-danger py-1 px-2 text-start" style="font-size:.8rem">{{ c }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% if analytics.warnings is not empty %}
+                    {% for w in analytics.warnings %}
+                    <div class="alert alert-warning py-1 px-2 text-start" style="font-size:.8rem">{{ w }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% if analytics.criticals is empty and analytics.warnings is empty %}
+                    <div class="alert alert-success py-2">✅ Aucune alerte — projet en bonne santé</div>
+                    {% endif %}
+                </div>
+            </div>
+            {# Prédiction #}
+            <div class="col-md-4">
+                <div class="card-panel">
+                    <div class="section-title">🔮 Prédiction de Fin</div>
+                    {% if analytics.prediction %}
+                    {% set pred = analytics.prediction %}
+                    <div class="mb-2">
+                        <span class="badge bg-{{ pred.status == 'on_track' ? 'success' : (pred.status == 'early' ? 'info' : 'danger') }} text-white">
+                            {{ pred.status == 'on_track' ? '✅ Dans les temps' : (pred.status == 'early' ? '🟢 En avance' : '🔴 En retard') }}
+                        </span>
+                    </div>
+                    <table class="table table-sm" style="font-size:.83rem">
+                        <tr><td class="text-muted">Vélocité</td><td class="fw-semibold">{{ pred.velocity }} tâches/jour</td></tr>
+                        <tr><td class="text-muted">Tâches restantes</td><td class="fw-semibold">{{ pred.remaining_tasks }}</td></tr>
+                        <tr><td class="text-muted">Jours nécessaires</td><td class="fw-semibold">{{ pred.days_needed }}</td></tr>
+                        <tr><td class="text-muted">Date prédite</td><td class="fw-semibold">{{ pred.predicted_date|date('d/m/Y') }}</td></tr>
+                        <tr><td class="text-muted">Date planifiée</td><td class="fw-semibold">{{ project.end_date|date('d/m/Y') }}</td></tr>
+                        <tr>
+                            <td class="text-muted">Écart</td>
+                            <td class="fw-semibold {{ pred.days_diff >= 0 ? 'text-success' : 'text-danger' }}">
+                                {{ pred.days_diff >= 0 ? '+' : '' }}{{ pred.days_diff }} jours
+                            </td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <div class="text-muted text-center py-3">
+                        <div style="font-size:2rem">⚪</div>
+                        <p style="font-size:.85rem">Pas assez de données.<br>Terminez quelques tâches pour activer les prédictions.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {# Risques #}
+            <div class="col-md-4">
+                <div class="card-panel">
+                    <div class="section-title">⚠️ Risques Identifiés</div>
+                    {% if analytics.risks is empty %}
+                    <div class="text-center py-3">
+                        <div style="font-size:2rem">✅</div>
+                        <p class="text-success fw-semibold">Aucun risque détecté</p>
+                    </div>
+                    {% endif %}
+                    {% for risk in analytics.risks %}
+                    <div class="risk-card risk-{{ risk.severity }}">
+                        <div class="fw-bold" style="font-size:.875rem">
+                            {{ risk.severity == 'high' ? '🟠' : (risk.severity == 'critical' ? '🔴' : '🟡') }}
+                            {{ risk.title }}
+                        </div>
+                        <div style="font-size:.8rem; margin:.3rem 0">{{ risk.description }}</div>
+                        <div style="font-size:.77rem; color:#059669; font-style:italic">💡 {{ risk.recommendation }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {# Stats tâches #}
+            <div class="col-12">
+                <div class="card-panel">
+                    <div class="section-title">📊 Métriques des Tâches</div>
+                    <div class="row g-3 text-center">
+                        <div class="col-6 col-md-3"><div class="bg-primary bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-primary">{{ analytics.total_tasks }}</div><div class="text-muted" style="font-size:.8rem">Total</div></div></div>
+                        <div class="col-6 col-md-3"><div class="bg-success bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-success">{{ analytics.completed_tasks }}</div><div class="text-muted" style="font-size:.8rem">Terminées</div></div></div>
+                        <div class="col-6 col-md-3"><div class="bg-danger bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-danger">{{ analytics.overdue_tasks }}</div><div class="text-muted" style="font-size:.8rem">En retard</div></div></div>
+                        <div class="col-6 col-md-3"><div class="bg-warning bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-warning">{{ analytics.unassigned_tasks }}</div><div class="text-muted" style="font-size:.8rem">Non assignées</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── TAB : ACTIVITÉS ─────────────────────────── #}
+    <div id="tab-activity" class="tab-content-panel" id="activity">
+        <div class="card-panel">
+            <div class="section-title">📝 Journal d'Activités</div>
+            {% for update in updates %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    {% if update.update_type == 'comment' %}💬
+                    {% elseif update.update_type == 'task' %}✅
+                    {% elseif update.update_type == 'milestone' %}🎯
+                    {% elseif update.update_type == 'status_change' %}🔄
+                    {% else %}📌{% endif %}
+                </div>
+                <div style="flex:1">
+                    <div class="fw-semibold" style="font-size:.875rem">{{ update.title }}</div>
+                    <div style="font-size:.8rem; color:var(--text-muted)">{{ update.content }}</div>
+                    <div style="font-size:.75rem; color:#94a3b8; margin-top:.2rem">
+                        👤 {{ update.author_name }} · {{ update.created_at|date('d/m/Y H:i') }}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <div style="font-size:2.5rem">📭</div><p>Aucune activité enregistrée.</p>
+            </div>
+            {% endfor %}
+
+            <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
+                <div class="section-title" style="margin-bottom:.75rem">💬 Ajouter un commentaire</div>
+                <form action="{{ path('rh_project_comment', {id: project.id}) }}" method="POST">
+                    <textarea name="content" class="form-control mb-2" rows="2" placeholder="Écrire un commentaire..."></textarea>
+                    <button type="submit" class="btn-prim">Publier</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# ══════════════ MODALS ══════════════ #}
+
+{# Modal Nouvelle Tâche #}
+<div id="modalNewTask" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">➕ Nouvelle Tâche</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="{{ path('rh_project_task_new', {id: project.id}) }}" method="POST">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Titre *</label><input type="text" name="title" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Assigné à</label>
+                        <select name="assigned_to" class="form-select">
+                            <option value="">Non assigné</option>
+                            {% for member in team %}<option value="{{ member.employee_id }}">{{ member.username }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Priorité</label>
+                        <select name="priority" class="form-select">
+                            <option value="low">🟢 Faible</option>
+                            <option value="medium" selected>🟡 Moyenne</option>
+                            <option value="high">🔴 Haute</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Heures estimées</label><input type="number" name="estimated_hours" class="form-control" min="0"></div>
+                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" class="form-control"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim">Créer la tâche</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+{# Modal Modifier Tâche #}
+<div id="modalEditTask" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">✏️ Modifier la Tâche</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="editTaskForm" method="POST">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Titre *</label><input type="text" name="title" id="editTaskTitle" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" id="editTaskDesc" class="form-control" rows="2"></textarea></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Statut</label>
+                        <select name="status" id="editTaskStatus" class="form-select">
+                            <option value="todo">📋 À faire</option>
+                            <option value="in_progress">⏳ En cours</option>
+                            <option value="review">👁️ Review</option>
+                            <option value="done">✅ Terminé</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Assigné à</label>
+                        <select name="assigned_to" id="editTaskAssignee" class="form-select">
+                            <option value="">Non assigné</option>
+                            {% for member in team %}<option value="{{ member.employee_id }}">{{ member.username }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Priorité</label>
+                        <select name="priority" id="editTaskPriority" class="form-select">
+                            <option value="low">🟢 Faible</option>
+                            <option value="medium">🟡 Moyenne</option>
+                            <option value="high">🔴 Haute</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Heures estimées</label><input type="number" name="estimated_hours" id="editTaskHours" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" id="editTaskDue" class="form-control"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim">Sauvegarder</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+{# Modal Ajouter Membre #}
+<div id="modalAddMember" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">👥 Ajouter un Membre</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="{{ path('rh_project_team_add', {id: project.id}) }}" method="POST">
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Employé</label>
+                    <select name="employee_id" class="form-select" required>
+                        <option value="">Choisir un employé...</option>
+                        {% for emp in availableEmployees %}
+                        <option value="{{ emp.id }}">{{ emp.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3"><label class="form-label">Rôle dans le projet</label><input type="text" name="role" class="form-control" placeholder="Ex: Développeur, Designer..."></div>
+                <div class="mb-3"><label class="form-label">Heures allouées</label><input type="number" name="assigned_hours" class="form-control" min="0" placeholder="Optionnel"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim">Ajouter</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+{# Modal Nouveau Jalon #}
+<div id="modalNewMilestone" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">🎯 Nouveau Jalon</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="{{ path('rh_project_milestone_new', {id: project.id}) }}" method="POST">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Nom *</label><input type="text" name="name" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">Date cible *</label><input type="date" name="target_date" class="form-control" required></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim">Créer</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+{# Modal Modifier Jalon #}
+<div id="modalEditMilestone" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">✏️ Modifier le Jalon</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="editMilestoneForm" method="POST">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Nom *</label><input type="text" name="name" id="editMsName" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" id="editMsDesc" class="form-control" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">Date cible</label><input type="date" name="target_date" id="editMsDate" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Avancement (%)</label><input type="number" name="completion_rate" id="editMsRate" class="form-control" min="0" max="100"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim">Sauvegarder</button>
+            </div>
+        </form>
+    </div></div>
+        </main>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ─── TAB SWITCHING ───────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    window.location.hash = name;
+}
+
+// Restore tab from URL hash
+(function() {
+    const hash = window.location.hash.replace('#', '');
+    const map = {'team': 1, 'milestones': 2, 'analytics': 3, 'activity': 4};
+    if (hash && map[hash] !== undefined) {
+        const btns = document.querySelectorAll('.tab-btn');
+        if (btns[map[hash]]) btns[map[hash]].click();
+    }
+})();
+
+// ─── MODAL HELPER ────────────────────────────────────────────────
+function openModal(id) {
+    new bootstrap.Modal(document.getElementById(id)).show();
+}
+
+// ─── EDIT TASK ───────────────────────────────────────────────────
+function openEditTask(task) {
+    document.getElementById('editTaskTitle').value = task.title || '';
+    document.getElementById('editTaskDesc').value = task.description || '';
+    document.getElementById('editTaskStatus').value = task.status || 'todo';
+    document.getElementById('editTaskPriority').value = task.priority || 'medium';
+    document.getElementById('editTaskHours').value = task.estimated_hours || '';
+    document.getElementById('editTaskDue').value = task.due_date || '';
+    const assigneeSelect = document.getElementById('editTaskAssignee');
+    if (task.assigned_to) assigneeSelect.value = task.assigned_to;
+    else assigneeSelect.value = '';
+    document.getElementById('editTaskForm').action = '/rh/projects/{{ project.id }}/tasks/' + task.id + '/edit';
+    openModal('modalEditTask');
+}
+
+// ─── EDIT MILESTONE ──────────────────────────────────────────────
+function openEditMilestone(ms) {
+    document.getElementById('editMsName').value = ms.name || '';
+    document.getElementById('editMsDesc').value = ms.description || '';
+    document.getElementById('editMsDate').value = ms.target_date || '';
+    document.getElementById('editMsRate').value = ms.completion_rate || 0;
+    document.getElementById('editMilestoneForm').action = '/rh/projects/{{ project.id }}/milestones/' + ms.id + '/edit';
+    openModal('modalEditMilestone');
+}
+
+// ─── KANBAN DRAG & DROP ──────────────────────────────────────────
+let draggedTaskId = null;
+
+function handleDragStart(event, taskId) {
+    draggedTaskId = taskId;
+    event.dataTransfer.effectAllowed = 'move';
+    event.currentTarget.style.opacity = '0.5';
+    setTimeout(() => event.currentTarget.style.opacity = '1', 0);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(event, newStatus) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    if (!draggedTaskId) return;
+
+    fetch('/rh/projects/{{ project.id }}/tasks/' + draggedTaskId + '/move', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: '_token={{ csrf_token("task-move") }}&status=' + encodeURIComponent(newStatus)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) window.location.reload();
+    })
+    .catch(() => window.location.reload());
+
+    draggedTaskId = null;
+}
+</script>
+{% endblock %}
