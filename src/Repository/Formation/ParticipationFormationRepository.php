@@ -53,14 +53,20 @@ class ParticipationFormationRepository extends ServiceEntityRepository
     }
 
     /** @return ParticipationFormation[] */
-    public function findByRhId(int $rhId): array
+    public function findByRhId(int $rhId, string $status = ''): array
     {
-        return $this->createQueryBuilder('p')
+        $qb = $this->createQueryBuilder('p')
             ->join('p.session', 's')
             ->join('s.formation', 'f')
             ->where('f.rhId = :rhId')
-            ->setParameter('rhId', $rhId)
-            ->orderBy('p.dateInscription', 'DESC')
+            ->setParameter('rhId', $rhId);
+
+        if ($status) {
+            $qb->andWhere('p.statutParticipation = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb->orderBy('p.dateInscription', 'DESC')
             ->getQuery()
             ->getResult();
     }

@@ -250,12 +250,16 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/participants', name: 'rh_formation_all_participants', methods: ['GET'])]
-    public function allParticipants(ParticipationService $participationService): Response
+    public function allParticipants(Request $request, ParticipationService $participationService): Response
     {
         $userId = $this->getUser()->getId();
+        $status = $request->query->get('status', '');
 
         return $this->render('DashboardHr/formation/formation_all_participants.html.twig', [
-            'participations' => $participationService->getRhParticipations($userId),
+            'participations' => $participationService->getRhParticipations($userId, $status),
+            'filters' => [
+                'status' => $status
+            ]
         ]);
     }
 
