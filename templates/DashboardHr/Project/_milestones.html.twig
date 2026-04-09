@@ -1,0 +1,33 @@
+<div class="card shadow-sm">
+<div class="card-body">
+
+<h5>Jalons du projet</h5>
+
+<table class="table">
+
+<thead>
+<tr>
+<th>Titre</th>
+<th>Date</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for milestone in milestones %}
+
+<tr>
+<td>{{ milestone.title }}</td>
+<td>{{ milestone.target_date }}</td>
+<td>{{ milestone.status }}</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+</div>

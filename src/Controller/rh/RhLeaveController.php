@@ -2,10 +2,10 @@
 
 namespace App\Controller\rh;
 
-use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\LeaveBalanceService;
 use App\Service\LeaveRequestService;
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,54 +21,46 @@ final class RhLeaveController extends AbstractController
         Request $request,
         LeaveRequestService $leaveRequestService,
         LeaveBalanceService $leaveBalanceService,
-        EmployeeRepository $employeeRepository,
-    ): Response {
+        Connection $connection
+    ): Response
+    {
         $rhId = $this->getCurrentRhId();
         $status = $this->normalizeStatus((string) $request->query->get('status', 'ATTENTE'));
         $employeeSearch = trim((string) $request->query->get('employee', ''));
         $leaveTypeSearch = trim((string) $request->query->get('leave_type', ''));
-        $search = trim((string) $request->query->get('q', ''));
-        $sort = $this->normalizeSort((string) $request->query->get('sort', 'request_date'));
-        $direction = $this->normalizeDirection((string) $request->query->get('dir', 'DESC'));
 
-        $employees = $employeeRepository->findBy(['rhId' => $rhId], ['firstName' => 'ASC', 'lastName' => 'ASC']);
+        $employees = $connection->fetchAllAssociative(
+            'SELECT id, first_name, last_name FROM employees WHERE rh_id = :rhId ORDER BY first_name ASC, last_name ASC',
+            ['rhId' => $rhId]
+        );
 
-        // Refresh accruals and build balance map keyed by employee ID
-        $balances = $leaveBalanceService->getBalancesByRh($rhId);
-        $balanceMap = [];
-        foreach ($balances as $lb) {
-            $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
-        }
+        // Refresh accruals and credit snapshots for RH team before rendering.
+        $leaveBalanceService->getBalancesByRh($rhId);
 
         return $this->render('DashboardHr/leave_requests.html.twig', [
             'user' => $this->getUser(),
-            'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch, $search, $sort, $direction),
-            'balanceMap' => $balanceMap,
+            'leaveRequests' => $leaveRequestService->getRhRequests($rhId, $status, $employeeSearch, $leaveTypeSearch),
             'rhLeaveStats' => $leaveRequestService->getRhDashboardStats($rhId),
             'rhCreditStats' => $leaveRequestService->getRhCreditSummary($rhId),
             'pendingLeaveCount' => $leaveRequestService->getRhPendingCount($rhId),
             'statusFilter' => $status,
             'employeeFilter' => $employeeSearch,
             'leaveTypeFilter' => $leaveTypeSearch,
-            'searchFilter' => $search,
-            'sortFilter' => $sort,
-            'dirFilter' => $direction,
             'employees' => $employees,
         ]);
     }
 
     #[Route('/welcome/rh/leaves/{id}/approve', name: 'app_rh_leave_approve', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function approve(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function approve(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('rh_leave_approve_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->approveRequestByRh($this->getCurrentRhId(), $id, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -76,16 +68,15 @@ final class RhLeaveController extends AbstractController
 
     #[Route('/welcome/rh/leaves/{id}/reject', name: 'app_rh_leave_reject', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function reject(string $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
+    public function reject(int $id, Request $request, LeaveRequestService $leaveRequestService): RedirectResponse
     {
-        $idInt = (int) $id;
-        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('rh_leave_reject_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_leave_requests');
         }
 
         $comment = trim((string) $request->request->get('rh_comment', ''));
-        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment);
+        $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $id, $comment);
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
         return $this->redirectToRoute('app_rh_leave_requests');
@@ -111,18 +102,5 @@ final class RhLeaveController extends AbstractController
         }
 
         return in_array($status, ['ATTENTE', 'ACCEPTE', 'REFUSE'], true) ? $status : 'ATTENTE';
-    }
-
-    private function normalizeSort(string $sort): string
-    {
-        $sort = strtolower(trim($sort));
-        $allowed = ['request_date', 'start_date', 'days', 'employee', 'status'];
-
-        return in_array($sort, $allowed, true) ? $sort : 'request_date';
-    }
-
-    private function normalizeDirection(string $direction): string
-    {
-        return strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
     }
 }

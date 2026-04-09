@@ -1,0 +1,28 @@
+<div class="card shadow-sm">
+<div class="card-body">
+
+<h5>Activité récente</h5>
+
+<ul class="list-group">
+
+{% for update in updates %}
+
+<li class="list-group-item">
+
+<strong>{{ update.author_name|default('N/A') }}</strong
+{{ update.content|raw }}
+
+<br>
+
+<small class="text-muted">
+{{ update.created_at }}
+</small>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+</div>

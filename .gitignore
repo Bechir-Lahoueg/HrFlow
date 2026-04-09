@@ -8,10 +8,6 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
-.idea/
-*.iml
-*.ipr
-*.iws
 /vendor/
 ###< symfony/framework-bundle ###
 

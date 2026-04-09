@@ -5,7 +5,6 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\Recrutement\JobOfferRepository;
 
 final class HomeController extends AbstractController
 {
@@ -16,18 +15,8 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/offres-emploi', name: 'app_job_offers')]
-    public function jobOffers(JobOfferRepository $jobOfferRepository): Response
+    public function jobOffers(): Response
     {
-        $jobOffers = $jobOfferRepository->findPublished();
-
-        return $this->render('Home/job_offers.html.twig', [
-            'jobOffers' => $jobOffers,
-        ]);
-    }
-
-    #[Route('/abonnements', name: 'app_subscriptions')]
-    public function subscriptions(): Response
-    {
-        return $this->render('Home/subscribtions.htm.twig');
+        return $this->render('Home/job_offers.html.twig');
     }
 }

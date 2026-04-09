@@ -159,59 +159,31 @@
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Table de Decision RH</h3>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                            {% set currentQuery = app.request.query.all %}
-                            <a href="{{ path('app_rh_leave_requests', currentQuery|merge({status: 'ALL'})) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter is null ? 'bg-slate-900 text-white border-slate-900 active' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50' }} transition-all">Tous</a>
-                            <a href="{{ path('app_rh_leave_requests', currentQuery|merge({status: 'ATTENTE'})) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ATTENTE' ? 'bg-amber-600 text-white border-amber-600 active' : 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100' }} transition-all flex items-center gap-1.5">
+                        <a href="{{ path('app_rh_leave_requests') }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter is null ? 'bg-slate-900 text-white border-slate-900 active' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50' }} transition-all">Tous</a>
+                        <a href="{{ path('app_rh_leave_requests', {status: 'ATTENTE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ATTENTE' ? 'bg-amber-600 text-white border-amber-600 active' : 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100' }} transition-all flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'ATTENTE' ? 'bg-white' : 'bg-amber-400' }}"></span>Pending
                         </a>
-                            <a href="{{ path('app_rh_leave_requests', currentQuery|merge({status: 'ACCEPTE'})) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ACCEPTE' ? 'bg-emerald-600 text-white border-emerald-600 active' : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' }} transition-all flex items-center gap-1.5">
+                        <a href="{{ path('app_rh_leave_requests', {status: 'ACCEPTE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'ACCEPTE' ? 'bg-emerald-600 text-white border-emerald-600 active' : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' }} transition-all flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'ACCEPTE' ? 'bg-white' : 'bg-emerald-400' }}"></span>Approved
                         </a>
-                            <a href="{{ path('app_rh_leave_requests', currentQuery|merge({status: 'REFUSE'})) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'REFUSE' ? 'bg-red-600 text-white border-red-600 active' : 'border-red-200 text-red-700 bg-red-50 hover:bg-red-100' }} transition-all flex items-center gap-1.5">
+                        <a href="{{ path('app_rh_leave_requests', {status: 'REFUSE'}) }}" class="filter-chip px-3 py-1.5 rounded-lg text-[11px] font-bold border {{ statusFilter == 'REFUSE' ? 'bg-red-600 text-white border-red-600 active' : 'border-red-200 text-red-700 bg-red-50 hover:bg-red-100' }} transition-all flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full {{ statusFilter == 'REFUSE' ? 'bg-white' : 'bg-red-400' }}"></span>Rejected
                         </a>
                     </div>
                 </div>
 
                 {# Filter Form #}
-                    <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 mb-5">
-                        <div class="xl:col-span-2">
-                            <label for="rh-search" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Recherche</label>
-                            <div class="relative">
-                                <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m0 0A7.5 7.5 0 103.75 9.75a7.5 7.5 0 0012.9 6.9z"/></svg>
-                                <input id="rh-search" type="text" name="q" value="{{ searchFilter|default('') }}" placeholder="Nom, type, motif, statut..." class="w-full pl-9 rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="rh-status" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Statut</label>
-                            <select id="rh-status" name="status" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-5">
+                    <select name="status" class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
                         <option value="ALL" {{ statusFilter is null ? 'selected' : '' }}>Tous les statuts</option>
                         <option value="ATTENTE" {{ statusFilter == 'ATTENTE' ? 'selected' : '' }}>ATTENTE</option>
                         <option value="ACCEPTE" {{ statusFilter == 'ACCEPTE' ? 'selected' : '' }}>ACCEPTE</option>
                         <option value="REFUSE" {{ statusFilter == 'REFUSE' ? 'selected' : '' }}>REFUSE</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="rh-sort" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Trier par</label>
-                            <select id="rh-sort" name="sort" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
-                                <option value="request_date" {{ sortFilter|default('request_date') == 'request_date' ? 'selected' : '' }}>Date de demande</option>
-                                <option value="start_date" {{ sortFilter|default('request_date') == 'start_date' ? 'selected' : '' }}>Date de debut</option>
-                                <option value="days" {{ sortFilter|default('request_date') == 'days' ? 'selected' : '' }}>Nombre de jours</option>
-                                <option value="employee" {{ sortFilter|default('request_date') == 'employee' ? 'selected' : '' }}>Employe</option>
-                                <option value="status" {{ sortFilter|default('request_date') == 'status' ? 'selected' : '' }}>Statut</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="rh-dir" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Ordre</label>
-                            <select id="rh-dir" name="dir" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
-                                <option value="DESC" {{ dirFilter|default('DESC') == 'DESC' ? 'selected' : '' }}>Decroissant</option>
-                                <option value="ASC" {{ dirFilter|default('DESC') == 'ASC' ? 'selected' : '' }}>Croissant</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <button class="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm">Appliquer</button>
-                            <a href="{{ path('app_rh_leave_requests') }}" class="px-4 py-2.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-sm font-semibold hover:bg-zinc-50 transition-colors">Reset</a>
-                        </div>
+                    </select>
+                    <input type="text" name="employee" value="{{ employeeFilter }}" placeholder="Rechercher employe..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                    <input type="text" name="leave_type" value="{{ leaveTypeFilter }}" placeholder="Type de conge..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                    <button class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm">Appliquer</button>
+                    <a href="{{ path('app_rh_leave_requests') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 text-sm font-semibold hover:bg-zinc-50 transition-colors">Reset</a>
                 </form>
 
                 {# Table #}
@@ -235,26 +207,26 @@
                                 <td class="py-3 px-4">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0">
-                                            <span class="text-[11px] font-bold text-white">{{ leave.employeeName|first|upper }}</span>
+                                            <span class="text-[11px] font-bold text-white">{{ leave.employee_name|first|upper }}</span>
                                         </div>
-                                        <span class="text-[13px] font-semibold text-zinc-700">{{ leave.employeeName }}</span>
+                                        <span class="text-[13px] font-semibold text-zinc-700">{{ leave.employee_name }}</span>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <p class="text-[13px] font-medium text-zinc-700">{{ leave.startDate|date('d M') }}</p>
-                                    <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d M Y') }}</p>
+                                    <p class="text-[13px] font-medium text-zinc-700">{{ leave.start_date|date('d M') }}</p>
+                                    <p class="text-[11px] text-zinc-400">au {{ leave.end_date|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leaveType }}</span>
+                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leave_type }}</span>
                                 </td>
-                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.daysCount }}</td>
+                                <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.days_count }}</td>
                                 <td class="py-3 px-4">
                                     <div class="space-y-1">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount) < 0 ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
-                                            <span class="text-[11px] font-bold {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount) < 0 ? 'text-red-600' : 'text-emerald-700' }}">{{ balanceMap[leave.employee.id]|default(0)|number_format(1, '.', ',') }} dispo</span>
+                                            <span class="w-1.5 h-1.5 rounded-full {{ (leave.available_days - leave.days_count) < 0 ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
+                                            <span class="text-[11px] font-bold {{ (leave.available_days - leave.days_count) < 0 ? 'text-red-600' : 'text-emerald-700' }}">{{ leave.available_days|number_format(1, '.', ',') }} dispo</span>
                                         </div>
-                                        <p class="text-[10px] text-zinc-400 pl-3">Apres: {{ (balanceMap[leave.employee.id]|default(0) - leave.daysCount)|number_format(1, '.', ',') }}</p>
+                                        <p class="text-[10px] text-zinc-400 pl-3">Apres: {{ (leave.available_days - leave.days_count)|number_format(1, '.', ',') }}</p>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
@@ -293,7 +265,7 @@
                                     {% else %}
                                         <div class="text-[11px] text-zinc-400 rounded-lg border border-zinc-100 bg-zinc-50 p-2.5">
                                             <p class="font-bold text-zinc-500 mb-0.5">Commentaire:</p>
-                                            <p>{{ leave.rhComment ?: '-' }}</p>
+                                            <p>{{ leave.rh_comment ?: '-' }}</p>
                                         </div>
                                     {% endif %}
                                 </td>

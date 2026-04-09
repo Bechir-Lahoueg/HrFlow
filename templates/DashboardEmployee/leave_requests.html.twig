@@ -298,15 +298,15 @@
                             </thead>
                             <tbody id="history-body">
                             {% for leave in leaveRequests %}
-                                <tr class="history-row border-b border-zinc-50 align-top" data-status="{{ leave.status }}" data-search="{{ leave.leaveType|lower }} {{ leave.startDate|date('Y-m-d') }} {{ leave.endDate|date('Y-m-d') }} {{ leave.status|lower }}">
+                                <tr class="history-row border-b border-zinc-50 align-top" data-status="{{ leave.status }}" data-search="{{ leave.leave_type|lower }} {{ leave.start_date|date('Y-m-d') }} {{ leave.end_date|date('Y-m-d') }} {{ leave.status|lower }}">
                                     <td class="py-3 px-4">
-                                        <p class="text-[13px] font-medium text-zinc-700">{{ leave.startDate|date('d M Y') }}</p>
-                                        <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d M Y') }}</p>
+                                        <p class="text-[13px] font-medium text-zinc-700">{{ leave.start_date|date('d M Y') }}</p>
+                                        <p class="text-[11px] text-zinc-400">au {{ leave.end_date|date('d M Y') }}</p>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leaveType }}</span>
+                                        <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leave_type }}</span>
                                     </td>
-                                    <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.daysCount }}</td>
+                                    <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.days_count }}</td>
                                     <td class="py-3 px-4">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
                                             {{ leave.status == 'ATTENTE' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
@@ -319,7 +319,7 @@
                                             {{ leave.status }}
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[180px]">{{ leave.rhComment ?: '-' }}</td>
+                                    <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[180px]">{{ leave.rh_comment ?: '-' }}</td>
                                     <td class="py-3 px-4">
                                         {% if leave.status == 'ATTENTE' %}
                                             <form method="post" action="{{ path('app_employee_leave_request_delete', {id: leave.id}) }}" onsubmit="return confirm('Supprimer cette demande ?');">
