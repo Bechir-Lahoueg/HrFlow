@@ -326,7 +326,7 @@ final class RhFormationController extends AbstractController
                     $this->addFlash('error', 'Erreur lors de l\'enregistrement des présences.');
                 }
 
-                $this->addFlash('success', 'Présences mises à jour avec succès.');
+                $this->addFlash('success', 'Présences mises  à jour avec succès.');
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
             }
         }
@@ -346,3 +346,5 @@ final class RhFormationController extends AbstractController
         ]);
     }
 }
+
+
