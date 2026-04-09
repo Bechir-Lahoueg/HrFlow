@@ -2,137 +2,103 @@
 
 namespace App\Service;
 
-use App\Entity\Formation\Formation;
-use App\Entity\Formation\SessionFormation;
-use App\Repository\Formation\FormationRepository;
-use App\Repository\Formation\SessionFormationRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 
 final class FormationService
 {
-    public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly FormationRepository $formationRepository,
-        private readonly SessionFormationRepository $sessionFormationRepository,
-    ) {
-    }
+    public function __construct(private readonly Connection $connection) {}
 
-    /** @return Formation[] */
-    public function getFormationsByRhId(int $rhId, string $search = '', string $type = '', string $sort = 'createdAt', string $dir = 'DESC'): array
-    {
-        // Map legacy sort names from templates
-        $sortMap = ['created_at' => 'createdAt'];
-        $sort = $sortMap[$sort] ?? $sort;
-
-        return $this->formationRepository->findByRh($rhId, $search, $type, $sort, $dir);
-    }
-
-    public function getFormationStatsByRhId(int $rhId): array
+    public function getAllFormations(): array
     {
         try {
-            return $this->formationRepository->getStatsByRh($rhId);
+            return $this->connection->fetchAllAssociative('SELECT * FROM formation ORDER BY created_at DESC');
         } catch (\Throwable) {
-            return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
+            return [];
         }
     }
 
-    public function createFormation(array $data): Formation
+    public function createFormation(array $data): void
     {
-        $formation = new Formation();
-        $formation->setTitre($data['titre'])
-            ->setDescription($data['description'])
-            ->setType($data['type'])
-            ->setDuree((int) $data['duree'])
-            ->setOrganisme($data['organisme'])
-            ->setObjectifs($data['objectifs'])
-            ->setRhId((int) $data['id_rh']);
-
-        $this->em->persist($formation);
-        $this->em->flush();
-
-        return $formation;
+        $this->connection->insert('formation', [
+            'titre' => $data['titre'],
+            'description' => $data['description'],
+            'type' => $data['type'],
+            'duree' => $data['duree'],
+            'organisme' => $data['organisme'],
+            'objectifs' => $data['objectifs'],
+            'id_rh' => $data['id_rh'],
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     public function updateFormation(int $id, array $data): void
     {
-        $formation = $this->formationRepository->find($id);
-        if (!$formation) {
-            return;
-        }
-
-        $formation->setTitre($data['titre'])
-            ->setDescription($data['description'])
-            ->setType($data['type'])
-            ->setDuree((int) $data['duree'])
-            ->setOrganisme($data['organisme'])
-            ->setObjectifs($data['objectifs']);
-
-        $this->em->flush();
+        $this->connection->update('formation', [
+            'titre' => $data['titre'],
+            'description' => $data['description'],
+            'type' => $data['type'],
+            'duree' => $data['duree'],
+            'organisme' => $data['organisme'],
+            'objectifs' => $data['objectifs'],
+            'updated_at' => date('Y-m-d H:i:s'),
+        ], ['id_formation' => $id]);
     }
 
     public function deleteFormation(int $id): void
     {
-        $formation = $this->formationRepository->find($id);
-        if (!$formation) {
-            return;
-        }
-
-        $this->em->remove($formation);
-        $this->em->flush();
+        $this->connection->delete('formation', ['id_formation' => $id]);
     }
 
-    public function getFormationById(int $id): ?Formation
+    public function getFormationById(int $id): ?array
     {
-        return $this->formationRepository->find($id);
+        try {
+            return $this->connection->fetchAssociative('SELECT * FROM formation WHERE id_formation = ?', [$id]);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
-    /** @return SessionFormation[] */
     public function getSessionsByFormation(int $formationId): array
     {
-        return $this->sessionFormationRepository->findByFormation($formationId);
+        $this->autoUpdateSessionStatuses();
+        try {
+            return $this->connection->fetchAllAssociative('SELECT * FROM session_formation WHERE id_formation = ? ORDER BY date_debut DESC', [$formationId]);
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
-    public function createSession(array $data): SessionFormation
+    public function createSession(array $data): void
     {
-        $formation = $this->formationRepository->find((int) $data['id_formation']);
-        if (!$formation) {
-            throw new \RuntimeException('Formation introuvable.');
-        }
-
         $statut = $this->calculateStatut($data['date_debut'], $data['date_fin']);
 
-        $session = new SessionFormation();
-        $session->setFormation($formation)
-            ->setDateDebut(new \DateTime($data['date_debut']))
-            ->setDateFin(new \DateTime($data['date_fin']))
-            ->setLieu($data['lieu'])
-            ->setMode($data['mode'])
-            ->setCapaciteMax((int) $data['capacite_max'])
-            ->setStatut($statut);
-
-        $this->em->persist($session);
-        $this->em->flush();
-
-        return $session;
+        $this->connection->insert('session_formation', [
+            'id_formation' => $data['id_formation'],
+            'date_debut' => $data['date_debut'],
+            'date_fin' => $data['date_fin'],
+            'lieu' => $data['lieu'],
+            'mode' => $data['mode'],
+            'capacite_max' => $data['capacite_max'],
+            'statut' => $statut,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     public function updateSession(int $id, array $data): void
     {
-        $session = $this->sessionFormationRepository->find($id);
-        if (!$session) {
-            return;
-        }
-
         $statut = $this->calculateStatut($data['date_debut'], $data['date_fin']);
 
-        $session->setDateDebut(new \DateTime($data['date_debut']))
-            ->setDateFin(new \DateTime($data['date_fin']))
-            ->setLieu($data['lieu'])
-            ->setMode($data['mode'])
-            ->setCapaciteMax((int) $data['capacite_max'])
-            ->setStatut($statut);
-
-        $this->em->flush();
+        $this->connection->update('session_formation', [
+            'date_debut' => $data['date_debut'],
+            'date_fin' => $data['date_fin'],
+            'lieu' => $data['lieu'],
+            'mode' => $data['mode'],
+            'capacite_max' => $data['capacite_max'],
+            'statut' => $statut,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ], ['id_session' => $id]);
     }
 
     private function calculateStatut(string $dateDebut, string $dateFin): string
@@ -152,6 +118,41 @@ final class FormationService
             return 'Terminee';
         } else {
             return 'En cours';
+        }
+    }
+
+    private function autoUpdateSessionStatuses(): void
+    {
+        try {
+            // Un statut s'actualise avec le temps
+            $this->connection->executeStatement("
+                UPDATE session_formation
+                SET statut = CASE
+                    WHEN DATE(date_debut) > CURRENT_DATE THEN 'Planifiee'
+                    WHEN DATE(date_fin) < CURRENT_DATE THEN 'Terminee'
+                    ELSE 'En cours'
+                END
+                WHERE statut NOT IN ('Annulee')
+            ");
+        } catch (\Throwable $e) {
+            // Ignore if error
+        }
+    }
+
+    public function getFormationStats(): array
+    {
+        $this->autoUpdateSessionStatuses();
+        try {
+            $total = $this->connection->fetchOne('SELECT COUNT(*) FROM formation');
+            $activeSessions = $this->connection->fetchOne("SELECT COUNT(*) FROM session_formation WHERE statut = 'Planifiee' OR statut = 'En cours'");
+            $totalParticipants = $this->connection->fetchOne('SELECT COUNT(*) FROM participation_formation');
+            return [
+                'total_formations' => (int) $total,
+                'active_sessions' => (int) $activeSessions,
+                'total_participants' => (int) $totalParticipants,
+            ];
+        } catch (\Throwable) {
+            return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
         }
     }
 }

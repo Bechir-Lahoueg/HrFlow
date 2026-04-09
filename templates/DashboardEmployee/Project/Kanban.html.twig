@@ -1,0 +1,413 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.name }} — Kanban{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary: #7c3aed;
+    --primary-light: #a78bfa;
+    --primary-dark: #5b21b6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --review: #8b5cf6;
+    --surface: #ffffff;
+    --bg: #f5f3ff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --radius: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
+}
+body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+.project-header {
+    background: linear-gradient(135deg, #4c1d95 0%, var(--primary) 60%, var(--primary-light) 100%);
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-lg);
+}
+.project-header h1 { font-size: 1.5rem; font-weight: 800; margin: 0; }
+
+.card-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+.section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+
+.progress-bar { height: 8px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; }
+.progress-bar .fill { height: 100%; background: white; border-radius: 999px; }
+
+.meta-pill { background: rgba(255,255,255,.15); border-radius: 999px; padding: .3em .9em; font-size: .8rem; }
+
+/* KANBAN */
+.kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+@media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .kanban-board { grid-template-columns: 1fr; } }
+
+.kanban-col {
+    border-radius: var(--radius);
+    padding: .75rem;
+    min-height: 450px;
+    border: 2px dashed var(--border);
+    transition: all .2s;
+}
+.kanban-col.drag-over { border-color: var(--primary); background: #ede9fe; transform: scale(1.01); }
+.kanban-col.col-todo { background: #f9fafb; }
+.kanban-col.col-in_progress { background: #fffbeb; }
+.kanban-col.col-review { background: #f5f3ff; }
+.kanban-col.col-done { background: #f0fdf4; }
+
+.col-header { font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; display: flex; justify-content: space-between; align-items: center; padding-bottom: .5rem; border-bottom: 2px solid; }
+.col-todo .col-header { color: #6b7280; border-color: #d1d5db; }
+.col-in_progress .col-header { color: #b45309; border-color: #fcd34d; }
+.col-review .col-header { color: #6d28d9; border-color: #c4b5fd; }
+.col-done .col-header { color: #065f46; border-color: #6ee7b7; }
+
+.count-badge { border-radius: 999px; padding: .2em .6em; font-size: .7rem; font-weight: 700; }
+.col-todo .count-badge { background: #e5e7eb; color: #4b5563; }
+.col-in_progress .count-badge { background: #fde68a; color: #92400e; }
+.col-review .count-badge { background: #ddd6fe; color: #5b21b6; }
+.col-done .count-badge { background: #bbf7d0; color: #065f46; }
+
+.task-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: .6rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    cursor: grab;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+}
+.task-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
+.task-card:active { cursor: grabbing; }
+.task-card.dragging { opacity: .6; transform: scale(.97); }
+
+.task-priority-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.prio-low .task-priority-bar { background: var(--success); }
+.prio-medium .task-priority-bar { background: var(--warning); }
+.prio-high .task-priority-bar { background: var(--danger); }
+
+.task-title-text { font-weight: 700; font-size: .875rem; color: var(--text); margin-bottom: .4rem; padding-left: .5rem; }
+.task-meta { font-size: .72rem; color: var(--text-muted); padding-left: .5rem; }
+.task-due { font-size: .72rem; padding-left: .5rem; margin-top: .3rem; }
+.task-due.overdue { color: var(--danger); font-weight: 600; }
+.task-due.soon { color: var(--warning); font-weight: 600; }
+
+.task-actions { display: flex; gap: .4rem; margin-top: .6rem; padding-left: .5rem; flex-wrap: wrap; }
+.btn-task-action {
+    font-size: .7rem;
+    padding: .25em .65em;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all .15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+}
+.btn-start { background: #fef3c7; color: #92400e; }
+.btn-start:hover { background: var(--warning); color: white; }
+.btn-review { background: #ede9fe; color: var(--primary); }
+.btn-review:hover { background: var(--primary); color: white; }
+.btn-done { background: #d1fae5; color: #065f46; }
+.btn-done:hover { background: var(--success); color: white; }
+.btn-hours { background: #e0f2fe; color: #0369a1; }
+.btn-hours:hover { background: #0369a1; color: white; }
+.btn-info { background: #f1f5f9; color: var(--text-muted); }
+.btn-info:hover { background: #e2e8f0; }
+
+/* Log Hours Modal */
+.modal-custom .modal-content { border-radius: var(--radius); border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+.modal-custom .modal-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius) var(--radius) 0 0; }
+.form-control, .form-select { border: 1.5px solid var(--border); border-radius: 8px; padding: .55rem .85rem; }
+.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+
+.btn-prim { background: var(--primary); color: white; border: none; padding: .6rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.btn-prim:hover { background: var(--primary-dark); color: white; }
+
+/* Activity */
+.activity-item { display: flex; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.activity-icon { width: 30px; height: 30px; border-radius: 50%; background: #ede9fe; display: flex; align-items: center; justify-content: center; font-size: .8rem; flex-shrink: 0; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+    {% for type, messages in app.flashes %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 mb-3">
+            {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# PROJECT HEADER #}
+    <div class="project-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div style="flex:1">
+                <div style="font-size:.8rem; opacity:.7; margin-bottom:.3rem">
+                    <a href="{{ path('employee_project_index') }}" style="color:white; text-decoration:none">← Mes Projets</a>
+                </div>
+                <h1>
+                    {% if project.status == 'in_progress' %}🟢{% elseif project.status == 'completed' %}✅{% else %}📋{% endif %}
+                    {{ project.name }}
+                </h1>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% if myCollaboration %}
+                    <span class="meta-pill">👤 {{ myCollaboration.role ?? 'Membre' }}</span>
+                    <span class="meta-pill">⏱️ {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}</span>
+                    {% endif %}
+                    <span class="meta-pill">✅ {{ doneMyTasks }}/{{ totalMyTasks }} tâches</span>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:.8rem; opacity:.8; margin-bottom:.3rem">Avancement global</div>
+                <div class="progress-bar" style="width:200px"><div class="fill" style="width:{{ project.completion_rate ?? 0 }}%"></div></div>
+                <div style="font-size:.85rem; font-weight:700; margin-top:.2rem">{{ project.completion_rate ?? 0 }}%</div>
+            </div>
+        </div>
+    </div>
+
+    {# KANBAN #}
+    <div class="card-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="section-title">📋 Mes Tâches — Kanban Board</div>
+            <small class="text-muted" style="font-size:.8rem">💡 Glissez-déposez ou utilisez les boutons pour changer le statut</small>
+        </div>
+
+        <div class="kanban-board">
+            {% set columns = {
+                'todo': {label: '📋 À FAIRE', class: 'col-todo'},
+                'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
+                'review': {label: '👁️ REVIEW', class: 'col-review'},
+                'done': {label: '✅ TERMINÉ', class: 'col-done'}
+            } %}
+
+            {% for statusKey, col in columns %}
+            <div class="kanban-col {{ col.class }}" id="col-{{ statusKey }}"
+                 ondragover="onDragOver(event)"
+                 ondrop="onDrop(event, '{{ statusKey }}')"
+                 ondragleave="onDragLeave(event)">
+                <div class="col-header">
+                    <span>{{ col.label }}</span>
+                    <span class="count-badge">{{ tasksByStatus[statusKey]|length }}</span>
+                </div>
+
+                {% if tasksByStatus[statusKey] is empty %}
+                <div style="text-align:center; padding:2rem .5rem; color:#9ca3af; font-size:.8rem;">Aucune tâche</div>
+                {% endif %}
+
+                {% for task in tasksByStatus[statusKey] %}
+                {% set isOverdue = task.due_date and task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}
+                {% set isSoon = task.due_date and not isOverdue and task.status != 'done' and task.due_date <= 'now'|date_modify('+2 days')|date('Y-m-d') %}
+                <div class="task-card prio-{{ task.priority }}"
+                     draggable="true"
+                     id="tc-{{ task.id }}"
+                     ondragstart="onDragStart(event, {{ task.id }})"
+                     ondragend="onDragEnd(event)">
+                    <div class="task-priority-bar"></div>
+                    <div class="task-title-text">{{ task.title }}</div>
+                    {% if task.estimated_hours %}
+                    <div class="task-meta">⏱️ {{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
+                    {% endif %}
+                    {% if task.due_date %}
+                    <div class="task-due {% if isOverdue %}overdue{% elseif isSoon %}soon{% endif %}">
+                        📅 {{ task.due_date|date('d/m/Y') }}
+                        {% if isOverdue %}⚠️{% elseif isSoon %}🔥{% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="task-actions">
+                        {% if task.status == 'todo' %}
+                        <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start">▶ Démarrer</button>
+                        {% elseif task.status == 'in_progress' %}
+                        <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review">👁 Review</button>
+                        {% elseif task.status == 'review' %}
+                        <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done">✅ Terminer</button>
+                        {% endif %}
+                        <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours">⏱️ Heures</button>
+                        <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info">ℹ️</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ACTIVITÉS #}
+    <div class="card-section">
+        <div class="section-title">📝 Activités du Projet</div>
+        {% for update in updates %}
+        <div class="activity-item">
+            <div class="activity-icon">
+                {% if update.update_type == 'comment' %}💬
+                {% elseif update.update_type == 'task' %}✅
+                {% elseif update.update_type == 'milestone' %}🎯
+                {% else %}📌{% endif %}
+            </div>
+            <div style="flex:1">
+                <div class="fw-semibold" style="font-size:.85rem">{{ update.title }}</div>
+                <div style="font-size:.78rem; color:var(--text-muted)">{{ update.content }}</div>
+                <div style="font-size:.7rem; color:#94a3b8; margin-top:.2rem">
+                    👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-3 text-muted" style="font-size:.9rem">Aucune activité récente.</div>
+        {% endfor %}
+
+        <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
+            <div style="font-size:.85rem; font-weight:700; margin-bottom:.5rem">💬 Ajouter un commentaire</div>
+            <form action="{{ path('employee_project_comment', {id: project.id}) }}" method="POST">
+                <textarea name="content" class="form-control mb-2" rows="2" placeholder="Écrire un commentaire..."></textarea>
+                <button type="submit" class="btn-prim" style="font-size:.85rem; padding:.5rem 1.25rem">Publier</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{# ─── MODAL : Logger des heures ─── #}
+<div id="modalLogHours" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog modal-sm"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">⏱️ Logger des heures</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="logHoursForm" method="POST">
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:.85rem">Tâche</label>
+                    <div id="logTaskName" style="font-size:.9rem; font-weight:700; color:var(--primary); padding:.5rem; background:#f5f3ff; border-radius:8px;"></div>
+                </div>
+                <div>
+                    <label class="form-label fw-semibold" style="font-size:.85rem">Heures travaillées *</label>
+                    <div class="input-group">
+                        <input type="number" name="hours" class="form-control" min="1" max="24" required placeholder="Ex: 2">
+                        <span class="input-group-text">h</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn-prim" style="font-size:.875rem">Confirmer</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+{# ─── MODAL : Info Tâche ─── #}
+<div id="modalTaskInfo" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="infoTaskTitle">Détails de la tâche</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="infoTaskBody" style="font-size:.875rem; line-height:1.7"></div>
+        <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button></div>
+    </div></div>
+        </main>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ─── KANBAN DRAG & DROP ──────────────────────────────────────────
+let draggedId = null;
+
+function onDragStart(event, taskId) {
+    draggedId = taskId;
+    event.currentTarget.classList.add('dragging');
+    event.dataTransfer.effectAllowed = 'move';
+}
+function onDragEnd(event) {
+    event.currentTarget.classList.remove('dragging');
+}
+function onDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+}
+function onDrop(event, newStatus) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    if (!draggedId) return;
+    moveTask(draggedId, newStatus);
+    draggedId = null;
+}
+
+// ─── MOVE TASK ───────────────────────────────────────────────────
+function quickMove(taskId, newStatus) {
+    moveTask(taskId, newStatus);
+}
+
+function moveTask(taskId, newStatus) {
+    fetch('/employee/projects/{{ project.id }}/tasks/' + taskId + '/move', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: '_token={{ csrf_token("emp-task-move") }}&status=' + encodeURIComponent(newStatus)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) window.location.reload();
+        else alert('Erreur lors du déplacement');
+    })
+    .catch(() => window.location.reload());
+}
+
+// ─── LOG HOURS ───────────────────────────────────────────────────
+function openLogHours(taskId, taskTitle) {
+    document.getElementById('logTaskName').textContent = taskTitle;
+    document.getElementById('logHoursForm').action = '/employee/projects/{{ project.id }}/tasks/' + taskId + '/log-hours';
+    new bootstrap.Modal(document.getElementById('modalLogHours')).show();
+}
+
+// ─── TASK INFO ───────────────────────────────────────────────────
+function showTaskInfo(task) {
+    document.getElementById('infoTaskTitle').textContent = task.title;
+    let html = '';
+    html += `<div class="mb-2"><strong>Statut:</strong> ${task.status.replace('_', ' ')}</div>`;
+    html += `<div class="mb-2"><strong>Priorité:</strong> ${task.priority}</div>`;
+    if (task.description) html += `<div class="mb-2"><strong>Description:</strong><br>${task.description}</div>`;
+    if (task.estimated_hours) html += `<div class="mb-2"><strong>Heures:</strong> ${task.actual_hours ?? 0}h / ${task.estimated_hours}h</div>`;
+    if (task.due_date) html += `<div class="mb-2"><strong>Échéance:</strong> ${task.due_date}</div>`;
+    document.getElementById('infoTaskBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('modalTaskInfo')).show();
+}
+</script>
+{% endblock %}

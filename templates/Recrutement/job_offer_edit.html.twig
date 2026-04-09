@@ -59,56 +59,22 @@
                 </div>
 
                 {{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
-                    {% from 'Recrutement/form_field_with_errors.html.twig' import form_widget_with_errors %}
-                    
-                    {{ form_widget_with_errors(form.title, {
-                        container_class: 'mb-4',
-                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                    }) }}
-                    {{ form_widget_with_errors(form.description, {
-                        container_class: 'mb-4',
-                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                    }) }}
+                    {{ form_row(form.title) }}
+                    {{ form_row(form.description) }}
                     
                     <div class="grid grid-cols-2 gap-3">
-                        {{ form_widget_with_errors(form.department, {
-                            container_class: 'mb-4',
-                            label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                            input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                        }) }}
-                        {{ form_widget_with_errors(form.location, {
-                            container_class: 'mb-4',
-                            label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                            input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                        }) }}
+                        {{ form_row(form.department) }}
+                        {{ form_row(form.location) }}
                     </div>
                     
-                    {{ form_widget_with_errors(form.employmentType, {
-                        container_class: 'mb-4',
-                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                    }) }}
+                    {{ form_row(form.employmentType) }}
                     
                     <div class="grid grid-cols-2 gap-3">
-                        {{ form_widget_with_errors(form.salaryMin, {
-                            container_class: 'mb-4',
-                            label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                            input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                        }) }}
-                        {{ form_widget_with_errors(form.salaryMax, {
-                            container_class: 'mb-4',
-                            label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                            input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                        }) }}
+                        {{ form_row(form.salaryMin) }}
+                        {{ form_row(form.salaryMax) }}
                     </div>
                     
-                    {{ form_widget_with_errors(form.status, {
-                        container_class: 'mb-4',
-                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
-                    }) }}
+                    {{ form_row(form.status) }}
 
                     <div class="flex items-center gap-3 pt-4">
                         <a href="{{ path('app_rh_job_offers') }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200">

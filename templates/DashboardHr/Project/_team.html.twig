@@ -1,0 +1,23 @@
+<div class="card shadow-sm">
+<div class="card-body">
+
+<h5>Équipe du projet</h5>
+
+<ul class="list-group">
+
+{% for member in collaborators %}
+
+<li class="list-group-item d-flex justify-content-between">
+
+<span>{{ member.employee_name }}</span>
+
+<span class="badge bg-primary">{{ member.role }}</span>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+</div>

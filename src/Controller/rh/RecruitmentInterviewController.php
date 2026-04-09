@@ -2,12 +2,13 @@
 
 namespace App\Controller\rh;
 
-use App\Entity\Recrutement\Interview;
-use App\Form\Recrutement\InterviewType;
-use App\Repository\Recrutement\ApplicationRepository;
-use App\Repository\Recrutement\InterviewRepository;
-use App\Repository\Rh\UserRepository;
+use App\Entity\Interview;
+use App\Form\InterviewType;
+use App\Repository\ApplicaitonRepository;
+use App\Repository\InterviewRepository;
+use App\Repository\UserRepository;
 use App\Security\DbUser;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -23,7 +24,7 @@ final class RecruitmentInterviewController extends AbstractController
     public function index(
         Request $request,
         InterviewRepository $interviewRepository,
-        ApplicationRepository $applicaitonRepository,
+        ApplicaitonRepository $applicaitonRepository,
         UserRepository $userRepository
     ): Response {
         $rh = $this->getCurrentRh();
@@ -32,12 +33,14 @@ final class RecruitmentInterviewController extends AbstractController
         $interviews = $interviewRepository->findByRh($rh, $applicationId ?: null);
         $allApplications = $applicaitonRepository->findByRh($rh);
         
+        // Fetch interviewers from users table via repository
         $interviewers = $userRepository->findInterviewers();
-
+        
+        // Build interviewer choices for form
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = (int) $user['id'];
         }
 
         // Get current application info if filtering
@@ -69,22 +72,23 @@ final class RecruitmentInterviewController extends AbstractController
             'currentApplication' => $currentApplication,
             'form' => $form->createView(),
             'stats' => $stats,
-            'deletedInterviews' => $interviewRepository->findDeletedByRh($rh),
         ]);
     }
 
     #[Route('/rh/recruitment/interviews/create', name: 'app_rh_interviews_create', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function create(Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em, UserRepository $userRepository): RedirectResponse
+    public function create(Request $request, ApplicaitonRepository $applicaitonRepository, EntityManagerInterface $em, Connection $connection, UserRepository $userRepository): RedirectResponse
     {
         $rh = $this->getCurrentRh();
-
+        
+        // Fetch filtered data for form
         $interviewers = $userRepository->findInterviewers();
-
+        
+        // Build interviewer choices
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = (int) $user['id'];
         }
         
         $interview = new Interview();
@@ -155,7 +159,7 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/edit', name: 'app_rh_interviews_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicaitonRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
         $rh = $this->getCurrentRh();
         $interview = $interviewRepository->findOneByRh($id, $rh);
@@ -165,11 +169,12 @@ final class RecruitmentInterviewController extends AbstractController
             return $this->redirectToRoute('app_rh_interviews');
         }
 
+        // Fetch interviewers for dropdown
         $interviewers = $userRepository->findInterviewers();
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = (int) $user['id'];
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [
@@ -215,76 +220,6 @@ final class RecruitmentInterviewController extends AbstractController
 
         $this->addFlash('success', 'Entretien supprimé avec succès.');
         return $this->redirectToRoute('app_rh_interviews');
-    }
-
-    #[Route('/rh/recruitment/interviews/{id}/restore', name: 'app_rh_interviews_restore', methods: ['POST'])]
-    #[IsGranted('ROLE_RH')]
-    public function restore(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
-    {
-        if (!$this->isCsrfTokenValid('restore_interview_' . $id, (string) $request->request->get('_token', ''))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_rh_interviews');
-        }
-
-        $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
-
-        if (!$interview) {
-            $this->addFlash('error', 'Entretien non trouvé.');
-            return $this->redirectToRoute('app_rh_interviews');
-        }
-
-        $interview->setIsDeleted(false);
-        $em->flush();
-
-        $this->addFlash('success', 'Entretien restauré avec succès.');
-        return $this->redirectToRoute('app_rh_interviews');
-    }
-
-    #[Route('/rh/recruitment/interviews/{id}/delete-permanent', name: 'app_rh_interviews_delete_permanent', methods: ['POST'])]
-    #[IsGranted('ROLE_RH')]
-    public function deletePermanent(int $id, Request $request, InterviewRepository $interviewRepository, EntityManagerInterface $em): RedirectResponse
-    {
-        if (!$this->isCsrfTokenValid('permanent_delete_interview_' . $id, (string) $request->request->get('_token', ''))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_rh_interviews');
-        }
-
-        $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
-
-        if (!$interview) {
-            $this->addFlash('error', 'Entretien non trouvé.');
-            return $this->redirectToRoute('app_rh_interviews');
-        }
-
-        $em->remove($interview);
-        $em->flush();
-
-        $this->addFlash('success', 'Entretien définitivement supprimé.');
-        return $this->redirectToRoute('app_rh_interviews');
-    }
-
-    #[Route('/rh/recruitment/interviews/{id}', name: 'app_rh_interviews_show', methods: ['GET'])]
-    #[IsGranted('ROLE_RH')]
-    public function show(int $id, InterviewRepository $interviewRepository, UserRepository $userRepository): Response
-    {
-        $rh = $this->getCurrentRh();
-        $interview = $interviewRepository->findOneByRhIncludingDeleted($id, $rh);
-
-        if (!$interview) {
-            $this->addFlash('error', 'Entretien non trouvé.');
-            return $this->redirectToRoute('app_rh_interviews');
-        }
-
-        $interviewer = $interview->getInterviewerId()
-            ? $userRepository->find($interview->getInterviewerId())
-            : null;
-
-        return $this->render('Recrutement/interview_details.html.twig', [
-            'interview' => $interview,
-            'interviewer' => $interviewer,
-        ]);
     }
 
     private function getCurrentRh(): DbUser
