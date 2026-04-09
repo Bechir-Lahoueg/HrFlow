@@ -41,6 +41,8 @@ final class EmployeeLeaveController extends AbstractController
         sort($blockedHolidayDates);
         $blockedHolidayDates = array_values(array_unique($blockedHolidayDates));
 
+        $blockedLeaveDates = $leaveRequestService->getEmployeeBlockedLeaveDates($employeeId);
+
         return $this->render('DashboardEmployee/leave_requests.html.twig', [
             'user' => $this->getUser(),
             'leaveRequests' => $leaveRequestService->getEmployeeRequests($employeeId),
@@ -48,6 +50,7 @@ final class EmployeeLeaveController extends AbstractController
             'leaveStats' => $leaveRequestService->getEmployeeDashboardStats($employeeId),
             'pendingLeaveCount' => $leaveRequestService->getEmployeePendingCount($employeeId),
             'blockedHolidayDates' => $blockedHolidayDates,
+            'blockedLeaveDates' => $blockedLeaveDates,
         ]);
     }
 

@@ -2,80 +2,180 @@
 
 {% block title %}Exceptional Leave Validation | HrFlow{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .decision-row{transition:all .15s ease}
+        .decision-row:hover{background:linear-gradient(90deg,#f8fafc,#f1f5f9)}
+        .dark .decision-row:hover{background:rgba(255,255,255,.03)}
+        .status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.02em}
+        .field-input{transition:all .2s}
+        .field-input:focus{box-shadow:0 0 0 3px rgba(6,182,212,.12)}
+        @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .anim-up{animation:slideUp .4s ease-out both}
+        .delay-1{animation-delay:.05s}.delay-2{animation-delay:.1s}
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950">
     {% include 'DashboardAdmin/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardAdmin/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">{{ message }}</div>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 anim-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium">{{ message }}</div>
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 anim-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
         {% endfor %}
 
-        <main class="p-6 max-w-7xl mx-auto space-y-6">
-            <div class="flex items-center justify-between">
+        <main class="p-6 max-w-[1440px] mx-auto space-y-5">
+
+            {# ═══════════════════ PAGE HEADER ═══════════════════ #}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 anim-up">
                 <div>
-                    <h1 class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">Exceptional Leave Requests</h1>
-                    <p class="text-sm text-zinc-500">Final admin validation after RH pre-approval.</p>
+                    <h1 class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">Conges Exceptionnels</h1>
+                    <p class="text-[13px] text-zinc-400 mt-1">Validation finale apres pre-approbation RH. Examinez les justificatifs.</p>
                 </div>
-                <span class="text-xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-md">{{ leaveRequests|length }} pending</span>
+                {% if leaveRequests|length > 0 %}
+                <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50">
+                    <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-lg font-extrabold text-violet-700 dark:text-violet-400 tabular-nums leading-tight">{{ leaveRequests|length }}</p>
+                        <p class="text-[10px] text-violet-600 dark:text-violet-400/70 font-medium">en attente</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
-            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/70 dark:border-zinc-800/50 overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/80">
-                            <th class="py-3 px-4">Employee</th>
-                            <th class="py-3 px-4">Period</th>
-                            <th class="py-3 px-4">Days</th>
-                            <th class="py-3 px-4">Urgency</th>
-                            <th class="py-3 px-4">Justification</th>
-                            <th class="py-3 px-4">RH Comment</th>
-                            <th class="py-3 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-100">
-                    {% for leave in leaveRequests %}
-                        <tr>
-                            <td class="py-3 px-4 font-semibold text-zinc-700">{{ leave.employeeName }}</td>
-                            <td class="py-3 px-4 text-zinc-600">{{ leave.startDate|date('d/m/Y') }} - {{ leave.endDate|date('d/m/Y') }}</td>
-                            <td class="py-3 px-4 text-zinc-700 font-bold">{{ leave.daysCount }}</td>
-                            <td class="py-3 px-4">
-                                <span class="inline-flex px-2 py-1 rounded-md text-xs font-semibold {{ leave.urgencyLevel == 'HIGH' ? 'bg-red-50 text-red-700' : (leave.urgencyLevel == 'MEDIUM' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ leave.urgencyLevel ?: '-' }}</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                {% if leave.attachmentPath %}
-                                    <a href="{{ leave.attachmentPath }}" target="_blank" class="text-violet-600 hover:text-violet-700 font-semibold">Open file</a>
-                                {% else %}
-                                    <span class="text-zinc-400">-</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4 text-zinc-500 max-w-[220px]">{{ leave.rhComment ?: '-' }}</td>
-                            <td class="py-3 px-4">
-                                <div class="min-w-[220px] space-y-2">
-                                    <form method="post" action="{{ path('app_admin_leave_exception_approve', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-2">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_leave_exception_approve_' ~ leave.id) }}">
-                                        <input type="text" name="admin_comment" placeholder="Commentaire (optionnel)" class="w-full rounded-md border-zinc-200 text-xs py-1.5">
-                                        <button type="submit" class="w-full px-3 py-2 rounded-md text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700">Final Approve</button>
-                                    </form>
+            {# ═══════════════════ DECISION TABLE ═══════════════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-hidden anim-up delay-1">
+                {# Table Header #}
+                <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Validation Admin</h3>
+                                <p class="text-[11px] text-zinc-400">Demandes exceptionnelles pre-approuvees par le RH</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50">
+                            <div class="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></div>
+                            <span class="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">{{ leaveRequests|length }} pending</span>
+                        </div>
+                    </div>
+                </div>
 
-                                    <form method="post" action="{{ path('app_admin_leave_exception_reject', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-red-200 bg-red-50/60 p-2">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_leave_exception_reject_' ~ leave.id) }}">
-                                        <input type="text" name="admin_comment" placeholder="Motif de refus (obligatoire)" required class="w-full rounded-md border-zinc-200 text-xs py-1.5">
-                                        <button type="submit" class="w-full px-3 py-2 rounded-md text-xs font-bold text-white bg-red-600 hover:bg-red-700">Final Reject</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="7" class="py-16 text-center text-zinc-400">No exceptional requests pending admin validation.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {# Table #}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-zinc-100 dark:border-zinc-800/50">
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-5 bg-zinc-50/60 dark:bg-zinc-800/30">Employe</th>
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Periode</th>
+                                <th class="text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Jours</th>
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Urgence</th>
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Justificatif</th>
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Commentaire RH</th>
+                                <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800/30">
+                        {% for leave in leaveRequests %}
+                            <tr class="decision-row align-top">
+                                <td class="py-3.5 px-5">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shrink-0 shadow-sm">
+                                            <span class="text-[11px] font-bold text-white">{{ leave.employeeName|first|upper }}</span>
+                                        </div>
+                                        <span class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">{{ leave.employeeName }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700 dark:text-zinc-300">{{ leave.startDate|date('d/m/Y') }}</p>
+                                    <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d/m/Y') }}</p>
+                                </td>
+                                <td class="py-3.5 px-4 text-center">
+                                    <span class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200 tabular-nums">{{ leave.daysCount }}</span>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if leave.urgencyLevel == 'HIGH' %}
+                                        <span class="status-pill bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>HIGH
+                                        </span>
+                                    {% elseif leave.urgencyLevel == 'MEDIUM' %}
+                                        <span class="status-pill bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>MEDIUM
+                                        </span>
+                                    {% else %}
+                                        <span class="status-pill bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>{{ leave.urgencyLevel ?: 'LOW' }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if leave.attachmentPath %}
+                                        <a href="{{ leave.attachmentPath }}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50 px-2.5 py-1.5 rounded-lg transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/></svg>
+                                            Ouvrir
+                                        </a>
+                                    {% else %}
+                                        <span class="text-zinc-300 dark:text-zinc-600">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if leave.rhComment %}
+                                        <p class="text-[12px] text-zinc-500 dark:text-zinc-400 max-w-[180px] truncate" title="{{ leave.rhComment }}">{{ leave.rhComment }}</p>
+                                    {% else %}
+                                        <span class="text-zinc-300 dark:text-zinc-600">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="space-y-2 min-w-[220px]">
+                                        <form method="post" action="{{ path('app_admin_leave_exception_approve', {id: leave.id}) }}" class="space-y-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-2.5">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_leave_exception_approve_' ~ leave.id) }}">
+                                            <input type="text" name="admin_comment" placeholder="Commentaire (optionnel)" class="field-input w-full rounded-lg border border-zinc-200 dark:border-zinc-700 text-[11px] bg-white dark:bg-zinc-800 py-1.5 px-2.5 focus:border-emerald-400 focus:ring-emerald-400 transition-all placeholder:text-zinc-300">
+                                            <button type="submit" class="w-full text-[11px] font-semibold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                Approbation finale
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{{ path('app_admin_leave_exception_reject', {id: leave.id}) }}" class="space-y-1.5 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-950/20 p-2.5">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_leave_exception_reject_' ~ leave.id) }}">
+                                            <input type="text" name="admin_comment" placeholder="Motif de refus (obligatoire)" required class="field-input w-full rounded-lg border border-zinc-200 dark:border-zinc-700 text-[11px] bg-white dark:bg-zinc-800 py-1.5 px-2.5 focus:border-red-400 focus:ring-red-400 transition-all placeholder:text-zinc-300">
+                                            <button type="submit" class="w-full text-[11px] font-semibold px-3 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                Refuser
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="py-20 text-center">
+                                    <svg class="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                                    <p class="text-sm font-medium text-zinc-400 dark:text-zinc-500">Aucune demande exceptionnelle en attente</p>
+                                    <p class="text-xs text-zinc-300 dark:text-zinc-600 mt-1">Les demandes pre-approuvees par le RH apparaitront ici</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>

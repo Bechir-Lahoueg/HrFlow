@@ -352,6 +352,39 @@ final class LeaveRequestService
         return $this->leaveBalanceService->getCreditSummaryByRh($rhId);
     }
 
+    /**
+     * Returns all dates (Y-m-d) that are blocked because the employee
+     * already has an approved or pending leave covering them.
+     * @return string[]
+     */
+    public function getEmployeeBlockedLeaveDates(int $employeeId): array
+    {
+        $today = new DateTimeImmutable('today');
+        $activeLeaves = $this->leaveRequestRepository->findActiveLeavesByEmployee($employeeId, $today);
+
+        $blockedDates = [];
+        foreach ($activeLeaves as $leave) {
+            $current = new \DateTime($leave->getStartDate()->format('Y-m-d'));
+            $end = new \DateTime($leave->getEndDate()->format('Y-m-d'));
+            while ($current <= $end) {
+                $day = (int) $current->format('N'); // 6=Sat, 7=Sun
+                if ($day < 6) {
+                    $blockedDates[] = $current->format('Y-m-d');
+                }
+                $current->modify('+1 day');
+            }
+        }
+
+        return array_values(array_unique($blockedDates));
+    }
+
+    /** @return LeaveRequest[] */
+    public function getUpcomingApprovedByRh(int $rhId): array
+    {
+        $today = new DateTimeImmutable('today');
+        return $this->leaveRequestRepository->findUpcomingApprovedByRh($rhId, $today);
+    }
+
     private function autoFreezeExpiredExceptionalRequests(): void
     {
         $today = new DateTimeImmutable('today');
