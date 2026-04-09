@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Candidatures - {{ count }} candidature(s)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .document-title {
+            font-size: 16pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .summary {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .summary-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .stat-label {
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background: #4f46e5;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-reviewing { background: #dbeafe; color: #1e40af; }
+        .status-interview { background: #e0e7ff; color: #3730a3; }
+        .status-offer { background: #d1fae5; color: #065f46; }
+        .status-hired { background: #ccfbf1; color: #115e59; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">HrFlow</div>
+        <div class="document-title">Export des Candidatures</div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-title">Résumé de l'export</div>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ count }}</div>
+                <div class="stat-label">Candidatures</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ generatedAt|date('d/m/Y') }}</div>
+                <div class="stat-label">Date d'export</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ generatedAt|date('H:i') }}</div>
+                <div class="stat-label">Heure</div>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Candidat</th>
+                <th>Poste</th>
+                <th>Statut</th>
+                <th>Date candidature</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>#{{ app.id }}</td>
+                <td>{{ app.candidateName }}</td>
+                <td>{{ app.jobOffer.title }}</td>
+                <td>
+                    <span class="status-badge status-{{ app.status|lower }}">
+                        {{ app.getStatusLabel() }}
+                    </span>
+                </td>
+                <td>{{ app.appliedAt|date('d/m/Y') }}</td>
+                <td>{{ app.emailAddress ?: '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Document généré le {{ generatedAt|date('d/m/Y à H:i') }} | HrFlow Recruitment System<br>
+        Confidentiel - Usage interne uniquement
+    </div>
+</body>
+</html>

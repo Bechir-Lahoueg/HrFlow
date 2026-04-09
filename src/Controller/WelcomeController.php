@@ -28,6 +28,10 @@ final class WelcomeController extends AbstractController
             return $this->redirectToRoute('app_welcome_employee');
         }
 
+        if ($this->isGranted('ROLE_CANDIDATE')) {
+            return $this->redirectToRoute('app_candidate_dashboard');
+        }
+
         throw $this->createAccessDeniedException('Role not supported for welcome page.');
     }
 

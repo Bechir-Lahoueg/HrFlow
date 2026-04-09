@@ -51,8 +51,9 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         $roles = $token->getRoleNames();
 
+        // Check for target path first (but not for candidates - they should always go to their dashboard)
         $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
-        if ($targetPath !== null) {
+        if ($targetPath !== null && !in_array('ROLE_CANDIDATE', $roles, true)) {
             return new RedirectResponse($targetPath);
         }
 

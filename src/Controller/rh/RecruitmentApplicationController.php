@@ -54,8 +54,12 @@ final class RecruitmentApplicationController extends AbstractController
 
     #[Route('/rh/recruitment/applications/{id}/status', name: 'app_rh_applications_status', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function updateStatus(int $id, Request $request, ApplicationRepository $applicationRepository, EntityManagerInterface $em): RedirectResponse
-    {
+    public function updateStatus(
+        int $id,
+        Request $request,
+        ApplicationRepository $applicationRepository,
+        EntityManagerInterface $em
+    ): RedirectResponse {
         if (!$this->isCsrfTokenValid('application_status_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');
@@ -77,10 +81,16 @@ final class RecruitmentApplicationController extends AbstractController
             return $this->redirectToRoute('app_rh_applications');
         }
 
-        $application->setStatus($status);
-        $em->flush();
+        $previousStatus = $application->getStatus();
 
-        $this->addFlash('success', 'Statut mis à jour avec succès.');
+        if ($previousStatus !== $status) {
+            $application->setStatus($status);
+            $em->flush();
+            $this->addFlash('success', sprintf('Statut mis à jour avec succès (%s → %s).', $previousStatus, $status));
+        } else {
+            $this->addFlash('info', 'Le statut n\'a pas changé.');
+        }
+
         return $this->redirectToRoute('app_rh_applications');
     }
 
