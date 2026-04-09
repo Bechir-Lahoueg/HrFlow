@@ -1,0 +1,311 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Projets — HRFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .count-anim{animation:countUp .4s ease-out both}
+    .project-row-item{transition:all .2s}
+    .project-row-item:hover{background:#f8fafc;transform:scale(1.002)}
+    .task-row-item{transition:all .15s}
+    .task-row-item:hover{background:#f8fafc}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Project Studio</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes Projets & Tâches</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Vos projets actifs, vos tâches et votre contribution à l'équipe en temps réel.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Projets actifs</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ projects|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">assignés à vous</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Heures totales</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ totalHours }}h</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">travaillées</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Stat Cards ══════════ #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-1">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+                        </div>
+                        <span class="text-[11px] font-bold text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-md">Projets</span>
+                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ projects|length }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Mes projets</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-3/4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"></div></div>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ taskStats.completed_tasks }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Tâches terminées</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div></div>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ taskStats.in_progress_tasks }}</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">En cours</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/2 rounded-full bg-gradient-to-r from-orange-500 to-amber-400"></div></div>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ totalHours }}h</p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Heures travaillées</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"></div></div>
+                </div>
+            </div>
+
+            {# ══════════ Projets + Tâches ══════════ #}
+            <div class="grid grid-cols-1 2xl:grid-cols-12 gap-6">
+
+                {# ── Mes Projets ── #}
+                <section class="2xl:col-span-5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                    <div class="flex items-center justify-between gap-3 mb-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+                            </div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Projets Actifs</h3>
+                        </div>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-wider">{{ projects|length }} projet{{ projects|length > 1 ? 's' : '' }}</span>
+                    </div>
+
+                    {% if projects is empty %}
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-zinc-50 flex items-center justify-center mb-3">
+                            <svg class="w-7 h-7 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75"/></svg>
+                        </div>
+                        <p class="text-sm font-semibold text-zinc-400">Aucun projet assigné</p>
+                        <p class="text-xs text-zinc-300 mt-1">Vous n'êtes membre d'aucun projet pour le moment.</p>
+                    </div>
+                    {% else %}
+                    <div class="space-y-2">
+                        {% for project in projects %}
+                        <a href="{{ path('employee_project_show', {id: project.id}) }}"
+                           class="project-row-item flex items-center gap-3 rounded-xl border border-zinc-100 px-4 py-3 hover:border-cyan-200 hover:bg-cyan-50/40 group"
+                           style="text-decoration:none;">
+                            <div class="shrink-0 w-2.5 h-2.5 rounded-full
+                                {{ project.status == 'in_progress' ? 'bg-emerald-500' : '' }}
+                                {{ project.status == 'planning' ? 'bg-zinc-400' : '' }}
+                                {{ project.status == 'on_hold' ? 'bg-amber-500' : '' }}
+                                {{ project.status == 'completed' ? 'bg-blue-500' : '' }}
+                                {{ project.status == 'cancelled' ? 'bg-red-500' : '' }}">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 truncate">{{ project.name }}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">
+                                    {{ project.role ?? 'Membre' }} · {{ project.worked_hours ?? 0 }}h / {{ project.assigned_hours ? (project.assigned_hours ~ 'h') : '∞' }}
+                                </p>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                <div class="w-16 h-1.5 rounded-full bg-zinc-100 overflow-hidden mb-1">
+                                    <div class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500" style="width:{{ project.completion_rate ?? 0 }}%"></div>
+                                </div>
+                                <p class="text-[10px] text-zinc-400 font-semibold">{{ project.completion_rate ?? 0 }}%</p>
+                            </div>
+                            <div class="shrink-0 w-6 h-6 rounded-lg bg-zinc-100 group-hover:bg-cyan-600 flex items-center justify-center transition-colors">
+                                <svg class="w-3 h-3 text-zinc-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </section>
+
+                {# ── Mes Tâches ── #}
+                <section class="2xl:col-span-7 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Tâches</h3>
+                        </div>
+                        {# Filtres statut (style identique aux badges de leaveRequests) #}
+                        <div class="flex gap-1.5 flex-wrap">
+                            <a href="{{ path('employee_project_index') }}"
+                               class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
+                                      {{ not statusFilter ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
+                                Toutes
+                            </a>
+                            <a href="{{ path('employee_project_index', {status: 'todo'}) }}"
+                               class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
+                                      {{ statusFilter == 'todo' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
+                                📋 À faire
+                            </a>
+                            <a href="{{ path('employee_project_index', {status: 'in_progress'}) }}"
+                               class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
+                                      {{ statusFilter == 'in_progress' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
+                                ⏳ En cours
+                            </a>
+                            <a href="{{ path('employee_project_index', {status: 'review'}) }}"
+                               class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
+                                      {{ statusFilter == 'review' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
+                                👁️ Review
+                            </a>
+                            <a href="{{ path('employee_project_index', {status: 'done'}) }}"
+                               class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
+                                      {{ statusFilter == 'done' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
+                                ✅ Terminées
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if taskStats.overdue_tasks > 0 %}
+                    <div class="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                        Vous avez <strong class="mx-1">{{ taskStats.overdue_tasks }}</strong> tâche{{ taskStats.overdue_tasks > 1 ? 's' : '' }} en retard !
+                    </div>
+                    {% endif %}
+
+                    <div class="overflow-x-auto rounded-lg border border-zinc-100">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/80">
+                                    <th class="py-3 px-4">Tâche</th>
+                                    <th class="py-3 px-4">Projet</th>
+                                    <th class="py-3 px-4">Priorité</th>
+                                    <th class="py-3 px-4">Statut</th>
+                                    <th class="py-3 px-4">Échéance</th>
+                                    <th class="py-3 px-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasks-body">
+                            {% if myTasks is empty %}
+                                <tr>
+                                    <td colspan="6" class="py-12 text-center text-zinc-400 text-sm">
+                                        Aucune tâche trouvée.
+                                    </td>
+                                </tr>
+                            {% else %}
+                            {% for task in myTasks %}
+                            {% set isOverdue = task.due_date and task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}
+                            {% set isSoon = task.due_date and task.due_date <= 'now'|date_modify('+2 days')|date('Y-m-d') and not isOverdue and task.status != 'done' %}
+                            <tr class="task-row-item border-b border-zinc-50 align-middle">
+                                <td class="py-3 px-4">
+                                    <p class="text-[13px] font-medium text-zinc-700 truncate max-w-[150px]">{{ task.title }}</p>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ task.project_name }}</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {{ task.priority == 'low'    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ task.priority == 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200'     : '' }}
+                                        {{ task.priority == 'high'   ? 'bg-red-50 text-red-700 border border-red-200'           : '' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {{ task.priority == 'low'    ? 'bg-emerald-500' : '' }}
+                                            {{ task.priority == 'medium' ? 'bg-amber-500'   : '' }}
+                                            {{ task.priority == 'high'   ? 'bg-red-500'     : '' }}"></span>
+                                        {{ task.priority|upper }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {{ task.status == 'todo'        ? 'bg-zinc-100 text-zinc-600 border border-zinc-200'       : '' }}
+                                        {{ task.status == 'in_progress' ? 'bg-amber-50 text-amber-700 border border-amber-200'    : '' }}
+                                        {{ task.status == 'review'      ? 'bg-violet-50 text-violet-700 border border-violet-200' : '' }}
+                                        {{ task.status == 'done'        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {{ task.status == 'todo'        ? 'bg-zinc-400'    : '' }}
+                                            {{ task.status == 'in_progress' ? 'bg-amber-500'   : '' }}
+                                            {{ task.status == 'review'      ? 'bg-violet-500'  : '' }}
+                                            {{ task.status == 'done'        ? 'bg-emerald-500' : '' }}"></span>
+                                        {{ task.status == 'todo'        ? 'À faire'  : '' }}
+                                        {{ task.status == 'in_progress' ? 'En cours' : '' }}
+                                        {{ task.status == 'review'      ? 'Review'   : '' }}
+                                        {{ task.status == 'done'        ? 'Terminé'  : '' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if task.due_date %}
+                                    <span class="text-[12px] font-medium
+                                        {{ isOverdue             ? 'text-red-600 font-bold'   : '' }}
+                                        {{ isSoon and not isOverdue ? 'text-amber-600 font-bold' : '' }}
+                                        {{ not isOverdue and not isSoon ? 'text-zinc-500'         : '' }}">
+                                        {{ task.due_date|date('d M Y') }}
+                                        {% if isOverdue %} ⚠️{% elseif isSoon %} 🔥{% endif %}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-zinc-300 text-[12px]">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <a href="{{ path('employee_project_show', {id: task.project_id}) }}"
+                                       class="text-[11px] font-semibold px-3 py-1.5 rounded-lg text-cyan-700 bg-cyan-50 border border-cyan-200 hover:bg-cyan-100 transition-colors">
+                                        Ouvrir →
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+{% endblock %}
