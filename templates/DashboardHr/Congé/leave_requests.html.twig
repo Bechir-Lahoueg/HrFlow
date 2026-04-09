@@ -174,17 +174,17 @@
                 </div>
 
                 {# Filter Form #}
-                    <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 mb-5">
+                    <form id="rh-filters-form" method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 mb-5">
                         <div class="xl:col-span-2">
                             <label for="rh-search" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Recherche</label>
                             <div class="relative">
                                 <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m0 0A7.5 7.5 0 103.75 9.75a7.5 7.5 0 0012.9 6.9z"/></svg>
-                                <input id="rh-search" type="text" name="q" value="{{ searchFilter|default('') }}" placeholder="Nom, type, motif, statut..." class="w-full pl-9 rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                                <input id="rh-search" type="text" name="q" value="{{ searchFilter|default('') }}" placeholder="Nom, type, motif, statut..." class="w-full pl-9 rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white" autocomplete="off">
                             </div>
                         </div>
                         <div>
                             <label for="rh-status" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Statut</label>
-                            <select id="rh-status" name="status" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                            <select id="rh-status" name="status" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white" data-auto-submit="true">
                         <option value="ALL" {{ statusFilter is null ? 'selected' : '' }}>Tous les statuts</option>
                         <option value="ATTENTE" {{ statusFilter == 'ATTENTE' ? 'selected' : '' }}>ATTENTE</option>
                         <option value="ACCEPTE" {{ statusFilter == 'ACCEPTE' ? 'selected' : '' }}>ACCEPTE</option>
@@ -193,7 +193,7 @@
                         </div>
                         <div>
                             <label for="rh-sort" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Trier par</label>
-                            <select id="rh-sort" name="sort" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                            <select id="rh-sort" name="sort" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white" data-auto-submit="true">
                                 <option value="request_date" {{ sortFilter|default('request_date') == 'request_date' ? 'selected' : '' }}>Date de demande</option>
                                 <option value="start_date" {{ sortFilter|default('request_date') == 'start_date' ? 'selected' : '' }}>Date de debut</option>
                                 <option value="days" {{ sortFilter|default('request_date') == 'days' ? 'selected' : '' }}>Nombre de jours</option>
@@ -203,7 +203,7 @@
                         </div>
                         <div>
                             <label for="rh-dir" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Ordre</label>
-                            <select id="rh-dir" name="dir" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white">
+                            <select id="rh-dir" name="dir" class="w-full rounded-lg border-zinc-200 bg-zinc-50 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white" data-auto-submit="true">
                                 <option value="DESC" {{ dirFilter|default('DESC') == 'DESC' ? 'selected' : '' }}>Decroissant</option>
                                 <option value="ASC" {{ dirFilter|default('DESC') == 'ASC' ? 'selected' : '' }}>Croissant</option>
                             </select>
@@ -245,7 +245,12 @@
                                     <p class="text-[11px] text-zinc-400">au {{ leave.endDate|date('d M Y') }}</p>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md">{{ leave.leaveType }}</span>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-[12px] font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-md w-fit">{{ leave.leaveType }}</span>
+                                        {% if leave.requestCategory == 'EXCEPTION' %}
+                                            <span class="text-[10px] font-bold text-violet-700 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-md w-fit">EXCEPTION</span>
+                                        {% endif %}
+                                    </div>
                                 </td>
                                 <td class="py-3 px-4 font-bold text-zinc-800 font-mono-num">{{ leave.daysCount }}</td>
                                 <td class="py-3 px-4">
@@ -269,31 +274,51 @@
                                         {{ leave.status }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[160px]">{{ leave.reason ?: '-' }}</td>
+                                <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[220px]">
+                                    <div class="space-y-1">
+                                        <p>{{ leave.reason ?: '-' }}</p>
+                                        {% if leave.requestCategory == 'EXCEPTION' %}
+                                            <p class="text-[10px] font-semibold text-violet-600">Urgence: {{ leave.urgencyLevel ?: '-' }}</p>
+                                            {% if leave.attachmentPath %}
+                                                <a href="{{ leave.attachmentPath }}" target="_blank" class="text-[10px] font-semibold text-sky-600 hover:text-sky-700">Voir justificatif</a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </td>
                                 <td class="py-3 px-4">
                                     {% if leave.status == 'ATTENTE' %}
-                                        <div class="space-y-2 min-w-[220px]">
-                                            <form method="post" action="{{ path('app_rh_leave_approve', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2.5">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_approve_' ~ leave.id) }}">
-                                                <input name="rh_comment" type="text" placeholder="Commentaire (optionnel)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-emerald-400 focus:ring-emerald-400">
-                                                <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                                    Approuver
-                                                </button>
-                                            </form>
-                                            <form method="post" action="{{ path('app_rh_leave_reject', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-red-200 bg-red-50/50 p-2.5">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_reject_' ~ leave.id) }}">
-                                                <input name="rh_comment" type="text" placeholder="Motif du refus (obligatoire)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-red-400 focus:ring-red-400" required>
-                                                <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                    Refuser
-                                                </button>
-                                            </form>
-                                        </div>
+                                        {% if leave.requestCategory == 'EXCEPTION' and leave.workflowStatus == 'ADMIN_PENDING' %}
+                                            <div class="text-[11px] text-zinc-500 rounded-lg border border-violet-200 bg-violet-50 p-2.5">
+                                                Pre-approuvee RH: en attente validation Admin.
+                                            </div>
+                                        {% else %}
+                                            <div class="space-y-2 min-w-[220px]">
+                                                <form method="post" action="{{ path('app_rh_leave_approve', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2.5">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_approve_' ~ leave.id) }}">
+                                                    <input name="rh_comment" type="text" placeholder="Commentaire (optionnel)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-emerald-400 focus:ring-emerald-400">
+                                                    <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                        {{ leave.requestCategory == 'EXCEPTION' ? 'Pre-approuver (Admin ensuite)' : 'Approuver' }}
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_rh_leave_reject', {id: leave.id}) }}" class="space-y-1.5 rounded-lg border border-red-200 bg-red-50/50 p-2.5">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('rh_leave_reject_' ~ leave.id) }}">
+                                                    <input name="rh_comment" type="text" placeholder="Motif du refus (obligatoire)" class="w-full rounded-md border-zinc-200 text-[11px] bg-white py-1.5 focus:border-red-400 focus:ring-red-400" required>
+                                                    <button type="submit" class="w-full text-[11px] font-bold px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        Refuser
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
                                     {% else %}
                                         <div class="text-[11px] text-zinc-400 rounded-lg border border-zinc-100 bg-zinc-50 p-2.5">
                                             <p class="font-bold text-zinc-500 mb-0.5">Commentaire:</p>
                                             <p>{{ leave.rhComment ?: '-' }}</p>
+                                            {% if leave.adminComment %}
+                                                <p class="font-bold text-zinc-500 mt-2 mb-0.5">Commentaire Admin:</p>
+                                                <p>{{ leave.adminComment }}</p>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 </td>
@@ -308,4 +333,37 @@
         </main>
     </div>
 </div>
+
+<script>
+(function() {
+    const form = document.getElementById('rh-filters-form');
+    const searchInput = document.getElementById('rh-search');
+    if (!form || !searchInput) {
+        return;
+    }
+
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        window.clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(function() {
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        }, 300);
+    });
+
+    form.querySelectorAll('[data-auto-submit="true"]').forEach(function(field) {
+        field.addEventListener('change', function() {
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}

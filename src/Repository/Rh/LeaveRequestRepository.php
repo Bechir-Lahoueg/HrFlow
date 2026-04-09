@@ -193,4 +193,35 @@ class LeaveRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /** @return LeaveRequest[] */
+    public function findAdminExceptionPending(): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->join('lr.employee', 'e')
+            ->where('lr.requestCategory = :category')
+            ->andWhere('lr.workflowStatus = :workflowStatus')
+            ->setParameter('category', 'EXCEPTION')
+            ->setParameter('workflowStatus', 'ADMIN_PENDING')
+            ->orderBy('lr.requestDate', 'DESC')
+            ->addOrderBy('lr.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return LeaveRequest[] */
+    public function findExpiredExceptionalPending(\DateTimeInterface $today): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->where('lr.requestCategory = :category')
+            ->andWhere('lr.status = :status')
+            ->andWhere('lr.workflowStatus IN (:workflows)')
+            ->andWhere('lr.startDate <= :today')
+            ->setParameter('category', 'EXCEPTION')
+            ->setParameter('status', 'ATTENTE')
+            ->setParameter('workflows', ['RH_PENDING', 'ADMIN_PENDING'])
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getResult();
+    }
 }
