@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Repository\Rh\EmployeeRepository;
 use App\Service\LeaveBalanceService;
 use App\Service\LeaveRequestService;
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,6 +28,10 @@ final class WelcomeController extends AbstractController
             return $this->redirectToRoute('app_welcome_employee');
         }
 
+        if ($this->isGranted('ROLE_CANDIDATE')) {
+            return $this->redirectToRoute('app_candidate_dashboard');
+        }
+
         throw $this->createAccessDeniedException('Role not supported for welcome page.');
     }
 
@@ -42,7 +46,7 @@ final class WelcomeController extends AbstractController
 
     #[Route('/welcome/rh', name: 'app_welcome_rh')]
     #[IsGranted('ROLE_RH')]
-    public function rh(EmployeeRepository $employeeRepository, LeaveRequestService $leaveRequestService): Response
+    public function rh(Connection $connection, LeaveRequestService $leaveRequestService): Response
     {
         $rhId = (int) $this->getUser()?->getId();
 
@@ -50,9 +54,13 @@ final class WelcomeController extends AbstractController
         $pendingLeaveCount = 0;
 
         try {
-            $employeeCount = $employeeRepository->count(['rhId' => $rhId]);
+            $employeeCount = (int) $connection->fetchOne(
+                'SELECT COUNT(*) FROM employees WHERE rh_id = :rhId',
+                ['rhId' => $rhId]
+            );
             $pendingLeaveCount = $leaveRequestService->getRhPendingCount($rhId);
         } catch (\Throwable) {
+            // Keep dashboard available even if leave tables are not yet provisioned.
         }
 
         return $this->render('DashboardHr/welcome_rh.html.twig', [
@@ -87,6 +95,7 @@ final class WelcomeController extends AbstractController
             $availableLeaveDays = (float) ($balance['available_days'] ?? 0);
             $leaveStats = $leaveRequestService->getEmployeeDashboardStats($employeeId);
         } catch (\Throwable) {
+            // Keep dashboard available even if leave tables are not yet provisioned.
         }
 
         return $this->render('DashboardEmployee/welcome_employee.html.twig', [

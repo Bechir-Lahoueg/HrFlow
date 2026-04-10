@@ -233,4 +233,78 @@ class InterviewRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Check for conflicting interviews for an interviewer
+     * Returns conflicting interviews within the time range (default 1 hour buffer)
+     *
+     * @return Interview[]
+     */
+    public function findConflictingInterviews(
+        int $interviewerId,
+        \DateTimeInterface $interviewDate,
+        ?int $excludeInterviewId = null,
+        int $bufferMinutes = 60
+    ): array {
+        $startTime = (clone $interviewDate)->modify("-{$bufferMinutes} minutes");
+        $endTime = (clone $interviewDate)->modify("+{$bufferMinutes} minutes");
+
+        $qb = $this->createQueryBuilder('i')
+            ->where('i.interviewerId = :interviewerId')
+            ->andWhere('i.isDeleted = false')
+            ->andWhere('i.interviewDate BETWEEN :startTime AND :endTime')
+            ->setParameter('interviewerId', $interviewerId)
+            ->setParameter('startTime', $startTime)
+            ->setParameter('endTime', $endTime)
+            ->orderBy('i.interviewDate', 'ASC');
+
+        if ($excludeInterviewId) {
+            $qb->andWhere('i.id != :excludeId')
+               ->setParameter('excludeId', $excludeInterviewId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Check if interviewer has any conflicts at the given time
+     */
+    public function hasConflictingInterviews(
+        int $interviewerId,
+        \DateTimeInterface $interviewDate,
+        ?int $excludeInterviewId = null,
+        int $bufferMinutes = 60
+    ): bool {
+        $conflicts = $this->findConflictingInterviews(
+            $interviewerId,
+            $interviewDate,
+            $excludeInterviewId,
+            $bufferMinutes
+        );
+
+        return count($conflicts) > 0;
+    }
+
+    /**
+     * Get interviewer's schedule for a specific date
+     * @return Interview[]
+     */
+    public function findInterviewerScheduleForDate(int $interviewerId, \DateTimeInterface $date): array
+    {
+        $startOfDay = (clone $date)->setTime(0, 0, 0);
+        $endOfDay = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('i')
+            ->join('i.application', 'a')
+            ->addSelect('a')
+            ->where('i.interviewerId = :interviewerId')
+            ->andWhere('i.isDeleted = false')
+            ->andWhere('i.interviewDate BETWEEN :startOfDay AND :endOfDay')
+            ->setParameter('interviewerId', $interviewerId)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
+            ->orderBy('i.interviewDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

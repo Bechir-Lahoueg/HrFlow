@@ -43,18 +43,16 @@ final class ProjectUpdateService
     }
 
     public function createUpdate(array $data): void
-        {
-            $this->connection->insert('project_updates', [
-                'project_id'  => $data['project_id'],
-                'user_id'     => $data['user_id'], // C'est l'ID de l'employé
-                'update_type' => $data['update_type'] ?? 'comment',
-                'title'       => $data['title'],
-                'content'     => $data['content'] ?? null,
-                // 'created_at' est un TIMESTAMP, MySQL peut le gérer seul,
-                // mais on peut le forcer ici si nécessaire :
-                'created_at'  => date('Y-m-d H:i:s'),
-            ]);
-        }
+    {
+        $this->connection->insert('project_updates', [
+            'project_id'  => $data['project_id'],
+            'user_id'     => $data['user_id'],
+            'update_type' => $data['update_type'] ?? 'comment',
+            'title'       => $data['title'],
+            'content'     => $data['content'] ?? null,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
+    }
 
     public function deleteUpdate(int $id): void
     {
@@ -66,15 +64,15 @@ final class ProjectUpdateService
     // ═══════════════════════════════════════════════════════════════
 
     public function logTaskCreated(int $projectId, int $employeeId, string $taskTitle): void
-        {
-            $this->createUpdate([
-                'project_id'  => $projectId,
-                'user_id'     => $employeeId,
-                'update_type' => 'task',
-                'title'       => 'Nouvelle tâche créée',
-                'content'     => "Tâche '{$taskTitle}' ajoutée au projet",
-            ]);
-        }
+    {
+        $this->createUpdate([
+            'project_id'  => $projectId,
+            'user_id'     => $employeeId,
+            'update_type' => 'task',
+            'title'       => 'Nouvelle tâche créée',
+            'content'     => "Tâche '{$taskTitle}' ajoutée au projet",
+        ]);
+    }
 
     public function logTaskCompleted(int $projectId, int $userId, string $taskTitle): void
     {
@@ -94,7 +92,7 @@ final class ProjectUpdateService
             'user_id' => $userId,
             'update_type' => 'milestone',
             'title' => 'Jalon atteint',
-            'content' => "Le jalon '{$milestoneName}' a été complété 🎉",
+            'content' => "Le jalon '{$milestoneName}' a été complété ",
         ]);
     }
 
@@ -110,15 +108,15 @@ final class ProjectUpdateService
     }
 
     public function logStatusChange(int $projectId, int $employeeId, string $oldStatus, string $newStatus): void
-        {
-            $this->createUpdate([
-                'project_id'  => $projectId,
-                'user_id'     => $employeeId,
-                'update_type' => 'status_change',
-                'title'       => 'Statut modifié',
-                'content'     => "Statut passé de '{$oldStatus}' à '{$newStatus}'",
-            ]);
-        }
+    {
+        $this->createUpdate([
+            'project_id'  => $projectId,
+            'user_id'     => $employeeId,
+            'update_type' => 'status_change',
+            'title'       => 'Statut modifié',
+            'content'     => "Statut passé de '{$oldStatus}' à '{$newStatus}'",
+        ]);
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // HELPERS

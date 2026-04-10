@@ -130,16 +130,12 @@ class RhProjectController extends AbstractController
             $data = $request->request->all();
             $data['rh_id'] = $user->getId();
 
-
             $errors = $this->projectService->validate($data);
-
 
             if (count($errors) > 0) {
                 foreach ($errors as $field => $message) {
-
                     $this->addFlash('error', $message);
                 }
-
 
                 return $this->render('DashboardHr/Project/new.html.twig', [
                     'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
@@ -148,7 +144,6 @@ class RhProjectController extends AbstractController
                     'errors' => $errors
                 ]);
             }
-
 
             $this->projectService->createProject($data);
             $this->addFlash('success', 'Projet créé avec succès !');
@@ -162,6 +157,7 @@ class RhProjectController extends AbstractController
             'errors' => []
         ]);
     }
+
     // ═══════════════════════════════════════════════════════════════
     // MODIFIER UN PROJET
     // ═══════════════════════════════════════════════════════════════
@@ -425,7 +421,6 @@ class RhProjectController extends AbstractController
 
         $healthScore = max(0, $healthScore);
         $healthStatus = $healthScore >= 80 ? 'excellent' : ($healthScore >= 60 ? 'good' : ($healthScore >= 40 ? 'warning' : 'critical'));
-
 
         $risks = [];
         if ($unassignedTasks > 0) {

@@ -2,13 +2,17 @@
 
 namespace App\Controller;
 
+use App\Repository\Recrutement\JobOfferRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\Recrutement\JobOfferRepository;
 
 final class HomeController extends AbstractController
 {
+    public function __construct(
+        private JobOfferRepository $jobOfferRepository
+    ) {
+    }
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
@@ -16,19 +20,13 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/offres-emploi', name: 'app_job_offers')]
-    public function jobOffers(JobOfferRepository $jobOfferRepository): Response
+    public function jobOffers(): Response
     {
-        $jobOffers = $jobOfferRepository->findPublished();
+        $jobOffers = $this->jobOfferRepository->findPublished(50);
 
         return $this->render('Home/job_offers.html.twig', [
             'jobOffers' => $jobOffers,
         ]);
-    }
-
-    #[Route('/abonnements', name: 'app_subscriptions')]
-    public function subscriptions(): Response
-    {
-        return $this->render('Home/subscribtions.htm.twig');
     }
 
     #[Route('/a-propos', name: 'app_about')]
@@ -41,5 +39,11 @@ final class HomeController extends AbstractController
     public function contact(): Response
     {
         return $this->render('Home/contact.html.twig');
+    }
+
+    #[Route('/tarification', name: 'app_subscriptions')]
+    public function subscriptions(): Response
+    {
+        return $this->render('Home/subscriptions.html.twig');
     }
 }

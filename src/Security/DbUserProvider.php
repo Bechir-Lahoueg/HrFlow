@@ -28,7 +28,7 @@ final class DbUserProvider implements UserProviderInterface
 
         // Then try the employees table (like the Java app)
         $empRow = $this->connection->fetchAssociative(
-            'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE email = :identifier LIMIT 1',
+            'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
@@ -36,9 +36,9 @@ final class DbUserProvider implements UserProviderInterface
             return $this->hydrateEmployee($empRow);
         }
 
-        // Finally try the candidates table (external applicants)
+        // Finally try the candidates table
         $candidateRow = $this->connection->fetchAssociative(
-            'SELECT id, username, email, password, first_name, last_name, phone FROM candidates WHERE username = :identifier OR email = :identifier LIMIT 1',
+            'SELECT id, username, email, password, first_name, last_name FROM candidates WHERE username = :identifier OR email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
@@ -57,7 +57,7 @@ final class DbUserProvider implements UserProviderInterface
 
         if ($user->getSource() === 'employees') {
             $row = $this->connection->fetchAssociative(
-                'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE id = :id LIMIT 1',
+                'SELECT id, first_name, last_name, age, job_title, email, password FROM employees WHERE id = :id LIMIT 1',
                 ['id' => $user->getId()]
             );
 
@@ -70,7 +70,7 @@ final class DbUserProvider implements UserProviderInterface
 
         if ($user->getSource() === 'candidates') {
             $row = $this->connection->fetchAssociative(
-                'SELECT id, username, email, password, first_name, last_name, phone FROM candidates WHERE id = :id LIMIT 1',
+                'SELECT id, username, email, password, first_name, last_name FROM candidates WHERE id = :id LIMIT 1',
                 ['id' => $user->getId()]
             );
 
@@ -125,25 +125,25 @@ final class DbUserProvider implements UserProviderInterface
             $firstName,
             $lastName,
             (string) $row['job_title'],
-            (int) $row['age'],
-            $row['rh_id'] ? (int) $row['rh_id'] : null
+            (int) $row['age']
         );
     }
 
     private function hydrateCandidate(array $row): DbUser
     {
+        $firstName = isset($row['first_name']) ? (string) $row['first_name'] : null;
+        $lastName = isset($row['last_name']) ? (string) $row['last_name'] : null;
+        $username = (string) $row['username'];
+
         return new DbUser(
             (int) $row['id'],
-            (string) $row['username'],
-            (string) $row['email'],
+            $username,
+            isset($row['email']) ? (string) $row['email'] : null,
             (string) $row['password'],
             'CANDIDATE',
             'candidates',
-            isset($row['first_name']) ? (string) $row['first_name'] : null,
-            isset($row['last_name']) ? (string) $row['last_name'] : null,
-            null,
-            null,
-            null
+            $firstName,
+            $lastName
         );
     }
 }

@@ -20,25 +20,11 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     use TargetPathTrait;
 
     public const LOGIN_ROUTE = 'app_login';
-    public const CANDIDATE_LOGIN_ROUTE = 'app_candidate_login';
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly DbUserProvider $userProvider,
     ) {
-    }
-
-    public function supports(Request $request): bool
-    {
-        if (!$request->isMethod('POST')) {
-            return false;
-        }
-
-        $path = $request->getPathInfo();
-        $loginPath = $this->urlGenerator->generate(self::LOGIN_ROUTE);
-        $candidateLoginPath = $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE);
-
-        return $path === $loginPath || $path === $candidateLoginPath;
     }
 
     public function authenticate(Request $request): Passport
@@ -64,7 +50,12 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $roles = $token->getRoleNames();
-        $this->removeTargetPath($request->getSession(), $firewallName);
+
+        // Check for target path first (but not for candidates - they should always go to their dashboard)
+        $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
+        if ($targetPath !== null && !in_array('ROLE_CANDIDATE', $roles, true)) {
+            return new RedirectResponse($targetPath);
+        }
 
         if (in_array('ROLE_ADMIN', $roles, true)) {
             return new RedirectResponse($this->urlGenerator->generate('app_welcome_admin'));
@@ -87,10 +78,6 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     protected function getLoginUrl(Request $request): string
     {
-        // Check if request came from candidate login page
-        if ($request->getPathInfo() === $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE)) {
-            return $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE);
-        }
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
 

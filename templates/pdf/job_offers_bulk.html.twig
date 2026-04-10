@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Offres - {{ count }} offre(s)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .document-title {
+            font-size: 16pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .summary {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .summary-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .stat-label {
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        .job-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .job-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        .job-meta {
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+        .status-draft { background: #fef3c7; color: #92400e; }
+        .job-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .detail-item {
+            font-size: 9pt;
+        }
+        .detail-label {
+            color: #6b7280;
+        }
+        .detail-value {
+            font-weight: 500;
+        }
+        .salary-info {
+            background: #ecfdf5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 9pt;
+            color: #065f46;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">HrFlow</div>
+        <div class="document-title">Export des Offres d'Emploi</div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-title">Résumé de l'export</div>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ count }}</div>
+                <div class="stat-label">Offres</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ generatedAt|date('d/m/Y') }}</div>
+                <div class="stat-label">Date d'export</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ generatedAt|date('H:i') }}</div>
+                <div class="stat-label">Heure</div>
+            </div>
+        </div>
+    </div>
+
+    {% for job in jobOffers %}
+    <div class="job-card">
+        <div class="job-header">
+            <div>
+                <div class="job-title">{{ job.title }}</div>
+                <div class="job-meta">
+                    #{{ job.id }} | Créée le {{ job.createdAt|date('d/m/Y') }}
+                </div>
+            </div>
+            <span class="status-badge status-{{ job.status|lower }}">
+                {{ job.status }}
+            </span>
+        </div>
+        
+        <div class="job-details">
+            <div class="detail-item">
+                <span class="detail-label">Département:</span>
+                <span class="detail-value">{{ job.department ?: 'Non spécifié' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Localisation:</span>
+                <span class="detail-value">{{ job.location ?: 'Non spécifiée' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value">{{ job.employmentType ?: 'Non spécifié' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Créée par:</span>
+                <span class="detail-value">#{{ job.createdBy }}</span>
+            </div>
+        </div>
+
+        {% if job.salaryMin > 0 or job.salaryMax > 0 %}
+        <div class="salary-info">
+            <strong>Salaire:</strong>
+            {% if job.salaryMin > 0 and job.salaryMax > 0 %}
+                {{ job.salaryMin|number_format(0, ',', ' ') }} - {{ job.salaryMax|number_format(0, ',', ' ') }} TND
+            {% elseif job.salaryMin > 0 %}
+                À partir de {{ job.salaryMin|number_format(0, ',', ' ') }} TND
+            {% else %}
+                Jusqu'à {{ job.salaryMax|number_format(0, ',', ' ') }} TND
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="footer">
+        Document généré le {{ generatedAt|date('d/m/Y à H:i') }} | HrFlow Recruitment System<br>
+        Confidentiel - Usage interne uniquement
+    </div>
+</body>
+</html>
