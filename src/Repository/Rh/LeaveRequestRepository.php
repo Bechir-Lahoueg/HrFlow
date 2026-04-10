@@ -209,6 +209,46 @@ class LeaveRequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Returns all approved or pending leave requests for an employee
+     * whose end date is >= today, so we can block those dates in the calendar.
+     * @return LeaveRequest[]
+     */
+    public function findActiveLeavesByEmployee(int $employeeId, \DateTimeInterface $today): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->where('lr.employee = :employeeId')
+            ->andWhere('lr.status IN (:statuses)')
+            ->andWhere('lr.endDate >= :today')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('statuses', ['ATTENTE', 'ACCEPTE'])
+            ->setParameter('today', $today)
+            ->orderBy('lr.startDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Returns upcoming approved leaves for all employees under an RH,
+     * where startDate >= today, ordered by startDate.
+     * @return LeaveRequest[]
+     */
+    public function findUpcomingApprovedByRh(int $rhId, \DateTimeInterface $today): array
+    {
+        return $this->createQueryBuilder('lr')
+            ->join('lr.employee', 'e')
+            ->where('e.rhId = :rhId')
+            ->andWhere('lr.status = :status')
+            ->andWhere('lr.endDate >= :today')
+            ->setParameter('rhId', $rhId)
+            ->setParameter('status', 'ACCEPTE')
+            ->setParameter('today', $today)
+            ->orderBy('lr.startDate', 'ASC')
+            ->addOrderBy('lr.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /** @return LeaveRequest[] */
     public function findExpiredExceptionalPending(\DateTimeInterface $today): array
     {

@@ -19,6 +19,8 @@ class SessionFormationRepository extends ServiceEntityRepository
     /** @return SessionFormation[] */
     public function findByFormation(int $formationId): array
     {
+        $this->autoUpdateStatuses();
+
         return $this->createQueryBuilder('s')
             ->where('s.formation = :formationId')
             ->setParameter('formationId', $formationId)
@@ -45,10 +47,22 @@ class SessionFormationRepository extends ServiceEntityRepository
 
     public function autoUpdateStatuses(): void
     {
-        $this->getEntityManager()->createQuery(
-            "UPDATE App\Entity\Formation\SessionFormation s SET s.statut = 'Cloturee' WHERE s.dateFin < :now"
+        $em = $this->getEntityManager();
+        $today = new \DateTime();
+        $today->setTime(0, 0, 0);
+
+        // Planifiee -> En cours
+        $em->createQuery(
+            "UPDATE App\Entity\Formation\SessionFormation s SET s.statut = 'En cours' WHERE s.statut = 'Planifiee' AND s.dateDebut <= :today"
         )
-        ->setParameter('now', new \DateTime())
+        ->setParameter('today', $today)
+        ->execute();
+
+        // En cours|Planifiee -> Terminee
+        $em->createQuery(
+            "UPDATE App\Entity\Formation\SessionFormation s SET s.statut = 'Terminee' WHERE (s.statut = 'En cours' OR s.statut = 'Planifiee') AND s.dateFin < :today"
+        )
+        ->setParameter('today', $today)
         ->execute();
     }
 }

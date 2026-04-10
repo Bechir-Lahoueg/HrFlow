@@ -1,0 +1,170 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RH - Tous les Participants{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .decision-table thead th{position:sticky;top:0;z-index:10}
+        .decision-row{transition:all .2s}
+        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+            <div class="mb-6">
+                <a href="{{ path('rh_formation_list') }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    Retour aux formations
+                </a>
+            </div>
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-sky-900 to-indigo-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-sky-300/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/15 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">RH Control Center</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Tous les participants</h2>
+                    <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Liste globale des employés inscrits aux sessions de formation.</p>
+                </div>
+            </section>
+
+            {# ══════════ Participants Table ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-5H7v5m10 0H7m0 0H2M12 11V7m0 4v3m0-3h3m-3 0H9"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Ensemble des participations ({{ participations|length }})</h3>
+                    </div>
+                </div>
+
+                {# ══════════ Filtres ══════════ #}
+                <div class="flex justify-end gap-4 mb-6 bg-zinc-50/50 dark:bg-zinc-800/20 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/50">
+                    <form method="get" action="{{ path('rh_formation_all_participants') }}" class="flex items-center gap-2 w-full md:w-auto">
+                        <select name="status" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
+                            <option value="">Tous les statuts</option>
+                            <option value="Inscrit" {% if filters.status == 'Inscrit' %}selected{% endif %}>Inscrit(e)</option>
+                            <option value="Accepte" {% if filters.status == 'Accepte' %}selected{% endif %}>Accepté(e)</option>
+                            <option value="Refuse" {% if filters.status == 'Refuse' %}selected{% endif %}>Refusé(e)</option>
+                            <option value="Certificat obtenu" {% if filters.status == 'Certificat obtenu' %}selected{% endif %}>Certificat obtenu</option>
+                        </select>
+
+                        <button type="submit" class="shrink-0 px-4 py-1.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition flex items-center justify-center shadow-sm" title="Filtrer">
+                            Filtrer
+                        </button>
+
+                        {% if filters.status %}
+                        <a href="{{ path('rh_formation_all_participants') }}" class="text-zinc-400 hover:text-red-500 transition" title="Réinitialiser filtres">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+
+                {# Table #}
+                <div class="overflow-x-auto rounded-lg border border-zinc-100 max-h-[70vh]">
+                    <table class="decision-table min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 bg-zinc-50/95">
+                                <th class="py-3 px-4">Employé</th>
+                                <th class="py-3 px-4">Formation / Session</th>
+                                <th class="py-3 px-4">Date de demande</th>
+                                <th class="py-3 px-4">Statut</th>
+                                <th class="py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for participation in participations %}
+                            <tr class="decision-row border-b border-zinc-50 align-middle">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0">
+                                            <span class="text-[11px] font-bold text-white">{{ participation.employee.firstName|first|upper }}{{ participation.employee.lastName|first|upper }}</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[13px] font-semibold text-zinc-700">{{ participation.employee.firstName }} {{ participation.employee.lastName }}</span>
+                                            <span class="text-[11px] text-zinc-500">{{ participation.employee.email }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-[13px] font-semibold text-zinc-700">{{ participation.session.formation.titre }}</span>
+                                        <span class="text-[11px] text-zinc-500">{{ participation.session.dateDebut|date('d/m/Y') }} - {{ participation.session.dateFin|date('d/m/Y') }} ({{ participation.session.lieu }})</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 font-semibold text-zinc-700">{{ participation.dateInscription|date('d M Y') }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {% if participation.statutParticipation == 'Inscrit' %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}
+                                        {% if participation.statutParticipation == 'Accepte' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}
+                                        {% if participation.statutParticipation == 'Refuse' %}bg-red-50 text-red-700 border border-red-200{% endif %}
+                                        {% if participation.statutParticipation == 'Certificat obtenu' %}bg-purple-50 text-purple-700 border border-purple-200{% endif %}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {% if participation.statutParticipation == 'Inscrit' %}bg-blue-500{% endif %}
+                                            {% if participation.statutParticipation == 'Accepte' %}bg-emerald-500{% endif %}
+                                            {% if participation.statutParticipation == 'Refuse' %}bg-red-500{% endif %}
+                                            {% if participation.statutParticipation == 'Certificat obtenu' %}bg-purple-500{% endif %}"></span>
+                                        {{ participation.statutParticipation }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if participation.statutParticipation == 'Inscrit' %}
+                                        <div class="flex gap-2">
+                                            <form method="post" action="{{ path('rh_formation_participation_approve', {id: participation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('approve-participation-' ~ participation.id) }}">
+                                                <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                    Accepter
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('rh_formation_participation_reject', {id: participation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reject-participation-' ~ participation.id) }}">
+                                                <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Refuser
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-[11px] text-zinc-400 border border-zinc-200 px-2 py-1 rounded">Action traitée</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="py-14 text-center text-zinc-400 text-sm">Aucune participation trouvée.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}

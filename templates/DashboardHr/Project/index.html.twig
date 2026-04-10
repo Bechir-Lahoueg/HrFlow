@@ -3,209 +3,25 @@
 {% block title %}Gestion des Projets — HRFlow{% endblock %}
 
 {% block stylesheets %}
-{{ parent() }}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-:root {
-    --primary: #4f46e5;
-    --primary-light: #818cf8;
-    --primary-dark: #3730a3;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #3b82f6;
-    --surface: #ffffff;
-    --bg: #f8fafc;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --text-muted: #64748b;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
-    --radius: 12px;
-}
-body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); }
+    {{ parent() }}
+    <style>
+        .project-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15); }
 
-.page-header {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
-    border-radius: var(--radius);
-    padding: 2rem 2.5rem;
-    color: white;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-}
-.page-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 50%;
-}
-.page-header h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
-.page-header p { margin: .3rem 0 0; opacity: .8; font-size: .9rem; }
+        .progress-bar-container { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease; }
 
-.stat-card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    transition: transform .2s, box-shadow .2s;
-    height: 100%;
-}
-.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.stat-card .stat-icon { font-size: 2rem; margin-bottom: .5rem; }
-.stat-card .stat-value { font-size: 2rem; font-weight: 800; line-height: 1; }
-.stat-card .stat-label { font-size: .8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .25rem; }
+        .priority-indicator { width: 4px; height: 40px; border-radius: 2px; }
 
-.filter-bar {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 1rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    margin-bottom: 1.5rem;
-}
-
-.project-card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    transition: all .25s;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-}
-.project-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary-light); }
-.project-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    border-radius: var(--radius) var(--radius) 0 0;
-}
-.project-card.priority-low::before { background: var(--success); }
-.project-card.priority-medium::before { background: var(--warning); }
-.project-card.priority-high::before { background: #f97316; }
-.project-card.priority-critical::before { background: var(--danger); }
-
-.project-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
-.project-desc { font-size: .85rem; color: var(--text-muted); flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-
-.progress-bar-custom {
-    height: 6px;
-    background: var(--border);
-    border-radius: 999px;
-    overflow: hidden;
-    margin: .75rem 0;
-}
-.progress-bar-custom .fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
-    transition: width .5s ease;
-}
-
-.badge-status {
-    font-size: .7rem;
-    padding: .3em .7em;
-    border-radius: 999px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-.badge-planning { background: #ede9fe; color: #6d28d9; }
-.badge-in_progress { background: #d1fae5; color: #065f46; }
-.badge-on_hold { background: #fef3c7; color: #92400e; }
-.badge-completed { background: #dbeafe; color: #1e40af; }
-.badge-cancelled { background: #f3f4f6; color: #6b7280; }
-
-.badge-priority { font-size: .7rem; padding: .3em .7em; border-radius: 999px; font-weight: 600; }
-.badge-low { background: #d1fae5; color: #065f46; }
-.badge-medium { background: #fef3c7; color: #92400e; }
-.badge-high { background: #fee2e2; color: #991b1b; }
-.badge-critical { background: #fce7f3; color: #9d174d; }
-
-.card-actions { display: flex; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; }
-.btn-action {
-    font-size: .75rem;
-    padding: .4em .9em;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all .15s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-}
-.btn-view { background: var(--primary); color: white; }
-.btn-view:hover { background: var(--primary-dark); color: white; }
-.btn-edit { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
-.btn-edit:hover { background: #e2e8f0; }
-.btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
-.btn-danger:hover { background: var(--danger); color: white; }
-
-.card-meta { display: flex; gap: 1rem; font-size: .78rem; color: var(--text-muted); margin-top: .5rem; flex-wrap: wrap; }
-.card-meta span { display: flex; align-items: center; gap: .3rem; }
-
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text-muted);
-}
-.empty-state .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
-
-.btn-primary-custom {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    border: none;
-    padding: .65rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: .9rem;
-    cursor: pointer;
-    transition: all .2s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    box-shadow: 0 4px 15px rgba(79,70,229,.3);
-}
-.btn-primary-custom:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,.4); color: white; }
-
-.form-control, .form-select {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: .875rem;
-    padding: .5rem .75rem;
-    transition: border-color .15s;
-}
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
-}
-
-.overdue-chip {
-    background: #fef2f2;
-    color: var(--danger);
-    font-size: .7rem;
-    padding: .2em .6em;
-    border-radius: 999px;
-    font-weight: 600;
-    border: 1px solid #fecaca;
-}
-</style>
+        .badge-pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -219,168 +35,184 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; co
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
-    {# Flash messages #}
-    {% for type, messages in app.flashes %}
-        {% for msg in messages %}
-        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 shadow-sm mb-3" role="alert">
-            {{ msg }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    {% endfor %}
+            {# Flash messages #}
+            {% for type, messages in app.flashes %}
+                {% for msg in messages %}
+                <div class="px-4 py-3 rounded-xl {% if type == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %} border text-sm font-medium flex items-center gap-2 animate-slide-up">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ msg }}
+                </div>
+                {% endfor %}
+            {% endfor %}
 
-    {# HEADER #}
-    <div class="page-header">
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <h1>🗂️ Gestion des Projets</h1>
-                <p>Pilotez vos projets, équipes et objectifs en temps réel</p>
-            </div>
-            <a href="{{ path('rh_project_new') }}" class="btn-primary-custom">
-                ＋ Nouveau Projet
-            </a>
-        </div>
-    </div>
+            {# ══════════ Hero Banner (Aligné à Gauche) ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl"></div>
 
-    {# STATS CARDS #}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon">📋</div>
-                <div class="stat-value text-primary">{{ stats.total_projects }}</div>
-                <div class="stat-label">Total Projets</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon">🟢</div>
-                <div class="stat-value" style="color:var(--success)">{{ stats.active_projects }}</div>
-                <div class="stat-label">En cours</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value" style="color:var(--info)">{{ stats.completed_projects }}</div>
-                <div class="stat-label">Terminés</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value" style="color:var(--warning)">{{ stats.completion_rate }}%</div>
-                <div class="stat-label">Taux global</div>
-            </div>
-        </div>
-    </div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="text-left w-full"> {# Force l'alignement à gauche #}
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-indigo-200 uppercase tracking-wider">Project Control Center</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des Projets</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl">Pilotez vos équipes, suivez l'avancement et atteignez vos objectifs stratégiques.</p>
+                    </div>
+                    <a href="{{ path('rh_project_new') }}" class="shrink-0 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                        Nouveau Projet
+                    </a>
+                </div>
+            </section>
 
-    {# FILTRES #}
-    <div class="filter-bar">
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-semibold" style="font-size:.8rem">🔍 Recherche</label>
-                <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Nom ou description...">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold" style="font-size:.8rem">Statut</label>
-                <select name="status" class="form-select">
-                    <option value="">Tous les statuts</option>
-                    {% for s in statuses %}
-                    <option value="{{ s }}" {% if statusFilter == s %}selected{% endif %}>{{ s|replace({'_': ' '})|capitalize }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold" style="font-size:.8rem">Priorité</label>
-                <select name="priority" class="form-select">
-                    <option value="">Toutes les priorités</option>
-                    {% for p in priorities %}
-                    <option value="{{ p }}" {% if priorityFilter == p %}selected{% endif %}>{{ p|capitalize }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100 fw-semibold">Filtrer</button>
-                <a href="{{ path('rh_project_index') }}" class="btn btn-outline-secondary">✕</a>
-            </div>
-        </form>
-    </div>
-
-    {# GRILLE DES PROJETS #}
-    {% if projects is empty %}
-    <div class="empty-state">
-        <span class="icon">📭</span>
-        <h5 class="fw-bold">Aucun projet trouvé</h5>
-        <p>Créez votre premier projet pour commencer.</p>
-        <a href="{{ path('rh_project_new') }}" class="btn-primary-custom">＋ Nouveau Projet</a>
-    </div>
-    {% else %}
-    <div class="row g-3">
-        {% for project in projects %}
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="project-card priority-{{ project.priority }}">
-
-                {# Header badges #}
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="badge-status badge-{{ project.status }}">
-                        {% if project.status == 'planning' %}📋
-                        {% elseif project.status == 'in_progress' %}🟢
-                        {% elseif project.status == 'on_hold' %}🟡
-                        {% elseif project.status == 'completed' %}✅
-                        {% else %}❌{% endif %}
-                        {{ project.status|replace({'_': ' '})|capitalize }}
-                    </span>
-                    <div class="d-flex gap-1 align-items-center">
-                        <span class="badge-priority badge-{{ project.priority }}">{{ project.priority|upper }}</span>
-                        {% if project.is_overdue ?? false %}
-                        <span class="overdue-chip">⚠️ Retard</span>
-                        {% endif %}
+            {# ══════════ Stats Grid ══════════ #}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Projets</p>
+                    <div class="flex items-end justify-between mt-2">
+                        <p class="text-3xl font-extrabold text-zinc-900 dark:text-white">{{ stats.total_projects }}</p>
+                        <div class="p-2 bg-slate-50 rounded-lg text-slate-600">📂</div>
                     </div>
                 </div>
-
-                <div class="project-title">{{ project.name }}</div>
-                <div class="project-desc">{{ project.description ?? 'Aucune description.' }}</div>
-
-                {# Barre de progression #}
-                <div class="progress-bar-custom">
-                    <div class="fill" style="width: {{ project.completion_rate ?? 0 }}%"></div>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up">
+                    <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">En cours</p>
+                    <div class="flex items-end justify-between mt-2">
+                        <p class="text-3xl font-extrabold text-zinc-900 dark:text-white">{{ stats.active_projects }}</p>
+                        <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">🟢</div>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between" style="font-size:.75rem; color:var(--text-muted);">
-                    <span>Avancement</span>
-                    <span class="fw-bold">{{ project.completion_rate ?? 0 }}%</span>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up">
+                    <p class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Terminés</p>
+                    <div class="flex items-end justify-between mt-2">
+                        <p class="text-3xl font-extrabold text-zinc-900 dark:text-white">{{ stats.completed_projects }}</p>
+                        <div class="p-2 bg-blue-50 rounded-lg text-blue-600">✅</div>
+                    </div>
                 </div>
-
-                {# Meta infos #}
-                <div class="card-meta">
-                    <span>👥 {{ project.team_count ?? 0 }} membres</span>
-                    <span>✅ {{ project.tasks_completed ?? 0 }}/{{ project.tasks_count ?? 0 }} tâches</span>
-                    {% if project.end_date %}
-                    <span>📅 {{ project.end_date|date('d/m/Y') }}</span>
-                    {% endif %}
-                </div>
-
-                {# Actions #}
-                <div class="card-actions">
-                    <a href="{{ path('rh_project_show', {id: project.id}) }}" class="btn-action btn-view">
-                        👁️ Détails
-                    </a>
-                    <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="btn-action btn-edit">
-                        ✏️ Modifier
-                    </a>
-                    <form action="{{ path('rh_project_delete', {id: project.id}) }}" method="POST" class="d-inline"
-                          onsubmit="return confirm('Supprimer ce projet et toutes ses données ?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-                        <button type="submit" class="btn-action btn-danger">🗑️</button>
-                    </form>
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up">
+                    <p class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Taux global</p>
+                    <div class="flex items-end justify-between mt-2">
+                        <p class="text-3xl font-extrabold text-zinc-900 dark:text-white">{{ stats.completion_rate }}%</p>
+                        <div class="p-2 bg-amber-50 rounded-lg text-amber-600">📊</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+
+            {# ══════════ Filtres (Avec Bouton Filtrer + Reset) ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-4 shadow-sm">
+                <form method="GET" class="flex flex-wrap items-center gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <input type="text" name="search" value="{{ search }}" class="w-full bg-zinc-50 border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Rechercher un projet...">
+                    </div>
+                    <select name="status" class="bg-zinc-50 border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Tous les statuts</option>
+                        {% for s in statuses %}
+                            <option value="{{ s }}" {% if statusFilter == s %}selected{% endif %}>{{ s|replace({'_': ' '})|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+
+                    {# Intégration des boutons demandés #}
+                    <div class="flex gap-2 min-w-[140px]">
+                        <button type="submit" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold px-6 py-2 rounded-lg text-sm shadow-sm transition-all flex-1 flex items-center justify-center border border-amber-500/20">
+                                Filtrer
+                            </button>
+                        <a href="{{ path('rh_project_index') }}" class="px-3 py-2 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center">
+                            ✕
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            {# ══════════ Grille des Projets ══════════ #}
+            {% if projects is empty %}
+                <div class="py-20 text-center bg-white rounded-2xl border border-dashed border-zinc-200">
+                    <span class="text-5xl block mb-4">📂</span>
+                    <h3 class="text-lg font-bold text-zinc-800">Aucun projet trouvé</h3>
+                    <p class="text-zinc-500 text-sm">Commencez par créer une nouvelle fiche projet.</p>
+                </div>
+            {% else %}
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {% for project in projects %}
+                        <div class="project-card group bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-sm flex flex-col animate-slide-up">
+                            <div class="p-5 flex-1">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="badge-pill
+                                        {% if project.status == 'completed' %}bg-blue-50 text-blue-700
+                                        {% elseif project.status == 'in_progress' %}bg-emerald-50 text-emerald-700
+                                        {% elseif project.status == 'on_hold' %}bg-amber-50 text-amber-700
+                                        {% else %}bg-slate-50 text-slate-600{% endif %}">
+                                        {{ project.status|replace({'_': ' '})|capitalize }}
+                                    </span>
+
+                                    <div class="flex gap-2">
+                                        {% if project.is_overdue ?? false %}
+                                            <span class="px-2 py-0.5 rounded bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 uppercase tracking-tighter">⚠️ Retard</span>
+                                        {% endif %}
+                                        <div class="priority-indicator
+                                            {% if project.priority == 'critical' %}bg-red-500
+                                            {% elseif project.priority == 'high' %}bg-orange-500
+                                            {% elseif project.priority == 'medium' %}bg-amber-400
+                                            {% else %}bg-emerald-400{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h3 class="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 transition-colors">{{ project.name }}</h3>
+                                <p class="text-sm text-zinc-500 mt-2 line-clamp-2 leading-relaxed">
+                                    {{ project.description ?? 'Aucune description fournie pour ce projet.' }}
+                                </p>
+
+                                <div class="mt-6">
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span class="text-[11px] font-bold text-zinc-400 uppercase">Avancement</span>
+                                        <span class="text-sm font-black text-zinc-800">{{ project.completion_rate ?? 0 }}%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill bg-gradient-to-r from-indigo-500 to-blue-500" style="width: {{ project.completion_rate ?? 0 }}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-zinc-50">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-xs">👥</div>
+                                        <div>
+                                            <p class="text-[10px] text-zinc-400 font-bold uppercase leading-none">Équipe</p>
+                                            <p class="text-xs font-bold text-zinc-700">{{ project.team_count ?? 0 }} membres</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-xs">📅</div>
+                                        <div>
+                                            <p class="text-[10px] text-zinc-400 font-bold uppercase leading-none">Échéance</p>
+                                            <p class="text-xs font-bold text-zinc-700">{{ project.end_date ? project.end_date|date('d M Y') : 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-zinc-50/50 dark:bg-zinc-800/30 px-5 py-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800">
+                                <div class="flex gap-3">
+                                    <a href="{{ path('rh_project_show', {id: project.id}) }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Détails
+                                    </a>
+                                    <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="text-xs font-bold text-zinc-500 hover:text-zinc-700 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        Modifier
+                                    </a>
+                                </div>
+                                <form action="{{ path('rh_project_delete', {id: project.id}) }}" method="POST" onsubmit="return confirm('Supprimer définitivement ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                                    <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
         </main>
-
     </div>
 </div>
 {% endblock %}

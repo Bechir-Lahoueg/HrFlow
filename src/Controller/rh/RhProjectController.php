@@ -130,6 +130,21 @@ class RhProjectController extends AbstractController
             $data = $request->request->all();
             $data['rh_id'] = $user->getId();
 
+            $errors = $this->projectService->validate($data);
+
+            if (count($errors) > 0) {
+                foreach ($errors as $field => $message) {
+                    $this->addFlash('error', $message);
+                }
+
+                return $this->render('DashboardHr/Project/new.html.twig', [
+                    'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
+                    'priorities' => ['low', 'medium', 'high', 'critical'],
+                    'old_data' => $data,
+                    'errors' => $errors
+                ]);
+            }
+
             $this->projectService->createProject($data);
             $this->addFlash('success', 'Projet créé avec succès !');
             return $this->redirectToRoute('rh_project_index');
@@ -138,6 +153,8 @@ class RhProjectController extends AbstractController
         return $this->render('DashboardHr/Project/new.html.twig', [
             'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
             'priorities' => ['low', 'medium', 'high', 'critical'],
+            'old_data' => [],
+            'errors' => []
         ]);
     }
 
@@ -405,7 +422,6 @@ class RhProjectController extends AbstractController
         $healthScore = max(0, $healthScore);
         $healthStatus = $healthScore >= 80 ? 'excellent' : ($healthScore >= 60 ? 'good' : ($healthScore >= 40 ? 'warning' : 'critical'));
 
-        // Risques
         $risks = [];
         if ($unassignedTasks > 0) {
             $risks[] = ['severity' => 'medium', 'title' => 'Tâches non assignées', 'description' => $unassignedTasks . ' tâche(s) sans responsable', 'recommendation' => 'Assigner ces tâches aux membres de l\'équipe'];

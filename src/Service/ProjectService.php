@@ -281,4 +281,37 @@ final class ProjectService
             default => 'badge bg-secondary',
         };
     }
+
+    public function validate(array $data): array
+    {
+        $errors = [];
+
+        if (empty($data['name']) || strlen(trim($data['name'])) < 3) {
+            $errors['name'] = "Le nom du projet doit contenir au moins 3 caractères.";
+        }
+
+        if (empty($data['start_date'])) {
+            $errors['start_date'] = "La date de début est obligatoire.";
+        }
+
+        if (empty($data['end_date'])) {
+            $errors['end_date'] = "La date de fin est obligatoire.";
+        }
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            if ($data['end_date'] < $data['start_date']) {
+                $errors['end_date'] = "La date de fin ne peut pas être antérieure à la date de début.";
+            }
+        }
+
+        if (isset($data['estimated_hours']) && (!is_numeric($data['estimated_hours']) || $data['estimated_hours'] < 0)) {
+            $errors['estimated_hours'] = "Le nombre d'heures doit être un chiffre positif.";
+        }
+
+        if (!empty($data['budget']) && (!is_numeric($data['budget']) || $data['budget'] < 0)) {
+            $errors['budget'] = "Le budget doit être un montant positif.";
+        }
+
+        return $errors;
+    }
 }

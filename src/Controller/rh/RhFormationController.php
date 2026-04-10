@@ -249,6 +249,20 @@ final class RhFormationController extends AbstractController
         ]);
     }
 
+    #[Route('/participants', name: 'rh_formation_all_participants', methods: ['GET'])]
+    public function allParticipants(Request $request, ParticipationService $participationService): Response
+    {
+        $userId = $this->getUser()->getId();
+        $status = $request->query->get('status', '');
+
+        return $this->render('DashboardHr/formation/formation_all_participants.html.twig', [
+            'participations' => $participationService->getRhParticipations($userId, $status),
+            'filters' => [
+                'status' => $status
+            ]
+        ]);
+    }
+
     #[Route('/participation/{id}/approve', name: 'rh_formation_participation_approve', methods: ['POST'])]
     public function approveParticipation(string $id, Request $request, ParticipationService $participationService): Response
     {
@@ -346,5 +360,4 @@ final class RhFormationController extends AbstractController
         ]);
     }
 }
-
 

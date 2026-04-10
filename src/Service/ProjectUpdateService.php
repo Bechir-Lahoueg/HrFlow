@@ -16,15 +16,28 @@ final class ProjectUpdateService
     {
         try {
             return $this->connection->fetchAllAssociative(
-                'SELECT u.*, us.username
-                FROM project_updates u
-                JOIN users us ON u.user_id = us.id
-                WHERE u.project_id = ?
-                ORDER BY u.created_at DESC
-                LIMIT ?',
-                [$projectId, $limit]
+                "SELECT u.*,
+                    CASE
+                        WHEN e.id IS NOT NULL THEN CONCAT(e.first_name, ' ', e.last_name)
+                        WHEN us.id IS NOT NULL THEN us.username
+                        ELSE 'Système'
+                    END as author_name
+                 FROM project_updates u
+                 LEFT JOIN employees e ON u.user_id = e.id
+                 LEFT JOIN users us ON u.user_id = us.id
+                 WHERE u.project_id = :projectId
+                 ORDER BY u.created_at DESC
+                 LIMIT :limit",
+                [
+                    'projectId' => $projectId,
+                    'limit' => (int) $limit
+                ],
+                [
+                    'projectId' => \PDO::PARAM_INT,
+                    'limit' => \PDO::PARAM_INT
+                ]
             );
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             return [];
         }
     }
@@ -32,12 +45,12 @@ final class ProjectUpdateService
     public function createUpdate(array $data): void
     {
         $this->connection->insert('project_updates', [
-            'project_id' => $data['project_id'],
-            'user_id' => $data['user_id'],
+            'project_id'  => $data['project_id'],
+            'user_id'     => $data['user_id'],
             'update_type' => $data['update_type'] ?? 'comment',
-            'title' => $data['title'],
-            'content' => $data['content'] ?? null,
-            'created_at' => date('Y-m-d H:i:s'),
+            'title'       => $data['title'],
+            'content'     => $data['content'] ?? null,
+            'created_at'  => date('Y-m-d H:i:s'),
         ]);
     }
 
@@ -50,14 +63,14 @@ final class ProjectUpdateService
     // LOGS AUTOMATIQUES
     // ═══════════════════════════════════════════════════════════════
 
-    public function logTaskCreated(int $projectId, int $userId, string $taskTitle): void
+    public function logTaskCreated(int $projectId, int $employeeId, string $taskTitle): void
     {
         $this->createUpdate([
-            'project_id' => $projectId,
-            'user_id' => $userId,
+            'project_id'  => $projectId,
+            'user_id'     => $employeeId,
             'update_type' => 'task',
-            'title' => 'Nouvelle tâche créée',
-            'content' => "Tâche '{$taskTitle}' ajoutée au projet",
+            'title'       => 'Nouvelle tâche créée',
+            'content'     => "Tâche '{$taskTitle}' ajoutée au projet",
         ]);
     }
 
@@ -79,7 +92,7 @@ final class ProjectUpdateService
             'user_id' => $userId,
             'update_type' => 'milestone',
             'title' => 'Jalon atteint',
-            'content' => "Le jalon '{$milestoneName}' a été complété 🎉",
+            'content' => "Le jalon '{$milestoneName}' a été complété ",
         ]);
     }
 
@@ -94,14 +107,14 @@ final class ProjectUpdateService
         ]);
     }
 
-    public function logStatusChange(int $projectId, int $userId, string $oldStatus, string $newStatus): void
+    public function logStatusChange(int $projectId, int $employeeId, string $oldStatus, string $newStatus): void
     {
         $this->createUpdate([
-            'project_id' => $projectId,
-            'user_id' => $userId,
+            'project_id'  => $projectId,
+            'user_id'     => $employeeId,
             'update_type' => 'status_change',
-            'title' => 'Statut modifié',
-            'content' => "Statut changé de '{$oldStatus}' à '{$newStatus}'",
+            'title'       => 'Statut modifié',
+            'content'     => "Statut passé de '{$oldStatus}' à '{$newStatus}'",
         ]);
     }
 

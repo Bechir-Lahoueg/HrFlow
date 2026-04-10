@@ -546,7 +546,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                     <div class="fw-semibold" style="font-size:.875rem">{{ update.title }}</div>
                     <div style="font-size:.8rem; color:var(--text-muted)">{{ update.content }}</div>
                     <div style="font-size:.75rem; color:#94a3b8; margin-top:.2rem">
-                        👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}
+                        👤 {{ update.author_name }} · {{ update.created_at|date('d/m/Y H:i') }}
                     </div>
                 </div>
             </div>

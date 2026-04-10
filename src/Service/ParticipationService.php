@@ -56,6 +56,12 @@ final class ParticipationService
         );
     }
 
+    /** @return ParticipationFormation[] */
+    public function getRhParticipations(int $rhId, string $status = ''): array
+    {
+        return $this->participationRepository->findByRhId($rhId, $status);
+    }
+
     public function updateStatus(int $participationId, string $status): void
     {
         $this->connection->update('participation_formation', [

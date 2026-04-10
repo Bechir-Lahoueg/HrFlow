@@ -4,147 +4,59 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-:root {
-    --primary: #7c3aed;
-    --primary-light: #a78bfa;
-    --primary-dark: #5b21b6;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --review: #8b5cf6;
-    --surface: #ffffff;
-    --bg: #f5f3ff;
-    --border: #e5e7eb;
-    --text: #1f2937;
-    --text-muted: #6b7280;
-    --radius: 12px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
-}
-body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
+    /* ── Kanban columns — couleurs conservées ── */
+    .kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    @media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px)  { .kanban-board { grid-template-columns: 1fr; } }
 
-.project-header {
-    background: linear-gradient(135deg, #4c1d95 0%, var(--primary) 60%, var(--primary-light) 100%);
-    border-radius: var(--radius);
-    padding: 1.5rem 2rem;
-    color: white;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-lg);
-}
-.project-header h1 { font-size: 1.5rem; font-weight: 800; margin: 0; }
+    .kanban-col { border-radius: 12px; padding: .75rem; min-height: 450px; border: 2px dashed #e5e7eb; transition: all .2s; }
+    .kanban-col.drag-over { border-color: #7c3aed; background: #ede9fe !important; transform: scale(1.01); }
+    .col-todo        { background: #f9fafb; }
+    .col-in_progress { background: #fffbeb; }
+    .col-review      { background: #f5f3ff; }
+    .col-done        { background: #f0fdf4; }
 
-.card-section {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    margin-bottom: 1.5rem;
-}
-.section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+    .col-header { font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; display: flex; justify-content: space-between; align-items: center; padding-bottom: .5rem; border-bottom: 2px solid; }
+    .col-todo        .col-header { color: #6b7280; border-color: #d1d5db; }
+    .col-in_progress .col-header { color: #b45309; border-color: #fcd34d; }
+    .col-review      .col-header { color: #6d28d9; border-color: #c4b5fd; }
+    .col-done        .col-header { color: #065f46; border-color: #6ee7b7; }
 
-.progress-bar { height: 8px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; }
-.progress-bar .fill { height: 100%; background: white; border-radius: 999px; }
+    .count-badge { border-radius: 999px; padding: .2em .6em; font-size: .7rem; font-weight: 700; }
+    .col-todo        .count-badge { background: #e5e7eb; color: #4b5563; }
+    .col-in_progress .count-badge { background: #fde68a; color: #92400e; }
+    .col-review      .count-badge { background: #ddd6fe; color: #5b21b6; }
+    .col-done        .count-badge { background: #bbf7d0; color: #065f46; }
 
-.meta-pill { background: rgba(255,255,255,.15); border-radius: 999px; padding: .3em .9em; font-size: .8rem; }
+    /* ── Task cards — couleurs conservées ── */
+    .task-card { background: white; border-radius: 10px; padding: 1rem; margin-bottom: .6rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #e5e7eb; cursor: grab; transition: all .2s; position: relative; overflow: hidden; }
+    .task-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); border-color: #a78bfa; }
+    .task-card:active { cursor: grabbing; }
+    .task-card.dragging { opacity: .6; transform: scale(.97); }
 
-/* KANBAN */
-.kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-@media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .kanban-board { grid-template-columns: 1fr; } }
+    .task-priority-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+    .prio-low    .task-priority-bar { background: #10b981; }
+    .prio-medium .task-priority-bar { background: #f59e0b; }
+    .prio-high   .task-priority-bar { background: #ef4444; }
 
-.kanban-col {
-    border-radius: var(--radius);
-    padding: .75rem;
-    min-height: 450px;
-    border: 2px dashed var(--border);
-    transition: all .2s;
-}
-.kanban-col.drag-over { border-color: var(--primary); background: #ede9fe; transform: scale(1.01); }
-.kanban-col.col-todo { background: #f9fafb; }
-.kanban-col.col-in_progress { background: #fffbeb; }
-.kanban-col.col-review { background: #f5f3ff; }
-.kanban-col.col-done { background: #f0fdf4; }
+    .task-title-text { font-weight: 700; font-size: .875rem; color: #1f2937; margin-bottom: .4rem; padding-left: .5rem; }
+    .task-meta { font-size: .72rem; color: #6b7280; padding-left: .5rem; }
+    .task-due  { font-size: .72rem; padding-left: .5rem; margin-top: .3rem; }
+    .task-due.overdue { color: #ef4444; font-weight: 600; }
+    .task-due.soon    { color: #f59e0b; font-weight: 600; }
 
-.col-header { font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .75rem; display: flex; justify-content: space-between; align-items: center; padding-bottom: .5rem; border-bottom: 2px solid; }
-.col-todo .col-header { color: #6b7280; border-color: #d1d5db; }
-.col-in_progress .col-header { color: #b45309; border-color: #fcd34d; }
-.col-review .col-header { color: #6d28d9; border-color: #c4b5fd; }
-.col-done .col-header { color: #065f46; border-color: #6ee7b7; }
+    .task-actions { display: flex; gap: .4rem; margin-top: .6rem; padding-left: .5rem; flex-wrap: wrap; }
+    .btn-task-action { font-size: .7rem; padding: .25em .65em; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: all .15s; display: inline-flex; align-items: center; gap: .25rem; }
+    .btn-start:hover  { background: #f59e0b !important; color: white !important; }
+    .btn-review:hover { background: #7c3aed !important; color: white !important; }
+    .btn-done:hover   { background: #10b981 !important; color: white !important; }
+    .btn-hours:hover  { background: #0369a1 !important; color: white !important; }
+    .btn-info:hover   { background: #e2e8f0 !important; }
 
-.count-badge { border-radius: 999px; padding: .2em .6em; font-size: .7rem; font-weight: 700; }
-.col-todo .count-badge { background: #e5e7eb; color: #4b5563; }
-.col-in_progress .count-badge { background: #fde68a; color: #92400e; }
-.col-review .count-badge { background: #ddd6fe; color: #5b21b6; }
-.col-done .count-badge { background: #bbf7d0; color: #065f46; }
-
-.task-card {
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: .6rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    cursor: grab;
-    transition: all .2s;
-    position: relative;
-    overflow: hidden;
-}
-.task-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
-.task-card:active { cursor: grabbing; }
-.task-card.dragging { opacity: .6; transform: scale(.97); }
-
-.task-priority-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-.prio-low .task-priority-bar { background: var(--success); }
-.prio-medium .task-priority-bar { background: var(--warning); }
-.prio-high .task-priority-bar { background: var(--danger); }
-
-.task-title-text { font-weight: 700; font-size: .875rem; color: var(--text); margin-bottom: .4rem; padding-left: .5rem; }
-.task-meta { font-size: .72rem; color: var(--text-muted); padding-left: .5rem; }
-.task-due { font-size: .72rem; padding-left: .5rem; margin-top: .3rem; }
-.task-due.overdue { color: var(--danger); font-weight: 600; }
-.task-due.soon { color: var(--warning); font-weight: 600; }
-
-.task-actions { display: flex; gap: .4rem; margin-top: .6rem; padding-left: .5rem; flex-wrap: wrap; }
-.btn-task-action {
-    font-size: .7rem;
-    padding: .25em .65em;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all .15s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: .25rem;
-}
-.btn-start { background: #fef3c7; color: #92400e; }
-.btn-start:hover { background: var(--warning); color: white; }
-.btn-review { background: #ede9fe; color: var(--primary); }
-.btn-review:hover { background: var(--primary); color: white; }
-.btn-done { background: #d1fae5; color: #065f46; }
-.btn-done:hover { background: var(--success); color: white; }
-.btn-hours { background: #e0f2fe; color: #0369a1; }
-.btn-hours:hover { background: #0369a1; color: white; }
-.btn-info { background: #f1f5f9; color: var(--text-muted); }
-.btn-info:hover { background: #e2e8f0; }
-
-/* Log Hours Modal */
-.modal-custom .modal-content { border-radius: var(--radius); border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
-.modal-custom .modal-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius) var(--radius) 0 0; }
-.form-control, .form-select { border: 1.5px solid var(--border); border-radius: 8px; padding: .55rem .85rem; }
-.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
-
-.btn-prim { background: var(--primary); color: white; border: none; padding: .6rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all .2s; }
-.btn-prim:hover { background: var(--primary-dark); color: white; }
-
-/* Activity */
-.activity-item { display: flex; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
-.activity-icon { width: 30px; height: 30px; border-radius: 50%; background: #ede9fe; display: flex; align-items: center; justify-content: center; font-size: .8rem; flex-shrink: 0; }
+    /* ── Activity feed ── */
+    .activity-item { display: flex; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid #f1f5f9; }
+    .activity-item:last-child { border-bottom: none; }
 </style>
 {% endblock %}
 
@@ -157,194 +69,272 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
         {% include 'DashboardEmployee/components/_header.html.twig' %}
 
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
-    {% for type, messages in app.flashes %}
-        {% for msg in messages %}
-        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 mb-3">
-            {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    {% endfor %}
-
-    {# PROJECT HEADER #}
-    <div class="project-header">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div style="flex:1">
-                <div style="font-size:.8rem; opacity:.7; margin-bottom:.3rem">
-                    <a href="{{ path('employee_project_index') }}" style="color:white; text-decoration:none">← Mes Projets</a>
-                </div>
-                <h1>
-                    {% if project.status == 'in_progress' %}🟢{% elseif project.status == 'completed' %}✅{% else %}📋{% endif %}
-                    {{ project.name }}
-                </h1>
-                <div class="d-flex flex-wrap gap-2 mt-2">
-                    {% if myCollaboration %}
-                    <span class="meta-pill">👤 {{ myCollaboration.role ?? 'Membre' }}</span>
-                    <span class="meta-pill">⏱️ {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}</span>
-                    {% endif %}
-                    <span class="meta-pill">✅ {{ doneMyTasks }}/{{ totalMyTasks }} tâches</span>
-                </div>
-            </div>
-            <div>
-                <div style="font-size:.8rem; opacity:.8; margin-bottom:.3rem">Avancement global</div>
-                <div class="progress-bar" style="width:200px"><div class="fill" style="width:{{ project.completion_rate ?? 0 }}%"></div></div>
-                <div style="font-size:.85rem; font-weight:700; margin-top:.2rem">{{ project.completion_rate ?? 0 }}%</div>
-            </div>
-        </div>
-    </div>
-
-    {# KANBAN #}
-    <div class="card-section">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div class="section-title">📋 Mes Tâches — Kanban Board</div>
-            <small class="text-muted" style="font-size:.8rem">💡 Glissez-déposez ou utilisez les boutons pour changer le statut</small>
-        </div>
-
-        <div class="kanban-board">
-            {% set columns = {
-                'todo': {label: '📋 À FAIRE', class: 'col-todo'},
-                'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
-                'review': {label: '👁️ REVIEW', class: 'col-review'},
-                'done': {label: '✅ TERMINÉ', class: 'col-done'}
-            } %}
-
-            {% for statusKey, col in columns %}
-            <div class="kanban-col {{ col.class }}" id="col-{{ statusKey }}"
-                 ondragover="onDragOver(event)"
-                 ondrop="onDrop(event, '{{ statusKey }}')"
-                 ondragleave="onDragLeave(event)">
-                <div class="col-header">
-                    <span>{{ col.label }}</span>
-                    <span class="count-badge">{{ tasksByStatus[statusKey]|length }}</span>
-                </div>
-
-                {% if tasksByStatus[statusKey] is empty %}
-                <div style="text-align:center; padding:2rem .5rem; color:#9ca3af; font-size:.8rem;">Aucune tâche</div>
-                {% endif %}
-
-                {% for task in tasksByStatus[statusKey] %}
-                {% set isOverdue = task.due_date and task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}
-                {% set isSoon = task.due_date and not isOverdue and task.status != 'done' and task.due_date <= 'now'|date_modify('+2 days')|date('Y-m-d') %}
-                <div class="task-card prio-{{ task.priority }}"
-                     draggable="true"
-                     id="tc-{{ task.id }}"
-                     ondragstart="onDragStart(event, {{ task.id }})"
-                     ondragend="onDragEnd(event)">
-                    <div class="task-priority-bar"></div>
-                    <div class="task-title-text">{{ task.title }}</div>
-                    {% if task.estimated_hours %}
-                    <div class="task-meta">⏱️ {{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
-                    {% endif %}
-                    {% if task.due_date %}
-                    <div class="task-due {% if isOverdue %}overdue{% elseif isSoon %}soon{% endif %}">
-                        📅 {{ task.due_date|date('d/m/Y') }}
-                        {% if isOverdue %}⚠️{% elseif isSoon %}🔥{% endif %}
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10">
+                    {# Breadcrumb #}
+                    <div class="flex items-center gap-2 mb-4">
+                        <a href="{{ path('employee_project_index') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-cyan-200/70 hover:text-cyan-200 transition-colors" style="text-decoration:none;">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                            Mes Projets
+                        </a>
+                        <span class="text-cyan-200/30">/</span>
+                        <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Kanban Board</span>
                     </div>
-                    {% endif %}
 
-                    <div class="task-actions">
-                        {% if task.status == 'todo' %}
-                        <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start">▶ Démarrer</button>
-                        {% elseif task.status == 'in_progress' %}
-                        <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review">👁 Review</button>
-                        {% elseif task.status == 'review' %}
-                        <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done">✅ Terminer</button>
+                    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">
+                                {% if project.status == 'in_progress' %}🟢
+                                {% elseif project.status == 'completed' %}✅
+                                {% elseif project.status == 'on_hold' %}🟡
+                                {% else %}📋{% endif %}
+                                {{ project.name }}
+                            </h2>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                {% if myCollaboration %}
+                                <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
+                                    👤 {{ myCollaboration.role ?? 'Membre' }}
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
+                                    ⏱️ {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}
+                                </span>
+                                {% endif %}
+                                <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
+                                    ✅ {{ doneMyTasks }}/{{ totalMyTasks }} tâches
+                                </span>
+                            </div>
+                        </div>
+                        <div class="shrink-0" style="min-width:200px">
+                            <p class="text-[11px] font-bold text-cyan-200/70 uppercase tracking-wider mb-2">Avancement global</p>
+                            <div class="h-2 rounded-full bg-white/20 overflow-hidden">
+                                <div class="h-full rounded-full bg-white transition-all duration-700" style="width:{{ project.completion_rate ?? 0 }}%"></div>
+                            </div>
+                            <p class="text-[13px] font-extrabold text-white mt-1.5 font-mono-num">{{ project.completion_rate ?? 0 }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══════════ Kanban Board ══════════ #}
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-1">
+                <div class="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Tâches — Kanban Board</h3>
+                    </div>
+                    <span class="text-[11px] font-medium text-zinc-400">💡 Glissez-déposez ou utilisez les boutons</span>
+                </div>
+
+                <div class="kanban-board">
+                    {% set columns = {
+                        'todo':        {label: '📋 À FAIRE',  class: 'col-todo'},
+                        'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
+                        'review':      {label: '👁️ REVIEW',   class: 'col-review'},
+                        'done':        {label: '✅ TERMINÉ',  class: 'col-done'}
+                    } %}
+
+                    {% for statusKey, col in columns %}
+                    <div class="kanban-col {{ col.class }}" id="col-{{ statusKey }}"
+                         ondragover="onDragOver(event)"
+                         ondrop="onDrop(event, '{{ statusKey }}')"
+                         ondragleave="onDragLeave(event)">
+                        <div class="col-header">
+                            <span>{{ col.label }}</span>
+                            <span class="count-badge">{{ tasksByStatus[statusKey]|length }}</span>
+                        </div>
+
+                        {% if tasksByStatus[statusKey] is empty %}
+                        <div style="text-align:center; padding:2rem .5rem; color:#9ca3af; font-size:.8rem;">Aucune tâche</div>
                         {% endif %}
-                        <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours">⏱️ Heures</button>
-                        <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info">ℹ️</button>
+
+                        {% for task in tasksByStatus[statusKey] %}
+                        {% set isOverdue = task.due_date and task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}
+                        {% set isSoon = task.due_date and not isOverdue and task.status != 'done' and task.due_date <= 'now'|date_modify('+2 days')|date('Y-m-d') %}
+                        <div class="task-card prio-{{ task.priority }}"
+                             draggable="true"
+                             id="tc-{{ task.id }}"
+                             ondragstart="onDragStart(event, {{ task.id }})"
+                             ondragend="onDragEnd(event)">
+                            <div class="task-priority-bar"></div>
+                            <div class="task-title-text">{{ task.title }}</div>
+                            {% if task.estimated_hours %}
+                            <div class="task-meta">⏱️ {{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
+                            {% endif %}
+                            {% if task.due_date %}
+                            <div class="task-due {% if isOverdue %}overdue{% elseif isSoon %}soon{% endif %}">
+                                📅 {{ task.due_date|date('d/m/Y') }}
+                                {% if isOverdue %}⚠️{% elseif isSoon %}🔥{% endif %}
+                            </div>
+                            {% endif %}
+
+                            <div class="task-actions">
+                                {% if task.status == 'todo' %}
+                                <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start" style="background:#fef3c7;color:#92400e;">▶ Démarrer</button>
+                                {% elseif task.status == 'in_progress' %}
+                                <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review" style="background:#ede9fe;color:#7c3aed;">👁 Review</button>
+                                {% elseif task.status == 'review' %}
+                                <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done" style="background:#d1fae5;color:#065f46;">✅ Terminer</button>
+                                {% endif %}
+                                <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours" style="background:#e0f2fe;color:#0369a1;">⏱️ Heures</button>
+                                <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info" style="background:#f1f5f9;color:#6b7280;">ℹ️</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# ══════════ Activités ══════════ #}
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-2">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Activités du Projet</h3>
+                </div>
+
+                {% for update in updates %}
+                <div class="activity-item">
+                    <div class="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 text-sm">
+                        {% if update.update_type == 'comment' %}💬
+                        {% elseif update.update_type == 'task' %}✅
+                        {% elseif update.update_type == 'milestone' %}🎯
+                        {% elseif update.update_type == 'status_change' %}🔄
+                        {% else %}📌{% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[13px] font-semibold text-zinc-700">{{ update.title }}</p>
+                        <p class="text-[12px] text-zinc-400 mt-0.5">{{ update.content }}</p>
+                        <p class="text-[11px] text-zinc-300 mt-0.5">👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
+                {% else %}
+                <div class="py-6 text-center text-zinc-400 text-sm">Aucune activité récente.</div>
                 {% endfor %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
 
-    {# ACTIVITÉS #}
-    <div class="card-section">
-        <div class="section-title">📝 Activités du Projet</div>
-        {% for update in updates %}
-        <div class="activity-item">
-            <div class="activity-icon">
-                {% if update.update_type == 'comment' %}💬
-                {% elseif update.update_type == 'task' %}✅
-                {% elseif update.update_type == 'milestone' %}🎯
-                {% else %}📌{% endif %}
-            </div>
-            <div style="flex:1">
-                <div class="fw-semibold" style="font-size:.85rem">{{ update.title }}</div>
-                <div style="font-size:.78rem; color:var(--text-muted)">{{ update.content }}</div>
-                <div style="font-size:.7rem; color:#94a3b8; margin-top:.2rem">
-                    👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}
+                {# Ajouter un commentaire #}
+                <div class="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 rounded-md bg-cyan-50 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        </div>
+                        <p class="text-[13px] font-bold text-zinc-700">Ajouter un commentaire</p>
+                    </div>
+                    <form action="{{ path('employee_project_comment', {id: project.id}) }}" method="POST">
+                        <textarea name="content" rows="2"
+                                  placeholder="Écrire un commentaire..."
+                                  class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all mb-2 resize-none"></textarea>
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                    class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-sm active:scale-[0.98]">
+                                Publier
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
-        {% else %}
-        <div class="text-center py-3 text-muted" style="font-size:.9rem">Aucune activité récente.</div>
-        {% endfor %}
 
-        <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
-            <div style="font-size:.85rem; font-weight:700; margin-bottom:.5rem">💬 Ajouter un commentaire</div>
-            <form action="{{ path('employee_project_comment', {id: project.id}) }}" method="POST">
-                <textarea name="content" class="form-control mb-2" rows="2" placeholder="Écrire un commentaire..."></textarea>
-                <button type="submit" class="btn-prim" style="font-size:.85rem; padding:.5rem 1.25rem">Publier</button>
+        </main>
+    </div>
+</div>
+
+{# ══════════ Modal : Logger des heures ══════════ #}
+<div id="modalLogHours" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalLogHours')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">⏱️ Logger des heures</h5>
+                <button onclick="closeModal('modalLogHours')" class="text-white/60 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="logHoursForm" method="POST">
+                <div class="p-5 space-y-4">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Tâche</p>
+                        <div id="logTaskName" class="text-[13px] font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2"></div>
+                    </div>
+                    <div>
+                        <label for="hoursInput" class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Heures travaillées *</label>
+                        <div class="flex rounded-lg border border-zinc-200 overflow-hidden focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 transition-all">
+                            <input id="hoursInput" type="number" name="hours" min="1" max="24" required placeholder="Ex: 2"
+                                   class="flex-1 px-3 py-2.5 text-sm bg-white border-0 outline-none">
+                            <span class="px-3 py-2.5 bg-zinc-50 border-l border-zinc-200 text-zinc-400 text-sm font-semibold">h</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-5 pb-5 flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('modalLogHours')"
+                            class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-colors">
+                        Annuler
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] hover:from-slate-800 hover:to-slate-600 transition-all shadow-sm">
+                        Confirmer
+                    </button>
+                </div>
             </form>
         </div>
     </div>
-
 </div>
 
-{# ─── MODAL : Logger des heures ─── #}
-<div id="modalLogHours" class="modal fade modal-custom" tabindex="-1">
-    <div class="modal-dialog modal-sm"><div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">⏱️ Logger des heures</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <form id="logHoursForm" method="POST">
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold" style="font-size:.85rem">Tâche</label>
-                    <div id="logTaskName" style="font-size:.9rem; font-weight:700; color:var(--primary); padding:.5rem; background:#f5f3ff; border-radius:8px;"></div>
-                </div>
-                <div>
-                    <label class="form-label fw-semibold" style="font-size:.85rem">Heures travaillées *</label>
-                    <div class="input-group">
-                        <input type="number" name="hours" class="form-control" min="1" max="24" required placeholder="Ex: 2">
-                        <span class="input-group-text">h</span>
-                    </div>
-                </div>
+{# ══════════ Modal : Info Tâche ══════════ #}
+<div id="modalTaskInfo" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalTaskInfo')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 id="infoTaskTitle" class="text-white font-bold text-[15px]">Détails de la tâche</h5>
+                <button onclick="closeModal('modalTaskInfo')" class="text-white/60 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn-prim" style="font-size:.875rem">Confirmer</button>
+            <div id="infoTaskBody" class="p-5 space-y-2 text-sm text-zinc-600 leading-relaxed"></div>
+            <div class="px-5 pb-5 flex justify-end">
+                <button onclick="closeModal('modalTaskInfo')"
+                        class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-colors">
+                    Fermer
+                </button>
             </div>
-        </form>
-    </div></div>
-</div>
-
-{# ─── MODAL : Info Tâche ─── #}
-<div id="modalTaskInfo" class="modal fade modal-custom" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="infoTaskTitle">Détails de la tâche</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="infoTaskBody" style="font-size:.875rem; line-height:1.7"></div>
-        <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button></div>
-    </div></div>
-        </main>
-
     </div>
-
 </div>
+
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ─── MODALS ──────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.add('hidden');    document.body.style.overflow = ''; }
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeModal('modalLogHours'); closeModal('modalTaskInfo'); }
+});
+
 // ─── KANBAN DRAG & DROP ──────────────────────────────────────────
 let draggedId = null;
 
@@ -353,16 +343,9 @@ function onDragStart(event, taskId) {
     event.currentTarget.classList.add('dragging');
     event.dataTransfer.effectAllowed = 'move';
 }
-function onDragEnd(event) {
-    event.currentTarget.classList.remove('dragging');
-}
-function onDragOver(event) {
-    event.preventDefault();
-    event.currentTarget.classList.add('drag-over');
-}
-function onDragLeave(event) {
-    event.currentTarget.classList.remove('drag-over');
-}
+function onDragEnd(event)  { event.currentTarget.classList.remove('dragging'); }
+function onDragOver(event) { event.preventDefault(); event.currentTarget.classList.add('drag-over'); }
+function onDragLeave(event){ event.currentTarget.classList.remove('drag-over'); }
 function onDrop(event, newStatus) {
     event.preventDefault();
     event.currentTarget.classList.remove('drag-over');
@@ -372,9 +355,7 @@ function onDrop(event, newStatus) {
 }
 
 // ─── MOVE TASK ───────────────────────────────────────────────────
-function quickMove(taskId, newStatus) {
-    moveTask(taskId, newStatus);
-}
+function quickMove(taskId, newStatus) { moveTask(taskId, newStatus); }
 
 function moveTask(taskId, newStatus) {
     fetch('/employee/projects/{{ project.id }}/tasks/' + taskId + '/move', {
@@ -383,10 +364,7 @@ function moveTask(taskId, newStatus) {
         body: '_token={{ csrf_token("emp-task-move") }}&status=' + encodeURIComponent(newStatus)
     })
     .then(r => r.json())
-    .then(data => {
-        if (data.success) window.location.reload();
-        else alert('Erreur lors du déplacement');
-    })
+    .then(data => { if (data.success) window.location.reload(); else alert('Erreur lors du déplacement'); })
     .catch(() => window.location.reload());
 }
 
@@ -394,20 +372,22 @@ function moveTask(taskId, newStatus) {
 function openLogHours(taskId, taskTitle) {
     document.getElementById('logTaskName').textContent = taskTitle;
     document.getElementById('logHoursForm').action = '/employee/projects/{{ project.id }}/tasks/' + taskId + '/log-hours';
-    new bootstrap.Modal(document.getElementById('modalLogHours')).show();
+    openModal('modalLogHours');
 }
 
 // ─── TASK INFO ───────────────────────────────────────────────────
 function showTaskInfo(task) {
     document.getElementById('infoTaskTitle').textContent = task.title;
+    const row = (label, val) =>
+        `<div class="flex gap-3"><span class="text-zinc-400 font-semibold shrink-0 w-28">${label}</span><span class="text-zinc-700">${val}</span></div>`;
     let html = '';
-    html += `<div class="mb-2"><strong>Statut:</strong> ${task.status.replace('_', ' ')}</div>`;
-    html += `<div class="mb-2"><strong>Priorité:</strong> ${task.priority}</div>`;
-    if (task.description) html += `<div class="mb-2"><strong>Description:</strong><br>${task.description}</div>`;
-    if (task.estimated_hours) html += `<div class="mb-2"><strong>Heures:</strong> ${task.actual_hours ?? 0}h / ${task.estimated_hours}h</div>`;
-    if (task.due_date) html += `<div class="mb-2"><strong>Échéance:</strong> ${task.due_date}</div>`;
+    html += row('Statut',    task.status.replace('_', ' '));
+    html += row('Priorité',  task.priority);
+    if (task.description)    html += row('Description',   task.description);
+    if (task.estimated_hours) html += row('Heures',       (task.actual_hours ?? 0) + 'h / ' + task.estimated_hours + 'h');
+    if (task.due_date)        html += row('Échéance',     task.due_date);
     document.getElementById('infoTaskBody').innerHTML = html;
-    new bootstrap.Modal(document.getElementById('modalTaskInfo')).show();
+    openModal('modalTaskInfo');
 }
 </script>
 {% endblock %}
