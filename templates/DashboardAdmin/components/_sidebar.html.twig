@@ -15,7 +15,7 @@
     {# ── Navigation ── #}
     <nav class="relative flex-1 px-3 py-5 overflow-y-auto scrollbar-themed">
 
-        <p class="px-3 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Overview</p>
+        <p class="px-3 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Vue d'ensemble</p>
 
         {% set isDashboard = app.request.get('_route') == 'app_welcome_admin' %}
         <a href="{{ path('app_welcome_admin') }}"
@@ -28,10 +28,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
                 </svg>
             </div>
-            Dashboard
+            Tableau de bord
         </a>
 
-        <p class="px-3 mt-6 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Management</p>
+        <p class="px-3 mt-6 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Gestion</p>
 
         {% set isEmployees = app.request.get('_route') == 'app_admin_employees' %}
         <a href="{{ path('app_admin_employees') }}"
@@ -44,7 +44,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
                 </svg>
             </div>
-            Employees
+            Employes
         </a>
 
         <a href="#" class="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200 transition-all duration-200">
@@ -53,7 +53,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
                 </svg>
             </div>
-            Departments
+            Departements
         </a>
 
         {% set isAdminLeaves = app.request.get('_route') == 'app_admin_leave_exceptions' %}
@@ -67,7 +67,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
                 </svg>
             </div>
-            Exceptional Leaves
+            Conges exceptionnels
             <span class="ml-auto w-2 h-2 rounded-full bg-amber-400 glow-pulse"></span>
         </a>
 
@@ -77,7 +77,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
                 </svg>
             </div>
-            Reports
+            Rapports
         </a>
 
         {% set isPayroll = app.request.get('_route') in ['app_rh_payroll_fiches', 'app_rh_payroll_fiche_show', 'app_rh_payroll_fiche_new', 'app_rh_payroll_fiche_edit', 'app_rh_payroll_fiche_delete', 'app_rh_payroll_primes', 'app_rh_payroll_prime_new', 'app_rh_payroll_prime_edit', 'app_rh_payroll_prime_delete', 'app_rh_payroll_deductions', 'app_rh_payroll_deduction_new', 'app_rh_payroll_deduction_edit', 'app_rh_payroll_deduction_delete'] %}
@@ -94,7 +94,7 @@
             Rémunération
         </a>
 
-        <p class="px-3 mt-6 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">System</p>
+        <p class="px-3 mt-6 mb-2.5 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em]">Systeme</p>
 
         <a href="#" class="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200 transition-all duration-200">
             <div class="w-7 h-7 rounded-md bg-white/5 text-zinc-500 group-hover:text-zinc-300 group-hover:bg-white/10 flex items-center justify-center transition-colors">
@@ -103,7 +103,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
             </div>
-            Settings
+            Parametres
         </a>
     </nav>
 
@@ -116,7 +116,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
                 </svg>
             </div>
-            Logout
+            Deconnexion
         </a>
     </div>
 </aside>

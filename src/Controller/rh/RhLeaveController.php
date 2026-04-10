@@ -47,6 +47,7 @@ final class RhLeaveController extends AbstractController
             'rhLeaveStats' => $leaveRequestService->getRhDashboardStats($rhId),
             'rhCreditStats' => $leaveRequestService->getRhCreditSummary($rhId),
             'pendingLeaveCount' => $leaveRequestService->getRhPendingCount($rhId),
+            'upcomingLeaves' => $leaveRequestService->getUpcomingApprovedByRh($rhId),
             'statusFilter' => $status,
             'employeeFilter' => $employeeSearch,
             'leaveTypeFilter' => $leaveTypeSearch,
@@ -88,6 +89,35 @@ final class RhLeaveController extends AbstractController
         $result = $leaveRequestService->rejectRequestByRh($this->getCurrentRhId(), $idInt, $comment, (string) $this->getUser()?->getUserIdentifier());
 
         $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
+        return $this->redirectToRoute('app_rh_leave_requests');
+    }
+
+    #[Route('/welcome/rh/leaves/credit/grant', name: 'app_rh_leave_credit_grant', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function grantCredit(Request $request, LeaveBalanceService $leaveBalanceService): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('rh_leave_credit_grant', (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_leave_requests');
+        }
+
+        $employeeId = (int) $request->request->get('employee_id', 0);
+        $daysRaw = str_replace(',', '.', trim((string) $request->request->get('credit_days', '0')));
+        $creditDays = is_numeric($daysRaw) ? (float) $daysRaw : 0.0;
+
+        if ($employeeId <= 0) {
+            $this->addFlash('error', 'Veuillez selectionner un employe.');
+            return $this->redirectToRoute('app_rh_leave_requests');
+        }
+
+        if ($creditDays <= 0) {
+            $this->addFlash('error', 'Le nombre de jours doit etre superieur a 0.');
+            return $this->redirectToRoute('app_rh_leave_requests');
+        }
+
+        $result = $leaveBalanceService->grantManualCreditByRh($this->getCurrentRhId(), $employeeId, $creditDays);
+        $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
+
         return $this->redirectToRoute('app_rh_leave_requests');
     }
 
