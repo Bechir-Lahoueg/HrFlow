@@ -60,6 +60,8 @@ final class RecruitmentApplicationController extends AbstractController
         ApplicationRepository $applicationRepository,
         EntityManagerInterface $em
     ): RedirectResponse {
+
+
         if (!$this->isCsrfTokenValid('application_status_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_applications');

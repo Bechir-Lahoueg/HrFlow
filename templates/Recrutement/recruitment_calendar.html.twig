@@ -11,10 +11,11 @@
             padding: 24px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             overflow-x: auto;
-            max-width: 100%;
+            width: 100%;
         }
         .calendar-container {
-            min-width: 900px;
+            min-width: 800px;
+            width: 100%;
         }
         .calendar-header {
             display: flex;
@@ -78,11 +79,17 @@
         }
         .calendar-day {
             background: white;
-            min-height: 100px;
+            min-height: 80px;
             height: auto;
-            padding: 8px;
+            padding: 6px;
             position: relative;
             overflow: hidden;
+        }
+        @media (min-width: 1024px) {
+            .calendar-day {
+                min-height: 100px;
+                padding: 8px;
+            }
         }
         .calendar-day:hover {
             background: #f8fafc;
@@ -154,7 +161,7 @@
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
-        <main class="p-6 max-w-[1400px] mx-auto">
+        <main class="p-4 lg:p-6 w-full max-w-[1600px] mx-auto">
             {# Header Section with Stats #}
             <header class="mb-8">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
