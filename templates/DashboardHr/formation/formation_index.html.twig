@@ -190,6 +190,22 @@
                                         <p class="text-sm font-bold text-zinc-700 dark:text-zinc-300 truncate" title="{{ formation.organisme }}">{{ formation.organisme }}</p>
                                     </div>
                                 </div>
+
+                                {% set rating = ratingMap[formation.id]|default(null) %}
+                                <div class="pt-2 border-t border-zinc-100">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1">
+                                            {% set avg = rating ? rating.average : 0 %}
+                                            {% for i in 1..5 %}
+                                                <span class="text-sm {{ avg >= i ? 'text-amber-400' : 'text-zinc-300' }}">★</span>
+                                            {% endfor %}
+                                            <span class="text-xs text-zinc-500 ml-1">{{ rating ? rating.average ~ '/5' : 'Pas encore notee' }}</span>
+                                        </div>
+                                        <a href="{{ path('rh_formation_feedbacks', {id: formation.id}) }}" onclick="event.stopPropagation()" class="text-[11px] font-semibold text-[#145EB7] hover:text-[#3FA9F5]">
+                                            Voir avis ({{ rating ? rating.count : 0 }})
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto" onclick="event.stopPropagation()">

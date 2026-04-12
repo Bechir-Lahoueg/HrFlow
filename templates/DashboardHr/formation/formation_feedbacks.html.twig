@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Feedback Formation | RH{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        <main class="p-6 max-w-5xl mx-auto space-y-6">
+            <section class="rounded-2xl bg-white border border-zinc-200 shadow-sm p-6">
+                <div class="flex items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h1 class="text-xl font-bold text-zinc-800">Feedback - {{ formation.titre }}</h1>
+                        <p class="text-sm text-zinc-500 mt-1">Notes et commentaires des employes</p>
+                    </div>
+                    <a href="{{ path('rh_formation_list') }}" class="inline-flex items-center px-3 py-2 rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors">Retour</a>
+                </div>
+
+                <div class="space-y-3">
+                    {% for feedback in feedbacks %}
+                        <article class="rounded-xl border border-zinc-200 bg-white p-4">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-sm font-semibold text-zinc-800">{{ feedback.displayAuthor }}</p>
+                                <div class="flex items-center gap-1">
+                                    {% for i in 1..5 %}
+                                        <span class="text-sm {{ feedback.rating >= i ? 'text-amber-400' : 'text-zinc-300' }}">★</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm text-zinc-600">{{ feedback.comment }}</p>
+                            <p class="mt-2 text-[11px] text-zinc-400">{{ feedback.createdAt ? feedback.createdAt|date('d/m/Y H:i') : '' }}</p>
+                        </article>
+                    {% else %}
+                        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            Aucun feedback pour cette formation.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -3,8 +3,10 @@
 namespace App\Controller\rh;
 
 use App\Service\FormationService;
+use App\Service\FormationChangeNotificationService;
 use App\Service\ParticipationService;
 use App\Service\PresenceService;
+use App\Service\SessionFeedbackService;
 use App\Service\SessionService;
 use App\Form\Formation\FormationType;
 use App\Form\Formation\SessionFormationType;
@@ -18,7 +20,12 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/rh/formation')]
 final class RhFormationController extends AbstractController
 {
-    public function __construct(private readonly FormationService $formationService) {}
+    public function __construct(
+        private readonly FormationService $formationService,
+        private readonly FormationChangeNotificationService $formationChangeNotificationService,
+        private readonly SessionFeedbackService $sessionFeedbackService,
+    ) {
+    }
 
     #[Route('/', name: 'rh_formation_list', methods: ['GET'])]
     public function index(Request $request): Response
@@ -33,8 +40,12 @@ final class RhFormationController extends AbstractController
         $sort = $sortParts[0] ?? 'created_at';
         $dir = $sortParts[1] ?? 'DESC';
 
+        $formations = $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir);
+        $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+
         return $this->render('DashboardHr/formation/formation_index.html.twig', [
-            'formations' => $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir),
+            'formations' => $formations,
+            'ratingMap' => $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds),
             'stats' => $this->formationService->getFormationStatsByRhId($userId),
             'filters' => [
                 'search' => $search,
@@ -81,6 +92,12 @@ final class RhFormationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
+            $sentCount = $this->formationChangeNotificationService->notifyFormationUpdated($formation);
+
+            if ($sentCount > 0) {
+                $this->addFlash('success', sprintf('%d notification(s) envoyee(s) aux inscrits.', $sentCount));
+            }
+
             $this->addFlash('success', 'Formation mise à jour avec succès.');
             return $this->redirectToRoute('rh_formation_list');
         }
@@ -102,7 +119,13 @@ final class RhFormationController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete-formation-' . $idInt, $request->request->get('_token'))) {
+            $sentCount = $this->formationChangeNotificationService->notifyFormationDeleted($formation);
             $this->formationService->deleteFormation($idInt);
+
+            if ($sentCount > 0) {
+                $this->addFlash('success', sprintf('%d notification(s) envoyee(s) aux inscrits.', $sentCount));
+            }
+
             $this->addFlash('success', 'Formation supprimée avec succès.');
         }
 
@@ -191,6 +214,11 @@ final class RhFormationController extends AbstractController
             }
 
             $em->flush();
+            $sentCount = $this->formationChangeNotificationService->notifySessionUpdated($session);
+
+            if ($sentCount > 0) {
+                $this->addFlash('success', sprintf('%d notification(s) envoyee(s) aux inscrits.', $sentCount));
+            }
 
             $this->addFlash('success', 'Session modifiée avec succès.');
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
@@ -260,6 +288,21 @@ final class RhFormationController extends AbstractController
             'filters' => [
                 'status' => $status
             ]
+        ]);
+    }
+
+    #[Route('/{id}/feedbacks', name: 'rh_formation_feedbacks', methods: ['GET'])]
+    public function feedbacks(string $id): Response
+    {
+        $formationId = (int) $id;
+        $formation = $this->formationService->getFormationById($formationId);
+        if (!$formation) {
+            throw $this->createNotFoundException('Formation non trouvee');
+        }
+
+        return $this->render('DashboardHr/formation/formation_feedbacks.html.twig', [
+            'formation' => $formation,
+            'feedbacks' => $this->sessionFeedbackService->getFeedbacksByFormation($formationId),
         ]);
     }
 
