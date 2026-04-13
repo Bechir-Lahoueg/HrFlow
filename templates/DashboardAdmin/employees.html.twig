@@ -99,19 +99,35 @@
                                     <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Last Name</th>
                                     <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Email</th>
                                     <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Position</th>
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">RH ID</th>
+                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">RH createur</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                                 {% for employee in employees %}
-                                <tr class="table-row-hover hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                <tr
+                                    class="table-row-hover hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+                                    data-employee-id="{{ employee.id }}"
+                                    data-first-name="{{ employee.firstName|e('html_attr') }}"
+                                    data-last-name="{{ employee.lastName|e('html_attr') }}"
+                                    data-email="{{ employee.email|e('html_attr') }}"
+                                    data-age="{{ employee.age }}"
+                                    data-job-title="{{ employee.jobTitle|e('html_attr') }}"
+                                    data-rh-id="{{ employee.rhId }}"
+                                    data-rh-username="{{ (rhById[employee.rhId].username ?? 'Inconnu')|e('html_attr') }}"
+                                    data-rh-email="{{ (rhById[employee.rhId].email ?? '-')|e('html_attr') }}"
+                                    data-created-at="{{ employee.createdAt ? employee.createdAt|date('Y-m-d H:i') : '-' }}"
+                                    data-updated-at="{{ employee.updatedAt ? employee.updatedAt|date('Y-m-d H:i') : '-' }}"
+                                >
                                     <td class="px-6 py-3.5 text-[13px] font-medium text-zinc-800 dark:text-zinc-300">{{ employee.firstName }}</td>
                                     <td class="px-6 py-3.5 text-[13px] text-zinc-600 dark:text-zinc-400">{{ employee.lastName }}</td>
                                     <td class="px-6 py-3.5 text-[13px] text-zinc-500">{{ employee.email }}</td>
                                     <td class="px-6 py-3.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400">{{ employee.jobTitle }}</span>
                                     </td>
-                                    <td class="px-6 py-3.5 text-[13px] text-zinc-400 dark:text-zinc-600 font-mono-num">{{ employee.rhId }}</td>
+                                    <td class="px-6 py-3.5 text-[13px] text-zinc-400 dark:text-zinc-600">
+                                        <p class="font-semibold text-zinc-700 dark:text-zinc-300">{{ rhById[employee.rhId].username ?? 'Inconnu' }}</p>
+                                        <p class="text-[11px] text-zinc-400 dark:text-zinc-600 font-mono-num">ID: {{ employee.rhId }}</p>
+                                    </td>
                                 </tr>
                                 {% else %}
                                 <tr>
@@ -129,6 +145,54 @@
                         </table>
                     </div>
                 </section>
+            </div>
+
+            {# ── Employee Details Modal ── #}
+            <div id="employee-detail-modal" class="hidden fixed inset-0 z-50">
+                <div id="employee-detail-backdrop" class="absolute inset-0 bg-zinc-950/60"></div>
+                <div class="absolute inset-0 flex items-center justify-center p-4">
+                    <div class="w-full max-w-2xl rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">Employee Details</h3>
+                                <p class="text-[12px] text-zinc-500">Informations completes de l'employe et du RH createur.</p>
+                            </div>
+                            <button type="button" id="employee-detail-close" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Employe</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">ID:</span> <span id="detail-id" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Nom:</span> <span id="detail-fullname" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Email:</span> <span id="detail-email" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Age:</span> <span id="detail-age" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Poste:</span> <span id="detail-job" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">RH createur</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">RH ID:</span> <span id="detail-rh-id" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Nom RH:</span> <span id="detail-rh-username" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Email:</span> <span id="detail-rh-email" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Historique</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <p><span class="text-zinc-500">Cree le:</span> <span id="detail-created" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Mis a jour le:</span> <span id="detail-updated" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {# ═══════════════ Users Table ═══════════════ #}
@@ -205,4 +269,64 @@
         </main>
     </div>
 </div>
+
+<script>
+(function () {
+    var modal = document.getElementById('employee-detail-modal');
+    if (!modal) return;
+
+    var backdrop = document.getElementById('employee-detail-backdrop');
+    var closeBtn = document.getElementById('employee-detail-close');
+    var rows = document.querySelectorAll('tr[data-employee-id]');
+
+    var detail = {
+        id: document.getElementById('detail-id'),
+        fullname: document.getElementById('detail-fullname'),
+        email: document.getElementById('detail-email'),
+        age: document.getElementById('detail-age'),
+        job: document.getElementById('detail-job'),
+        rhId: document.getElementById('detail-rh-id'),
+        rhUsername: document.getElementById('detail-rh-username'),
+        rhEmail: document.getElementById('detail-rh-email'),
+        created: document.getElementById('detail-created'),
+        updated: document.getElementById('detail-updated')
+    };
+
+    function openModal(row) {
+        detail.id.textContent = row.dataset.employeeId || '-';
+        detail.fullname.textContent = ((row.dataset.firstName || '') + ' ' + (row.dataset.lastName || '')).trim() || '-';
+        detail.email.textContent = row.dataset.email || '-';
+        detail.age.textContent = row.dataset.age || '-';
+        detail.job.textContent = row.dataset.jobTitle || '-';
+        detail.rhId.textContent = row.dataset.rhId || '-';
+        detail.rhUsername.textContent = row.dataset.rhUsername || '-';
+        detail.rhEmail.textContent = row.dataset.rhEmail || '-';
+        detail.created.textContent = row.dataset.createdAt || '-';
+        detail.updated.textContent = row.dataset.updatedAt || '-';
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    rows.forEach(function (row) {
+        row.addEventListener('click', function () {
+            openModal(row);
+        });
+    });
+
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+})();
+</script>
 {% endblock %}

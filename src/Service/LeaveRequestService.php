@@ -281,10 +281,10 @@ final class LeaveRequestService
     }
 
     /** @return LeaveRequest[] */
-    public function getAdminExceptionRequests(): array
+    public function getAdminExceptionRequests(string $adminActor): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
-        return $this->leaveRequestRepository->findAdminExceptionPending();
+        return $this->leaveRequestRepository->findAdminExceptionsForReviewAndApprovedBy($adminActor);
     }
 
     public function approveExceptionByAdmin(int $leaveRequestId, string $adminComment = '', string $adminActor = 'ADMIN'): array

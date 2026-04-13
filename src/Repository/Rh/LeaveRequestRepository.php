@@ -210,14 +210,21 @@ class LeaveRequestRepository extends ServiceEntityRepository
     }
 
     /** @return LeaveRequest[] */
-    public function findAdminExceptionPending(): array
+    public function findAdminExceptionsForReviewAndApprovedBy(string $adminActor): array
     {
         return $this->createQueryBuilder('lr')
             ->join('lr.employee', 'e')
             ->where('lr.requestCategory = :category')
-            ->andWhere('lr.workflowStatus = :workflowStatus')
+            ->andWhere('(
+                lr.workflowStatus = :pendingWorkflow
+                OR (lr.workflowStatus = :approvedWorkflow AND lr.adminDecisionBy = :adminActor)
+                OR (lr.workflowStatus = :rejectedWorkflow AND lr.adminDecisionBy = :adminActor)
+            )')
             ->setParameter('category', 'EXCEPTION')
-            ->setParameter('workflowStatus', 'ADMIN_PENDING')
+            ->setParameter('pendingWorkflow', 'ADMIN_PENDING')
+            ->setParameter('approvedWorkflow', 'ADMIN_APPROVED')
+            ->setParameter('rejectedWorkflow', 'ADMIN_REJECTED')
+            ->setParameter('adminActor', $adminActor)
             ->orderBy('lr.requestDate', 'DESC')
             ->addOrderBy('lr.id', 'DESC')
             ->getQuery()
