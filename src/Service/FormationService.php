@@ -27,6 +27,15 @@ final class FormationService
         return $this->formationRepository->findByRh($rhId, $search, $type, $sort, $dir);
     }
 
+    /** @return Formation[] */
+    public function getAllFormations(string $search = '', string $type = '', string $sort = 'createdAt', string $dir = 'DESC'): array
+    {
+        $sortMap = ['created_at' => 'createdAt'];
+        $sort = $sortMap[$sort] ?? $sort;
+
+        return $this->formationRepository->findAllFiltered($search, $type, $sort, $dir);
+    }
+
     public function getFormationStatsByRhId(int $rhId): array
     {
         try {
