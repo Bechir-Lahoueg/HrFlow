@@ -115,8 +115,26 @@
                         <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
-                                <div class="flex justify-between items-start mb-3">
-                                    <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
+                                {% set rating = ratingMap[formation.id]|default(null) %}
+                                <div class="flex justify-between items-start mb-3 gap-2">
+                                    <div class="min-w-0">
+                                        <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
+                                        <div class="mt-1 flex items-center gap-1 flex-wrap">
+                                            {% set hasReviews = rating and rating.count > 0 %}
+                                            {% if hasReviews %}
+                                                {% set avg = rating.average %}
+                                                {% for i in 1..5 %}
+                                                    <span class="text-sm {{ avg >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                                {% endfor %}
+                                                <span class="text-xs text-zinc-500 ml-1">{{ rating.average ~ '/5' }}</span>
+                                                <a href="{{ path('employee_formation_feedbacks', {id: formation.id}) }}" onclick="event.stopPropagation()" class="text-[11px] font-semibold text-[#145EB7] hover:text-[#3FA9F5] ml-2">
+                                                    Voir avis ({{ rating.count }})
+                                                </a>
+                                            {% else %}
+                                                <span class="text-xs text-zinc-500">Aucun avis</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider whitespace-nowrap ml-2">{{ formation.type }}</span>
                                 </div>
                                 <div class="mb-4 space-y-2">
@@ -143,6 +161,8 @@
                                         <p class="text-sm font-bold text-zinc-700 dark:text-zinc-300 truncate" title="{{ formation.organisme }}">{{ formation.organisme }}</p>
                                     </div>
                                 </div>
+
+                                <div class="pt-2 border-t border-zinc-100"></div>
                             </div>
                         </div>
                     {% else %}

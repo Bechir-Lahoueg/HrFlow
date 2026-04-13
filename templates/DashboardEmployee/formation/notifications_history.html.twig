@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique Notifications | HrFlow{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        <main class="p-6 max-w-5xl mx-auto space-y-6">
+            <section class="rounded-2xl bg-white border border-zinc-200 shadow-sm p-6">
+                <div class="flex items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h1 class="text-xl font-bold text-zinc-800">Historique des notifications</h1>
+                        <p class="text-sm text-zinc-500 mt-1">{{ unreadCount }} non lue(s) - toutes les notifications (lues + non lues)</p>
+                    </div>
+                    <a href="{{ path('employee_formation_index') }}" class="inline-flex items-center px-3 py-2 rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors">Retour</a>
+                </div>
+
+                <div class="space-y-3">
+                    {% for notification in notifications %}
+                        <a href="{{ path('employee_notification_open', {id: notification.id}) }}"
+                           class="block rounded-xl border {{ notification.isRead ? 'border-zinc-200 bg-zinc-50/60' : 'border-cyan-200 bg-cyan-50/70' }} p-4 hover:shadow-sm transition-all">
+                            <div class="flex items-start gap-3">
+                                <span class="mt-1 w-2 h-2 rounded-full {{ notification.isRead ? 'bg-zinc-400' : 'bg-cyan-500' }}"></span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <p class="text-sm font-semibold text-zinc-800 truncate">{{ notification.title ?: 'Mise a jour formation' }}</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[11px] px-2 py-0.5 rounded-full {{ notification.referenceType == 'session' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                                {{ notification.referenceType == 'session' ? 'Session' : 'Formation' }}
+                                            </span>
+                                            {% if notification.isRead %}
+                                                <span class="text-[11px] px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700">Lu</span>
+                                            {% else %}
+                                                <span class="text-[11px] px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700">Nouveau</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-zinc-600">{{ notification.message }}</p>
+                                    <p class="mt-2 text-[11px] text-zinc-400">{{ notification.createdAt ? notification.createdAt|date('d/m/Y H:i') : '' }} - cliquer pour ouvrir</p>
+                                </div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500">
+                            Aucune notification pour le moment.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}
+

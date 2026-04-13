@@ -3,6 +3,7 @@
 namespace App\Repository\Formation;
 
 use App\Entity\Formation\ParticipationFormation;
+use App\Entity\Rh\Employee;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -83,5 +84,55 @@ class ParticipationFormationRepository extends ServiceEntityRepository
             ->orderBy('e.firstName', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /** @return Employee[] */
+    public function findNotifiableEmployeesByFormation(int $formationId): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('DISTINCT e')
+            ->from(Employee::class, 'e')
+            ->join(ParticipationFormation::class, 'p', 'WITH', 'p.employee = e')
+            ->join('p.session', 's')
+            ->where('s.formation = :formationId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->setParameter('formationId', $formationId)
+            ->setParameter('statuses', ['Inscrit', 'Accepte', 'Certificat obtenu'])
+            ->orderBy('e.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return Employee[] */
+    public function findNotifiableEmployeesBySession(int $sessionId): array
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('DISTINCT e')
+            ->from(Employee::class, 'e')
+            ->join(ParticipationFormation::class, 'p', 'WITH', 'p.employee = e')
+            ->where('p.session = :sessionId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->setParameter('sessionId', $sessionId)
+            ->setParameter('statuses', ['Inscrit', 'Accepte', 'Certificat obtenu'])
+            ->orderBy('e.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function hasAcceptedInFormation(int $employeeId, int $formationId): bool
+    {
+        $count = (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->join('p.session', 's')
+            ->where('p.employee = :employeeId')
+            ->andWhere('s.formation = :formationId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('formationId', $formationId)
+            ->setParameter('statuses', ['Accepte', 'Certificat obtenu'])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
     }
 }

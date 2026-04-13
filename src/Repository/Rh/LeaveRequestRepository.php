@@ -68,6 +68,21 @@ class LeaveRequestRepository extends ServiceEntityRepository
             ->getSingleScalarResult() > 0;
     }
 
+    public function hasAcceptedDateOverlap(int $employeeId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): bool
+    {
+        return (int) $this->createQueryBuilder('lr')
+            ->select('COUNT(lr.id)')
+            ->where('lr.employee = :employeeId')
+            ->andWhere('lr.status = :status')
+            ->andWhere('NOT (lr.endDate < :startDate OR lr.startDate > :endDate)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('status', 'ACCEPTE')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
+    }
+
     /** @return LeaveRequest[] */
     public function findByRh(
         int $rhId,
