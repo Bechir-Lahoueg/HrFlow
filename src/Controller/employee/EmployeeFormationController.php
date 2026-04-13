@@ -4,10 +4,15 @@ namespace App\Controller\employee;
 
 use App\Service\FormationService;
 use App\Service\ParticipationService;
+use App\Service\CertificateService;
 use App\Service\SessionFeedbackService;
 use App\Service\SessionService;
 use App\Repository\Formation\EmployeeNotificationRepository;
+use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;
+use App\Repository\Rh\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,8 +25,12 @@ final class EmployeeFormationController extends AbstractController
         private readonly SessionService $sessionService,
         private readonly ParticipationService $participationService,
         private readonly FormationService $formationService,
+        private readonly CertificateService $certificateService,
+        private readonly ParticipationFormationRepository $participationRepository,
         private readonly SessionFeedbackService $sessionFeedbackService,
         private readonly SessionFeedbackRepository $sessionFeedbackRepository,
+        private readonly UserRepository $userRepository,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -151,6 +160,64 @@ final class EmployeeFormationController extends AbstractController
         }
 
         return $this->redirectToRoute('employee_formation_sessions', ['id' => $this->sessionService->getIdFormationBySessionId($idInt)]);
+    }
+
+    #[Route('/participation/{id}/certificate', name: 'employee_formation_certificate_download', methods: ['GET'])]
+    public function downloadCertificate(string $id): Response
+    {
+        $participationId = (int) $id;
+        $employeeId = $this->getUser()->getId();
+
+        $participation = $this->participationRepository->find($participationId);
+        if (!$participation || (int) $participation->getEmployee()?->getId() !== $employeeId) {
+            throw $this->createNotFoundException('Participation introuvable.');
+        }
+
+        $session = $participation->getSession();
+        if (!$session || $session->getStatut() !== 'Terminee') {
+            $this->addFlash('error', 'Certificat indisponible : la formation n est pas encore terminee.');
+            return $this->redirectToRoute('employee_formation_requests');
+        }
+
+        $attendance = $this->participationService->getAttendancePercentage($participationId);
+        if ($attendance < 80) {
+            $this->addFlash('error', 'Certificat indisponible : votre taux de presence doit etre superieur ou egal a 80%.');
+            return $this->redirectToRoute('employee_formation_requests');
+        }
+
+        $rhCreatorName = null;
+        $formation = $session->getFormation();
+        if ($formation && $formation->getRhId()) {
+            $rhCreatorName = $this->userRepository->find($formation->getRhId())?->getUsername();
+        }
+
+        $organisme = trim((string) ($formation?->getOrganisme() ?? ''));
+        if ($organisme === '') {
+            $organisme = 'HrFlow';
+        }
+
+        $certificate = $this->certificateService->generateCertificate(
+            $participation->getEmployee()?->getFullName() ?? $this->getUser()->getUserIdentifier(),
+            $formation?->getTitre() ?? 'Formation',
+            $session->getDateDebut(),
+            $session->getDateFin(),
+            $organisme,
+            $rhCreatorName
+        );
+
+        if (!$participation->isCertificatObtenu()) {
+            $participation->setCertificatObtenu(true);
+            $this->em->flush();
+        }
+
+        $response = new Response($certificate['content']);
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set(
+            'Content-Disposition',
+            $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $certificate['fileName'])
+        );
+
+        return $response;
     }
 
     #[Route('/notifications/mark-all-read', name: 'employee_notifications_mark_all_read', methods: ['POST'])]

@@ -34,4 +34,9 @@ final class SessionService
     {
         return $this->sessionFormationRepository->find($sessionId);
     }
+
+    public function syncStatuses(): void
+    {
+        $this->sessionFormationRepository->autoUpdateStatuses();
+    }
 }

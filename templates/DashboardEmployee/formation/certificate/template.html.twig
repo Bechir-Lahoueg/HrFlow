@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page {
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica', sans-serif;
+            background-image: url('{{ template_background ?: "" }}');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .text-element {
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            color: #ffffff;
+        }
+
+        .name {
+            top: 400px;
+            font-size: 60px;
+            font-style: italic;
+        }
+
+        .formation {
+            top: 550px;
+            font-size: 40px;
+            font-style: italic;
+        }
+
+        .date-debut {
+            top: 650px;
+            left: 100px;
+            width: 240px;
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .date-fin {
+            top: 650px;
+            left: 850px;
+            width: 240px;
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .organisme {
+            top: 695px;
+            left: 265px;
+            width: 520px;
+            text-align: left;
+            font-size: 28px;
+        }
+
+        .footer-info {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 36px;
+            font-size: 14px;
+            padding: 0 50px;
+            color: #ffffff;
+        }
+
+        .signature {
+            position: absolute;
+            left: 70px;
+            bottom: 22px;
+            color: #ffffff;
+            font-size: 15px;
+            font-style: italic;
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-element name">
+            {{ name }}
+        </div>
+
+        <div class="text-element formation">
+            {{ formation }}
+        </div>
+
+        <div class="text-element date-debut">
+            {{ debut|date('d/m/Y') }}
+        </div>
+
+        <div class="text-element date-fin">
+            {{ fin|date('d/m/Y') }}
+        </div>
+
+        <div class="text-element organisme">
+            {{ org is defined and org|trim != '' ? org : 'HrFlow' }}
+        </div>
+
+        {% if rh_creator_name is not empty %}
+            <div class="signature">Signature electronique: {{ rh_creator_name }}</div>
+        {% endif %}
+
+        <div class="footer-info">
+            <span style="float: right;">Fait le : {{ today|date('d/m/Y') }}</span>
+        </div>
+    </div>
+</body>
+</html>
