@@ -30,10 +30,24 @@ final class AdminEmployeesController extends AbstractController
             }
         }
 
+        $users = $userRepository->findBy([], ['id' => 'DESC']);
+        $rhById = [];
+        foreach ($users as $userItem) {
+            if ($userItem->getRole() !== 'RH') {
+                continue;
+            }
+
+            $rhById[(int) $userItem->getId()] = [
+                'username' => $userItem->getUsername(),
+                'email' => $userItem->getEmail(),
+            ];
+        }
+
         return $this->render('DashboardAdmin/employees.html.twig', [
             'user' => $this->getUser(),
             'employees' => $employeeRepository->findBy([], ['id' => 'DESC']),
-            'users' => $userRepository->findBy([], ['id' => 'DESC']),
+            'users' => $users,
+            'rhById' => $rhById,
             'form' => [
                 'first_name' => '',
                 'last_name' => '',
