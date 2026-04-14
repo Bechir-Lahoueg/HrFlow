@@ -1,188 +1,398 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Employees | HrFlow Admin{% endblock %}
+{% block title %}Employes | HrFlow Admin{% endblock %}
 
 {% block body %}
+<style>
+    @keyframes hintFadeIn {
+        from { opacity: 0; transform: translateY(-3px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .emp-input:user-invalid,
+    .emp-input:not(:placeholder-shown):invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.10) !important;
+    }
+    .emp-input:user-valid,
+    .emp-input:not(:placeholder-shown):valid {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.10) !important;
+    }
+    .emp-hint {
+        display: none;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #ef4444;
+        margin-top: 0.2rem;
+        animation: hintFadeIn 0.15s ease-out;
+    }
+    .emp-input:user-invalid + .emp-hint,
+    .emp-input:not(:placeholder-shown):invalid + .emp-hint {
+        display: block;
+    }
+    .dark .emp-hint { color: #f87171; }
+</style>
+
 <div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardAdmin/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardAdmin/components/_header.html.twig' %}
 
-        {# Flash messages #}
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                </div>
                 {{ message }}
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
+                <div class="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
                 {{ message }}
             </div>
         {% endfor %}
 
-        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+        <main class="p-6 lg:p-8 space-y-6 max-w-[1440px] mx-auto"
+              data-controller="tab-switcher"
+              data-tab-switcher-active-value="0">
 
-            {# ═══════════════ Page Header ═══════════════ #}
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-slide-up">
-                <div>
-                    <h1 class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">Employee Management</h1>
-                    <p class="text-[13px] text-zinc-500 mt-1">Create RH accounts and manage your workforce. Passwords use SHA-256 hashing compatible with the Java module.</p>
-                </div>
-                <a href="{{ path('app_welcome_admin') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700/50 shadow-sm dark:shadow-none transition-all shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-                    Dashboard
-                </a>
-            </div>
-            {# ═══════════════ Create RH + Employees Table ═══════════════ #}
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {# ═══════════ HERO BANNER ═══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-violet-950 to-purple-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-violet-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-purple-300/15 blur-3xl mesh-blob-alt"></div>
+                <div class="absolute top-1/2 left-1/3 h-32 w-32 rounded-full bg-fuchsia-400/10 blur-3xl"></div>
 
-                {# ── Create RH Form ── #}
-                <section class="xl:col-span-1 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm dark:shadow-none animate-slide-up stagger-1 self-start">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+                <div class="relative z-10 grid lg:grid-cols-[1fr_1fr] gap-8 items-center">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-violet-200 uppercase tracking-[0.15em]">Administration</span>
                         </div>
-                        <h2 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Create RH Account</h2>
+                        <h2 class="text-3xl md:text-5xl font-display leading-[1.1] tracking-tight">Gestion du Personnel</h2>
+                        <p class="mt-3 text-[14px] text-slate-300/90 max-w-lg leading-relaxed">Creez des comptes RH, consultez les employes et gerez les acces de votre equipe.</p>
                     </div>
-
-                    <form method="post" action="{{ path('app_admin_employees') }}" class="space-y-4">
-                        <input type="hidden" name="_token" value="{{ csrf_token('create_rh') }}">
-
-                        <div>
-                            <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider" for="username">Username</label>
-                            <input id="username" name="username" type="text" required
-                                   class="w-full rounded-lg border border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-300 dark:focus:border-violet-500/30 focus:ring-2 dark:focus:ring-1 focus:ring-violet-100 dark:focus:ring-violet-500/20 focus:bg-white dark:focus:bg-zinc-950 transition-colors"
-                                   placeholder="e.g. rh_dupont" />
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Employes</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">{{ employees|length }}</p>
                         </div>
-
-                        <div>
-                            <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider" for="email">Email</label>
-                            <input id="email" name="email" type="email" required
-                                   class="w-full rounded-lg border border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-300 dark:focus:border-violet-500/30 focus:ring-2 dark:focus:ring-1 focus:ring-violet-100 dark:focus:ring-violet-500/20 focus:bg-white dark:focus:bg-zinc-950 transition-colors"
-                                placeholder="rh@company.com" />
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Comptes RH</p>
+                            {% set rhCount = 0 %}
+                            {% for u in users %}{% if u.role == 'RH' %}{% set rhCount = rhCount + 1 %}{% endif %}{% endfor %}
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num text-violet-300 group-hover:scale-105 transition-transform origin-left">{{ rhCount }}</p>
                         </div>
-
-                        <div>
-                            <label class="block text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider" for="password">Password</label>
-                            <input id="password" name="password" type="password" required
-                                   class="w-full rounded-lg border border-zinc-200 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-300 dark:focus:border-violet-500/30 focus:ring-2 dark:focus:ring-1 focus:ring-violet-100 dark:focus:ring-violet-500/20 focus:bg-white dark:focus:bg-zinc-950 transition-colors"
-                                   placeholder="Secure password" />
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Total comptes</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num text-fuchsia-300 group-hover:scale-105 transition-transform origin-left">{{ users|length }}</p>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/20 transition-all duration-200 mt-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            Create RH Account
-                        </button>
-                    </form>
-                </section>
+            {# ═══════════ TAB NAVIGATION (3 tabs) ═══════════ #}
+            <div class="animate-slide-up stagger-1 overflow-x-auto pb-1">
+                <div class="tab-bar">
+                    <div data-tab-switcher-target="indicator" class="tab-indicator"></div>
 
-                {# ── Employees Table ── #}
-                <section class="xl:col-span-2 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm dark:shadow-none animate-slide-up stagger-2">
-                    <div class="flex items-center justify-between p-6 pb-0 mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                    <button type="button" data-tab-switcher-target="tab" data-action="click->tab-switcher#switch" data-index="0" class="tab-btn tab-active" role="tab" aria-selected="true">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                        Employes
+                        <span class="tab-count">{{ employees|length }}</span>
+                    </button>
+
+                    <button type="button" data-tab-switcher-target="tab" data-action="click->tab-switcher#switch" data-index="1" class="tab-btn tab-inactive" role="tab" aria-selected="false">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+                        Creer un RH
+                    </button>
+
+                    <button type="button" data-tab-switcher-target="tab" data-action="click->tab-switcher#switch" data-index="2" class="tab-btn tab-inactive" role="tab" aria-selected="false">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                        Comptes Utilisateurs
+                        <span class="tab-count">{{ users|length }}</span>
+                    </button>
+                </div>
+            </div>
+
+            {# ══════════════════════════════════════════════ #}
+            {# ═══════════ PANEL 0: EMPLOYES ══════════════ #}
+            {# ══════════════════════════════════════════════ #}
+            <div data-tab-switcher-target="panel" class="space-y-6">
+                <section class="card-surface overflow-hidden animate-slide-up">
+                    <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Liste des employes</h3>
+                                    <p class="text-[11px] text-zinc-400">Tous les employes de l'entreprise</p>
+                                </div>
                             </div>
-                            <h2 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Employees</h2>
+                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50">
+                                <span class="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider font-mono-num">{{ employees|length }} employes</span>
+                            </div>
                         </div>
-                        <span class="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2.5 py-1 rounded-md">{{ employees|length }} total</span>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="min-w-full">
                             <thead>
-                                <tr class="border-y border-zinc-100 dark:border-zinc-800/50">
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">First Name</th>
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Last Name</th>
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Email</th>
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Position</th>
-                                    <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">RH createur</th>
+                                <tr class="border-b border-zinc-100 dark:border-zinc-800/50">
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-5 bg-zinc-50/60 dark:bg-zinc-800/30">Employe</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Email</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Poste</th>
+                                    <th class="text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Age</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">RH Createur</th>
+                                    <th class="text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Details</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                {% for employee in employees %}
-                                <tr
-                                    class="table-row-hover hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
-                                    data-employee-id="{{ employee.id }}"
-                                    data-first-name="{{ employee.firstName|e('html_attr') }}"
-                                    data-last-name="{{ employee.lastName|e('html_attr') }}"
-                                    data-email="{{ employee.email|e('html_attr') }}"
-                                    data-age="{{ employee.age }}"
-                                    data-job-title="{{ employee.jobTitle|e('html_attr') }}"
-                                    data-rh-id="{{ employee.rhId }}"
-                                    data-rh-username="{{ (rhById[employee.rhId].username ?? 'Inconnu')|e('html_attr') }}"
-                                    data-rh-email="{{ (rhById[employee.rhId].email ?? '-')|e('html_attr') }}"
-                                    data-created-at="{{ employee.createdAt ? employee.createdAt|date('Y-m-d H:i') : '-' }}"
-                                    data-updated-at="{{ employee.updatedAt ? employee.updatedAt|date('Y-m-d H:i') : '-' }}"
-                                >
-                                    <td class="px-6 py-3.5 text-[13px] font-medium text-zinc-800 dark:text-zinc-300">{{ employee.firstName }}</td>
-                                    <td class="px-6 py-3.5 text-[13px] text-zinc-600 dark:text-zinc-400">{{ employee.lastName }}</td>
-                                    <td class="px-6 py-3.5 text-[13px] text-zinc-500">{{ employee.email }}</td>
-                                    <td class="px-6 py-3.5">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400">{{ employee.jobTitle }}</span>
-                                    </td>
-                                    <td class="px-6 py-3.5 text-[13px] text-zinc-400 dark:text-zinc-600">
-                                        <p class="font-semibold text-zinc-700 dark:text-zinc-300">{{ rhById[employee.rhId].username ?? 'Inconnu' }}</p>
-                                        <p class="text-[11px] text-zinc-400 dark:text-zinc-600 font-mono-num">ID: {{ employee.rhId }}</p>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <div class="w-10 h-10 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center">
-                                                <svg class="w-5 h-5 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                            <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800/30">
+                            {% for employee in employees %}
+                                <tr class="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/30 transition-colors">
+                                    <td class="py-3.5 px-5">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shrink-0 shadow-sm">
+                                                <span class="text-[11px] font-bold text-white">{{ employee.firstName|first|upper }}</span>
                                             </div>
-                                            <p class="text-[13px] text-zinc-400 dark:text-zinc-500">No employees registered yet</p>
+                                            <div>
+                                                <span class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">{{ employee.firstName }} {{ employee.lastName }}</span>
+                                            </div>
                                         </div>
                                     </td>
+                                    <td class="py-3.5 px-4 text-[13px] text-zinc-500">{{ employee.email }}</td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-medium bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400">{{ employee.jobTitle }}</span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center text-[13px] font-semibold text-zinc-700 dark:text-zinc-300 tabular-nums">{{ employee.age }}</td>
+                                    <td class="py-3.5 px-4">
+                                        <p class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">{{ rhById[employee.rhId].username ?? 'Inconnu' }}</p>
+                                        <p class="text-[10px] text-zinc-400 font-mono-num">ID: {{ employee.rhId }}</p>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        <button type="button"
+                                            class="emp-detail-btn inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                            data-employee-id="{{ employee.id }}"
+                                            data-first-name="{{ employee.firstName|e('html_attr') }}"
+                                            data-last-name="{{ employee.lastName|e('html_attr') }}"
+                                            data-email="{{ employee.email|e('html_attr') }}"
+                                            data-age="{{ employee.age }}"
+                                            data-job-title="{{ employee.jobTitle|e('html_attr') }}"
+                                            data-rh-id="{{ employee.rhId }}"
+                                            data-rh-username="{{ (rhById[employee.rhId].username ?? 'Inconnu')|e('html_attr') }}"
+                                            data-rh-email="{{ (rhById[employee.rhId].email ?? '-')|e('html_attr') }}"
+                                            data-created-at="{{ employee.createdAt ? employee.createdAt|date('d/m/Y H:i') : '-' }}"
+                                            data-updated-at="{{ employee.updatedAt ? employee.updatedAt|date('d/m/Y H:i') : '-' }}"
+                                        >
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"/></svg>
+                                            Voir
+                                        </button>
+                                    </td>
                                 </tr>
-                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="py-20 text-center">
+                                        <svg class="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                                        <p class="text-sm font-medium text-zinc-400 dark:text-zinc-500">Aucun employe enregistre</p>
+                                        <p class="text-xs text-zinc-300 dark:text-zinc-600 mt-1">Les employes crees par les RH apparaitront ici</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </section>
             </div>
 
-            {# ── Employee Details Modal ── #}
+            {# ══════════════════════════════════════════════ #}
+            {# ═══════════ PANEL 1: CREER UN RH ══════════ #}
+            {# ══════════════════════════════════════════════ #}
+            <div data-tab-switcher-target="panel" class="hidden">
+                <div class="max-w-xl mx-auto">
+                    <section class="card-surface stat-stripe stat-stripe-violet p-6 animate-slide-up">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-zinc-800 dark:text-zinc-200">Nouveau compte RH</h2>
+                                <p class="text-[11px] text-zinc-400">Creez un responsable des ressources humaines</p>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{{ path('app_admin_employees') }}" class="space-y-5" novalidate>
+                            <input type="hidden" name="_token" value="{{ csrf_token('create_rh') }}">
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="rh-username">Nom d'utilisateur</label>
+                                <input id="rh-username" name="username" type="text" required
+                                       placeholder="rh_dupont"
+                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                                <span class="emp-hint">Ce champ est obligatoire</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="rh-email">Email</label>
+                                <input id="rh-email" name="email" type="email" required
+                                       placeholder="rh@entreprise.com"
+                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                                <span class="emp-hint">Adresse email invalide</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="rh-password">Mot de passe</label>
+                                <input id="rh-password" name="password" type="password" required
+                                       placeholder="Mot de passe securise"
+                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                                <span class="emp-hint">Ce champ est obligatoire</span>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full inline-flex justify-center items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold
+                                           bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white
+                                           hover:from-violet-500 hover:to-fuchsia-500
+                                           shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/30
+                                           active:scale-[0.98] transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                Creer le compte RH
+                            </button>
+                        </form>
+                    </section>
+                </div>
+            </div>
+
+            {# ══════════════════════════════════════════════ #}
+            {# ═══════════ PANEL 2: COMPTES UTILISATEURS ══ #}
+            {# ══════════════════════════════════════════════ #}
+            <div data-tab-switcher-target="panel" class="hidden">
+                <section class="card-surface overflow-hidden animate-slide-up">
+                    <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Comptes utilisateurs</h3>
+                                    <p class="text-[11px] text-zinc-400">Tous les comptes Admin et RH du systeme</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
+                                <span class="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider font-mono-num">{{ users|length }} comptes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b border-zinc-100 dark:border-zinc-800/50">
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-5 bg-zinc-50/60 dark:bg-zinc-800/30">Utilisateur</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Email</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Role</th>
+                                    <th class="text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Date creation</th>
+                                    <th class="text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400 py-3 px-4 bg-zinc-50/60 dark:bg-zinc-800/30">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800/30">
+                            {% for item in users %}
+                                <tr class="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/30 transition-colors">
+                                    <td class="py-3.5 px-5">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br {{ item.role == 'ADMIN' ? 'from-rose-500 to-red-600' : 'from-violet-500 to-fuchsia-500' }} flex items-center justify-center shrink-0 shadow-sm">
+                                                <span class="text-[11px] font-bold text-white">{{ item.username|first|upper }}</span>
+                                            </div>
+                                            <span class="text-[13px] font-semibold text-zinc-700 dark:text-zinc-300">{{ item.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-[13px] text-zinc-500">{{ item.email ?: '-' }}</td>
+                                    <td class="py-3.5 px-4">
+                                        {% if item.role == 'ADMIN' %}
+                                            <span class="status-pill bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>ADMIN
+                                            </span>
+                                        {% elseif item.role == 'RH' %}
+                                            <span class="status-pill bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-800/50">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>RH
+                                            </span>
+                                        {% else %}
+                                            <span class="status-pill bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800/50">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>{{ item.role }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-[13px] text-zinc-400 font-mono-num">{{ item.createdAt ? item.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        {% if item.role == 'RH' %}
+                                            <button type="button"
+                                                class="rh-edit-btn inline-flex items-center gap-1.5 text-[11px] font-semibold text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-950/50 transition-colors"
+                                                data-id="{{ item.id }}"
+                                                data-username="{{ item.username|e('html_attr') }}"
+                                                data-email="{{ item.email|default('')|e('html_attr') }}"
+                                                data-csrf="{{ csrf_token('admin_edit_rh_' ~ item.id)|e('html_attr') }}"
+                                                data-edit-url="{{ path('app_admin_rh_edit', {id: item.id})|e('html_attr') }}"
+                                            >
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                                Modifier
+                                            </button>
+                                        {% else %}
+                                            <span class="text-zinc-300 dark:text-zinc-600">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="py-20 text-center">
+                                        <svg class="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                                        <p class="text-sm font-medium text-zinc-400 dark:text-zinc-500">Aucun compte utilisateur</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            {# ═══════════ EMPLOYEE DETAIL MODAL ═══════════ #}
             <div id="employee-detail-modal" class="hidden fixed inset-0 z-50">
-                <div id="employee-detail-backdrop" class="absolute inset-0 bg-zinc-950/60"></div>
+                <div id="employee-detail-backdrop" class="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"></div>
                 <div class="absolute inset-0 flex items-center justify-center p-4">
-                    <div class="w-full max-w-2xl rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl">
+                    <div class="w-full max-w-2xl rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl max-h-[90vh] overflow-hidden">
                         <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
                             <div>
-                                <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">Employee Details</h3>
-                                <p class="text-[12px] text-zinc-500">Informations completes de l'employe et du RH createur.</p>
+                                <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">Details de l'employe</h3>
+                                <p class="text-[12px] text-zinc-500">Informations completes et RH createur.</p>
                             </div>
                             <button type="button" id="employee-detail-close" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
 
-                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)] grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
                                 <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Employe</p>
                                 <div class="space-y-2">
                                     <p><span class="text-zinc-500">ID:</span> <span id="detail-id" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
-                                    <p><span class="text-zinc-500">Nom:</span> <span id="detail-fullname" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Nom complet:</span> <span id="detail-fullname" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                     <p><span class="text-zinc-500">Email:</span> <span id="detail-email" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                     <p><span class="text-zinc-500">Age:</span> <span id="detail-age" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                     <p><span class="text-zinc-500">Poste:</span> <span id="detail-job" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                 </div>
                             </div>
-
                             <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
-                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">RH createur</p>
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">RH Createur</p>
                                 <div class="space-y-2">
                                     <p><span class="text-zinc-500">RH ID:</span> <span id="detail-rh-id" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                     <p><span class="text-zinc-500">Nom RH:</span> <span id="detail-rh-username" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                     <p><span class="text-zinc-500">Email:</span> <span id="detail-rh-email" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
                                 </div>
                             </div>
-
                             <div class="md:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
                                 <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Historique</p>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -195,76 +405,58 @@
                 </div>
             </div>
 
-            {# ═══════════════ Users Table ═══════════════ #}
-            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm dark:shadow-none animate-slide-up stagger-3">
-                <div class="flex items-center justify-between p-6 pb-0 mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+            {# ═══════════ RH EDIT MODAL ═══════════ #}
+            <div id="rh-edit-modal" class="hidden fixed inset-0 z-50">
+                <div id="rh-edit-backdrop" class="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"></div>
+                <div class="absolute inset-0 flex items-center justify-center p-4">
+                    <div class="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">Modifier le RH</h3>
+                                <p class="text-[12px] text-zinc-500">Modifiez les informations du compte RH.</p>
+                            </div>
+                            <button type="button" id="rh-edit-close" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
                         </div>
-                        <h2 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">User Accounts</h2>
-                    </div>
-                    <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-md">{{ users|length }} total</span>
-                </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-y border-zinc-100 dark:border-zinc-800/50">
-                                <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Username</th>
-                                <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Email</th>
-                                <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Role</th>
-                                <th class="text-left px-6 py-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Created</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                            {% for item in users %}
-                            <tr class="table-row-hover hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                                <td class="px-6 py-3.5">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-7 h-7 rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0">
-                                            <span class="text-[10px] font-bold text-white">{{ item.username|first|upper }}</span>
-                                        </div>
-                                        <span class="text-[13px] font-medium text-zinc-800 dark:text-zinc-300">{{ item.username }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-3.5 text-[13px] text-zinc-500">{{ item.email ?: '-' }}</td>
-                                <td class="px-6 py-3.5">
-                                    {% if item.role == 'ADMIN' %}
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                                            <span class="w-1 h-1 rounded-full bg-rose-500 dark:bg-rose-400"></span>
-                                            {{ item.role }}
-                                        </span>
-                                    {% elseif item.role == 'RH' %}
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400">
-                                            <span class="w-1 h-1 rounded-full bg-violet-500 dark:bg-violet-400"></span>
-                                            {{ item.role }}
-                                        </span>
-                                    {% else %}
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400">
-                                            <span class="w-1 h-1 rounded-full bg-sky-500 dark:bg-sky-400"></span>
-                                            {{ item.role }}
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-3.5 text-[13px] text-zinc-400 dark:text-zinc-600 font-mono-num">{{ item.createdAt ? item.createdAt|date('Y-m-d H:i') : '-' }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <div class="w-10 h-10 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
-                                        </div>
-                                        <p class="text-[13px] text-zinc-400 dark:text-zinc-500">No user accounts found</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                        <form id="rh-edit-form" method="post" action="" class="p-6 space-y-5" novalidate>
+                            <input type="hidden" name="_token" id="rh-edit-token" value="">
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]">Nom d'utilisateur</label>
+                                <input id="rh-edit-username" name="username" type="text" required
+                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                                <span class="emp-hint">Ce champ est obligatoire</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]">Email</label>
+                                <input id="rh-edit-email" name="email" type="email" required
+                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                                <span class="emp-hint">Adresse email invalide</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]">Nouveau mot de passe <span class="text-zinc-300 dark:text-zinc-600 normal-case tracking-normal font-normal">(laisser vide pour ne pas changer)</span></label>
+                                <input id="rh-edit-password" name="password" type="password"
+                                       placeholder="Laisser vide pour conserver l'actuel"
+                                       class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full inline-flex justify-center items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold
+                                           bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white
+                                           hover:from-violet-500 hover:to-fuchsia-500
+                                           shadow-lg shadow-violet-500/20
+                                           active:scale-[0.98] transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                Enregistrer les modifications
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </section>
+            </div>
 
         </main>
     </div>
@@ -272,59 +464,88 @@
 
 <script>
 (function () {
-    var modal = document.getElementById('employee-detail-modal');
-    if (!modal) return;
+    // ── Employee Detail Modal ──
+    var empModal = document.getElementById('employee-detail-modal');
+    if (empModal) {
+        var empBackdrop = document.getElementById('employee-detail-backdrop');
+        var empClose = document.getElementById('employee-detail-close');
+        var empBtns = document.querySelectorAll('.emp-detail-btn');
 
-    var backdrop = document.getElementById('employee-detail-backdrop');
-    var closeBtn = document.getElementById('employee-detail-close');
-    var rows = document.querySelectorAll('tr[data-employee-id]');
+        var detail = {
+            id: document.getElementById('detail-id'),
+            fullname: document.getElementById('detail-fullname'),
+            email: document.getElementById('detail-email'),
+            age: document.getElementById('detail-age'),
+            job: document.getElementById('detail-job'),
+            rhId: document.getElementById('detail-rh-id'),
+            rhUsername: document.getElementById('detail-rh-username'),
+            rhEmail: document.getElementById('detail-rh-email'),
+            created: document.getElementById('detail-created'),
+            updated: document.getElementById('detail-updated')
+        };
 
-    var detail = {
-        id: document.getElementById('detail-id'),
-        fullname: document.getElementById('detail-fullname'),
-        email: document.getElementById('detail-email'),
-        age: document.getElementById('detail-age'),
-        job: document.getElementById('detail-job'),
-        rhId: document.getElementById('detail-rh-id'),
-        rhUsername: document.getElementById('detail-rh-username'),
-        rhEmail: document.getElementById('detail-rh-email'),
-        created: document.getElementById('detail-created'),
-        updated: document.getElementById('detail-updated')
-    };
+        function openEmpModal(btn) {
+            detail.id.textContent = btn.dataset.employeeId || '-';
+            detail.fullname.textContent = ((btn.dataset.firstName || '') + ' ' + (btn.dataset.lastName || '')).trim() || '-';
+            detail.email.textContent = btn.dataset.email || '-';
+            detail.age.textContent = btn.dataset.age || '-';
+            detail.job.textContent = btn.dataset.jobTitle || '-';
+            detail.rhId.textContent = btn.dataset.rhId || '-';
+            detail.rhUsername.textContent = btn.dataset.rhUsername || '-';
+            detail.rhEmail.textContent = btn.dataset.rhEmail || '-';
+            detail.created.textContent = btn.dataset.createdAt || '-';
+            detail.updated.textContent = btn.dataset.updatedAt || '-';
+            empModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
 
-    function openModal(row) {
-        detail.id.textContent = row.dataset.employeeId || '-';
-        detail.fullname.textContent = ((row.dataset.firstName || '') + ' ' + (row.dataset.lastName || '')).trim() || '-';
-        detail.email.textContent = row.dataset.email || '-';
-        detail.age.textContent = row.dataset.age || '-';
-        detail.job.textContent = row.dataset.jobTitle || '-';
-        detail.rhId.textContent = row.dataset.rhId || '-';
-        detail.rhUsername.textContent = row.dataset.rhUsername || '-';
-        detail.rhEmail.textContent = row.dataset.rhEmail || '-';
-        detail.created.textContent = row.dataset.createdAt || '-';
-        detail.updated.textContent = row.dataset.updatedAt || '-';
+        function closeEmpModal() {
+            empModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
 
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+        empBtns.forEach(function (btn) { btn.addEventListener('click', function () { openEmpModal(btn); }); });
+        if (empBackdrop) empBackdrop.addEventListener('click', closeEmpModal);
+        if (empClose) empClose.addEventListener('click', closeEmpModal);
     }
 
-    function closeModal() {
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
+    // ── RH Edit Modal ──
+    var rhModal = document.getElementById('rh-edit-modal');
+    if (rhModal) {
+        var rhBackdrop = document.getElementById('rh-edit-backdrop');
+        var rhClose = document.getElementById('rh-edit-close');
+        var rhBtns = document.querySelectorAll('.rh-edit-btn');
+        var rhForm = document.getElementById('rh-edit-form');
+        var rhToken = document.getElementById('rh-edit-token');
+        var rhUsername = document.getElementById('rh-edit-username');
+        var rhEmail = document.getElementById('rh-edit-email');
+
+        function openRhModal(btn) {
+            var id = btn.dataset.id;
+            rhForm.action = btn.dataset.editUrl;
+            rhToken.value = btn.dataset.csrf;
+            rhUsername.value = btn.dataset.username || '';
+            rhEmail.value = btn.dataset.email || '';
+            document.getElementById('rh-edit-password').value = '';
+            rhModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeRhModal() {
+            rhModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        rhBtns.forEach(function (btn) { btn.addEventListener('click', function (e) { e.stopPropagation(); openRhModal(btn); }); });
+        if (rhBackdrop) rhBackdrop.addEventListener('click', closeRhModal);
+        if (rhClose) rhClose.addEventListener('click', closeRhModal);
     }
 
-    rows.forEach(function (row) {
-        row.addEventListener('click', function () {
-            openModal(row);
-        });
-    });
-
-    if (backdrop) backdrop.addEventListener('click', closeModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
+    // ── Escape key for all modals ──
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
+        if (event.key === 'Escape') {
+            if (empModal && !empModal.classList.contains('hidden')) { empModal.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
+            if (rhModal && !rhModal.classList.contains('hidden')) { rhModal.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
         }
     });
 })();

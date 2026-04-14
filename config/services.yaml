@@ -20,5 +20,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    # HrFlow Mailer — inject the sender address from .env
+    App\Service\HrFlowMailer:
+        arguments:
+            $senderAddress: '%env(MAILER_FROM)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -102,7 +102,7 @@ final class FormationChangeNotificationService
 
             try {
                 $email = (new Email())
-                    ->from('no-reply@hrflow.local')
+                    ->from('ytkachi911@gmail.com')
                     ->to($emailAddress)
                     ->subject($subject)
                     ->text($message);
