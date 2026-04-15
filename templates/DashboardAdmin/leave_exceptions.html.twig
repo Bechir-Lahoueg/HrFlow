@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Exceptional Leave Validation | HrFlow{% endblock %}
+{% block title %}Conges Exceptionnels | HrFlow{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -11,33 +11,50 @@
         .status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.02em}
         .field-input{transition:all .2s}
         .field-input:focus{box-shadow:0 0 0 3px rgba(6,182,212,.12)}
-        @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .anim-up{animation:slideUp .4s ease-out both}
-        .delay-1{animation-delay:.05s}.delay-2{animation-delay:.1s}
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950">
+{# Compute stats #}
+{% set pendingCount = 0 %}
+{% set approvedCount = 0 %}
+{% set rejectedCount = 0 %}
+{% for leave in leaveRequests %}
+    {% if leave.workflowStatus == 'ADMIN_PENDING' %}
+        {% set pendingCount = pendingCount + 1 %}
+    {% elseif leave.workflowStatus == 'ADMIN_APPROVED' %}
+        {% set approvedCount = approvedCount + 1 %}
+    {% elseif leave.workflowStatus == 'ADMIN_REJECTED' %}
+        {% set rejectedCount = rejectedCount + 1 %}
+    {% endif %}
+{% endfor %}
+
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
     {% include 'DashboardAdmin/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardAdmin/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 anim-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                </div>
                 {{ message }}
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 anim-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
+                <div class="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
                 {{ message }}
             </div>
         {% endfor %}
 
-        <main class="p-6 max-w-[1440px] mx-auto space-y-5">
+        <main class="p-6 lg:p-8 space-y-6 max-w-[1440px] mx-auto"
+              data-controller="tab-switcher"
+              data-tab-switcher-active-value="0">
 
             {# ═══════════════════ PAGE HEADER ═══════════════════ #}
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 anim-up">
@@ -51,21 +68,73 @@
                         <svg class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div>
-                        <p class="text-lg font-extrabold text-violet-700 dark:text-violet-400 tabular-nums leading-tight">{{ leaveRequests|length }}</p>
-                        <p class="text-[10px] text-violet-600 dark:text-violet-400/70 font-medium">en attente</p>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-violet-200 uppercase tracking-[0.15em]">Validation Admin</span>
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-display leading-[1.1] tracking-tight">Conges Exceptionnels</h2>
+                        <p class="mt-3 text-[14px] text-slate-300/90 max-w-lg leading-relaxed">Validation finale des demandes exceptionnelles apres pre-approbation RH. Gerez les decisions et consultez l'historique.</p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Total</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">{{ leaveRequests|length }}</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <div class="flex items-center justify-between">
+                                <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Attente</p>
+                                {% if pendingCount > 0 %}<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>{% endif %}
+                            </div>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num text-amber-300 group-hover:scale-105 transition-transform origin-left">{{ pendingCount }}</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Approuves</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num text-emerald-400 group-hover:scale-105 transition-transform origin-left">{{ approvedCount }}</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/[0.08] backdrop-blur-sm p-4 hover:bg-white/[0.12] transition-colors group">
+                            <p class="text-[9px] uppercase tracking-[0.15em] text-violet-200/60 font-bold">Refuses</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num text-rose-400 group-hover:scale-105 transition-transform origin-left">{{ rejectedCount }}</p>
+                        </div>
                     </div>
                 </div>
-                {% endif %}
+            </section>
+
+            {# ═══════════ TAB NAVIGATION (2 tabs) ═══════════ #}
+            <div class="animate-slide-up stagger-1 overflow-x-auto pb-1">
+                <div class="tab-bar">
+                    <div data-tab-switcher-target="indicator" class="tab-indicator"></div>
+
+                    <button type="button" data-tab-switcher-target="tab" data-action="click->tab-switcher#switch" data-index="0" class="tab-btn tab-active" role="tab" aria-selected="true">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                        Decisions
+                        {% if pendingCount > 0 %}
+                            <span class="tab-count">{{ pendingCount }}</span>
+                        {% endif %}
+                    </button>
+
+                    <button type="button" data-tab-switcher-target="tab" data-action="click->tab-switcher#switch" data-index="1" class="tab-btn tab-inactive" role="tab" aria-selected="false">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
+                        Apercu
+                    </button>
+                </div>
             </div>
 
-            {# ═══════════════════ DECISION TABLE ═══════════════════ #}
-            <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-hidden anim-up delay-1">
-                {# Table Header #}
-                <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            {# ══════════════════════════════════════════════ #}
+            {# ═══════════ PANEL 0: DECISIONS ═════════════ #}
+            {# ══════════════════════════════════════════════ #}
+            <div data-tab-switcher-target="panel" class="space-y-6">
+                <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-hidden animate-slide-up">
+                    {# Table Header #}
+                    <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Validation Admin</h3>
+                                    <p class="text-[11px] text-zinc-400">Demandes en attente + historique de vos decisions admin</p>
+                                </div>
                             </div>
                             <div>
                                 <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Validation Admin</h3>
@@ -77,7 +146,6 @@
                             <span class="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider">{{ leaveRequests|length }} demandes</span>
                         </div>
                     </div>
-                </div>
 
                 {# Table #}
                 <div class="overflow-x-auto">
@@ -299,6 +367,88 @@
                 </div>
             </div>
         </main>
+
+        {# ═══════════ DETAIL MODAL (outside main to avoid tab-switcher clipping) ═══════════ #}
+        <div id="leave-detail-modal" class="hidden fixed inset-0 z-[9999]">
+            <div id="leave-detail-backdrop" class="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="w-full max-w-4xl rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl max-h-[90vh] overflow-hidden">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100">Details Conge Exceptionnel</h3>
+                            <p class="text-[12px] text-zinc-500">Vue complete de la demande pour validation admin.</p>
+                        </div>
+                        <button type="button" id="leave-detail-close" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                        <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)] grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Demande</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">ID:</span> <span id="ld-id" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Employe:</span> <span id="ld-employee" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Email:</span> <span id="ld-employee-email" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Type:</span> <span id="ld-type" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Categorie:</span> <span id="ld-category" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Statut:</span> <span id="ld-status" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Workflow:</span> <span id="ld-workflow" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Periode</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">Date debut:</span> <span id="ld-start" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Date fin:</span> <span id="ld-end" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Jours ouvrables:</span> <span id="ld-days" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Date demande:</span> <span id="ld-request-date" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Retour prevu:</span> <span id="ld-return-date" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Urgence:</span> <span id="ld-urgency" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Motif / Justificatif texte</p>
+                                <p id="ld-reason" class="text-[13px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">-</p>
+                            </div>
+
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Decision RH</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">Commentaire RH:</span> <span id="ld-rh-comment" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Par:</span> <span id="ld-rh-by" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Date:</span> <span id="ld-rh-at" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Decision Admin</p>
+                                <div class="space-y-2">
+                                    <p><span class="text-zinc-500">Commentaire Admin:</span> <span id="ld-admin-comment" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Par:</span> <span id="ld-admin-by" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                    <p><span class="text-zinc-500">Date:</span> <span id="ld-admin-at" class="font-semibold text-zinc-800 dark:text-zinc-200">-</span></p>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <div class="flex items-center justify-between gap-3 mb-2">
+                                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Justificatif Fichier</p>
+                                    <a id="ld-attachment-link" href="#" target="_blank" class="hidden inline-flex items-center gap-1.5 text-[11px] font-semibold text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50 px-2.5 py-1.5 rounded-lg">
+                                        Ouvrir le fichier
+                                    </a>
+                                </div>
+                                <p id="ld-attachment-empty" class="text-[12px] text-zinc-400">Aucun fichier joint.</p>
+                            </div>
+
+                            <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Audit Log</p>
+                                <pre id="ld-audit" class="text-[12px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">-</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

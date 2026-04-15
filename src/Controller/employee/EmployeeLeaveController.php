@@ -51,6 +51,8 @@ final class EmployeeLeaveController extends AbstractController
             'pendingLeaveCount' => $leaveRequestService->getEmployeePendingCount($employeeId),
             'blockedHolidayDates' => $blockedHolidayDates,
             'blockedLeaveDates' => $blockedLeaveDates,
+            'isOnLeave' => $leaveRequestService->isEmployeeCurrentlyOnLeave($employeeId),
+            'calendarLeaves' => $leaveRequestService->getEmployeeCalendarLeaves($employeeId),
         ]);
     }
 
