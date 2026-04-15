@@ -270,16 +270,21 @@
                 </div>
             </div>
 
-            {# ══════════════════════════════════════════════ #}
-            {# ═══════════ PANEL 1: NOUVELLE DEMANDE ══════ #}
-            {# ══════════════════════════════════════════════ #}
-            <div data-tab-switcher-target="panel" class="space-y-6 hidden">
-                <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-hidden animate-slide-up">
-                    {# Form Header #}
-                    <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50 flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-sm">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <div class="p-6">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="_token" value="{{ csrf_token('employee_leave_submit') }}">
+                        <input type="hidden" name="leave_type" id="leave_type" value="Conge annuel">
+                        <input type="hidden" name="request_mode" id="request_mode" value="NORMAL">
+
+                        {% if balance.available_days <= 0 %}
+                            <div class="flex gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 mb-5">
+                                <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Credit epuise (0 jour)</p>
+                                    <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">Le conge normal est bloque. Utilisez la demande exceptionnelle avec justificatif.</p>
+                                </div>
                             </div>
                             <div>
                                 <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Nouvelle Demande de Conge</h3>
@@ -300,14 +305,22 @@
                             <input type="hidden" name="leave_type" id="leave_type" value="Conge annuel">
                             <input type="hidden" name="request_mode" id="request_mode" value="NORMAL">
 
-                            {% if balance.available_days <= 0 %}
-                                <div class="flex gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 mb-5">
-                                    <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                            {# Col 1: Dates #}
+                            <div class="lg:col-span-2 space-y-3">
+                                <div>
+                                    <label for="start_date" class="block text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 mb-1.5">Date debut</label>
+                                    <div class="relative">
+                                        <input id="start_date" name="start_date" type="text" autocomplete="off" readonly placeholder="Selectionner"
+                                               class="field-input w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm pl-9 pr-3 py-2.5 cursor-pointer focus:border-cyan-500 focus:ring-cyan-500 transition-all placeholder:text-zinc-300">
+                                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Credit epuise (0 jour)</p>
-                                        <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">Le conge normal est bloque. Utilisez la demande exceptionnelle avec justificatif.</p>
+                                </div>
+                                <div>
+                                    <label for="end_date" class="block text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 mb-1.5">Date fin</label>
+                                    <div class="relative">
+                                        <input id="end_date" name="end_date" type="text" autocomplete="off" readonly placeholder="Selectionner"
+                                               class="field-input w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm pl-9 pr-3 py-2.5 cursor-pointer focus:border-cyan-500 focus:ring-cyan-500 transition-all placeholder:text-zinc-300">
+                                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
                                     </div>
                                 </div>
                             {% endif %}

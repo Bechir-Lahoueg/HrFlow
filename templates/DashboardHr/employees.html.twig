@@ -3,35 +3,6 @@
 {% block title %}Employes | HrFlow RH{% endblock %}
 
 {% block body %}
-<style>
-    @keyframes hintFadeIn {
-        from { opacity: 0; transform: translateY(-3px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .emp-input:user-invalid,
-    .emp-input:not(:placeholder-shown):invalid {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239,68,68,0.10) !important;
-    }
-    .emp-input:user-valid,
-    .emp-input:not(:placeholder-shown):valid {
-        border-color: #22c55e !important;
-        box-shadow: 0 0 0 3px rgba(34,197,94,0.10) !important;
-    }
-    .emp-hint {
-        display: none;
-        font-size: 0.68rem;
-        font-weight: 600;
-        color: #ef4444;
-        margin-top: 0.2rem;
-        animation: hintFadeIn 0.15s ease-out;
-    }
-    .emp-input:user-invalid + .emp-hint,
-    .emp-input:not(:placeholder-shown):invalid + .emp-hint {
-        display: block;
-    }
-    .dark .emp-hint { color: #f87171; }
-</style>
 <div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid"
      data-controller="employee-modal"
      data-action="keydown@document->employee-modal#closeOnEscape">
@@ -121,16 +92,14 @@
                                 <div>
                                     <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="first_name">Prenom</label>
                                     <input id="first_name" name="first_name" type="text" required
-                                           placeholder="Sara"
-                                           class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
-                                    <span class="emp-hint">Ce champ est obligatoire</span>
+                                           class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600"
+                                           placeholder="Sara" />
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="last_name">Nom</label>
                                     <input id="last_name" name="last_name" type="text" required
-                                           placeholder="Ben Ali"
-                                           class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
-                                    <span class="emp-hint">Ce champ est obligatoire</span>
+                                           class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600"
+                                           placeholder="Ben Ali" />
                                 </div>
                             </div>
 
@@ -138,33 +107,29 @@
                                 <div class="col-span-2">
                                     <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="job_title">Poste</label>
                                     <input id="job_title" name="job_title" type="text" required
-                                           placeholder="Developpeur Frontend"
-                                           class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
-                                    <span class="emp-hint">Ce champ est obligatoire</span>
+                                           class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600"
+                                           placeholder="Developpeur Frontend" />
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="age">Age</label>
                                     <input id="age" name="age" type="number" min="18" max="100" required
-                                           placeholder="29"
-                                           class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600 font-mono-num" />
-                                    <span class="emp-hint">Age entre 18 et 100 ans</span>
+                                           class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600 font-mono-num"
+                                           placeholder="29" />
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="email">Email</label>
                                 <input id="email" name="email" type="email" required
-                                       placeholder="employe@entreprise.com"
-                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
-                                <span class="emp-hint">Adresse email invalide</span>
+                                       class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600"
+                                       placeholder="employe@entreprise.com" />
                             </div>
 
                             <div>
                                 <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="password">Mot de passe</label>
                                 <input id="password" name="password" type="password" required
-                                       placeholder="••••••••"
-                                       class="emp-input input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600" />
-                                <span class="emp-hint">Ce champ est obligatoire</span>
+                                       class="input-refined w-full rounded-xl bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-300 dark:placeholder-zinc-600"
+                                       placeholder="Mot de passe securise" />
                             </div>
 
                             <button type="submit"
