@@ -128,6 +128,29 @@ final class HrFlowMailer
     }
 
     // ──────────────────────────────────────────────
+    // 5. Account settings changed (→ User)
+    // ──────────────────────────────────────────────
+    /**
+     * @param string[] $changes  e.g. ['email', 'mot de passe']
+     */
+    public function sendAccountChangedNotification(string $recipientEmail, string $username, array $changes, ?string $newEmail = null): void
+    {
+        $html = $this->twig->render('emails/account_changed.html.twig', [
+            'username' => $username,
+            'changes' => $changes,
+            'newEmail' => $newEmail,
+            'date' => new \DateTime('now'),
+        ]);
+
+        $this->send($recipientEmail, 'Modification de votre compte — HrFlow', $html);
+
+        // If the email changed, also notify the new address
+        if ($newEmail && $newEmail !== $recipientEmail) {
+            $this->send($newEmail, 'Modification de votre compte — HrFlow', $html);
+        }
+    }
+
+    // ──────────────────────────────────────────────
     // Internal: send email
     // ──────────────────────────────────────────────
     private function send(string $to, string $subject, string $htmlBody): void

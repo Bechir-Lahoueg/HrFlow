@@ -32,6 +32,7 @@ final class LeaveRequestService
         private readonly PublicHolidayService $publicHolidayService,
         private readonly LeaveBalanceService $leaveBalanceService,
         private readonly HrFlowMailer $hrFlowMailer,
+        private readonly LeaveNotificationService $leaveNotificationService,
     ) {
     }
 
@@ -149,6 +150,7 @@ final class LeaveRequestService
 
         // Notify RH about the new leave request
         $this->hrFlowMailer->sendNewRequestNotification($leaveRequest);
+        $this->leaveNotificationService->notifyRhNewRequest($leaveRequest);
 
         if ($isExceptionRequest) {
             return [
@@ -235,6 +237,7 @@ final class LeaveRequestService
 
             // Notify Admin that an exception request needs their validation
             $this->hrFlowMailer->sendExceptionPendingAdmin($request);
+            $this->leaveNotificationService->notifyAdminExceptionPending($request);
 
             return ['success' => true, 'message' => 'Demande exceptionnelle pre-approuvee par RH et envoyee a l\'Admin.'];
         }
@@ -254,6 +257,7 @@ final class LeaveRequestService
 
         // Notify employee that their leave was approved
         $this->hrFlowMailer->sendLeaveDecision($request, 'ACCEPTE');
+        $this->leaveNotificationService->notifyEmployeeApproved($request);
 
         return ['success' => true, 'message' => 'Demande approuvee avec succes.'];
     }
@@ -289,6 +293,7 @@ final class LeaveRequestService
 
         // Notify employee that their leave was refused
         $this->hrFlowMailer->sendLeaveDecision($request, 'REFUSE');
+        $this->leaveNotificationService->notifyEmployeeRejected($request, $rhComment);
 
         return ['success' => true, 'message' => 'Demande refusee.'];
     }
@@ -328,6 +333,7 @@ final class LeaveRequestService
 
         // Notify employee of final approval
         $this->hrFlowMailer->sendLeaveDecision($request, 'ACCEPTE');
+        $this->leaveNotificationService->notifyEmployeeApproved($request);
 
         return ['success' => true, 'message' => 'Demande exceptionnelle approuvee definitivement par Admin.'];
     }
@@ -358,6 +364,7 @@ final class LeaveRequestService
 
         // Notify employee of Admin rejection
         $this->hrFlowMailer->sendLeaveDecision($request, 'REFUSE');
+        $this->leaveNotificationService->notifyEmployeeRejected($request, $adminComment);
 
         return ['success' => true, 'message' => 'Demande exceptionnelle refusee par Admin.'];
     }
