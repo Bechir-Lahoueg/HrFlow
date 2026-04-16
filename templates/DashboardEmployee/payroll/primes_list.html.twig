@@ -2,67 +2,122 @@
 
 {% block title %}Mes Primes{% endblock %}
 
-{% block content %}
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900 dark:to-zinc-800 py-8 px-4">
-    <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">Mes Primes</h1>
-            <p class="text-slate-600 dark:text-slate-400">Visualisez toutes les primes accordées</p>
-        </div>
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+        <main class="p-6 lg:p-8 max-w-[1440px] mx-auto space-y-8">
 
-        <!-- Primes Table -->
-        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50 dark:bg-zinc-700 border-b border-slate-200 dark:border-zinc-600">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Type</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Motif</th>
-                            <th class="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-white">Montant</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-zinc-600">
-                        {% for prime in primes %}
-                            <tr class="hover:bg-slate-50 dark:hover:bg-zinc-700 transition-colors">
-                                <td class="px-6 py-4 text-slate-900 dark:text-white font-semibold">{{ prime.typePrime }}</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">{{ prime.motif ?? '—' }}</td>
-                                <td class="px-6 py-4 text-right text-green-600 font-bold text-lg">{{ prime.montant }} TND</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ prime.dateAttribution|date('d/m/Y') }}</td>
+            {# ═══ HERO BANNER ═══ #}
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-teal-900 p-8 sm:p-10 text-white animate-slide-up">
+                <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.15em]">Rémunération</span>
+                    </div>
+                    <h1 class="font-display text-4xl sm:text-5xl leading-[1.1] tracking-tight text-white mb-2">Mes Primes</h1>
+                    <p class="text-emerald-200/80 text-[15px] max-w-xl">Toutes les primes et bonifications accordées sur votre compte.</p>
+                </div>
+                <div class="relative z-10 flex gap-3 mt-6">
+                    <a href="{{ path('app_employee_payroll_fiches') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold transition-all">
+                        <svg class="w-4 h-4 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Fiches de Paie
+                    </a>
+                    <a href="{{ path('app_employee_payroll_deductions') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold transition-all">
+                        <svg class="w-4 h-4 text-orange-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Mes Déductions
+                    </a>
+                </div>
+            </div>
+
+            {# ═══ STATS STRIP ═══ #}
+            {% set totalPrimes = 0 %}
+            {% for p in primes %}{% set totalPrimes = totalPrimes + p.montant %}{% endfor %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-slide-up stagger-1">
+                <div class="card-surface stat-stripe stat-stripe-emerald p-5 group">
+                    <p class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em] mb-2">Total Primes</p>
+                    <p class="text-3xl font-extrabold font-mono-num leading-none text-emerald-600 dark:text-emerald-400">{{ totalPrimes|number_format(2, '.', ' ') }}</p>
+                    <p class="text-xs text-zinc-400 mt-1">TND</p>
+                </div>
+                <div class="card-surface stat-stripe stat-stripe-teal p-5 group">
+                    <p class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em] mb-2">Nombre de Primes</p>
+                    <p class="text-3xl font-extrabold font-mono-num leading-none text-zinc-900 dark:text-white">{{ primes|length }}</p>
+                </div>
+                <div class="card-surface stat-stripe stat-stripe-sky p-5 group col-span-2 sm:col-span-1">
+                    <p class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em] mb-2">Dernière Prime</p>
+                    {% if primes|length > 0 %}
+                        <p class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">{{ primes[0].typePrime.value }}</p>
+                        <p class="text-xs text-zinc-400 mt-1 font-mono-num">{{ primes[0].montant }} TND</p>
+                    {% else %}
+                        <p class="text-sm text-zinc-400 italic">—</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ═══ PRIMES TABLE ═══ #}
+            <div class="card-surface rounded-2xl overflow-hidden animate-slide-up stagger-2">
+                <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Historique des Primes</span>
+                    </div>
+                    <span class="text-xs text-zinc-400 font-mono-num">{{ primes|length }} prime{{ primes|length != 1 ? 's' : '' }}</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-zinc-100 dark:border-zinc-800">
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">Type</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">Motif</th>
+                                <th class="px-6 py-3 text-right text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">Montant</th>
+                                <th class="px-6 py-3 text-left text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.08em]">Date</th>
                             </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-slate-600 dark:text-slate-400">
-                                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p class="text-lg font-semibold">Aucune prime accordée</p>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            {% for prime in primes %}
+                                <tr class="row-refined">
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                                            {{ prime.typePrime.value }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">{{ prime.motif ?? '—' }}</td>
+                                    <td class="px-6 py-4 text-right font-mono-num font-bold text-emerald-600 dark:text-emerald-400">
+                                        +{{ prime.montant }} <span class="text-xs text-emerald-400/70">TND</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-mono-num text-zinc-500 dark:text-zinc-400">{{ prime.dateAttribution|date('d/m/Y') }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-16 text-center">
+                                        <svg class="w-14 h-14 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <p class="text-zinc-500 dark:text-zinc-400 font-semibold">Aucune prime accordée</p>
+                                        <p class="text-xs text-zinc-400 mt-1">Vos primes apparaîtront ici une fois attribuées.</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if primes|length > 0 %}
+                        <tfoot>
+                            <tr class="bg-emerald-50 dark:bg-emerald-500/10 border-t border-zinc-100 dark:border-zinc-800">
+                                <td colspan="2" class="px-6 py-3 font-bold text-zinc-700 dark:text-zinc-200 text-sm">Total</td>
+                                <td class="px-6 py-3 text-right font-mono-num font-extrabold text-emerald-600 dark:text-emerald-400">
+                                    {{ totalPrimes|number_format(2, '.', ' ') }} <span class="text-xs">TND</span>
                                 </td>
+                                <td></td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- Total Primes Card -->
-        {% if primes|length > 0 %}
-            <div class="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-lg p-6">
-                <p class="text-green-700 dark:text-green-400 text-sm font-semibold">TOTAL PRIMES</p>
-                <p class="text-4xl font-bold text-green-600 mt-2">{{ totalPrimes }} TND</p>
-            </div>
-        {% endif %}
-
-        <!-- Navigation Links -->
-        <div class="flex gap-4 mt-8">
-            <a href="{{ path('app_employee_payroll_fiches') }}" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all">
-                Mes Fiches de Paie
-            </a>
-            <a href="{{ path('app_employee_payroll_deductions') }}" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-all">
-                Mes Déductions
-            </a>
-        </div>
+        </main>
     </div>
 </div>
 {% endblock %}

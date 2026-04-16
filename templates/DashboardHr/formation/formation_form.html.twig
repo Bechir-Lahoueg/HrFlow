@@ -166,6 +166,10 @@
         function initFormationAiButton() {
             const btnAi = document.getElementById('btn-generate-ai');
             const titreInput = document.querySelector('input[id$="_titre"]');
+            const typeInput = document.querySelector('select[id$="_type"]');
+            const dureeInput = document.querySelector('input[id$="_duree"]');
+            const organismeInput = document.querySelector('input[id$="_organisme"]');
+            const descriptionInput = document.querySelector('textarea[id$="_description"]');
             const objectifsTextarea = document.querySelector('textarea[id$="_objectifs"]');
 
             // évite les doubles bindings si Turbo ré-exécute les scripts
@@ -193,10 +197,17 @@
                     objectifsTextarea.placeholder = "L'IA génère les objectifs stratégiques...";
 
                     try {
+                        const payload = new URLSearchParams();
+                        payload.set('titre', titre);
+                        payload.set('type', (typeInput?.value || '').trim());
+                        payload.set('duree', (dureeInput?.value || '').trim());
+                        payload.set('organisme', (organismeInput?.value || '').trim());
+                        payload.set('description', (descriptionInput?.value || '').trim());
+
                         const response = await fetch("{{ path('rh_formation_generate_ai') }}", {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `titre=${encodeURIComponent(titre)}`
+                            body: payload.toString()
                         });
 
                         const data = await response.json();

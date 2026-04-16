@@ -13,6 +13,8 @@ use App\Form\Formation\SessionFormationType;
 use App\Entity\Formation\Formation;
 use App\Entity\Formation\SessionFormation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -162,6 +164,10 @@ final class RhFormationController extends AbstractController
         $form = $this->createForm(SessionFormationType::class, $session);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
+            $this->validateSessionLocationField($session, $form);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             if (empty($session->getDateFin())) {
                 $debutDate = clone $session->getDateDebut();
@@ -204,6 +210,10 @@ final class RhFormationController extends AbstractController
 
         $form = $this->createForm(SessionFormationType::class, $session);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->validateSessionLocationField($session, $form);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             if (!$session->getDateFin()) {
@@ -401,6 +411,28 @@ final class RhFormationController extends AbstractController
             'dates' => $dates,
             'currentPresences' => $currentPresences,
         ]);
+    }
+
+    private function validateSessionLocationField(SessionFormation $session, FormInterface $form): void
+    {
+        $mode = strtolower(trim((string) $session->getMode()));
+        $mode = str_replace(['é', 'è', 'ê'], 'e', $mode);
+        $lieu = trim((string) $session->getLieu());
+
+        if ($mode === 'en ligne' && !$this->isValidHttpUrl($lieu)) {
+            $form->get('lieu')->addError(new FormError('Pour une session en ligne, veuillez renseigner un lien valide (Teams, Google Meet, Zoom...).'));
+        }
+    }
+
+    private function isValidHttpUrl(string $value): bool
+    {
+        if ($value === '' || filter_var($value, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true);
     }
 }
 

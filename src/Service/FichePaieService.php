@@ -2,14 +2,24 @@
 
 namespace App\Service;
 
+use App\DTO\Payroll\FichePaieRequestDTO;
+use App\DTO\Payroll\FichePaieResponseDTO;
+use App\DTO\Payroll\PayrollStatsDTO;
 use App\Entity\Paie\FichePaie;
-use App\Entity\Rh\Employee;
+use App\Exception\Payroll\DuplicateFichePaieException;
+use App\Exception\Payroll\EmployeeNotFoundException;
+use App\Exception\Payroll\FichePaieNotFoundException;
+use App\Exception\Payroll\InvalidPeriodException;
+use App\Exception\Payroll\InvalidSalaryException;
 use App\Repository\Paie\FichePaieRepository;
 use App\Repository\Paie\PrimeRepository;
 use App\Repository\Paie\DeductionRepository;
 use App\Repository\Rh\EmployeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * FichePaieService - Business logic for pay slip management
+ */
 final class FichePaieService
 {
     public function __construct(
@@ -18,168 +28,219 @@ final class FichePaieService
         private readonly PrimeRepository $primeRepository,
         private readonly DeductionRepository $deductionRepository,
         private readonly EmployeeRepository $employeeRepository,
+        private readonly CachingService $cachingService,
     ) {
     }
 
-    /** @return FichePaie[] */
+    /**
+     * Get all pay slips for an RH
+     *
+     * @return FichePaieResponseDTO[]
+     */
     public function getFichePaiesByRh(int $rhId): array
     {
-        return $this->fichePaieRepository->findByRh($rhId);
+        $fiches = $this->fichePaieRepository->findByRh($rhId);
+        return array_map(fn(FichePaie $f) => new FichePaieResponseDTO($f), $fiches);
     }
 
-    /** @return FichePaie[] */
-    public function searchFichePaies(int $rhId, string $employeeSearch = '', string $periodSearch = '', string $sort = 'createdAt-DESC'): array
-    {
-        return $this->fichePaieRepository->findByRhAndSearch($rhId, $employeeSearch, $periodSearch, $sort);
+    /**
+     * Search pay slips with filters
+     *
+     * @return FichePaieResponseDTO[]
+     */
+    public function searchFichePaies(
+        int $rhId,
+        string $employeeSearch = '',
+        string $periodSearch = '',
+        string $sort = 'createdAt-DESC'
+    ): array {
+        $fiches = $this->fichePaieRepository->findByRhAndSearch($rhId, $employeeSearch, $periodSearch, $sort);
+        return array_map(fn(FichePaie $f) => new FichePaieResponseDTO($f), $fiches);
     }
 
-    public function getFichePaieById(int $id): ?FichePaie
+    /**
+     * Get pay slip by ID
+     */
+    public function getFichePaieById(int $id): FichePaieResponseDTO
     {
-        return $this->fichePaieRepository->find($id);
-    }
-
-    public function createFichePaie(int $employeeId, int $mois, int $annee, string $salaireBrut, ?string $notes = null): array
-    {
-        if ($mois < 1 || $mois > 12) {
-            return ['success' => false, 'message' => 'Month must be between 1 and 12'];
+        $fichePaie = $this->fichePaieRepository->find($id);
+        if (!$fichePaie) {
+            throw FichePaieNotFoundException::withId($id);
         }
+        return new FichePaieResponseDTO($fichePaie);
+    }
 
-        if ($annee < 2000 || $annee > 2100) {
-            return ['success' => false, 'message' => 'Year must be valid'];
-        }
+    /**
+     * Create a new pay slip
+     */
+    public function createFichePaie(FichePaieRequestDTO $dto): FichePaieResponseDTO
+    {
+        $this->validatePeriod($dto->mois, $dto->annee);
+        $this->validateSalary($dto->salaireBrut);
 
-        $employee = $this->employeeRepository->find($employeeId);
+        $employee = $this->employeeRepository->find($dto->employeeId);
         if (!$employee) {
-            return ['success' => false, 'message' => 'Employee not found'];
+            throw EmployeeNotFoundException::withId($dto->employeeId);
         }
 
         // Check for duplicates
-        $existing = $this->fichePaieRepository->findByEmployeeAndPeriodSingle($employeeId, $mois, $annee);
+        $existing = $this->fichePaieRepository->findByEmployeeAndPeriodSingle(
+            $dto->employeeId,
+            $dto->mois,
+            $dto->annee
+        );
         if ($existing !== null) {
-            return ['success' => false, 'message' => 'Pay slip for this period already exists'];
+            throw DuplicateFichePaieException::forEmployeeAndPeriod($dto->employeeId, $dto->mois, $dto->annee);
         }
 
-        $brut = (float) $salaireBrut;
-        if ($brut < 0) {
-            return ['success' => false, 'message' => 'Gross salary must be positive'];
-        }
-
-        // Calculate totals
-        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod($employeeId, $mois, $annee);
-        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod($employeeId, $mois, $annee);
+        // Calculate totals from primes and deductions
+        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod(
+            $dto->employeeId,
+            $dto->mois,
+            $dto->annee
+        );
+        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod(
+            $dto->employeeId,
+            $dto->mois,
+            $dto->annee
+        );
 
         $fichePaie = new FichePaie();
         $fichePaie->setEmployee($employee)
-            ->setMois($mois)
-            ->setAnnee($annee)
-            ->setSalaireBrut((string) $salaireBrut)
+            ->setMois($dto->mois)
+            ->setAnnee($dto->annee)
+            ->setSalaireBrut($dto->salaireBrut)
             ->setTotalPrimes($totalPrimes)
             ->setTotalDeductions($totalDeductions)
-            ->setNotes($notes);
+            ->setNotes($dto->notes);
 
         $fichePaie->calculateSalaireNet();
 
         $this->em->persist($fichePaie);
         $this->em->flush();
 
-        return ['success' => true, 'message' => 'Pay slip created successfully', 'id' => $fichePaie->getId()];
+        // Invalidate cache
+        $this->cachingService->forget(CachingService::payrollStatsKey($employee->getRhId()));
+        $this->cachingService->forget(CachingService::employeeFichesKey($dto->employeeId));
+
+        return new FichePaieResponseDTO($fichePaie);
     }
 
-    public function updateFichePaie(int $id, int $mois, int $annee, string $salaireBrut, ?string $notes = null): array
+    /**
+     * Update an existing pay slip
+     */
+    public function updateFichePaie(int $id, FichePaieRequestDTO $dto): FichePaieResponseDTO
     {
         $fichePaie = $this->fichePaieRepository->find($id);
         if (!$fichePaie) {
-            return ['success' => false, 'message' => 'Pay slip not found'];
+            throw FichePaieNotFoundException::withId($id);
         }
 
-        if ($mois < 1 || $mois > 12) {
-            return ['success' => false, 'message' => 'Month must be between 1 and 12'];
-        }
-
-        if ($annee < 2000 || $annee > 2100) {
-            return ['success' => false, 'message' => 'Year must be valid'];
-        }
-
-        $brut = (float) $salaireBrut;
-        if ($brut < 0) {
-            return ['success' => false, 'message' => 'Gross salary must be positive'];
-        }
+        $this->validatePeriod($dto->mois, $dto->annee);
+        $this->validateSalary($dto->salaireBrut);
 
         // Recalculate totals
-        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod($fichePaie->getEmployee()->getId(), $mois, $annee);
-        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod($fichePaie->getEmployee()->getId(), $mois, $annee);
+        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod(
+            $fichePaie->getEmployee()->getId(),
+            $dto->mois,
+            $dto->annee
+        );
+        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod(
+            $fichePaie->getEmployee()->getId(),
+            $dto->mois,
+            $dto->annee
+        );
 
-        $fichePaie->setMois($mois)
-            ->setAnnee($annee)
-            ->setSalaireBrut($salaireBrut)
+        $fichePaie->setMois($dto->mois)
+            ->setAnnee($dto->annee)
+            ->setSalaireBrut($dto->salaireBrut)
             ->setTotalPrimes($totalPrimes)
             ->setTotalDeductions($totalDeductions)
-            ->setNotes($notes);
+            ->setNotes($dto->notes);
 
         $fichePaie->calculateSalaireNet();
 
         $this->em->flush();
 
-        return ['success' => true, 'message' => 'Pay slip updated successfully'];
+        // Invalidate cache
+        $this->cachingService->forget(CachingService::payrollStatsKey($fichePaie->getEmployee()->getRhId()));
+        $this->cachingService->forget(CachingService::employeeFichesKey($fichePaie->getEmployee()->getId()));
+
+        return new FichePaieResponseDTO($fichePaie);
     }
 
-    public function generateFichePaie(int $employeeId, int $mois, int $annee, string $salaireBrut): array
-    {
-        // Check if fiche paie already exists
-        $existing = $this->fichePaieRepository->findByEmployeeAndPeriodSingle($employeeId, $mois, $annee);
-        if ($existing !== null) {
-            return ['success' => false, 'message' => 'Pay slip already exists for this period'];
-        }
-
-        return $this->createFichePaie($employeeId, $mois, $annee, $salaireBrut);
-    }
-
-    public function deleteFichePaie(int $id): array
+    /**
+     * Delete a pay slip
+     */
+    public function deleteFichePaie(int $id): void
     {
         $fichePaie = $this->fichePaieRepository->find($id);
         if (!$fichePaie) {
-            return ['success' => false, 'message' => 'Pay slip not found'];
+            throw FichePaieNotFoundException::withId($id);
         }
+
+        $employeeId = $fichePaie->getEmployee()->getId();
+        $rhId = $fichePaie->getEmployee()->getRhId();
 
         $this->em->remove($fichePaie);
         $this->em->flush();
 
-        return ['success' => true, 'message' => 'Pay slip deleted successfully'];
+        // Invalidate cache
+        $this->cachingService->forget(CachingService::payrollStatsKey($rhId));
+        $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
     }
 
-    public function getStatsByRh(int $rhId): array
+    /**
+     * Get payroll statistics for an RH
+     */
+    public function getStatsByRh(int $rhId): PayrollStatsDTO
     {
-        return $this->fichePaieRepository->getStatsByRh($rhId);
+        $cacheKey = CachingService::payrollStatsKey($rhId);
+
+        return $this->cachingService->remember($cacheKey, function () use ($rhId) {
+            $stats = $this->fichePaieRepository->getStatsByRh($rhId);
+
+            return new PayrollStatsDTO(
+                totalSalaireBrut: $stats['totalBrut'] ?? '0.00',
+                totalPrimes: $stats['totalPrimes'] ?? '0.00',
+                totalDeductions: $stats['totalDeductions'] ?? '0.00',
+                totalSalaireNet: $stats['totalNet'] ?? '0.00',
+                fichesPaieCount: (int) ($stats['totalFiches'] ?? 0),
+            );
+        });
     }
 
+    /**
+     * Get all pay slips for an employee
+     *
+     * @return FichePaieResponseDTO[]
+     */
     public function getFichePaiesByEmployee(int $employeeId): array
     {
-        return $this->fichePaieRepository->findBy(['employee' => $employeeId], ['annee' => 'DESC', 'mois' => 'DESC']);
+        $cacheKey = CachingService::employeeFichesKey($employeeId);
+
+        return $this->cachingService->remember($cacheKey, function () use ($employeeId) {
+            $fiches = $this->fichePaieRepository->findBy(
+                ['employee' => $employeeId],
+                ['annee' => 'DESC', 'mois' => 'DESC']
+            );
+            return array_map(fn(FichePaie $f) => new FichePaieResponseDTO($f), $fiches);
+        });
     }
 
-    public function refreshFichePaieTotals(int $fichePaieId): array
+    /**
+     * Recalculate totalPrimes, totalDeductions and salaireNet for a given employee+period.
+     * Called automatically by PrimeService and DeductionService after any mutation.
+     */
+    public function recalculateTotals(int $employeeId, int $mois, int $annee): void
     {
-        $fichePaie = $this->fichePaieRepository->find($fichePaieId);
+        $fichePaie = $this->fichePaieRepository->findByEmployeeAndPeriodSingle($employeeId, $mois, $annee);
         if (!$fichePaie) {
-            return ['success' => false, 'message' => 'Pay slip not found'];
+            return; // No fiche de paie for this period yet — nothing to recalculate
         }
 
-        $employee = $fichePaie->getEmployee();
-        if (!$employee) {
-            return ['success' => false, 'message' => 'Employee not found'];
-        }
-
-        // Recalculate from primes and deductions
-        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod(
-            $employee->getId(),
-            $fichePaie->getMois(),
-            $fichePaie->getAnnee()
-        );
-        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod(
-            $employee->getId(),
-            $fichePaie->getMois(),
-            $fichePaie->getAnnee()
-        );
+        $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod($employeeId, $mois, $annee);
+        $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod($employeeId, $mois, $annee);
 
         $fichePaie->setTotalPrimes($totalPrimes)
             ->setTotalDeductions($totalDeductions);
@@ -188,6 +249,80 @@ final class FichePaieService
 
         $this->em->flush();
 
-        return ['success' => true, 'message' => 'Pay slip totals refreshed'];
+        // Invalidate cache
+        $employee = $fichePaie->getEmployee();
+        $this->cachingService->forget(CachingService::payrollStatsKey($employee->getRhId()));
+        $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
+    }
+
+    /**
+     * Toggle payment status (payé / non payé) for a fiche de paie
+     */
+    public function toggleStatutPaiement(int $id): FichePaieResponseDTO
+    {
+        $fichePaie = $this->fichePaieRepository->find($id);
+        if (!$fichePaie) {
+            throw FichePaieNotFoundException::withId($id);
+        }
+
+        $fichePaie->setStatutPaiement(!$fichePaie->isStatutPaiement());
+        $this->em->flush();
+
+        $this->cachingService->forget(CachingService::employeeFichesKey($fichePaie->getEmployee()->getId()));
+
+        return new FichePaieResponseDTO($fichePaie);
+    }
+
+    /**
+     * Refresh pay slip totals from primes and deductions
+     */
+    public function refreshFichePaieTotals(int $fichePaieId): FichePaieResponseDTO
+    {
+        $fichePaie = $this->fichePaieRepository->find($fichePaieId);
+        if (!$fichePaie) {
+            throw FichePaieNotFoundException::withId($fichePaieId);
+        }
+
+        $employee = $fichePaie->getEmployee();
+
+        $this->recalculateTotals($employee->getId(), $fichePaie->getMois(), $fichePaie->getAnnee());
+
+        // Re-fetch after recalculation
+        $this->em->refresh($fichePaie);
+
+        return new FichePaieResponseDTO($fichePaie);
+    }
+
+    /**
+     * Validate period (month and year)
+     *
+     * @throws InvalidPeriodException
+     */
+    private function validatePeriod(?int $mois, ?int $annee): void
+    {
+        if ($mois === null || $mois < 1 || $mois > 12) {
+            throw InvalidPeriodException::invalidMonth($mois ?? 0);
+        }
+
+        if ($annee === null || $annee < 2000 || $annee > 2100) {
+            throw InvalidPeriodException::invalidYear($annee ?? 0);
+        }
+    }
+
+    /**
+     * Validate salary amount
+     *
+     * @throws InvalidSalaryException
+     */
+    private function validateSalary(?string $salaireBrut): void
+    {
+        if ($salaireBrut === null) {
+            throw InvalidSalaryException::invalidFormat('null');
+        }
+
+        $brut = (float) $salaireBrut;
+        if ($brut < 0) {
+            throw InvalidSalaryException::negativeAmount($salaireBrut);
+        }
     }
 }

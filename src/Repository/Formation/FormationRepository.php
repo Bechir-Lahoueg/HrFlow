@@ -42,6 +42,30 @@ class FormationRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /** @return Formation[] */
+    public function findAllFiltered(string $search = '', string $type = '', string $sort = 'createdAt', string $dir = 'DESC'): array
+    {
+        $qb = $this->createQueryBuilder('f');
+
+        if ($search !== '') {
+            $qb->andWhere('f.titre LIKE :search OR f.description LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($type !== '') {
+            $qb->andWhere('f.type = :type')
+               ->setParameter('type', $type);
+        }
+
+        $allowedSorts = ['createdAt', 'titre', 'duree'];
+        $sort = in_array($sort, $allowedSorts, true) ? $sort : 'createdAt';
+        $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+
+        $qb->orderBy('f.' . $sort, $dir);
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function getStatsByRh(int $rhId): array
     {
         $total = (int) $this->createQueryBuilder('f')
