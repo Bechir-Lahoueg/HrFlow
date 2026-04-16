@@ -65,54 +65,16 @@ final class RhPayrollController extends AbstractController
 
         $stats = $fichePaieService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/remuneration/index.html.twig', [
+        return $this->render('DashboardHr/payroll/fiches_paie_index.html.twig', [
             'user' => $this->getUser(),
-            'employees' => $employees,
-            'stats' => $stats,
-            'search' => $search,
-            'page' => $page,
-            'totalPages' => ceil($total / $limit),
-        ]);
-    }
-
-    /**
-     * Employee detail: Show all fiches de paie for an employee
-     */
-    #[Route('/employees/{employeeId}', name: 'app_rh_remuneration_employee_detail', methods: ['GET'])]
-    #[IsGranted('ROLE_RH')]
-    public function employeeDetail(
-        int $employeeId,
-        EmployeeRepository $employeeRepository,
-        FichePaieService $fichePaieService,
-    ): Response {
-        $rhId = $this->getCurrentRhId();
-        $employee = $employeeRepository->find($employeeId);
-
-        if (!$employee || $employee->getRhId() !== $rhId) {
-            throw $this->createAccessDeniedException('Employee not found or access denied');
-        }
-
-        try {
-            $fiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
-        } catch (\Exception $e) {
-            $fiches = [];
-        }
-
-        return $this->render('DashboardHr/remuneration/employee_detail.html.twig', [
-            'user' => $this->getUser(),
-            'employee' => $employee,
             'fiches' => $fiches,
+            'stats' => $stats,
+            'filters' => [
+                'employee' => $employeeSearch,
+                'period' => $periodSearch,
+                'sort' => $sortQuery,
+            ],
         ]);
-    }
-
-    /**
-     * LEGACY: Redirect old fiches-paie list to new remuneration page
-     */
-    #[Route('/fiches-paie', name: 'app_rh_payroll_fiches', methods: ['GET'])]
-    #[IsGranted('ROLE_RH')]
-    public function fichePaieList(): RedirectResponse
-    {
-        return $this->redirectToRoute('app_rh_remuneration_index', status: 301);
     }
 
     #[Route('/fiches-paie/create', name: 'app_rh_payroll_fiche_create', methods: ['GET', 'POST'])]
@@ -186,20 +148,13 @@ final class RhPayrollController extends AbstractController
                 return $this->redirectToRoute('app_rh_payroll_fiche_edit', ['id' => $id]);
             }
 
-            try {
-                $dto = new FichePaieRequestDTO(
-                    employeeId: $fiche->employeeId,
-                    mois: (int) $request->request->get('mois', 0),
-                    annee: (int) $request->request->get('annee', 0),
-                    salaireBrut: (string) $request->request->get('salaire_brut', '0'),
-                    notes: trim((string) $request->request->get('notes', '')) ?: null,
-                );
+            $result = $fichePaieService->updateFichePaie($idInt, $mois, $annee, $salaireBrut, $notes ?: null);
 
-                $fichePaieService->updateFichePaie($id, $dto);
-                $this->addFlash('success', 'Fiche de paie mise à jour avec succès.');
-                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $id]);
-            } catch (InvalidPeriodException|InvalidSalaryException|DuplicateFichePaieException $e) {
-                $this->addFlash('error', $e->getMessage());
+            if ($result['success']) {
+                $this->addFlash('success', $result['message']);
+                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $idInt]);
+            } else {
+                $this->addFlash('error', $result['message']);
             }
         }
 

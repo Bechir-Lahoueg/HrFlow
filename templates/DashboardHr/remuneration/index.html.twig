@@ -11,112 +11,81 @@
 
         {# Flash messages #}
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                </div>
                 {{ message }}
             </div>
         {% endfor %}
 
-        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+        <main class="p-6 lg:p-8 space-y-6 max-w-[1440px] mx-auto">
 
-            {# ═══════════════ Header Banner ═══════════════ #}
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 p-8 sm:p-10 text-white animate-slide-up">
-                <div class="absolute inset-0 overflow-hidden">
-                    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-3xl"></div>
-                    <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-                </div>
+            {# HERO BANNER #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-teal-400/15 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-300/15 blur-3xl"></div>
+                <div class="absolute top-1/2 left-1/3 h-32 w-32 rounded-full bg-cyan-400/10 blur-3xl"></div>
                 <div class="relative z-10">
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                        <span class="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">Gestion Rémunération</span>
+                        <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-teal-200 uppercase tracking-[0.15em]">Gestion Rémunération</span>
                     </div>
-                    <h1 class="text-3xl sm:text-4xl font-extrabold mb-2">Rémunération & Paie</h1>
-                    <p class="text-teal-200 max-w-lg text-[15px] leading-relaxed">
-                        Gérez les fiches de paie, primes et déductions pour vos employés.
+                    <h1 class="text-3xl sm:text-5xl font-display leading-[1.1] tracking-tight">Rémunération & Paie</h1>
+                    <p class="text-slate-300/90 max-w-lg text-[14px] leading-relaxed">
+                        Gérez les fiches de paie, primes et déductions pour vos employés en toute simplicité.
                     </p>
                 </div>
-            </div>
+            </section>
 
             {# ═══════════════ Statistics Grid ═══════════════ #}
             {% if stats %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-
-                {# Stat: Masse Salariale #}
-                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-teal-200 dark:hover:border-teal-500/20 transition-all duration-300 animate-slide-up stagger-1">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-up stagger-1">
+                <div class="card-surface stat-stripe stat-stripe-teal p-5 group">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3.75-9.75a6 6 0 000 11.25M2.25 9.75a9 9 0 0119.5 0M2.25 9.75A6.75 6.75 0 0112 2.25m0 13.5a6.75 6.75 0 100-13.5m0 13.5h6.75M12 2.25m0 0A6.75 6.75 0 0118.75 9"/>
-                            </svg>
+                        <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3.75-9.75a6 6 0 000 11.25M2.25 9.75a9 9 0 0119.5 0"/></svg>
                         </div>
-                        <span class="text-[11px] font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-md">Brut</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">{{ stats.totalSalaireBrut }}</p>
-                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Masse Salariale</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                        <div class="h-full w-3/4 rounded-full bg-gradient-to-r from-teal-500 to-emerald-400"></div>
-                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num leading-none">{{ stats.totalSalaireBrut }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-2 font-semibold">Masse Salariale Brute</p>
                 </div>
-
-                {# Stat: Total Primes #}
-                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-emerald-200 dark:hover:border-emerald-500/20 transition-all duration-300 animate-slide-up stagger-2">
+                <div class="card-surface stat-stripe stat-stripe-emerald p-5 group">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-3H6"/>
-                            </svg>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                         </div>
-                        <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">Bonus</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">{{ stats.totalPrimes }}</p>
-                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Total Primes</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                        <div class="h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
-                    </div>
+                    <p class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono-num leading-none">{{ stats.totalPrimes }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-2 font-semibold">Total Primes</p>
                 </div>
-
-                {# Stat: Total Déductions #}
-                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-amber-200 dark:hover:border-amber-500/20 transition-all duration-300 animate-slide-up stagger-3">
+                <div class="card-surface stat-stripe stat-stripe-amber p-5 group">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5M12 4.5v15"/>
-                            </svg>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5"/></svg>
                         </div>
-                        <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-md">Retenues</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">{{ stats.totalDeductions }}</p>
-                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Total Déductions</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                        <div class="h-full w-1/2 rounded-full bg-gradient-to-r from-amber-500 to-orange-400"></div>
-                    </div>
+                    <p class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-mono-num leading-none">{{ stats.totalDeductions }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-2 font-semibold">Total Déductions</p>
                 </div>
-
-                {# Stat: Fiches de Paie #}
-                <div class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-sky-200 dark:hover:border-sky-500/20 transition-all duration-300 animate-slide-up stagger-4">
+                <div class="card-surface stat-stripe stat-stripe-sky p-5 group">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.148.42-.248.63m5.801 0c.065.21.1.395.081.609A6.375 6.375 0 0112.75 21.75m0 0v-2.25"/>
-                            </svg>
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108"/></svg>
                         </div>
-                        <span class="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 px-2 py-0.5 rounded-md">Active</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">{{ stats.fichesPaieCount }}</p>
-                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Fiches de Paie</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                        <div class="h-full w-2/3 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"></div>
-                    </div>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num leading-none">{{ stats.fichesPaieCount }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-2 font-semibold">Fiches de Paie</p>
                 </div>
             </div>
             {% endif %}
 
-            {# ═══════════════ Employees Section ═══════════════ #}
+            {# Employees Section header #}
             <div class="space-y-4 animate-slide-up">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-zinc-900 dark:text-white">Employés</h2>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Gestion des fiches de paie par employé</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
+                        <h2 class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Employés</h2>
                     </div>
                     <div class="flex gap-2">
                         <a href="{{ path('app_rh_payroll_prime_create') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium text-sm hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
@@ -142,15 +111,15 @@
                 </form>
 
                 {# Employees Table #}
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-sm">
+                <div class="card-surface overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
-                                <tr class="border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-800/50">
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">Employé</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">Poste</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">Actions</th>
+                                <tr class="border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30">
+                                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Employé</th>
+                                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Email</th>
+                                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Poste</th>
+                                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -223,11 +192,11 @@
                 {% endif %}
             </div>
 
-            {# ═══════════════ Quick Links ═══════════════ #}
+            {# Quick Links #}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-up">
-                <a href="{{ path('app_rh_payroll_fiches') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm hover:border-teal-200 dark:hover:border-teal-500/20 hover:shadow-md transition-all duration-300">
+                <a href="{{ path('app_rh_payroll_fiches') }}" class="card-surface group p-6 hover:scale-[1.01] transition-transform duration-200">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.148.42-.248.63m5.801 0c.065.21.1.395.081.609A6.375 6.375 0 0112.75 21.75m0 0v-2.25"/></svg>
                         </div>
                         <svg class="w-4 h-4 text-zinc-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -236,9 +205,9 @@
                     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Voir toutes les fiches globales</p>
                 </a>
 
-                <a href="{{ path('app_rh_payroll_primes') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm hover:border-emerald-200 dark:hover:border-emerald-500/20 hover:shadow-md transition-all duration-300">
+                <a href="{{ path('app_rh_payroll_primes') }}" class="card-surface group p-6 hover:scale-[1.01] transition-transform duration-200">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                         </div>
                         <svg class="w-4 h-4 text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -247,9 +216,9 @@
                     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Ajouter et modifier les primes</p>
                 </a>
 
-                <a href="{{ path('app_rh_payroll_deductions') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm hover:border-amber-200 dark:hover:border-amber-500/20 hover:shadow-md transition-all duration-300">
+                <a href="{{ path('app_rh_payroll_deductions') }}" class="card-surface group p-6 hover:scale-[1.01] transition-transform duration-200">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5M12 4.5v15"/></svg>
                         </div>
                         <svg class="w-4 h-4 text-zinc-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -258,9 +227,9 @@
                     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Ajouter et modifier les déductions</p>
                 </a>
 
-                <a href="{{ path('app_rh_remuneration_index') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm hover:border-sky-200 dark:hover:border-sky-500/20 hover:shadow-md transition-all duration-300">
+                <a href="{{ path('app_rh_remuneration_index') }}" class="card-surface group p-6 hover:scale-[1.01] transition-transform duration-200">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
                         </div>
                         <svg class="w-4 h-4 text-zinc-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>

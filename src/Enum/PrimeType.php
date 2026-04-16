@@ -15,6 +15,7 @@ enum PrimeType: string
     case INDEMNITE = 'Indemnité';
     case ALLOCATION_FAMILIALE = 'Allocation Familiale';
     case PRIME_RENDEMENT = 'Prime de Rendement';
+    case PRIME_PERFORMANCE = 'Prime de performance';
     case PRIME_ANCIENNETE = 'Prime d\'Ancienneté';
     case GRATIFICATION = 'Gratification';
     case AUTRE = 'Autre Prime';
