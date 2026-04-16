@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ecfeff;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:radial-gradient(circle at top,#ccfbf1 0%,#ecfeff 45%,#f8fafc 100%);padding:40px 12px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(13,148,136,0.15);">
+
+    {# Header #}
+    <tr><td style="padding:20px 32px 12px;background:#ffffff;text-align:center;">
+        <img src="{{ absolute_url(asset('logo.png')) }}" alt="HrFlow" width="124" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:124px;height:auto;">
+    </td></tr>
+
+    <tr><td style="background:linear-gradient(140deg,#0f766e,#14b8a6 45%,#2dd4bf);padding:30px 32px;">
+        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Securite compte</p>
+        <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;">Alerte de connexion</h1>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Un nouvel acces a votre compte vient d'etre detecte.</p>
+    </td></tr>
+
+    {# Body #}
+    <tr><td style="padding:30px 32px 28px;">
+        <p style="margin:0 0 16px;color:#18181b;font-size:15px;">Bonjour <strong>{{ name }}</strong>,</p>
+
+        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
+            Un appareil vient de se connecter a votre compte <strong>{{ role }}</strong> sur HrFlow.
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;">
+            <tr><td style="padding:16px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">DATE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ date|date('d/m/Y a H:i') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">ADRESSE IP</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ ip }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">NAVIGATEUR</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ userAgent|length > 60 ? userAgent[:60] ~ '...' : userAgent }}</td>
+                    </tr>
+                </table>
+            </td></tr>
+        </table>
+
+        <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
+            Si vous n'etes pas a l'origine de cette connexion, contactez immediatement votre administrateur.
+        </p>
+    </td></tr>
+
+    {# Footer #}
+    <tr><td style="padding:18px 32px 24px;border-top:1px solid #eef2f7;text-align:center;background:#fbfffe;">
+        <p style="margin:0;color:#94a3b8;font-size:11px;">HrFlow - Gestion des ressources humaines</p>
+    </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

@@ -58,6 +58,58 @@ final class AdminEmployeesController extends AbstractController
         ]);
     }
 
+    #[Route('/welcome/admin/employees/rh/{id}/edit', name: 'app_admin_rh_edit', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function editRh(
+        int $id,
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+    ): RedirectResponse {
+        if (!$this->isCsrfTokenValid('admin_edit_rh_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_employees');
+        }
+
+        $user = $userRepository->find($id);
+        if ($user === null || $user->getRole() !== 'RH') {
+            $this->addFlash('error', 'Compte RH introuvable.');
+            return $this->redirectToRoute('app_admin_employees');
+        }
+
+        $username = trim((string) $request->request->get('username', ''));
+        $email = strtolower(trim((string) $request->request->get('email', '')));
+        $password = (string) $request->request->get('password', '');
+
+        if ($username === '' || $email === '') {
+            $this->addFlash('error', 'Le nom d\'utilisateur et l\'email sont obligatoires.');
+            return $this->redirectToRoute('app_admin_employees');
+        }
+
+        $existingByEmail = $userRepository->findOneBy(['email' => $email]);
+        if ($existingByEmail !== null && $existingByEmail->getId() !== $user->getId()) {
+            $this->addFlash('error', sprintf('Email deja utilise: %s', $email));
+            return $this->redirectToRoute('app_admin_employees');
+        }
+
+        $existingByUsername = $userRepository->findOneBy(['username' => $username]);
+        if ($existingByUsername !== null && $existingByUsername->getId() !== $user->getId()) {
+            $this->addFlash('error', sprintf('Username deja utilise: %s', $username));
+            return $this->redirectToRoute('app_admin_employees');
+        }
+
+        $user->setUsername($username)->setEmail($email);
+
+        if ($password !== '') {
+            $user->setPassword(hash('sha256', $password));
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', sprintf('RH "%s" mis a jour avec succes.', $username));
+        return $this->redirectToRoute('app_admin_employees');
+    }
+
     private function handleCreateRh(Request $request, UserRepository $userRepository, EntityManagerInterface $em): ?RedirectResponse
     {
         if (!$this->isCsrfTokenValid('create_rh', (string) $request->request->get('_token', ''))) {

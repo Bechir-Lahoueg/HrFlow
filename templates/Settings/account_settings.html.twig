@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Parametres du compte | HrFlow{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include sidebarTemplate %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include headerTemplate %}
+
+        {% for message in app.flashes('success') %}
+            <div id="flash-success" class="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div id="flash-error" class="mx-6 mt-4 px-4 py-3 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm p-6 sm:p-8">
+                <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-100 dark:border-zinc-800/50">
+                    <div class="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-zinc-600 dark:text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">Parametres du compte</h1>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                            Espace {{ dashboardLabel }} - modifiez uniquement votre email et votre mot de passe.
+                        </p>
+                        <p class="text-sm mt-2 {{ accentClass }}">Compte connecte: {{ user.userIdentifier }}</p>
+                    </div>
+                </div>
+
+                {{ form_start(form, {'attr': {'class': 'space-y-5', 'novalidate': 'novalidate'}}) }}
+
+                    {# Form-level errors (CSRF, general validation) #}
+                    {% if form.vars.errors|length > 0 %}
+                        <div class="px-4 py-3 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm">
+                            {% for error in form.vars.errors %}
+                                <p>{{ error.message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% set emailAttr = form.email.vars.attr|merge({'class': form.email.vars.attr.class ~ ' ' ~ ringClass ~ ' dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:placeholder-zinc-500'}) %}
+                    {% set currentPasswordAttr = form.currentPassword.vars.attr|merge({'class': form.currentPassword.vars.attr.class ~ ' ' ~ ringClass ~ ' dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:placeholder-zinc-500'}) %}
+                    {% set newPasswordFirstAttr = form.newPassword.first.vars.attr|merge({'class': form.newPassword.first.vars.attr.class ~ ' ' ~ ringClass ~ ' dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:placeholder-zinc-500'}) %}
+                    {% set newPasswordSecondAttr = form.newPassword.second.vars.attr|merge({'class': form.newPassword.second.vars.attr.class ~ ' ' ~ ringClass ~ ' dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:placeholder-zinc-500'}) %}
+
+                    <div>
+                        {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2'}}) }}
+                        {{ form_widget(form.email, {'attr': emailAttr}) }}
+                        {% for error in form.email.vars.errors %}
+                            <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400 font-medium">{{ error.message }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.currentPassword, null, {'label_attr': {'class': 'block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2'}}) }}
+                        {{ form_widget(form.currentPassword, {'attr': currentPasswordAttr}) }}
+                        {% for error in form.currentPassword.vars.errors %}
+                            <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400 font-medium">{{ error.message }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.newPassword.first, null, {'label_attr': {'class': 'block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2'}}) }}
+                            {{ form_widget(form.newPassword.first, {'attr': newPasswordFirstAttr}) }}
+                            {% for error in form.newPassword.first.vars.errors %}
+                                <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400 font-medium">{{ error.message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            {{ form_label(form.newPassword.second, null, {'label_attr': {'class': 'block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2'}}) }}
+                            {{ form_widget(form.newPassword.second, {'attr': newPasswordSecondAttr}) }}
+                            {% for error in form.newPassword.second.vars.errors %}
+                                <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400 font-medium">{{ error.message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# RepeatedType mismatch error #}
+                    {% for error in form.newPassword.vars.errors %}
+                        <p class="text-sm text-rose-600 dark:text-rose-400 font-medium">{{ error.message }}</p>
+                    {% endfor %}
+
+                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-4 text-sm text-zinc-600 dark:text-zinc-300">
+                        Pour securiser vos modifications, le mot de passe actuel est obligatoire. Si vous ne souhaitez pas changer le mot de passe, laissez les champs "Nouveau mot de passe" vides.
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors focus:outline-none focus:ring-2 {{ buttonClass }}">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+
+                {{ form_end(form) }}
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('[id^="flash-"]').forEach(function(el) {
+    setTimeout(function() {
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(function() { el.remove(); }, 500);
+    }, 5000);
+});
+</script>
+{% endblock %}

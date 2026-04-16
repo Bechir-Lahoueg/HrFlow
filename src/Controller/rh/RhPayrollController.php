@@ -2,6 +2,13 @@
 
 namespace App\Controller\rh;
 
+use App\DTO\Payroll\FichePaieRequestDTO;
+use App\DTO\Payroll\PrimeRequestDTO;
+use App\DTO\Payroll\DeductionRequestDTO;
+use App\Exception\Payroll\DuplicateFichePaieException;
+use App\Exception\Payroll\InvalidPeriodException;
+use App\Exception\Payroll\InvalidSalaryException;
+use App\Exception\Payroll\EmployeeNotFoundException;
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\FichePaieService;
@@ -14,33 +21,98 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * RhPayrollController - Manages payroll (fiches de paie), primes, and deductions
+ * Entry point: /remuneration (list employees) → employee detail → fiche detail
+ */
+#[Route('/welcome/rh/remuneration')]
 #[Route('/welcome/rh/payroll')]
 final class RhPayrollController extends AbstractController
 {
-    #[Route('/fiches-paie', name: 'app_rh_payroll_fiches', methods: ['GET'])]
+    /**
+     * Main page: List employees for payroll management
+     */
+    #[Route('', name: 'app_rh_remuneration_index', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
-    public function fichePaieList(
+    public function index(
         Request $request,
+        EmployeeRepository $employeeRepository,
         FichePaieService $fichePaieService,
     ): Response {
         $rhId = $this->getCurrentRhId();
-        $employeeSearch = trim((string) $request->query->get('employee', ''));
-        $periodSearch = trim((string) $request->query->get('period', ''));
-        $sortQuery = (string) $request->query->get('sort', 'createdAt-DESC');
+        $search = trim((string) $request->query->get('search', ''));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
 
-        $fiches = $fichePaieService->searchFichePaies($rhId, $employeeSearch, $periodSearch, $sortQuery);
+        $queryBuilder = $employeeRepository->createQueryBuilder('e')
+            ->where('e.rhId = :rhId')
+            ->setParameter('rhId', $rhId);
+
+        if ($search !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(CONCAT(e.firstName, \' \', e.lastName)) LIKE :search')
+                ->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        $total = count($queryBuilder->getQuery()->getResult());
+        $employees = $queryBuilder
+            ->orderBy('e.firstName', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
+
         $stats = $fichePaieService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/payroll/fiches_paie_index.html.twig', [
+        return $this->render('DashboardHr/remuneration/index.html.twig', [
             'user' => $this->getUser(),
-            'fiches' => $fiches,
+            'employees' => $employees,
             'stats' => $stats,
-            'filters' => [
-                'employee' => $employeeSearch,
-                'period' => $periodSearch,
-                'sort' => $sortQuery,
-            ],
+            'search' => $search,
+            'page' => $page,
+            'totalPages' => ceil($total / $limit),
         ]);
+    }
+
+    /**
+     * Employee detail: Show all fiches de paie for an employee
+     */
+    #[Route('/employees/{employeeId}', name: 'app_rh_remuneration_employee_detail', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function employeeDetail(
+        int $employeeId,
+        EmployeeRepository $employeeRepository,
+        FichePaieService $fichePaieService,
+    ): Response {
+        $rhId = $this->getCurrentRhId();
+        $employee = $employeeRepository->find($employeeId);
+
+        if (!$employee || $employee->getRhId() !== $rhId) {
+            throw $this->createAccessDeniedException('Employee not found or access denied');
+        }
+
+        try {
+            $fiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
+        } catch (\Exception $e) {
+            $fiches = [];
+        }
+
+        return $this->render('DashboardHr/remuneration/employee_detail.html.twig', [
+            'user' => $this->getUser(),
+            'employee' => $employee,
+            'fiches' => $fiches,
+        ]);
+    }
+
+    /**
+     * LEGACY: Redirect old fiches-paie list to new remuneration page
+     */
+    #[Route('/fiches-paie', name: 'app_rh_payroll_fiches', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function fichePaieList(): RedirectResponse
+    {
+        return $this->redirectToRoute('app_rh_remuneration_index', status: 301);
     }
 
     #[Route('/fiches-paie/create', name: 'app_rh_payroll_fiche_create', methods: ['GET', 'POST'])]
@@ -50,107 +122,126 @@ final class RhPayrollController extends AbstractController
         FichePaieService $fichePaieService,
         EmployeeRepository $employeeRepository,
     ): Response {
+        $rhId = $this->getCurrentRhId();
         $employees = $employeeRepository->findByRh($this->getUser());
-        
-        // Check if there are employees
+
         if (empty($employees)) {
-            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné. Impossible d\'ajouter une fiche de paie.');
+            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
             return $this->redirectToRoute('app_rh_payroll_fiches');
         }
-        
-        if ($request->isMethod('POST')) {
-            $employeeId = (int) $request->request->get('employee_id', 0);
-            $mois = (int) $request->request->get('mois', 0);
-            $annee = (int) $request->request->get('annee', 0);
-            $salaireBrut = (string) $request->request->get('salaire_brut', '0');
-            $notes = trim((string) $request->request->get('notes', ''));
 
+        if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('create_fiche_paie', (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
                 return $this->redirectToRoute('app_rh_payroll_fiche_create');
             }
 
-            $result = $fichePaieService->createFichePaie($employeeId, $mois, $annee, $salaireBrut, $notes ?: null);
+            try {
+                $dto = new FichePaieRequestDTO(
+                    employeeId: (int) $request->request->get('employee_id', 0),
+                    mois: (int) $request->request->get('mois', 0),
+                    annee: (int) $request->request->get('annee', 0),
+                    salaireBrut: (string) $request->request->get('salaire_brut', '0'),
+                    notes: trim((string) $request->request->get('notes', '')) ?: null,
+                );
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
+                $fichePaieService->createFichePaie($dto);
+                $this->addFlash('success', 'Fiche de paie créée avec succès.');
                 return $this->redirectToRoute('app_rh_payroll_fiches');
-            } else {
-                $this->addFlash('error', $result['message']);
+            } catch (InvalidPeriodException|InvalidSalaryException|EmployeeNotFoundException|DuplicateFichePaieException $e) {
+                $this->addFlash('error', $e->getMessage());
             }
         }
 
-        return $this->render('DashboardHr/payroll/fiche_paie_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/fiche_paie_form.html.twig', [
             'user' => $this->getUser(),
             'fiche' => null,
             'employees' => $employees,
-            'isEdit' => false,
         ]);
     }
 
     #[Route('/fiches-paie/{id}/edit', name: 'app_rh_payroll_fiche_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function fichePaieEdit(
-        string $id,
+        int $id,
         Request $request,
         FichePaieService $fichePaieService,
         EmployeeRepository $employeeRepository,
     ): Response {
-        $idInt = (int) $id;
-        $fiche = $fichePaieService->getFichePaieById($idInt);
-        if (!$fiche || $fiche->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Pay slip not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            $employee = $employeeRepository->find($fiche->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            throw $this->createAccessDeniedException('Fiche de paie non trouvée');
         }
 
         if ($request->isMethod('POST')) {
-            $mois = (int) $request->request->get('mois', 0);
-            $annee = (int) $request->request->get('annee', 0);
-            $salaireBrut = (string) $request->request->get('salaire_brut', '0');
-            $notes = trim((string) $request->request->get('notes', ''));
-
-            if (!$this->isCsrfTokenValid('edit_fiche_paie_' . $idInt, (string) $request->request->get('_token', ''))) {
+            if (!$this->isCsrfTokenValid('edit_fiche_paie_' . $id, (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
-                return $this->redirectToRoute('app_rh_payroll_fiche_edit', ['id' => $idInt]);
+                return $this->redirectToRoute('app_rh_payroll_fiche_edit', ['id' => $id]);
             }
 
-            $result = $fichePaieService->updateFichePaie($idInt, $mois, $annee, $salaireBrut, $notes ?: null);
+            try {
+                $dto = new FichePaieRequestDTO(
+                    employeeId: $fiche->employeeId,
+                    mois: (int) $request->request->get('mois', 0),
+                    annee: (int) $request->request->get('annee', 0),
+                    salaireBrut: (string) $request->request->get('salaire_brut', '0'),
+                    notes: trim((string) $request->request->get('notes', '')) ?: null,
+                );
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
-                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $idInt]);
-            } else {
-                $this->addFlash('error', $result['message']);
+                $fichePaieService->updateFichePaie($id, $dto);
+                $this->addFlash('success', 'Fiche de paie mise à jour avec succès.');
+                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $id]);
+            } catch (InvalidPeriodException|InvalidSalaryException|DuplicateFichePaieException $e) {
+                $this->addFlash('error', $e->getMessage());
             }
         }
 
-        return $this->render('DashboardHr/payroll/fiche_paie_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/fiche_paie_form.html.twig', [
             'user' => $this->getUser(),
             'fiche' => $fiche,
             'employees' => $employeeRepository->findByRh($this->getUser()),
-            'isEdit' => true,
         ]);
     }
 
     #[Route('/fiches-paie/{id}/delete', name: 'app_rh_payroll_fiche_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
     public function fichePaieDelete(
-        string $id,
+        int $id,
         Request $request,
         FichePaieService $fichePaieService,
+        EmployeeRepository $employeeRepository,
     ): RedirectResponse {
-        $idInt = (int) $id;
-        $fiche = $fichePaieService->getFichePaieById($idInt);
-        if (!$fiche || $fiche->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Pay slip not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            $employee = $employeeRepository->find($fiche->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Fiche de paie non trouvée');
+            return $this->redirectToRoute('app_rh_payroll_fiches');
         }
 
-        if (!$this->isCsrfTokenValid('delete_fiche_paie_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_fiche_paie_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_payroll_fiches');
         }
 
-        $result = $fichePaieService->deleteFichePaie($idInt);
-        $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+        try {
+            $fichePaieService->deleteFichePaie($id);
+            $this->addFlash('success', 'Fiche de paie supprimée avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->redirectToRoute('app_rh_payroll_fiches');
     }
@@ -158,46 +249,41 @@ final class RhPayrollController extends AbstractController
     #[Route('/fiches-paie/{id}', name: 'app_rh_payroll_fiche_show', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
     public function fichePaieShow(
-        string $id,
+        int $id,
         FichePaieService $fichePaieService,
         PrimeService $primeService,
         DeductionService $deductionService,
+        EmployeeRepository $employeeRepository,
     ): Response {
-        $fiche = $fichePaieService->getFichePaieById((int) $id);
-        if (!$fiche || $fiche->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Pay slip not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            $employee = $employeeRepository->find($fiche->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            throw $this->createAccessDeniedException('Fiche de paie non trouvée');
         }
 
         $primes = $primeService->getPrimesByEmployeeAndPeriod(
-            $fiche->getEmployee()->getId(),
-            $fiche->getMois(),
-            $fiche->getAnnee()
+            $fiche->employeeId,
+            $fiche->mois,
+            $fiche->annee
         );
 
         $deductions = $deductionService->getDeductionsByEmployeeAndPeriod(
-            $fiche->getEmployee()->getId(),
-            $fiche->getMois(),
-            $fiche->getAnnee()
+            $fiche->employeeId,
+            $fiche->mois,
+            $fiche->annee
         );
 
-        // Calculate totals dynamically from fresh data instead of using stale stored values
-        $totalPrimes = 0;
-        foreach ($primes as $prime) {
-            $totalPrimes += (float) $prime->getMontant();
-        }
-
-        $totalDeductions = 0;
-        foreach ($deductions as $deduction) {
-            $totalDeductions += (float) $deduction->getMontant();
-        }
-
-        return $this->render('DashboardHr/payroll/fiche_paie_show.html.twig', [
+        return $this->render('DashboardHr/remuneration/fiche_paie_show.html.twig', [
             'user' => $this->getUser(),
             'fiche' => $fiche,
             'primes' => $primes,
             'deductions' => $deductions,
-            'totalPrimes' => number_format($totalPrimes, 2),
-            'totalDeductions' => number_format($totalDeductions, 2),
         ]);
     }
 
@@ -215,12 +301,10 @@ final class RhPayrollController extends AbstractController
         $sortQuery = (string) $request->query->get('sort', 'dateAttribution-DESC');
 
         $primes = $primeService->searchPrimes($rhId, $employeeSearch, $typeSearch, $sortQuery);
-        $stats = $primeService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/payroll/primes_index.html.twig', [
+        return $this->render('DashboardHr/remuneration/primes_index.html.twig', [
             'user' => $this->getUser(),
             'primes' => $primes,
-            'stats' => $stats,
             'filters' => [
                 'employee' => $employeeSearch,
                 'type' => $typeSearch,
@@ -237,108 +321,173 @@ final class RhPayrollController extends AbstractController
         EmployeeRepository $employeeRepository,
     ): Response {
         $employees = $employeeRepository->findByRh($this->getUser());
-        
-        // Check if there are employees
+
         if (empty($employees)) {
-            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné. Impossible d\'ajouter une prime.');
+            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
             return $this->redirectToRoute('app_rh_payroll_primes');
         }
-        
-        if ($request->isMethod('POST')) {
-            $employeeId = (int) $request->request->get('employee_id', 0);
-            $typePrime = trim((string) $request->request->get('type_prime', ''));
-            $montant = (string) $request->request->get('montant', '0');
-            $dateAttribution = trim((string) $request->request->get('date_attribution', ''));
-            $motif = trim((string) $request->request->get('motif', ''));
 
+        // Check for pre-selected employee from query parameter
+        $preSelectedEmployeeId = null;
+        if ($request->query->has('employee_id')) {
+            $preSelectedEmployeeId = (int) $request->query->get('employee_id');
+        }
+
+        if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('create_prime', (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
                 return $this->redirectToRoute('app_rh_payroll_prime_create');
             }
 
-            $result = $primeService->createPrime($employeeId, $typePrime, $montant, $dateAttribution, $motif ?: null);
+            try {
+                $dateStr = trim((string) $request->request->get('date_attribution', ''));
+                $dateAttribution = $dateStr ? new \DateTime($dateStr) : null;
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
+                $dto = new PrimeRequestDTO(
+                    employeeId: (int) $request->request->get('employee_id', 0),
+                    typePrime: $this->parsePrimeType((string) $request->request->get('type_prime', '')),
+                    montant: (string) $request->request->get('montant', '0'),
+                    dateAttribution: $dateAttribution,
+                    motif: trim((string) $request->request->get('motif', '')) ?: null,
+                );
+
+                $primeService->createPrime($dto);
+                $this->addFlash('success', 'Prime créée avec succès.');
                 return $this->redirectToRoute('app_rh_payroll_primes');
-            } else {
-                $this->addFlash('error', $result['message']);
+            } catch (EmployeeNotFoundException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_prime_create');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_prime_create');
             }
         }
 
-        return $this->render('DashboardHr/payroll/prime_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/prime_form.html.twig', [
             'user' => $this->getUser(),
             'prime' => null,
             'employees' => $employees,
-            'isEdit' => false,
+            'typeChoices' => PrimeService::getPrimeTypeChoices(),
+            'preSelectedEmployeeId' => $preSelectedEmployeeId,
+            'isEditing' => false,
         ]);
     }
 
     #[Route('/primes/{id}/edit', name: 'app_rh_payroll_prime_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function primeEdit(
-        string $id,
+        int $id,
         Request $request,
         PrimeService $primeService,
         EmployeeRepository $employeeRepository,
     ): Response {
-        $idInt = (int) $id;
-        $prime = $primeService->getPrimeById($idInt);
-        if (!$prime || $prime->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Prime not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $prime = $primeService->getPrimeById($id);
+            $employee = $employeeRepository->find($prime->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            throw $this->createAccessDeniedException('Prime non trouvée');
         }
 
         if ($request->isMethod('POST')) {
-            $typePrime = trim((string) $request->request->get('type_prime', ''));
-            $montant = (string) $request->request->get('montant', '0');
-            $dateAttribution = trim((string) $request->request->get('date_attribution', ''));
-            $motif = trim((string) $request->request->get('motif', ''));
-
-            if (!$this->isCsrfTokenValid('edit_prime_' . $idInt, (string) $request->request->get('_token', ''))) {
+            if (!$this->isCsrfTokenValid('edit_prime_' . $id, (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
-                return $this->redirectToRoute('app_rh_payroll_prime_edit', ['id' => $idInt]);
+                return $this->redirectToRoute('app_rh_payroll_prime_edit', ['id' => $id]);
             }
 
-            $result = $primeService->updatePrime($idInt, $typePrime, $montant, $dateAttribution, $motif ?: null);
+            try {
+                $dateStr = trim((string) $request->request->get('date_attribution', ''));
+                $dateAttribution = $dateStr ? new \DateTime($dateStr) : null;
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
+                $dto = new PrimeRequestDTO(
+                    employeeId: $prime->employeeId,
+                    typePrime: $this->parsePrimeType((string) $request->request->get('type_prime', '')),
+                    montant: (string) $request->request->get('montant', '0'),
+                    dateAttribution: $dateAttribution,
+                    motif: trim((string) $request->request->get('motif', '')) ?: null,
+                );
+
+                $primeService->updatePrime($id, $dto);
+                $this->addFlash('success', 'Prime mise à jour avec succès.');
                 return $this->redirectToRoute('app_rh_payroll_primes');
-            } else {
-                $this->addFlash('error', $result['message']);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_prime_edit', ['id' => $id]);
             }
         }
 
-        return $this->render('DashboardHr/payroll/prime_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/prime_form.html.twig', [
             'user' => $this->getUser(),
             'prime' => $prime,
             'employees' => $employeeRepository->findByRh($this->getUser()),
-            'isEdit' => true,
+            'typeChoices' => PrimeService::getPrimeTypeChoices(),
+            'preSelectedEmployeeId' => null,
+            'isEditing' => true,
         ]);
     }
 
     #[Route('/primes/{id}/delete', name: 'app_rh_payroll_prime_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
     public function primeDelete(
-        string $id,
+        int $id,
         Request $request,
         PrimeService $primeService,
+        EmployeeRepository $employeeRepository,
     ): RedirectResponse {
-        $idInt = (int) $id;
-        $prime = $primeService->getPrimeById($idInt);
-        if (!$prime || $prime->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Prime not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $prime = $primeService->getPrimeById($id);
+            $employee = $employeeRepository->find($prime->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Prime non trouvée');
+            return $this->redirectToRoute('app_rh_payroll_primes');
         }
 
-        if (!$this->isCsrfTokenValid('delete_prime_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_prime_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_payroll_primes');
         }
 
-        $result = $primeService->deletePrime($idInt);
-        $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+        try {
+            $primeService->deletePrime($id);
+            $this->addFlash('success', 'Prime supprimée avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->redirectToRoute('app_rh_payroll_primes');
+    }
+
+    #[Route('/primes/{id}', name: 'app_rh_payroll_prime_show', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function primeShow(
+        int $id,
+        PrimeService $primeService,
+        EmployeeRepository $employeeRepository,
+    ): Response {
+        try {
+            $prime = $primeService->getPrimeById($id);
+            $employee = $employeeRepository->find($prime->employeeId);
+            if (!$employee || $employee->getRhId() !== $this->getCurrentRhId()) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+
+            return $this->render('DashboardHr/remuneration/prime_show.html.twig', [
+                'user' => $this->getUser(),
+                'prime' => $prime,
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Prime non trouvée');
+            return $this->redirectToRoute('app_rh_payroll_primes');
+        }
     }
 
     // ==================== DEDUCTIONS ====================
@@ -355,12 +504,10 @@ final class RhPayrollController extends AbstractController
         $sortQuery = (string) $request->query->get('sort', 'dateDeduction-DESC');
 
         $deductions = $deductionService->searchDeductions($rhId, $employeeSearch, $typeSearch, $sortQuery);
-        $stats = $deductionService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/payroll/deductions_index.html.twig', [
+        return $this->render('DashboardHr/remuneration/deductions_index.html.twig', [
             'user' => $this->getUser(),
             'deductions' => $deductions,
-            'stats' => $stats,
             'filters' => [
                 'employee' => $employeeSearch,
                 'type' => $typeSearch,
@@ -377,108 +524,173 @@ final class RhPayrollController extends AbstractController
         EmployeeRepository $employeeRepository,
     ): Response {
         $employees = $employeeRepository->findByRh($this->getUser());
-        
-        // Check if there are employees
+
         if (empty($employees)) {
-            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné. Impossible d\'ajouter une déduction.');
+            $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
             return $this->redirectToRoute('app_rh_payroll_deductions');
         }
-        
-        if ($request->isMethod('POST')) {
-            $employeeId = (int) $request->request->get('employee_id', 0);
-            $typeDeduction = trim((string) $request->request->get('type_deduction', ''));
-            $montant = (string) $request->request->get('montant', '0');
-            $dateDeduction = trim((string) $request->request->get('date_deduction', ''));
-            $motif = trim((string) $request->request->get('motif', ''));
 
+        // Check for pre-selected employee from query parameter
+        $preSelectedEmployeeId = null;
+        if ($request->query->has('employee_id')) {
+            $preSelectedEmployeeId = (int) $request->query->get('employee_id');
+        }
+
+        if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('create_deduction', (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
                 return $this->redirectToRoute('app_rh_payroll_deduction_create');
             }
 
-            $result = $deductionService->createDeduction($employeeId, $typeDeduction, $montant, $dateDeduction, $motif ?: null);
+            try {
+                $dateStr = trim((string) $request->request->get('date_deduction', ''));
+                $dateDeduction = $dateStr ? new \DateTime($dateStr) : null;
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
+                $dto = new DeductionRequestDTO(
+                    employeeId: (int) $request->request->get('employee_id', 0),
+                    typeDeduction: $this->parseDeductionType((string) $request->request->get('type_deduction', '')),
+                    montant: (string) $request->request->get('montant', '0'),
+                    dateDeduction: $dateDeduction,
+                    motif: trim((string) $request->request->get('motif', '')) ?: null,
+                );
+
+                $deductionService->createDeduction($dto);
+                $this->addFlash('success', 'Déduction créée avec succès.');
                 return $this->redirectToRoute('app_rh_payroll_deductions');
-            } else {
-                $this->addFlash('error', $result['message']);
+            } catch (EmployeeNotFoundException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_deduction_create');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_deduction_create');
             }
         }
 
-        return $this->render('DashboardHr/payroll/deduction_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/deduction_form.html.twig', [
             'user' => $this->getUser(),
             'deduction' => null,
             'employees' => $employees,
-            'isEdit' => false,
+            'typeChoices' => DeductionService::getDeductionTypeChoices(),
+            'preSelectedEmployeeId' => $preSelectedEmployeeId,
+            'isEditing' => false,
         ]);
     }
 
     #[Route('/deductions/{id}/edit', name: 'app_rh_payroll_deduction_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function deductionEdit(
-        string $id,
+        int $id,
         Request $request,
         DeductionService $deductionService,
         EmployeeRepository $employeeRepository,
     ): Response {
-        $idInt = (int) $id;
-        $deduction = $deductionService->getDeductionById($idInt);
-        if (!$deduction || $deduction->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Deduction not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $deduction = $deductionService->getDeductionById($id);
+            $employee = $employeeRepository->find($deduction->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            throw $this->createAccessDeniedException('Déduction non trouvée');
         }
 
         if ($request->isMethod('POST')) {
-            $typeDeduction = trim((string) $request->request->get('type_deduction', ''));
-            $montant = (string) $request->request->get('montant', '0');
-            $dateDeduction = trim((string) $request->request->get('date_deduction', ''));
-            $motif = trim((string) $request->request->get('motif', ''));
-
-            if (!$this->isCsrfTokenValid('edit_deduction_' . $idInt, (string) $request->request->get('_token', ''))) {
+            if (!$this->isCsrfTokenValid('edit_deduction_' . $id, (string) $request->request->get('_token', ''))) {
                 $this->addFlash('error', 'Token CSRF invalide.');
-                return $this->redirectToRoute('app_rh_payroll_deduction_edit', ['id' => $idInt]);
+                return $this->redirectToRoute('app_rh_payroll_deduction_edit', ['id' => $id]);
             }
 
-            $result = $deductionService->updateDeduction($idInt, $typeDeduction, $montant, $dateDeduction, $motif ?: null);
+            try {
+                $dateStr = trim((string) $request->request->get('date_deduction', ''));
+                $dateDeduction = $dateStr ? new \DateTime($dateStr) : null;
 
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
+                $dto = new DeductionRequestDTO(
+                    employeeId: $deduction->employeeId,
+                    typeDeduction: $this->parseDeductionType((string) $request->request->get('type_deduction', '')),
+                    montant: (string) $request->request->get('montant', '0'),
+                    dateDeduction: $dateDeduction,
+                    motif: trim((string) $request->request->get('motif', '')) ?: null,
+                );
+
+                $deductionService->updateDeduction($id, $dto);
+                $this->addFlash('success', 'Déduction mise à jour avec succès.');
                 return $this->redirectToRoute('app_rh_payroll_deductions');
-            } else {
-                $this->addFlash('error', $result['message']);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+                return $this->redirectToRoute('app_rh_payroll_deduction_edit', ['id' => $id]);
             }
         }
 
-        return $this->render('DashboardHr/payroll/deduction_form.html.twig', [
+        return $this->render('DashboardHr/remuneration/deduction_form.html.twig', [
             'user' => $this->getUser(),
             'deduction' => $deduction,
             'employees' => $employeeRepository->findByRh($this->getUser()),
-            'isEdit' => true,
+            'typeChoices' => DeductionService::getDeductionTypeChoices(),
+            'preSelectedEmployeeId' => null,
+            'isEditing' => true,
         ]);
     }
 
     #[Route('/deductions/{id}/delete', name: 'app_rh_payroll_deduction_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
     public function deductionDelete(
-        string $id,
+        int $id,
         Request $request,
         DeductionService $deductionService,
+        EmployeeRepository $employeeRepository,
     ): RedirectResponse {
-        $idInt = (int) $id;
-        $deduction = $deductionService->getDeductionById($idInt);
-        if (!$deduction || $deduction->getEmployee()->getRhId() !== $this->getCurrentRhId()) {
-            throw $this->createAccessDeniedException('Deduction not found or access denied');
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $deduction = $deductionService->getDeductionById($id);
+            $employee = $employeeRepository->find($deduction->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Déduction non trouvée');
+            return $this->redirectToRoute('app_rh_payroll_deductions');
         }
 
-        if (!$this->isCsrfTokenValid('delete_deduction_' . $idInt, (string) $request->request->get('_token', ''))) {
+        if (!$this->isCsrfTokenValid('delete_deduction_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_payroll_deductions');
         }
 
-        $result = $deductionService->deleteDeduction($idInt);
-        $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+        try {
+            $deductionService->deleteDeduction($id);
+            $this->addFlash('success', 'Déduction supprimée avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->redirectToRoute('app_rh_payroll_deductions');
+    }
+
+    #[Route('/deductions/{id}', name: 'app_rh_payroll_deduction_show', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function deductionShow(
+        int $id,
+        DeductionService $deductionService,
+        EmployeeRepository $employeeRepository,
+    ): Response {
+        try {
+            $deduction = $deductionService->getDeductionById($id);
+            $employee = $employeeRepository->find($deduction->employeeId);
+            if (!$employee || $employee->getRhId() !== $this->getCurrentRhId()) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+
+            return $this->render('DashboardHr/remuneration/deduction_show.html.twig', [
+                'user' => $this->getUser(),
+                'deduction' => $deduction,
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Déduction non trouvée');
+            return $this->redirectToRoute('app_rh_payroll_deductions');
+        }
     }
 
     private function getCurrentRhId(): int
@@ -491,4 +703,29 @@ final class RhPayrollController extends AbstractController
 
         return $user->getId();
     }
+
+    private function parsePrimeType(string $value): ?\App\Enum\PrimeType
+    {
+        if (empty($value)) {
+            return null;
+        }
+        try {
+            return \App\Enum\PrimeType::from($value);
+        } catch (\ValueError) {
+            return null;
+        }
+    }
+
+    private function parseDeductionType(string $value): ?\App\Enum\DeductionType
+    {
+        if (empty($value)) {
+            return null;
+        }
+        try {
+            return \App\Enum\DeductionType::from($value);
+        } catch (\ValueError) {
+            return null;
+        }
+    }
 }
+

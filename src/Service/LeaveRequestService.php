@@ -31,6 +31,8 @@ final class LeaveRequestService
         private readonly EmployeeRepository $employeeRepository,
         private readonly PublicHolidayService $publicHolidayService,
         private readonly LeaveBalanceService $leaveBalanceService,
+        private readonly HrFlowMailer $hrFlowMailer,
+        private readonly LeaveNotificationService $leaveNotificationService,
     ) {
     }
 
@@ -146,6 +148,10 @@ final class LeaveRequestService
         $this->em->persist($leaveRequest);
         $this->em->flush();
 
+        // Notify RH about the new leave request
+        $this->hrFlowMailer->sendNewRequestNotification($leaveRequest);
+        $this->leaveNotificationService->notifyRhNewRequest($leaveRequest);
+
         if ($isExceptionRequest) {
             return [
                 'success' => true,
@@ -229,6 +235,10 @@ final class LeaveRequestService
             $request->appendAuditLog($rhActor, 'RH_PRE_APPROVED', $rhComment);
             $this->em->flush();
 
+            // Notify Admin that an exception request needs their validation
+            $this->hrFlowMailer->sendExceptionPendingAdmin($request);
+            $this->leaveNotificationService->notifyAdminExceptionPending($request);
+
             return ['success' => true, 'message' => 'Demande exceptionnelle pre-approuvee par RH et envoyee a l\'Admin.'];
         }
 
@@ -244,6 +254,10 @@ final class LeaveRequestService
         }
 
         $this->em->flush();
+
+        // Notify employee that their leave was approved
+        $this->hrFlowMailer->sendLeaveDecision($request, 'ACCEPTE');
+        $this->leaveNotificationService->notifyEmployeeApproved($request);
 
         return ['success' => true, 'message' => 'Demande approuvee avec succes.'];
     }
@@ -276,6 +290,10 @@ final class LeaveRequestService
             $request->appendAuditLog($rhActor, 'RH_REJECTED', $rhComment);
         }
         $this->em->flush();
+
+        // Notify employee that their leave was refused
+        $this->hrFlowMailer->sendLeaveDecision($request, 'REFUSE');
+        $this->leaveNotificationService->notifyEmployeeRejected($request, $rhComment);
 
         return ['success' => true, 'message' => 'Demande refusee.'];
     }
@@ -312,6 +330,11 @@ final class LeaveRequestService
         }
 
         $this->em->flush();
+
+        // Notify employee of final approval
+        $this->hrFlowMailer->sendLeaveDecision($request, 'ACCEPTE');
+        $this->leaveNotificationService->notifyEmployeeApproved($request);
+
         return ['success' => true, 'message' => 'Demande exceptionnelle approuvee definitivement par Admin.'];
     }
 
@@ -338,6 +361,10 @@ final class LeaveRequestService
         $request->setAdminDecisionBy($adminActor);
         $request->appendAuditLog($adminActor, 'ADMIN_REJECTED_EXCEPTION', $adminComment);
         $this->em->flush();
+
+        // Notify employee of Admin rejection
+        $this->hrFlowMailer->sendLeaveDecision($request, 'REFUSE');
+        $this->leaveNotificationService->notifyEmployeeRejected($request, $adminComment);
 
         return ['success' => true, 'message' => 'Demande exceptionnelle refusee par Admin.'];
     }
@@ -376,6 +403,47 @@ final class LeaveRequestService
         }
 
         return array_values(array_unique($blockedDates));
+    }
+
+    /**
+     * Check if the employee is currently on an accepted leave (today is between start and end date).
+     */
+    public function isEmployeeCurrentlyOnLeave(int $employeeId): bool
+    {
+        $today = new DateTimeImmutable('today');
+        $activeLeaves = $this->leaveRequestRepository->findActiveLeavesByEmployee($employeeId, $today);
+
+        foreach ($activeLeaves as $leave) {
+            if ($leave->getStatus() === 'ACCEPTE' && $leave->getStartDate() <= $today && $leave->getEndDate() >= $today) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns accepted leaves for the employee for use in a calendar view.
+     * @return array<array{name: string, start: string, end: string, type: string}>
+     */
+    public function getEmployeeCalendarLeaves(int $employeeId): array
+    {
+        $today = new DateTimeImmutable('today');
+        $activeLeaves = $this->leaveRequestRepository->findActiveLeavesByEmployee($employeeId, $today);
+
+        $calendarLeaves = [];
+        foreach ($activeLeaves as $leave) {
+            if ($leave->getStatus() === 'ACCEPTE') {
+                $calendarLeaves[] = [
+                    'name' => 'Mon conge',
+                    'start' => $leave->getStartDate()->format('Y-m-d'),
+                    'end' => $leave->getEndDate()->format('Y-m-d'),
+                    'type' => $leave->getLeaveType() ?? 'Conge',
+                ];
+            }
+        }
+
+        return $calendarLeaves;
     }
 
     /** @return LeaveRequest[] */
