@@ -65,107 +65,16 @@ final class RhPayrollController extends AbstractController
 
         $stats = $fichePaieService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/remuneration/index.html.twig', [
+        return $this->render('DashboardHr/payroll/fiches_paie_index.html.twig', [
             'user' => $this->getUser(),
-            'employees' => $employees,
+            'fiches' => $fiches,
             'stats' => $stats,
-            'search' => $search,
-            'page' => $page,
-            'totalPages' => ceil($total / $limit),
+            'filters' => [
+                'employee' => $employeeSearch,
+                'period' => $periodSearch,
+                'sort' => $sortQuery,
+            ],
         ]);
-    }
-
-    /**
-     * Employee detail: Show all fiches de paie for an employee, with optional month/year filter
-     */
-    #[Route('/employees/{employeeId}', name: 'app_rh_remuneration_employee_detail', methods: ['GET'])]
-    #[IsGranted('ROLE_RH')]
-    public function employeeDetail(
-        int $employeeId,
-        Request $request,
-        EmployeeRepository $employeeRepository,
-        FichePaieService $fichePaieService,
-    ): Response {
-        $rhId = $this->getCurrentRhId();
-        $employee = $employeeRepository->find($employeeId);
-
-        if (!$employee || $employee->getRhId() !== $rhId) {
-            throw $this->createAccessDeniedException('Employee not found or access denied');
-        }
-
-        $filterMois = $request->query->get('mois') ? (int) $request->query->get('mois') : null;
-        $filterAnnee = $request->query->get('annee') ? (int) $request->query->get('annee') : null;
-        $filterStatut = $request->query->get('statut'); // 'paye', 'non_paye', or null
-
-        try {
-            $allFiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
-        } catch (\Exception $e) {
-            $allFiches = [];
-        }
-
-        $fiches = array_filter($allFiches, function ($fiche) use ($filterMois, $filterAnnee, $filterStatut) {
-            if ($filterMois && $fiche->mois !== $filterMois) return false;
-            if ($filterAnnee && $fiche->annee !== $filterAnnee) return false;
-            if ($filterStatut === 'paye' && !$fiche->statutPaiement) return false;
-            if ($filterStatut === 'non_paye' && $fiche->statutPaiement) return false;
-            return true;
-        });
-
-        // Build list of available years from all fiches for the filter dropdown
-        $years = array_unique(array_map(fn($f) => $f->annee, $allFiches));
-        rsort($years);
-
-        return $this->render('DashboardHr/remuneration/employee_detail.html.twig', [
-            'user' => $this->getUser(),
-            'employee' => $employee,
-            'fiches' => array_values($fiches),
-            'allFiches' => $allFiches,
-            'filterMois' => $filterMois,
-            'filterAnnee' => $filterAnnee,
-            'filterStatut' => $filterStatut,
-            'availableYears' => $years,
-        ]);
-    }
-
-    /**
-     * Toggle payment status (payé / non payé) for a fiche de paie
-     */
-    #[Route('/fiches-paie/{id}/toggle-statut', name: 'app_rh_payroll_fiche_toggle_statut', methods: ['POST'])]
-    #[IsGranted('ROLE_RH')]
-    public function fichePaieToggleStatut(
-        int $id,
-        Request $request,
-        FichePaieService $fichePaieService,
-        EmployeeRepository $employeeRepository,
-    ): Response {
-        if (!$this->isCsrfTokenValid('toggle_statut_' . $id, (string) $request->request->get('_token', ''))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_rh_remuneration_index');
-        }
-
-        try {
-            $fiche = $fichePaieService->toggleStatutPaiement($id);
-            $employeeId = $fiche->employeeId;
-        } catch (\Exception $e) {
-            $this->addFlash('error', $e->getMessage());
-            return $this->redirectToRoute('app_rh_remuneration_index');
-        }
-
-        $referer = $request->headers->get('referer');
-        if ($referer) {
-            return $this->redirect($referer);
-        }
-        return $this->redirectToRoute('app_rh_remuneration_employee_detail', ['employeeId' => $employeeId]);
-    }
-
-    /**
-     * LEGACY: Redirect old fiches-paie list to new remuneration page
-     */
-    #[Route('/fiches-paie', name: 'app_rh_payroll_fiches', methods: ['GET'])]
-    #[IsGranted('ROLE_RH')]
-    public function fichePaieList(): RedirectResponse
-    {
-        return $this->redirectToRoute('app_rh_remuneration_index', status: 301);
     }
 
     #[Route('/fiches-paie/create', name: 'app_rh_payroll_fiche_create', methods: ['GET', 'POST'])]
@@ -239,20 +148,13 @@ final class RhPayrollController extends AbstractController
                 return $this->redirectToRoute('app_rh_payroll_fiche_edit', ['id' => $id]);
             }
 
-            try {
-                $dto = new FichePaieRequestDTO(
-                    employeeId: $fiche->employeeId,
-                    mois: $fiche->mois,
-                    annee: $fiche->annee,
-                    salaireBrut: $fiche->salaireBrut,
-                    notes: trim((string) $request->request->get('notes', '')) ?: null,
-                );
+            $result = $fichePaieService->updateFichePaie($idInt, $mois, $annee, $salaireBrut, $notes ?: null);
 
-                $fichePaieService->updateFichePaie($id, $dto);
-                $this->addFlash('success', 'Fiche de paie mise à jour avec succès.');
-                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $id]);
-            } catch (InvalidPeriodException|InvalidSalaryException|DuplicateFichePaieException $e) {
-                $this->addFlash('error', $e->getMessage());
+            if ($result['success']) {
+                $this->addFlash('success', $result['message']);
+                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $idInt]);
+            } else {
+                $this->addFlash('error', $result['message']);
             }
         }
 
