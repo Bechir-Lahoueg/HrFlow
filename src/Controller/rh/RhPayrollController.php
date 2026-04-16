@@ -76,12 +76,13 @@ final class RhPayrollController extends AbstractController
     }
 
     /**
-     * Employee detail: Show all fiches de paie for an employee
+     * Employee detail: Show all fiches de paie for an employee, with optional month/year filter
      */
     #[Route('/employees/{employeeId}', name: 'app_rh_remuneration_employee_detail', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
     public function employeeDetail(
         int $employeeId,
+        Request $request,
         EmployeeRepository $employeeRepository,
         FichePaieService $fichePaieService,
     ): Response {
@@ -92,17 +93,69 @@ final class RhPayrollController extends AbstractController
             throw $this->createAccessDeniedException('Employee not found or access denied');
         }
 
+        $filterMois = $request->query->get('mois') ? (int) $request->query->get('mois') : null;
+        $filterAnnee = $request->query->get('annee') ? (int) $request->query->get('annee') : null;
+        $filterStatut = $request->query->get('statut'); // 'paye', 'non_paye', or null
+
         try {
-            $fiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
+            $allFiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
         } catch (\Exception $e) {
-            $fiches = [];
+            $allFiches = [];
         }
+
+        $fiches = array_filter($allFiches, function ($fiche) use ($filterMois, $filterAnnee, $filterStatut) {
+            if ($filterMois && $fiche->mois !== $filterMois) return false;
+            if ($filterAnnee && $fiche->annee !== $filterAnnee) return false;
+            if ($filterStatut === 'paye' && !$fiche->statutPaiement) return false;
+            if ($filterStatut === 'non_paye' && $fiche->statutPaiement) return false;
+            return true;
+        });
+
+        // Build list of available years from all fiches for the filter dropdown
+        $years = array_unique(array_map(fn($f) => $f->annee, $allFiches));
+        rsort($years);
 
         return $this->render('DashboardHr/remuneration/employee_detail.html.twig', [
             'user' => $this->getUser(),
             'employee' => $employee,
-            'fiches' => $fiches,
+            'fiches' => array_values($fiches),
+            'allFiches' => $allFiches,
+            'filterMois' => $filterMois,
+            'filterAnnee' => $filterAnnee,
+            'filterStatut' => $filterStatut,
+            'availableYears' => $years,
         ]);
+    }
+
+    /**
+     * Toggle payment status (payé / non payé) for a fiche de paie
+     */
+    #[Route('/fiches-paie/{id}/toggle-statut', name: 'app_rh_payroll_fiche_toggle_statut', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function fichePaieToggleStatut(
+        int $id,
+        Request $request,
+        FichePaieService $fichePaieService,
+        EmployeeRepository $employeeRepository,
+    ): Response {
+        if (!$this->isCsrfTokenValid('toggle_statut_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_rh_remuneration_index');
+        }
+
+        try {
+            $fiche = $fichePaieService->toggleStatutPaiement($id);
+            $employeeId = $fiche->employeeId;
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('app_rh_remuneration_index');
+        }
+
+        $referer = $request->headers->get('referer');
+        if ($referer) {
+            return $this->redirect($referer);
+        }
+        return $this->redirectToRoute('app_rh_remuneration_employee_detail', ['employeeId' => $employeeId]);
     }
 
     /**
@@ -189,9 +242,9 @@ final class RhPayrollController extends AbstractController
             try {
                 $dto = new FichePaieRequestDTO(
                     employeeId: $fiche->employeeId,
-                    mois: (int) $request->request->get('mois', 0),
-                    annee: (int) $request->request->get('annee', 0),
-                    salaireBrut: (string) $request->request->get('salaire_brut', '0'),
+                    mois: $fiche->mois,
+                    annee: $fiche->annee,
+                    salaireBrut: $fiche->salaireBrut,
                     notes: trim((string) $request->request->get('notes', '')) ?: null,
                 );
 

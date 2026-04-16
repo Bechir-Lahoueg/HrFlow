@@ -4,9 +4,10 @@ namespace App\Controller\employee;
 
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
-use App\Service\FichePaieService;
-use App\Service\PrimeService;
 use App\Service\DeductionService;
+use App\Service\FichePaieService;
+use App\Service\FichePaiePdfService;
+use App\Service\PrimeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -57,7 +58,7 @@ final class EmployeePayrollController extends AbstractController
             $fiche = $fichePaieService->getFichePaieById($id);
             
             // Ensure employee can only see their own fiches
-            if ($fiche->getEmployeeId() !== $employeeId) {
+            if ($fiche->employeeId !== $employeeId) {
                 throw $this->createAccessDeniedException('You do not have access to this pay slip');
             }
         } catch (\Exception $e) {
@@ -67,8 +68,8 @@ final class EmployeePayrollController extends AbstractController
         try {
             $primes = $primeService->getPrimesByEmployeeAndPeriod(
                 $employeeId,
-                $fiche->getMois(),
-                $fiche->getAnnee()
+                $fiche->mois,
+                $fiche->annee
             );
         } catch (\Exception $e) {
             $primes = [];
@@ -77,8 +78,8 @@ final class EmployeePayrollController extends AbstractController
         try {
             $deductions = $deductionService->getDeductionsByEmployeeAndPeriod(
                 $employeeId,
-                $fiche->getMois(),
-                $fiche->getAnnee()
+                $fiche->mois,
+                $fiche->annee
             );
         } catch (\Exception $e) {
             $deductions = [];
@@ -89,6 +90,50 @@ final class EmployeePayrollController extends AbstractController
             'fiche' => $fiche,
             'primes' => $primes,
             'deductions' => $deductions,
+        ]);
+    }
+
+    /**
+     * Download a pay slip as PDF
+     */
+    #[Route('/fiches-paie/{id}/pdf', name: 'app_employee_payroll_fiche_pdf', methods: ['GET'])]
+    #[IsGranted('ROLE_EMPLOYEE')]
+    public function fichePaiePdf(
+        int $id,
+        FichePaieService $fichePaieService,
+        PrimeService $primeService,
+        DeductionService $deductionService,
+        FichePaiePdfService $pdfService,
+    ): Response {
+        $employeeId = $this->getCurrentEmployeeId();
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            if ($fiche->employeeId !== $employeeId) {
+                throw $this->createAccessDeniedException();
+            }
+        } catch (\Exception) {
+            throw $this->createAccessDeniedException('Pay slip not found or access denied');
+        }
+
+        try {
+            $primes = $primeService->getPrimesByEmployeeAndPeriod($employeeId, $fiche->mois, $fiche->annee);
+        } catch (\Exception) {
+            $primes = [];
+        }
+
+        try {
+            $deductions = $deductionService->getDeductionsByEmployeeAndPeriod($employeeId, $fiche->mois, $fiche->annee);
+        } catch (\Exception) {
+            $deductions = [];
+        }
+
+        ['fileName' => $fileName, 'content' => $content] = $pdfService->generatePdf($fiche, $primes, $deductions);
+
+        return new Response($content, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
+            'Content-Length'      => strlen($content),
         ]);
     }
 
