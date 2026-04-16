@@ -3,30 +3,36 @@
 namespace App\Controller\employee;
 
 use App\Repository\Rh\EmployeeRepository;
-use App\Repository\Paie\FichePaieRepository;
-use App\Repository\Paie\PrimeRepository;
-use App\Repository\Paie\DeductionRepository;
 use App\Security\DbUser;
+use App\Service\FichePaieService;
+use App\Service\PrimeService;
+use App\Service\DeductionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * EmployeePayrollController - Employee payroll view-only (fiches, primes, deductions)
+ */
 #[Route('/employee/payroll')]
 final class EmployeePayrollController extends AbstractController
 {
-    // ==================== FICHES DE PAIE ====================
-
+    /**
+     * List all pay slips for current employee
+     */
     #[Route('/fiches-paie', name: 'app_employee_payroll_fiches', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYEE')]
     public function fichePaieList(
-        FichePaieRepository $fichePaieRepository,
+        FichePaieService $fichePaieService,
     ): Response {
         $employeeId = $this->getCurrentEmployeeId();
-        $fiches = $fichePaieRepository->findBy(
-            ['employee' => $employeeId],
-            ['annee' => 'DESC', 'mois' => 'DESC']
-        );
+
+        try {
+            $fiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
+        } catch (\Exception $e) {
+            $fiches = [];
+        }
 
         return $this->render('DashboardEmployee/payroll/fiches_paie_list.html.twig', [
             'user' => $this->getUser(),
@@ -34,44 +40,48 @@ final class EmployeePayrollController extends AbstractController
         ]);
     }
 
+    /**
+     * Show pay slip detail with primes and deductions
+     */
     #[Route('/fiches-paie/{id}', name: 'app_employee_payroll_fiche_show', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYEE')]
     public function fichePaieShow(
-        string $id,
-        FichePaieRepository $fichePaieRepository,
-        PrimeRepository $primeRepository,
-        DeductionRepository $deductionRepository,
+        int $id,
+        FichePaieService $fichePaieService,
+        PrimeService $primeService,
+        DeductionService $deductionService,
     ): Response {
-        $idInt = (int) $id;
         $employeeId = $this->getCurrentEmployeeId();
-        
-        // Filtre strict : l'employé ne peut voir que ses propres fiches
-        $fiche = $fichePaieRepository->find($idInt);
-        if (!$fiche || $fiche->getEmployee()->getId() !== $employeeId) {
-            throw $this->createAccessDeniedException('You do not have access to this pay slip');
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            
+            // Ensure employee can only see their own fiches
+            if ($fiche->getEmployeeId() !== $employeeId) {
+                throw $this->createAccessDeniedException('You do not have access to this pay slip');
+            }
+        } catch (\Exception $e) {
+            throw $this->createAccessDeniedException('Pay slip not found or access denied');
         }
 
-        $primes = $primeRepository->findByEmployeeAndPeriod(
-            $employeeId,
-            $fiche->getMois(),
-            $fiche->getAnnee()
-        );
-
-        $deductions = $deductionRepository->findByEmployeeAndPeriod(
-            $employeeId,
-            $fiche->getMois(),
-            $fiche->getAnnee()
-        );
-
-        // Calculate totals dynamically from fresh data instead of using stale stored values
-        $totalPrimes = 0;
-        foreach ($primes as $prime) {
-            $totalPrimes += (float) $prime->getMontant();
+        try {
+            $primes = $primeService->getPrimesByEmployeeAndPeriod(
+                $employeeId,
+                $fiche->getMois(),
+                $fiche->getAnnee()
+            );
+        } catch (\Exception $e) {
+            $primes = [];
         }
 
-        $totalDeductions = 0;
-        foreach ($deductions as $deduction) {
-            $totalDeductions += (float) $deduction->getMontant();
+        try {
+            $deductions = $deductionService->getDeductionsByEmployeeAndPeriod(
+                $employeeId,
+                $fiche->getMois(),
+                $fiche->getAnnee()
+            );
+        } catch (\Exception $e) {
+            $deductions = [];
         }
 
         return $this->render('DashboardEmployee/payroll/fiche_paie_detail.html.twig', [
@@ -79,52 +89,50 @@ final class EmployeePayrollController extends AbstractController
             'fiche' => $fiche,
             'primes' => $primes,
             'deductions' => $deductions,
-            'totalPrimes' => number_format($totalPrimes, 2),
-            'totalDeductions' => number_format($totalDeductions, 2),
         ]);
     }
 
-    // ==================== PRIMES ====================
-
+    /**
+     * List all primes for current employee
+     */
     #[Route('/primes', name: 'app_employee_payroll_primes', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYEE')]
     public function primeList(
-        PrimeRepository $primeRepository,
+        PrimeService $primeService,
     ): Response {
         $employeeId = $this->getCurrentEmployeeId();
-        $primes = $primeRepository->findByEmployee($employeeId);
 
-        $totalPrimes = 0;
-        foreach ($primes as $prime) {
-            $totalPrimes += (float) $prime->getMontant();
+        try {
+            $primes = $primeService->getPrimesByEmployee($employeeId);
+        } catch (\Exception $e) {
+            $primes = [];
         }
 
         return $this->render('DashboardEmployee/payroll/primes_list.html.twig', [
             'user' => $this->getUser(),
             'primes' => $primes,
-            'totalPrimes' => number_format($totalPrimes, 2),
         ]);
     }
 
-    // ==================== DÉDUCTIONS ====================
-
+    /**
+     * List all deductions for current employee
+     */
     #[Route('/deductions', name: 'app_employee_payroll_deductions', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYEE')]
     public function deductionList(
-        DeductionRepository $deductionRepository,
+        DeductionService $deductionService,
     ): Response {
         $employeeId = $this->getCurrentEmployeeId();
-        $deductions = $deductionRepository->findByEmployee($employeeId);
 
-        $totalDeductions = 0;
-        foreach ($deductions as $deduction) {
-            $totalDeductions += (float) $deduction->getMontant();
+        try {
+            $deductions = $deductionService->getDeductionsByEmployee($employeeId);
+        } catch (\Exception $e) {
+            $deductions = [];
         }
 
         return $this->render('DashboardEmployee/payroll/deductions_list.html.twig', [
             'user' => $this->getUser(),
             'deductions' => $deductions,
-            'totalDeductions' => number_format($totalDeductions, 2),
         ]);
     }
 
@@ -136,8 +144,7 @@ final class EmployeePayrollController extends AbstractController
             throw $this->createAccessDeniedException('Invalid user.');
         }
 
-        // L'ID de l'utilisateur correspond à l'ID d'employé
-        // (à adapter selon votre structure)
         return $user->getId();
     }
 }
+

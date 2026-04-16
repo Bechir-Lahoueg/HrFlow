@@ -2,6 +2,7 @@
 
 namespace App\Entity\Paie;
 
+use App\Enum\DeductionType;
 use App\Entity\Rh\Employee;
 use App\Repository\Paie\DeductionRepository;
 use Doctrine\DBAL\Types\Types;
@@ -25,10 +26,9 @@ class Deduction
     #[Assert\NotNull(message: 'Employee is required')]
     private ?Employee $employee = null;
 
-    #[ORM\Column(name: 'type_deduction', length: 100)]
-    #[Assert\NotBlank(message: 'Deduction type is required')]
-    #[Assert\Length(max: 100, maxMessage: 'Deduction type cannot exceed 100 characters')]
-    private ?string $typeDeduction = null;
+    #[ORM\Column(name: 'type_deduction', type: 'string', enumType: DeductionType::class)]
+    #[Assert\NotNull(message: 'Deduction type is required')]
+    private DeductionType $typeDeduction;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     #[Assert\NotNull(message: 'Amount is required')]
@@ -77,12 +77,12 @@ class Deduction
         return $this;
     }
 
-    public function getTypeDeduction(): ?string
+    public function getTypeDeduction(): DeductionType
     {
         return $this->typeDeduction;
     }
 
-    public function setTypeDeduction(string $typeDeduction): static
+    public function setTypeDeduction(DeductionType $typeDeduction): static
     {
         $this->typeDeduction = $typeDeduction;
         return $this;

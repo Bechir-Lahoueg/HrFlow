@@ -32,8 +32,9 @@ class PrimeRepository extends ServiceEntityRepository
     public function findByEmployeeAndPeriod(int $employeeId, int $mois, int $annee): array
     {
         // Calculate date range for the given month and year
-        $startDate = new \DateTime("$annee-$mois-01");
-        $endDate = new \DateTime("$annee-$mois-01");
+        $dateStr = sprintf('%d-%02d-01', $annee, $mois);
+        $startDate = new \DateTime($dateStr);
+        $endDate = new \DateTime($dateStr);
         $endDate->modify('last day of this month')->setTime(23, 59, 59);
 
         return $this->createQueryBuilder('p')
@@ -95,8 +96,9 @@ class PrimeRepository extends ServiceEntityRepository
     public function getTotalByEmployeeAndPeriod(int $employeeId, int $mois, int $annee): string
     {
         // Calculate date range for the given month and year
-        $startDate = new \DateTime("$annee-$mois-01");
-        $endDate = new \DateTime("$annee-$mois-01");
+        $dateStr = sprintf('%d-%02d-01', $annee, $mois);
+        $startDate = new \DateTime($dateStr);
+        $endDate = new \DateTime($dateStr);
         $endDate->modify('last day of this month')->setTime(23, 59, 59);
 
         $result = $this->createQueryBuilder('p')

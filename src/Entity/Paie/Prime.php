@@ -2,6 +2,7 @@
 
 namespace App\Entity\Paie;
 
+use App\Enum\PrimeType;
 use App\Entity\Rh\Employee;
 use App\Repository\Paie\PrimeRepository;
 use Doctrine\DBAL\Types\Types;
@@ -25,10 +26,9 @@ class Prime
     #[Assert\NotNull(message: 'Employee is required')]
     private ?Employee $employee = null;
 
-    #[ORM\Column(name: 'type_prime', length: 100)]
-    #[Assert\NotBlank(message: 'Prime type is required')]
-    #[Assert\Length(max: 100, maxMessage: 'Prime type cannot exceed 100 characters')]
-    private ?string $typePrime = null;
+    #[ORM\Column(name: 'type_prime', type: 'string', enumType: PrimeType::class)]
+    #[Assert\NotNull(message: 'Prime type is required')]
+    private PrimeType $typePrime;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
     #[Assert\NotNull(message: 'Amount is required')]
@@ -77,12 +77,12 @@ class Prime
         return $this;
     }
 
-    public function getTypePrime(): ?string
+    public function getTypePrime(): PrimeType
     {
         return $this->typePrime;
     }
 
-    public function setTypePrime(string $typePrime): static
+    public function setTypePrime(PrimeType $typePrime): static
     {
         $this->typePrime = $typePrime;
         return $this;
