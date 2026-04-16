@@ -250,7 +250,7 @@ final class RhPayrollController extends AbstractController
         int $rhId,
         FichePaieService $fichePaieService,
         EmployeeRepository $employeeRepository,
-    ): object|\Symfony\Component\HttpFoundation\RedirectResponse {
+    ): \App\DTO\Payroll\FichePaieResponseDTO|\Symfony\Component\HttpFoundation\RedirectResponse {
         try {
             $fiche = $fichePaieService->getFichePaieById($id);
             $employee = $employeeRepository->find($fiche->employeeId);
