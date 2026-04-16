@@ -65,15 +65,15 @@ final class RhPayrollController extends AbstractController
 
         $stats = $fichePaieService->getStatsByRh($rhId);
 
-        return $this->render('DashboardHr/payroll/fiches_paie_index.html.twig', [
+        return $this->render('DashboardHr/remuneration/index.html.twig', [
             'user' => $this->getUser(),
-            'fiches' => $fiches,
+            'employees' => $employees,
+            'total' => $total,
+            'totalPages' => (int) ceil($total / $limit),
+            'page' => $page,
+            'limit' => $limit,
+            'search' => $search,
             'stats' => $stats,
-            'filters' => [
-                'employee' => $employeeSearch,
-                'period' => $periodSearch,
-                'sort' => $sortQuery,
-            ],
         ]);
     }
 
