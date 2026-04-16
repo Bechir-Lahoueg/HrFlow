@@ -245,6 +245,27 @@ final class RhPayrollController extends AbstractController
         return $this->redirectToRoute('app_rh_remuneration_index');
     }
 
+    private function getAuthorizedFicheOrRedirect(
+        int $id,
+        int $rhId,
+        FichePaieService $fichePaieService,
+        EmployeeRepository $employeeRepository,
+    ): object|\Symfony\Component\HttpFoundation\RedirectResponse {
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            $employee = $employeeRepository->find($fiche->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                throw $this->createAccessDeniedException('Access denied');
+            }
+
+            return $fiche;
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Fiche de paie non trouvée');
+
+            return $this->redirectToRoute('app_rh_remuneration_index');
+        }
+    }
+
     #[Route('/fiches-paie/{id}/toggle-statut', name: 'app_rh_payroll_fiche_toggle_statut', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
     public function fichePaieToggleStatut(
@@ -254,18 +275,11 @@ final class RhPayrollController extends AbstractController
         EmployeeRepository $employeeRepository,
     ): RedirectResponse {
         $rhId = $this->getCurrentRhId();
+        $fiche = $this->getAuthorizedFicheOrRedirect($id, $rhId, $fichePaieService, $employeeRepository);
 
-        try {
-            $fiche = $fichePaieService->getFichePaieById($id);
-            $employee = $employeeRepository->find($fiche->employeeId);
-            if (!$employee || $employee->getRhId() !== $rhId) {
-                throw $this->createAccessDeniedException('Access denied');
-            }
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Fiche de paie non trouvée');
-            return $this->redirectToRoute('app_rh_remuneration_index');
+        if ($fiche instanceof RedirectResponse) {
+            return $fiche;
         }
-
         if (!$this->isCsrfTokenValid('toggle_statut_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_rh_remuneration_employee_detail', ['employeeId' => $fiche->employeeId]);
