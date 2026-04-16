@@ -292,11 +292,20 @@ final class RhFormationController extends AbstractController
     {
         $userId = $this->getUser()->getId();
         $status = $request->query->get('status', '');
+        $formationIdRaw = $request->query->get('formation', '');
+        $priorityOnly = $request->query->getBoolean('priorityOnly', false);
+        $formationId = is_numeric($formationIdRaw) ? (int) $formationIdRaw : null;
+        if ($formationId !== null && $formationId <= 0) {
+            $formationId = null;
+        }
 
         return $this->render('DashboardHr/formation/formation_all_participants.html.twig', [
-            'participations' => $participationService->getRhParticipations($userId, $status),
+            'participations' => $participationService->getRhParticipations($userId, $status, $formationId, $priorityOnly),
+            'formations' => $this->formationService->getFormationsByRhId($userId, '', '', 'created_at', 'DESC'),
             'filters' => [
-                'status' => $status
+                'status' => $status,
+                'formation' => $formationId,
+                'priorityOnly' => $priorityOnly,
             ]
         ]);
     }
@@ -321,8 +330,8 @@ final class RhFormationController extends AbstractController
     {
         $idInt = (int) $id;
         if ($this->isCsrfTokenValid('approve-participation-' . $idInt, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($idInt, 'Accepte');
-            $this->addFlash('success', 'Participation acceptée.');
+            $result = $participationService->approveWithPriority($idInt);
+            $this->addFlash($result['ok'] ? 'success' : 'error', $result['message']);
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
     }

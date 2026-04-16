@@ -90,7 +90,12 @@
                                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0">
                                             <span class="text-[11px] font-bold text-white">{{ participation.employee.firstName|first|upper }}{{ participation.employee.lastName|first|upper }}</span>
                                         </div>
-                                        <span class="text-[13px] font-semibold text-zinc-700">{{ participation.employee.firstName }} {{ participation.employee.lastName }}</span>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-[13px] font-semibold text-zinc-700">{{ participation.employee.firstName }} {{ participation.employee.lastName }}</span>
+                                            {% if participation.employee.rhId == participation.session.formation.rhId %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#145EB7]/12 text-[#145EB7] border border-[#145EB7]/25">Prioritaire RH</span>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4 text-zinc-500">{{ participation.employee.email }}</td>

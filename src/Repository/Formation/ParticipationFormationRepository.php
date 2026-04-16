@@ -46,17 +46,23 @@ class ParticipationFormationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->join('p.employee', 'e')
+            ->join('p.session', 's')
+            ->join('s.formation', 'f')
+            ->addSelect('CASE WHEN e.rhId = f.rhId THEN 0 ELSE 1 END AS HIDDEN priorityRank')
             ->where('p.session = :sessionId')
             ->setParameter('sessionId', $sessionId)
-            ->orderBy('e.firstName', 'ASC')
+            ->orderBy('priorityRank', 'ASC')
+            ->addOrderBy('p.dateInscription', 'ASC')
+            ->addOrderBy('e.firstName', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
     /** @return ParticipationFormation[] */
-    public function findByRhId(int $rhId, string $status = ''): array
+    public function findByRhId(int $rhId, string $status = '', ?int $formationId = null, bool $priorityOnly = false): array
     {
         $qb = $this->createQueryBuilder('p')
+            ->join('p.employee', 'e')
             ->join('p.session', 's')
             ->join('s.formation', 'f')
             ->where('f.rhId = :rhId')
@@ -67,7 +73,19 @@ class ParticipationFormationRepository extends ServiceEntityRepository
                ->setParameter('status', $status);
         }
 
-        return $qb->orderBy('p.dateInscription', 'DESC')
+        if ($formationId !== null) {
+            $qb->andWhere('f.id = :formationId')
+               ->setParameter('formationId', $formationId);
+        }
+
+        if ($priorityOnly) {
+            $qb->andWhere('e.rhId = f.rhId');
+        }
+
+        return $qb
+            ->addSelect('CASE WHEN e.rhId = f.rhId THEN 0 ELSE 1 END AS HIDDEN priorityRank')
+            ->orderBy('priorityRank', 'ASC')
+            ->addOrderBy('p.dateInscription', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -130,6 +148,35 @@ class ParticipationFormationRepository extends ServiceEntityRepository
             ->setParameter('employeeId', $employeeId)
             ->setParameter('formationId', $formationId)
             ->setParameter('statuses', ['Accepte', 'Certificat obtenu'])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
+
+    public function countAcceptedBySession(int $sessionId): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.session = :sessionId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->setParameter('sessionId', $sessionId)
+            ->setParameter('statuses', ['Accepte', 'Certificat obtenu'])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function hasPendingPriorityBySessionRh(int $sessionId, int $rhId): bool
+    {
+        $count = (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->join('p.employee', 'e')
+            ->where('p.session = :sessionId')
+            ->andWhere('p.statutParticipation = :status')
+            ->andWhere('e.rhId = :rhId')
+            ->setParameter('sessionId', $sessionId)
+            ->setParameter('status', 'Inscrit')
+            ->setParameter('rhId', $rhId)
             ->getQuery()
             ->getSingleScalarResult();
 
