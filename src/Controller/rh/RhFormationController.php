@@ -441,6 +441,7 @@ final class RhFormationController extends AbstractController
 
         $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
 
+
         return in_array($scheme, ['http', 'https'], true);
     }
 }
