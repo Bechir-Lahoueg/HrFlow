@@ -77,6 +77,50 @@ final class RhPayrollController extends AbstractController
         ]);
     }
 
+    #[Route('/employees/{employeeId}', name: 'app_rh_remuneration_employee_detail', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function employeeDetail(
+        int $employeeId,
+        Request $request,
+        EmployeeRepository $employeeRepository,
+        FichePaieService $fichePaieService,
+    ): Response {
+        $rhId = $this->getCurrentRhId();
+        $employee = $employeeRepository->find($employeeId);
+
+        if (!$employee || $employee->getRhId() !== $rhId) {
+            throw $this->createNotFoundException('Employé non trouvé.');
+        }
+
+        $filterMois   = $request->query->get('mois')   ? (int) $request->query->get('mois')   : null;
+        $filterAnnee  = $request->query->get('annee')  ? (int) $request->query->get('annee')  : null;
+        $filterStatut = trim((string) $request->query->get('statut', ''));
+
+        $allFiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
+
+        $fiches = array_filter($allFiches, function ($f) use ($filterMois, $filterAnnee, $filterStatut) {
+            if ($filterMois   && $f->mois   !== $filterMois)  return false;
+            if ($filterAnnee  && $f->annee  !== $filterAnnee) return false;
+            if ($filterStatut === 'paye'     && !$f->statutPaiement) return false;
+            if ($filterStatut === 'non_paye' && $f->statutPaiement)  return false;
+            return true;
+        });
+
+        $availableYears = array_unique(array_map(fn($f) => $f->annee, $allFiches));
+        rsort($availableYears);
+
+        return $this->render('DashboardHr/remuneration/employee_detail.html.twig', [
+            'user'           => $this->getUser(),
+            'employee'       => $employee,
+            'fiches'         => array_values($fiches),
+            'allFiches'      => $allFiches,
+            'availableYears' => $availableYears,
+            'filterMois'     => $filterMois,
+            'filterAnnee'    => $filterAnnee,
+            'filterStatut'   => $filterStatut,
+        ]);
+    }
+
     #[Route('/fiches-paie/create', name: 'app_rh_payroll_fiche_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function fichePaieCreate(
@@ -89,7 +133,7 @@ final class RhPayrollController extends AbstractController
 
         if (empty($employees)) {
             $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
-            return $this->redirectToRoute('app_rh_payroll_fiches');
+            return $this->redirectToRoute('app_rh_remuneration_index');
         }
 
         if ($request->isMethod('POST')) {
@@ -109,7 +153,7 @@ final class RhPayrollController extends AbstractController
 
                 $fichePaieService->createFichePaie($dto);
                 $this->addFlash('success', 'Fiche de paie créée avec succès.');
-                return $this->redirectToRoute('app_rh_payroll_fiches');
+                return $this->redirectToRoute('app_rh_remuneration_index');
             } catch (InvalidPeriodException|InvalidSalaryException|EmployeeNotFoundException|DuplicateFichePaieException $e) {
                 $this->addFlash('error', $e->getMessage());
             }
@@ -183,12 +227,12 @@ final class RhPayrollController extends AbstractController
             }
         } catch (\Exception $e) {
             $this->addFlash('error', 'Fiche de paie non trouvée');
-            return $this->redirectToRoute('app_rh_payroll_fiches');
+            return $this->redirectToRoute('app_rh_remuneration_index');
         }
 
         if (!$this->isCsrfTokenValid('delete_fiche_paie_' . $id, (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_rh_payroll_fiches');
+            return $this->redirectToRoute('app_rh_remuneration_index');
         }
 
         try {
@@ -198,7 +242,7 @@ final class RhPayrollController extends AbstractController
             $this->addFlash('error', $e->getMessage());
         }
 
-        return $this->redirectToRoute('app_rh_payroll_fiches');
+        return $this->redirectToRoute('app_rh_remuneration_index');
     }
 
     #[Route('/fiches-paie/{id}', name: 'app_rh_payroll_fiche_show', methods: ['GET'])]
