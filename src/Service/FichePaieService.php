@@ -256,6 +256,24 @@ final class FichePaieService
     }
 
     /**
+     * Toggle payment status (payé / non payé) for a fiche de paie
+     */
+    public function toggleStatutPaiement(int $id): FichePaieResponseDTO
+    {
+        $fichePaie = $this->fichePaieRepository->find($id);
+        if (!$fichePaie) {
+            throw FichePaieNotFoundException::withId($id);
+        }
+
+        $fichePaie->setStatutPaiement(!$fichePaie->isStatutPaiement());
+        $this->em->flush();
+
+        $this->cachingService->forget(CachingService::employeeFichesKey($fichePaie->getEmployee()->getId()));
+
+        return new FichePaieResponseDTO($fichePaie);
+    }
+
+    /**
      * Refresh pay slip totals from primes and deductions
      */
     public function refreshFichePaieTotals(int $fichePaieId): FichePaieResponseDTO

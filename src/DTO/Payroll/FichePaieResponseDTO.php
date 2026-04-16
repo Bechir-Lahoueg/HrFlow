@@ -18,6 +18,7 @@ class FichePaieResponseDTO
     public string $totalPrimes;
     public string $totalDeductions;
     public string $salaireNet;
+    public bool $statutPaiement = false;
     public ?string $notes;
     public ?\DateTimeInterface $createdAt;
     public ?\DateTimeInterface $updatedAt;
@@ -33,6 +34,7 @@ class FichePaieResponseDTO
         $this->totalPrimes = $fichePaie->getTotalPrimes();
         $this->totalDeductions = $fichePaie->getTotalDeductions();
         $this->salaireNet = $fichePaie->getSalaireNet();
+        $this->statutPaiement = $fichePaie->isStatutPaiement();
         $this->notes = $fichePaie->getNotes();
         $this->createdAt = $fichePaie->getCreatedAt();
         $this->updatedAt = $fichePaie->getUpdatedAt();

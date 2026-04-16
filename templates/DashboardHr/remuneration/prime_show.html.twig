@@ -9,89 +9,110 @@
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
-        <main class="p-6 space-y-6 max-w-4xl mx-auto">
+        <main class="p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
 
-            {# Header #}
-            <div class="flex items-center justify-between animate-slide-up">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-zinc-900 dark:text-white">Détails de la Prime</h1>
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Consultez les informations détaillées</p>
+            {# HERO BANNER #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-teal-900 text-white p-8 animate-slide-up">
+                <div class="absolute -left-12 bottom-0 h-48 w-48 rounded-full bg-emerald-400/15 blur-3xl"></div>
+                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-teal-300/15 blur-3xl"></div>
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-emerald-200 uppercase tracking-[0.15em]">Détail Prime</span>
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-display leading-[1.1] tracking-tight">{{ prime.typePrime.value }}</h1>
+                        <p class="text-slate-300/80 text-[13px] mt-1">{{ prime.employeeName }} &bull; {{ prime.dateAttribution|date('d/m/Y') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.12em] mb-1">Montant</p>
+                        <p class="text-4xl font-extrabold font-mono-num text-emerald-300">{{ prime.montant }} DT</p>
+                    </div>
                 </div>
-                <a href="{{ path('app_rh_payroll_primes') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    Retour à la liste
-                </a>
-            </div>
+            </section>
 
-            {# Content #}
+            {# Content Grid #}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {# Main Info #}
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2 space-y-4">
                     {# Employee Card #}
-                    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm p-6 animate-slide-up">
-                        <h2 class="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Employé</h2>
+                    <div class="card-surface stat-stripe stat-stripe-teal p-6 animate-slide-up stagger-1">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
+                            <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Employé</span>
+                        </div>
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg">
                                 {{ prime.employeeName|first|upper }}
                             </div>
                             <div>
-                                <p class="text-lg font-semibold text-zinc-900 dark:text-white">{{ prime.employeeName }}</p>
-                                <p class="text-sm text-zinc-500 dark:text-zinc-400">ID: {{ prime.employeeId }}</p>
+                                <p class="text-base font-semibold text-zinc-900 dark:text-white">{{ prime.employeeName }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">ID: {{ prime.employeeId }}</p>
                             </div>
                         </div>
                     </div>
 
                     {# Prime Details Card #}
-                    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm p-6 animate-slide-up">
-                        <h2 class="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Détails de la Prime</h2>
-                        <div class="space-y-4">
+                    <div class="card-surface stat-stripe stat-stripe-emerald p-6 animate-slide-up stagger-2">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                            <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Informations</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
-                                <label class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Type de Prime</label>
-                                <p class="text-lg font-semibold text-zinc-900 dark:text-white mt-1">{{ prime.typePrime.value }}</p>
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Type de Prime</p>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                                    {{ prime.typePrime.value }}
+                                </span>
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Montant</label>
-                                <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{{ prime.montant }} DT</p>
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Montant</p>
+                                <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono-num">{{ prime.montant }} DT</p>
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Date d'Attribution</label>
-                                <p class="text-base text-zinc-900 dark:text-white mt-1">{{ prime.dateAttribution|date('d/m/Y') }}</p>
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Date d'Attribution</p>
+                                <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ prime.dateAttribution|date('d/m/Y') }}</p>
                             </div>
                             {% if prime.motif %}
-                                <div>
-                                    <label class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Motif</label>
-                                    <p class="text-base text-zinc-900 dark:text-white mt-1 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">{{ prime.motif }}</p>
-                                </div>
+                            <div class="sm:col-span-2">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-2">Motif</p>
+                                <p class="text-sm text-zinc-700 dark:text-zinc-300 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-800/50">{{ prime.motif }}</p>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
 
                     {# Timestamps #}
-                    <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 text-sm text-zinc-600 dark:text-zinc-400 space-y-2">
-                        <p>Créée le: {{ prime.createdAt ? prime.createdAt|date('d/m/Y H:i') : 'Non disponible' }}</p>
+                    <div class="px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/30 text-xs text-zinc-400 flex flex-wrap gap-x-6 gap-y-1">
+                        <span>Créée le : <strong class="text-zinc-600 dark:text-zinc-300">{{ prime.createdAt ? prime.createdAt|date('d/m/Y H:i') : 'N/A' }}</strong></span>
                         {% if prime.updatedAt %}
-                            <p>Modifiée le: {{ prime.updatedAt|date('d/m/Y H:i') }}</p>
+                            <span>Modifiée le : <strong class="text-zinc-600 dark:text-zinc-300">{{ prime.updatedAt|date('d/m/Y H:i') }}</strong></span>
                         {% endif %}
                     </div>
                 </div>
 
                 {# Sidebar Actions #}
                 <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm p-6 space-y-3 animate-slide-up sticky top-24">
-                        <h3 class="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Actions</h3>
-                        
-                        <a href="{{ path('app_rh_payroll_prime_edit', { id: prime.id }) }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors">
+                    <div class="card-surface p-5 space-y-3 animate-slide-up stagger-3 sticky top-24">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-sky-400"></div>
+                            <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Actions</span>
+                        </div>
+                        <a href="{{ path('app_rh_payroll_prime_edit', { id: prime.id }) }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-500/20 font-semibold text-sm transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             Modifier
                         </a>
-
-                        <form method="POST" action="{{ path('app_rh_payroll_prime_delete', { id: prime.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette prime ?');">
+                        <form method="POST" action="{{ path('app_rh_payroll_prime_delete', { id: prime.id }) }}" onsubmit="return confirm('Supprimer cette prime ?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_prime_' ~ prime.id) }}">
-                            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors">
+                            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 font-semibold text-sm transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 Supprimer
                             </button>
                         </form>
+                        <a href="{{ path('app_rh_payroll_primes') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            Retour à la liste
+                        </a>
                     </div>
                 </div>
             </div>
