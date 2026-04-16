@@ -13,9 +13,29 @@ final class AiService
         private readonly HttpClientInterface $httpClient
     ) {}
 
-    public function generateObjectives(string $title): string
+    /**
+     * @param array{titre:string,type?:string,duree?:string,organisme?:string,description?:string} $context
+     */
+    public function generateObjectives(array $context): string
     {
         try {
+            $titre = trim((string) ($context['titre'] ?? ''));
+            $type = trim((string) ($context['type'] ?? ''));
+            $duree = trim((string) ($context['duree'] ?? ''));
+            $organisme = trim((string) ($context['organisme'] ?? ''));
+            $description = trim((string) ($context['description'] ?? ''));
+
+            $prompt = "Genere 3 objectifs pedagogiques courts et concrets pour cette formation.\n"
+                . "Contexte:\n"
+                . "- Titre: " . ($titre !== '' ? $titre : 'N/A') . "\n"
+                . "- Type: " . ($type !== '' ? $type : 'N/A') . "\n"
+                . "- Duree (jours): " . ($duree !== '' ? $duree : 'N/A') . "\n"
+                . "- Organisme: " . ($organisme !== '' ? $organisme : 'N/A') . "\n"
+                . "- Description: " . ($description !== '' ? $description : 'N/A') . "\n\n"
+                . "Contraintes de sortie:\n"
+                . "- Reponds uniquement en 3 puces commencant par '•'\n"
+                . "- Pas d'introduction, pas de conclusion, pas de markdown.";
+
             $response = $this->httpClient->request('POST', self::URL, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . self::GROQ_API_KEY,
@@ -26,9 +46,7 @@ final class AiService
                     'messages' => [
                         [
                             'role' => 'user',
-                           'content' => "Génère 3 objectifs courts pour la formation : " . $title . ".
-                                                 Réponds UNIQUEMENT sous forme de liste à puces (•).
-                                                 PAS de phrase d'introduction, PAS de conclusion, PAS de gras (**)."
+                           'content' => $prompt,
                         ]
                     ],
                     'temperature' => 0.7,

@@ -37,9 +37,6 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/', name: 'employee_formation_index')]
     public function index(Request $request): Response
     {
-        $user = $this->getUser();
-        $rhId = method_exists($user, 'getRhId') ? $user->getRhId() : null;
-
         $search = $request->query->get('search', '');
         $type = $request->query->get('type', '');
         $sortQuery = $request->query->get('sort', 'created_at-DESC');
@@ -48,12 +45,24 @@ final class EmployeeFormationController extends AbstractController
         $sort = $sortParts[0] ?? 'created_at';
         $dir = $sortParts[1] ?? 'DESC';
 
-        $formations = $rhId ? $this->formationService->getFormationsByRhId($rhId, $search, $type, $sort, $dir) : [];
+        $formations = $this->formationService->getAllFormations($search, $type, $sort, $dir);
         $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+
+        $rhIds = array_values(array_unique(array_filter(array_map(
+            static fn($f) => method_exists($f, 'getRhId') ? (int) $f->getRhId() : 0,
+            $formations
+        ))));
+        $rhNames = [];
+        if ($rhIds !== []) {
+            foreach ($this->userRepository->findBy(['id' => $rhIds]) as $rhUser) {
+                $rhNames[(int) $rhUser->getId()] = $rhUser->getUsername() ?: ('RH #' . $rhUser->getId());
+            }
+        }
 
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
             'ratingMap' => $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds),
+            'rhNames' => $rhNames,
             'filters' => [
                 'search' => $search,
                 'type' => $type,
