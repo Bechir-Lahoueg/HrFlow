@@ -12,11 +12,11 @@ use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;
 use App\Repository\Rh\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/employee/formation')]
 final class EmployeeFormationController extends AbstractController
@@ -172,6 +172,7 @@ final class EmployeeFormationController extends AbstractController
     }
 
     #[Route('/participation/{id}/certificate', name: 'employee_formation_certificate_download', methods: ['GET'])]
+    #[IsGranted('ROLE_EMPLOYEE')]
     public function downloadCertificate(string $id): Response
     {
         $participationId = (int) $id;
@@ -205,7 +206,7 @@ final class EmployeeFormationController extends AbstractController
             $organisme = 'HrFlow';
         }
 
-        $certificate = $this->certificateService->generateCertificate(
+        ['fileName' => $fileName, 'content' => $content] = $this->certificateService->generateCertificate(
             $participation->getEmployee()?->getFullName() ?? $this->getUser()->getUserIdentifier(),
             $formation?->getTitre() ?? 'Formation',
             $session->getDateDebut(),
@@ -219,14 +220,11 @@ final class EmployeeFormationController extends AbstractController
             $this->em->flush();
         }
 
-        $response = new Response($certificate['content']);
-        $response->headers->set('Content-Type', 'application/pdf');
-        $response->headers->set(
-            'Content-Disposition',
-            $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $certificate['fileName'])
-        );
-
-        return $response;
+        return new Response($content, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
+            'Content-Length'      => strlen($content),
+        ]);
     }
 
     #[Route('/notifications/mark-all-read', name: 'employee_notifications_mark_all_read', methods: ['POST'])]
