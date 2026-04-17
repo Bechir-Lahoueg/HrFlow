@@ -28,8 +28,16 @@ class FormationType extends AbstractType
                 'choices' => [
                     'Technique' => 'Technique',
                     'Soft Skills' => 'Soft Skills',
-                    'Langues' => 'Langues',
                     'Management' => 'Management',
+                    'Leadership' => 'Leadership',
+                    'Langues' => 'Langues',
+                    'Qualité' => 'Qualité',
+                    'Sécurité' => 'Sécurité',
+                    'Conformité' => 'Conformité',
+                    'Bureautique' => 'Bureautique',
+                    'Finance' => 'Finance',
+                    'RH' => 'RH',
+                    'Digital' => 'Digital',
                     'Autre' => 'Autre',
                 ],
                 'label' => 'Type de formation'
