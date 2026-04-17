@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Rh;
 
 use App\Entity\Rh\LeaveNotification;
 use App\Entity\Rh\LeaveRequest;

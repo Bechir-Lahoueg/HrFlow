@@ -3,9 +3,9 @@
 namespace App\Controller\employee;
 
 use App\Security\DbUser;
-use App\Service\LeaveBalanceService;
-use App\Service\PublicHolidayService;
-use App\Service\LeaveRequestService;
+use App\Service\Rh\LeaveBalanceService;
+use App\Service\Rh\PublicHolidayService;
+use App\Service\Rh\LeaveRequestService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

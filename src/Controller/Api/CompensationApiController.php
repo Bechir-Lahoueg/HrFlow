@@ -2,8 +2,8 @@
 
 namespace App\Controller\Api;
 
-use App\Service\CompensationDefaultsService;
-use App\Service\CompensationValidationService;
+use App\Service\Paie\CompensationDefaultsService;
+use App\Service\Paie\CompensationValidationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
