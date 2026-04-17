@@ -1,0 +1,367 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Demandes — HRFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .table-row-hover{transition:all .15s}
+    .table-row-hover:hover{background:#f8fafc}
+    .radio-card input:checked + .radio-card__body{
+        border-color:#06b6d4;
+        background:#ecfeff;
+        color:#0e7490;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% set requestErrors = requestErrors ?? {} %}
+        {% set requestOld = (requestOld is defined and requestOld is iterable) ? requestOld : {} %}
+        {% set requestEditErrors = requestEditErrors ?? {} %}
+        {% set requestEditOld = requestEditOld ?? {} %}
+        {% set requestEditId = requestEditId ?? null %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══ Hero ══ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Mes Demandes</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion de vos Demandes</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl">Soumettez et suivez l'avancement de vos demandes RH.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">En attente</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.pending }}</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Approuvées</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.approved }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══ Stats ══ #}
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for s in [
+                    {label: 'Total', value: stats.total, color: 'text-zinc-800'},
+                    {label: 'En attente', value: stats.pending, color: 'text-amber-600'},
+                    {label: 'Approuvées', value: stats.approved, color: 'text-emerald-600'},
+                    {label: 'Rejetées', value: stats.rejected, color: 'text-red-600'},
+                ] %}
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 p-5 shadow-sm text-center card-hover animate-slide-up">
+                    <p class="text-3xl font-extrabold {{ s.color }} font-mono-num">{{ s.value }}</p>
+                    <p class="text-[11px] text-zinc-400 font-bold uppercase tracking-wider mt-1">{{ s.label }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="grid grid-cols-1 2xl:grid-cols-12 gap-6">
+
+                {# ══ Nouvelle Demande ══ #}
+                <section class="2xl:col-span-5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 p-6 shadow-sm animate-slide-up stagger-1">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Nouvelle Demande</h3>
+                        <span class="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-wider">Formulaire</span>
+                    </div>
+
+                    <form action="{{ path('employee_relation_request_new') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Type de demande *</label>
+                            <select name="request_type_id"
+                                    class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all">
+                                <option value="">Choisir un type...</option>
+                                {% set selectedTypeId = null %}
+                                {% if requestOld is iterable and 'request_type_id' in requestOld %}
+                                    {% set selectedTypeId = requestOld['request_type_id'] %}
+                                {% endif %}
+                                {% for rt in requestTypes %}
+                                <option value="{{ rt.id }}" {{ selectedTypeId is not null and selectedTypeId == rt.id ? 'selected' : '' }}>{{ rt.name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if requestErrors.request_type_id is defined %}
+                                <p class="text-[11px] text-red-600 mt-1">{{ requestErrors.request_type_id }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Priorité</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                {% set selectedPriority = requestOld.priority ?? 'medium' %}
+                                {% for p in [['low','🟢','Faible'],['medium','🟡','Moyenne'],['high','🔴','Haute']] %}
+                                <label class="cursor-pointer radio-card">
+                                    <input type="radio" name="priority" value="{{ p[0] }}" class="sr-only peer" {{ p[0] == selectedPriority ? 'checked' : '' }}>
+                                    <div class="radio-card__body text-center px-3 py-2 rounded-lg border-2 border-zinc-200 text-[12px] font-bold text-zinc-500
+                                                peer-checked:border-cyan-500 peer-checked:bg-cyan-50 peer-checked:text-cyan-700 transition-all">
+                                        {{ p[1] }} {{ p[2] }}
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            {% if requestErrors.priority is defined %}
+                                <p class="text-[11px] text-red-600 mt-1">{{ requestErrors.priority }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Titre *</label>
+                            <input type="text" name="title" placeholder="Ex: Demande de materiel..."
+                                   value="{{ requestOld.title ?? '' }}"
+                                   class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all">
+                            {% if requestErrors.title is defined %}
+                                <p class="text-[11px] text-red-600 mt-1">{{ requestErrors.title }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Description</label>
+                            <textarea name="description" rows="4" placeholder="Détaillez votre demande..."
+                                      class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all resize-none">{{ requestOld.description ?? '' }}</textarea>
+                            {% if requestErrors.description is defined %}
+                                <p class="text-[11px] text-red-600 mt-1">{{ requestErrors.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                            <p class="text-[11px] font-bold text-zinc-500 mb-2">📎 Pièce jointe (optionnel)</p>
+                            <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png"
+                                   class="text-sm text-zinc-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:px-3 file:py-1.5 file:text-[11px] file:font-semibold cursor-pointer">
+                            {% if requestErrors.attachment is defined %}
+                                <p class="text-[11px] text-red-600 mt-1">{{ requestErrors.attachment }}</p>
+                            {% endif %}
+                        </div>
+                        <button type="submit"
+                                class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
+                            Soumettre la demande
+                        </button>
+                    </form>
+                </section>
+
+                {# ══ Historique ══ #}
+                <section class="2xl:col-span-7 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 p-6 shadow-sm animate-slide-up stagger-2">
+                    <div class="flex flex-col lg:flex-row lg:items-center gap-3 mb-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Historique</h3>
+                        </div>
+                        <form method="GET" class="flex gap-2 flex-wrap lg:ml-auto">
+                            <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..."
+                                   class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-violet-400 focus:outline-none w-40">
+                            <select name="status" class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-violet-400 focus:outline-none">
+                                <option value="">Tous</option>
+                                {% for s in ['pending','approved','rejected','cancelled'] %}
+                                <option value="{{ s }}" {{ statusFilter == s ? 'selected' : '' }}>{{ s|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="px-3 py-2 rounded-lg bg-slate-900 text-white text-[11px] font-bold">Filtrer</button>
+                        </form>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-zinc-100">
+                        <table class="min-w-full text-sm">
+                            <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50/80">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">Titre</th>
+                                    <th class="py-3 px-4 text-left">Type</th>
+                                    <th class="py-3 px-4 text-left">Priorité</th>
+                                    <th class="py-3 px-4 text-left">Statut</th>
+                                    <th class="py-3 px-4 text-left">Date</th>
+                                    <th class="py-3 px-4 text-left">Commentaire RH</th>
+                                    <th class="py-3 px-4 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for req in requests %}
+                            <tr class="table-row-hover border-t border-zinc-50">
+                                <td class="py-3 px-4 font-medium text-zinc-700 max-w-[140px] truncate">{{ req.title }}</td>
+                                <td class="py-3 px-4"><span class="bg-zinc-100 text-zinc-600 text-[11px] px-2 py-0.5 rounded-md font-medium">{{ req.type_name }}</span></td>
+                                <td class="py-3 px-4">
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-full
+                                        {{ req.priority == 'high' ? 'bg-red-50 text-red-700' : '' }}
+                                        {{ req.priority == 'medium' ? 'bg-amber-50 text-amber-700' : '' }}
+                                        {{ req.priority == 'low' ? 'bg-emerald-50 text-emerald-700' : '' }}">{{ req.priority|upper }}</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {{ req.status == 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
+                                        {{ req.status == 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ req.status == 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                        {{ req.status == 'cancelled' ? 'bg-zinc-100 text-zinc-500 border border-zinc-200' : '' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full
+                                            {{ req.status == 'pending' ? 'bg-amber-500' : '' }}
+                                            {{ req.status == 'approved' ? 'bg-emerald-500' : '' }}
+                                            {{ req.status == 'rejected' ? 'bg-red-500' : '' }}
+                                            {{ req.status == 'cancelled' ? 'bg-zinc-400' : '' }}"></span>
+                                        {{ req.status == 'pending' ? 'En attente' : req.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-[12px] text-zinc-400">{{ req.submitted_date|date('d M Y') }}</td>
+                                <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[150px] truncate">{{ req.review_comment ?? '-' }}</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex gap-1.5 flex-wrap">
+                                        {% if req.attachment_url %}
+                                        <a href="{{ req.attachment_url }}" target="_blank"
+                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100">📎</a>
+                                        {% endif %}
+                                        <button onclick="loadReqDetails({{ req.id }})"
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️</button>
+                                        {% if req.status == 'pending' %}
+                                        <button onclick="openEditReq({{ req|json_encode|e('html_attr') }})"
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                        <form action="{{ path('employee_relation_request_cancel', {id: req.id}) }}" method="POST" class="inline"
+                                              onsubmit="return confirm('Annuler cette demande ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('req-cancel-' ~ req.id) }}">
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100">🚫</button>
+                                        </form>
+                                        <form action="{{ path('employee_relation_request_delete', {id: req.id}) }}" method="POST" class="inline"
+                                              onsubmit="return confirm('Supprimer définitivement ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('req-del-' ~ req.id) }}">
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="py-12 text-center text-zinc-400 text-sm">Aucune demande pour le moment.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+{# Details Modal #}
+<div id="modalReqDetails" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalReqDetails')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">📋 Détails de la demande</h5>
+                <button onclick="closeModal('modalReqDetails')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="reqDetailsBody" class="p-5 space-y-2 text-sm text-zinc-600"></div>
+            <div class="px-5 pb-5 flex justify-end">
+                <button onclick="closeModal('modalReqDetails')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Edit Request Modal #}
+<div id="modalEditReq" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalEditReq')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">✏️ Modifier la demande</h5>
+                <button onclick="closeModal('modalEditReq')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="editReqForm" method="POST" action="{{ requestEditId ? path('employee_relation_request_edit', {id: requestEditId}) : '' }}">
+                <div class="p-5 space-y-3">
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Titre *</label>
+                        <input type="text" name="title" id="editReqTitle" value="{{ requestEditOld.title ?? '' }}" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"></div>
+                    {% if requestEditErrors.title is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ requestEditErrors.title }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Description</label>
+                        <textarea name="description" id="editReqDesc" rows="3" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none">{{ requestEditOld.description ?? '' }}</textarea></div>
+                    {% if requestEditErrors.description is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ requestEditErrors.description }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Priorité</label>
+                        <select name="priority" id="editReqPriority" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
+                            {% set editPriority = requestEditOld.priority ?? 'medium' %}
+                            <option value="low" {{ editPriority == 'low' ? 'selected' : '' }}>Faible</option>
+                            <option value="medium" {{ editPriority == 'medium' ? 'selected' : '' }}>Moyenne</option>
+                            <option value="high" {{ editPriority == 'high' ? 'selected' : '' }}>Haute</option>
+                        </select>
+                    </div>
+                    {% if requestEditErrors.priority is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ requestEditErrors.priority }}</p>
+                    {% endif %}
+                </div>
+                <div class="px-5 pb-5 flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('modalEditReq')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px]">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.add('hidden');    document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') ['modalReqDetails','modalEditReq'].forEach(closeModal); });
+
+function loadReqDetails(id) {
+    fetch('/employee/relations/requests/' + id + '/details')
+        .then(r => r.json())
+        .then(req => {
+            const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-28 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
+            let html = row('Type', req.type_name) + row('Priorité', req.priority) + row('Statut', req.status) + row('Soumis le', req.submitted_date?.substring(0,10));
+            if (req.description) html += `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Description</p><p>${req.description}</p></div>`;
+            if (req.review_comment) html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire RH</p><p>${req.review_comment}</p></div>`;
+            if (req.attachment_url) html += `<div class="mt-2"><a href="${req.attachment_url}" target="_blank" class="text-cyan-600 hover:underline text-[12px] font-semibold">📎 Pièce jointe</a></div>`;
+            document.getElementById('reqDetailsBody').innerHTML = html;
+            openModal('modalReqDetails');
+        });
+}
+
+function openEditReq(req) {
+    document.getElementById('editReqTitle').value    = req.title || '';
+    document.getElementById('editReqDesc').value     = req.description || '';
+    document.getElementById('editReqPriority').value = req.priority || 'medium';
+    document.getElementById('editReqForm').action    = '/employee/relations/requests/' + req.id + '/edit';
+    openModal('modalEditReq');
+}
+
+{% if requestEditErrors is not empty %}
+openModal('modalEditReq');
+{% endif %}
+</script>
+{% endblock %}

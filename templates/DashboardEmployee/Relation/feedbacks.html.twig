@@ -1,0 +1,722 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Feedbacks — HRFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .table-row-hover{transition:all .15s}
+    .table-row-hover:hover{background:#f8fafc}
+    .radio-card input:checked + .radio-card__body{
+        border-color:#06b6d4;
+        background:#ecfeff;
+        color:#0e7490;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% set fbErrors = fbErrors ?? {} %}
+        {% set fbOld = (fbOld is defined and fbOld is iterable) ? fbOld : {} %}
+        {% set fbEditErrors = fbEditErrors ?? {} %}
+        {% set fbEditOld = (fbEditOld is defined and fbEditOld is iterable) ? fbEditOld : {} %}
+        {% set fbEditId = fbEditId ?? null %}
+        {% set ffErrors = ffErrors ?? {} %}
+        {% set ffOld = (ffOld is defined and ffOld is iterable) ? ffOld : {} %}
+        {% set ffEditErrors = ffEditErrors ?? {} %}
+        {% set ffEditOld = (ffEditOld is defined and ffEditOld is iterable) ? ffEditOld : {} %}
+        {% set ffEditId = ffEditId ?? null %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            {# ══ Hero ══ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-violet-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Feedback Studio</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes Feedbacks</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Échangez des feedbacks constructifs et évaluez vos formations.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Feedbacks reçus</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ received|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">note moy. {{ avgRating }}/5</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Évaluations formation</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ ffList|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">soumises</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# ══ Tab Nav ══ #}
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-sm">
+                <div class="flex border-b border-zinc-100 dark:border-zinc-800">
+                    <button onclick="switchTab('employee')" id="tab-btn-employee"
+                            class="tab-btn flex items-center gap-2 px-6 py-4 text-[13px] font-bold border-b-2 transition-all
+                                   {{ tab == 'employee' ? 'border-cyan-500 text-cyan-600' : 'border-transparent text-zinc-400 hover:text-zinc-700' }}">
+                        💬 Feedback Employé
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ tab == 'employee' ? 'bg-cyan-100 text-cyan-700' : 'bg-zinc-100 text-zinc-500' }}">{{ received|length + sent|length }}</span>
+                    </button>
+                    <button onclick="switchTab('formation')" id="tab-btn-formation"
+                            class="tab-btn flex items-center gap-2 px-6 py-4 text-[13px] font-bold border-b-2 transition-all
+                                   {{ tab == 'formation' ? 'border-cyan-500 text-cyan-600' : 'border-transparent text-zinc-400 hover:text-zinc-700' }}">
+                        🎓 Feedback Formation
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ tab == 'formation' ? 'bg-cyan-100 text-cyan-700' : 'bg-zinc-100 text-zinc-500' }}">{{ ffList|length }}</span>
+                    </button>
+                </div>
+
+                {# ══════════════════════════════════════════════════
+                   TAB 1 : FEEDBACK EMPLOYÉ
+                ══════════════════════════════════════════════════ #}
+                <div id="panel-employee" class="tab-panel {{ tab != 'employee' ? 'hidden' : '' }} p-6">
+                    <div class="grid grid-cols-1 2xl:grid-cols-12 gap-6">
+
+                        {# Formulaire envoi #}
+                        <section class="2xl:col-span-4 space-y-0">
+                            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 p-5">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                    </div>
+                                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Envoyer un Feedback</h3>
+                                </div>
+
+                                <form action="{{ path('employee_relation_feedback_send') }}" method="POST" class="space-y-4">
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Destinataire *</label>
+                                        <select name="to_user_id"
+                                                class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all">
+                                            <option value="">Choisir un collègue...</option>
+                                            {% set selectedRecipient = (fbOld is iterable and 'to_user_id' in fbOld) ? fbOld['to_user_id'] : null %}
+                                            {% for c in colleagues %}
+                                            <option value="{{ c.id }}" {{ selectedRecipient is not null and selectedRecipient == c.id ? 'selected' : '' }}>{{ c.fullname }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if fbErrors.to_user_id is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ fbErrors.to_user_id }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Type *</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            {% set fbType = fbOld.feedback_type ?? 'performance' %}
+                                            {% for ft in feedbackTypes %}
+                                            <label class="cursor-pointer radio-card">
+                                                <input type="radio" name="feedback_type" value="{{ ft }}" class="sr-only peer" {{ ft == fbType ? 'checked' : '' }}>
+                                                <div class="radio-card__body text-center px-2 py-2 rounded-lg border-2 border-zinc-200 bg-white text-[11px] font-bold text-zinc-500
+                                                            peer-checked:border-cyan-500 peer-checked:bg-cyan-50 peer-checked:text-cyan-700 transition-all capitalize">
+                                                    {{ ft }}
+                                                </div>
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                        {% if fbErrors.feedback_type is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ fbErrors.feedback_type }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        {% set fbRating = fbOld.rating ?? 3 %}
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">
+                                            Note * <span id="ratingDisplay" class="text-amber-500 ml-1">⭐ {{ fbRating }} / 5</span>
+                                        </label>
+                                        <input type="range" name="rating" min="1" max="5" value="{{ fbRating }}" step="1"
+                                               oninput="updateRating(this.value)"
+                                               class="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                                        <input type="hidden" name="rating" id="ratingHidden" value="{{ fbRating }}">
+                                        {% if fbErrors.rating is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ fbErrors.rating }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Commentaire *</label>
+                                        <textarea name="comment" rows="3" placeholder="Votre commentaire constructif..."
+                                                  class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none">{{ fbOld.comment ?? '' }}</textarea>
+                                        {% if fbErrors.comment is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ fbErrors.comment }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <label class="flex items-center gap-2 text-[12px] font-semibold text-zinc-700 cursor-pointer">
+                                        <input type="checkbox" name="is_anonymous" class="rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500" {{ fbOld.is_anonymous is defined and fbOld.is_anonymous ? 'checked' : '' }}>
+                                        Envoyer anonymement
+                                    </label>
+                                    <button type="submit"
+                                            class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
+                                        Envoyer le feedback
+                                    </button>
+                                </form>
+                            </div>
+                        </section>
+
+                        {# Reçus + Envoyés #}
+                        <div class="2xl:col-span-8 space-y-4">
+
+                            {# Feedbacks reçus #}
+                            <div class="rounded-xl border border-zinc-100 overflow-hidden">
+                                <div class="flex flex-col lg:flex-row lg:items-center gap-3 px-5 py-4 bg-zinc-50 border-b border-zinc-100">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[13px] font-bold text-zinc-800">📬 Feedbacks Reçus</span>
+                                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{{ received|length }}</span>
+                                        {% if avgRating > 0 %}<span class="text-[11px] text-amber-500 font-semibold">⭐ {{ avgRating }}/5</span>{% endif %}
+                                    </div>
+                                    <form method="GET" class="flex gap-2 lg:ml-auto">
+                                        <input type="hidden" name="tab" value="employee">
+                                        <select name="type" class="rounded-lg border border-zinc-200 bg-white text-[12px] px-3 py-1.5 focus:border-violet-400 focus:outline-none">
+                                            <option value="">Tous les types</option>
+                                            {% for ft in feedbackTypes %}
+                                            <option value="{{ ft }}" {{ typeFilter == ft ? 'selected' : '' }}>{{ ft|capitalize }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold">Filtrer</button>
+                                    </form>
+                                </div>
+                                <table class="min-w-full text-sm">
+                                    <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-white">
+                                        <tr>
+                                            <th class="py-3 px-4 text-left">De</th>
+                                            <th class="py-3 px-4 text-left">Type</th>
+                                            <th class="py-3 px-4 text-left">Note</th>
+                                            <th class="py-3 px-4 text-left">Date</th>
+                                            <th class="py-3 px-4 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for fb in received %}
+                                    <tr class="table-row-hover border-t border-zinc-50">
+                                        <td class="py-3 px-4 font-medium text-zinc-600">{{ fb.from_username ?? '👤 Anonyme' }}</td>
+                                        <td class="py-3 px-4"><span class="bg-violet-50 text-violet-700 text-[11px] px-2 py-0.5 rounded-md font-medium">{{ fb.feedback_type }}</span></td>
+                                        <td class="py-3 px-4 text-amber-500 font-mono text-[13px]">{% for i in 1..5 %}{{ i <= fb.rating ? '★' : '☆' }}{% endfor %}</td>
+                                        <td class="py-3 px-4 text-[12px] text-zinc-400">{{ fb.created_at|date('d/m/Y') }}</td>
+                                        <td class="py-3 px-4">
+                                            <button onclick="loadFbDetails({{ fb.id }})"
+                                                    class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️ Voir</button>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="5" class="py-8 text-center text-zinc-400 text-sm">Aucun feedback reçu.</td></tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {# Feedbacks envoyés #}
+                            <div class="rounded-xl border border-zinc-100 overflow-hidden">
+                                <div class="flex items-center gap-2 px-5 py-4 bg-zinc-50 border-b border-zinc-100">
+                                    <span class="text-[13px] font-bold text-zinc-800">📤 Feedbacks Envoyés</span>
+                                    <span class="text-[10px] font-bold text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-full">{{ sent|length }}</span>
+                                </div>
+                                <table class="min-w-full text-sm">
+                                    <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-white">
+                                        <tr>
+                                            <th class="py-3 px-4 text-left">À</th>
+                                            <th class="py-3 px-4 text-left">Type</th>
+                                            <th class="py-3 px-4 text-left">Note</th>
+                                            <th class="py-3 px-4 text-left">Anonyme</th>
+                                            <th class="py-3 px-4 text-left">Date</th>
+                                            <th class="py-3 px-4 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for fb in sent %}
+                                    <tr class="table-row-hover border-t border-zinc-50">
+                                        <td class="py-3 px-4 font-medium text-zinc-600">{{ fb.to_username ?? '-' }}</td>
+                                        <td class="py-3 px-4"><span class="bg-cyan-50 text-cyan-700 text-[11px] px-2 py-0.5 rounded-md font-medium">{{ fb.feedback_type }}</span></td>
+                                        <td class="py-3 px-4 text-amber-500 font-mono text-[13px]">{% for i in 1..5 %}{{ i <= fb.rating ? '★' : '☆' }}{% endfor %}</td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-[11px] font-bold {{ fb.is_anonymous ? 'text-violet-600' : 'text-zinc-400' }}">
+                                                {{ fb.is_anonymous ? '👤 Oui' : 'Non' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-[12px] text-zinc-400">{{ fb.created_at|date('d/m/Y') }}</td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex gap-1.5">
+                                                <button onclick="openEditFb({{ fb|json_encode|e('html_attr') }})"
+                                                        class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                                <form action="{{ path('employee_relation_feedback_delete', {id: fb.id}) }}" method="POST" class="inline"
+                                                      onsubmit="return confirm('Supprimer ce feedback ?')">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('fb-del-' ~ fb.id) }}">
+                                                    <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    {% else %}
+                                    <tr><td colspan="6" class="py-8 text-center text-zinc-400 text-sm">Aucun feedback envoyé.</td></tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {# ══════════════════════════════════════════════════
+                   TAB 2 : FEEDBACK FORMATION
+                ══════════════════════════════════════════════════ #}
+                <div id="panel-formation" class="tab-panel {{ tab != 'formation' ? 'hidden' : '' }} p-6">
+                    <div class="grid grid-cols-1 2xl:grid-cols-12 gap-6">
+
+                        {# Formulaire #}
+                        <section class="2xl:col-span-4 space-y-0">
+                            <div class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 p-5">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                    </div>
+                                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Évaluer une Formation</h3>
+                                </div>
+
+                                <form action="{{ path('employee_relation_ff_new') }}" method="POST" class="space-y-4">
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Formation *</label>
+                                        <select name="formation_id" id="formationSelect" onchange="loadSessions(this.value)"
+                                                class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all">
+                                            <option value="">Choisir une formation...</option>
+                                            {% set selectedFormationId = (ffOld is iterable and 'formation_id' in ffOld) ? ffOld['formation_id'] : null %}
+                                            {% for f in formations %}
+                                            <option value="{{ f.id_formation }}" {{ selectedFormationId is not null and selectedFormationId == f.id_formation ? 'selected' : '' }}>{{ f.titre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if ffErrors.formation_id is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.formation_id }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Session</label>
+                                        <select name="session_id" id="sessionSelect"
+                                                class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all">
+                                            <option value="">Sélectionnez d'abord une formation</option>
+                                        </select>
+                                        {% if ffErrors.session_id is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.session_id }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% set ffRating = (ffOld is iterable and 'rating' in ffOld) ? ffOld['rating'] : 3 %}
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">
+                                            Note globale * <span id="ffRatingDisplay" class="text-amber-500 ml-1">⭐ {{ ffRating }} / 5</span>
+                                        </label>
+                                        <input type="range" min="1" max="5" value="{{ ffRating }}" step="1" name="rating"
+                                               oninput="document.getElementById('ffRatingDisplay').textContent = '⭐ ' + this.value + ' / 5';"
+                                               class="w-full h-2 bg-zinc-200 rounded-lg cursor-pointer accent-amber-500">
+                                        {% if ffErrors.rating is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.rating }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">📚 Contenu</label>
+                                        <textarea name="contenu_comment" rows="2" placeholder="Votre avis sur le contenu..."
+                                                  class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none">{{ ffOld.contenu_comment ?? '' }}</textarea>
+                                        {% if ffErrors.contenu_comment is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.contenu_comment }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">👨‍🏫 Formateur</label>
+                                        <textarea name="formateur_comment" rows="2" placeholder="Votre avis sur le formateur..."
+                                                  class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none">{{ ffOld.formateur_comment ?? '' }}</textarea>
+                                        {% if ffErrors.formateur_comment is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.formateur_comment }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">🗂️ Organisation</label>
+                                        <textarea name="organisation_comment" rows="2" placeholder="Votre avis sur l'organisation..."
+                                                  class="w-full rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none">{{ ffOld.organisation_comment ?? '' }}</textarea>
+                                        {% if ffErrors.organisation_comment is defined %}
+                                            <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.organisation_comment }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <label class="flex items-center gap-2 text-[12px] font-semibold text-zinc-700 cursor-pointer">
+                                        <input type="checkbox" name="recommande" class="rounded border-zinc-300 text-cyan-600" {{ ffOld.recommande is defined and ffOld.recommande ? 'checked' : '' }}>
+                                        Je recommande cette formation
+                                    </label>
+                                    <button type="submit"
+                                            class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
+                                        Soumettre l'évaluation
+                                    </button>
+                                </form>
+                            </div>
+                        </section>
+
+                        {# Liste #}
+                        <div class="2xl:col-span-8 space-y-4">
+                            {# Mes évaluations formation #}
+                            <div class="rounded-xl border border-zinc-100 overflow-hidden">
+                                <div class="flex flex-col lg:flex-row lg:items-center gap-3 px-5 py-4 bg-zinc-50 border-b border-zinc-100">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[13px] font-bold text-zinc-800">📋 Mes Évaluations</span>
+                                        <span class="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">{{ ffList|length }}</span>
+                                        {% if ffAvgRating > 0 %}<span class="text-[11px] text-amber-500 font-semibold">⭐ {{ ffAvgRating }}/5</span>{% endif %}
+                                    </div>
+                                    {% if formations is not empty %}
+                                    <form method="GET" class="flex gap-2 lg:ml-auto">
+                                        <input type="hidden" name="tab" value="formation">
+                                        <select name="formation" class="rounded-lg border border-zinc-200 bg-white text-[12px] px-3 py-1.5 focus:border-violet-400 focus:outline-none">
+                                            <option value="">Toutes</option>
+                                            {% for f in formations %}
+                                            <option value="{{ f.id_formation }}" {{ formFilter == f.id_formation ? 'selected' : '' }}>
+                                                {{ f.titre }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold">Filtrer</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                <table class="min-w-full text-sm">
+                                    <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-white">
+                                        <tr>
+                                            <th class="py-3 px-4 text-left">Formation</th>
+                                            <th class="py-3 px-4 text-left">Note</th>
+                                            <th class="py-3 px-4 text-left">Recommandé</th>
+                                            <th class="py-3 px-4 text-left">Date</th>
+                                            <th class="py-3 px-4 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for ff in ffList %}
+                                    <tr class="table-row-hover border-t border-zinc-50">
+                                        <td class="py-3 px-4 font-medium text-zinc-700 max-w-[180px]">
+                                            <div class="truncate">{{ ff.formation_name ?? '-' }}</div>
+                                            {% if ff.session_name %}<div class="text-[11px] text-zinc-400 truncate">{{ ff.session_name }}</div>{% endif %}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-amber-500 font-mono text-[13px]">{% for i in 1..5 %}{{ i <= ff.rating ? '★' : '☆' }}{% endfor %}</span>
+                                            <span class="text-[11px] text-zinc-400 ml-1">{{ ff.rating }}/5</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-[11px] font-bold {{ ff.recommande ? 'text-emerald-600' : 'text-red-500' }}">
+                                                {{ ff.recommande ? '✅ Oui' : '❌ Non' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-[12px] text-zinc-400">{{ ff.created_at|date('d/m/Y') }}</td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex gap-1.5">
+                                                <button onclick="loadFfDetails({{ ff.id }})"
+                                                        class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️</button>
+                                                <button onclick="openEditFf({{ ff|json_encode|e('html_attr') }})"
+                                                        class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                                <form action="{{ path('employee_relation_ff_delete', {id: ff.id}) }}" method="POST" class="inline"
+                                                      onsubmit="return confirm('Supprimer cette évaluation ?')">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('ff-del-' ~ ff.id) }}">
+                                                    <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="5" class="py-12 text-center text-zinc-400 text-sm">Aucune évaluation soumise.</td></tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>{# /card principale #}
+
+        </main>
+    </div>
+</div>
+
+{# ══════════ Modal : Détails Feedback Employé ══════════ #}
+<div id="modalFbDetails" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalFbDetails')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">💬 Détails du Feedback</h5>
+                <button onclick="closeModal('modalFbDetails')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="fbDetailsBody" class="p-5 space-y-2 text-sm text-zinc-600"></div>
+            <div class="px-5 pb-5 flex justify-end">
+                <button onclick="closeModal('modalFbDetails')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════ Modal : Modifier Feedback Employé ══════════ #}
+<div id="modalEditFb" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalEditFb')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">✏️ Modifier le Feedback</h5>
+                <button onclick="closeModal('modalEditFb')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="editFbForm" method="POST" action="{{ fbEditId ? path('employee_relation_feedback_edit', {id: fbEditId}) : '' }}">
+                <div class="p-5 space-y-3">
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Type</label>
+                        <select name="feedback_type" id="editFbType" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400">
+                            {% set editFbType = fbEditOld.feedback_type ?? 'performance' %}
+                            {% for ft in feedbackTypes %}<option value="{{ ft }}" {{ editFbType == ft ? 'selected' : '' }}>{{ ft|capitalize }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    {% if fbEditErrors.feedback_type is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ fbEditErrors.feedback_type }}</p>
+                    {% endif %}
+                    <div>
+                        {% set editFbRating = fbEditOld.rating ?? 3 %}
+                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Note <span id="editRatingDisplay" class="text-amber-500 ml-1">⭐ {{ editFbRating }}</span></label>
+                        <input type="range" min="1" max="5" value="{{ editFbRating }}" step="1" id="editRatingRange"
+                               oninput="document.getElementById('editRatingDisplay').textContent = '⭐ ' + this.value; document.getElementById('editRatingHidden').value = this.value;"
+                               class="w-full h-2 bg-zinc-200 rounded-lg cursor-pointer accent-amber-500">
+                        <input type="hidden" name="rating" id="editRatingHidden" value="{{ editFbRating }}">
+                    </div>
+                    {% if fbEditErrors.rating is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ fbEditErrors.rating }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Commentaire</label>
+                        <textarea name="comment" id="editFbComment" rows="3" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none">{{ fbEditOld.comment ?? '' }}</textarea>
+                    </div>
+                    {% if fbEditErrors.comment is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ fbEditErrors.comment }}</p>
+                    {% endif %}
+                    <label class="flex items-center gap-2 text-[12px] font-semibold text-zinc-700 cursor-pointer">
+                        <input type="checkbox" name="is_anonymous" id="editFbAnon" class="rounded border-zinc-300 text-cyan-600" {{ fbEditOld.is_anonymous is defined and fbEditOld.is_anonymous ? 'checked' : '' }}> Envoyer anonymement
+                    </label>
+                </div>
+                <div class="px-5 pb-5 flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('modalEditFb')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] hover:from-slate-800 transition-all">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ══════════ Modal : Détails Feedback Formation ══════════ #}
+<div id="modalFfDetails" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalFfDetails')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
+                <h5 class="text-white font-bold text-[15px]">🎓 Détails de l'évaluation</h5>
+                <button onclick="closeModal('modalFfDetails')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="ffDetailsBody" class="p-5 space-y-2 text-sm text-zinc-600"></div>
+            <div class="px-5 pb-5 flex justify-end">
+                <button onclick="closeModal('modalFfDetails')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════ Modal : Modifier Feedback Formation ══════════ #}
+<div id="modalEditFf" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('modalEditFf')"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up" style="max-height:90vh;overflow-y:auto">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
+                <h5 class="text-white font-bold text-[15px]">✏️ Modifier l'évaluation</h5>
+                <button onclick="closeModal('modalEditFf')" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="editFfForm" method="POST" action="{{ ffEditId ? path('employee_relation_ff_edit', {id: ffEditId}) : '' }}">
+                <div class="p-5 space-y-3">
+                    <div>
+                        {% set editFfRating = ffEditOld.rating ?? 3 %}
+                        <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Note <span id="editFfRatingDisplay" class="text-amber-500 ml-1">⭐ {{ editFfRating }}</span></label>
+                        <input type="range" min="1" max="5" value="{{ editFfRating }}" step="1" id="editFfRatingRange" name="rating"
+                               oninput="document.getElementById('editFfRatingDisplay').textContent = '⭐ ' + this.value;"
+                               class="w-full h-2 bg-zinc-200 rounded-lg cursor-pointer accent-amber-500">
+                    </div>
+                    {% if ffEditErrors.rating is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ ffEditErrors.rating }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">📚 Contenu</label>
+                        <textarea name="contenu_comment" id="editFfContenu" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none">{{ ffEditOld.contenu_comment ?? '' }}</textarea>
+                    </div>
+                    {% if ffEditErrors.contenu_comment is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ ffEditErrors.contenu_comment }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">👨‍🏫 Formateur</label>
+                        <textarea name="formateur_comment" id="editFfFormateur" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none">{{ ffEditOld.formateur_comment ?? '' }}</textarea>
+                    </div>
+                    {% if ffEditErrors.formateur_comment is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ ffEditErrors.formateur_comment }}</p>
+                    {% endif %}
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">🗂️ Organisation</label>
+                        <textarea name="organisation_comment" id="editFfOrganisation" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none">{{ ffEditOld.organisation_comment ?? '' }}</textarea>
+                    </div>
+                    {% if ffEditErrors.organisation_comment is defined %}
+                        <p class="text-[11px] text-red-600 mt-1">{{ ffEditErrors.organisation_comment }}</p>
+                    {% endif %}
+                    <label class="flex items-center gap-2 text-[12px] font-semibold text-zinc-700 cursor-pointer">
+                        <input type="checkbox" name="recommande" id="editFfRec" class="rounded border-zinc-300 text-cyan-600" {{ ffEditOld.recommande is defined and ffEditOld.recommande ? 'checked' : '' }}> Je recommande cette formation
+                    </label>
+                </div>
+                <div class="px-5 pb-5 flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('modalEditFf')" class="px-4 py-2 rounded-lg text-[12px] font-semibold text-zinc-500 bg-zinc-100 hover:bg-zinc-200">Annuler</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] hover:from-slate-800 transition-all">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// ─── Tab switching ─────────────────────────────────────────────────
+function switchTab(name) {
+    ['employee', 'formation'].forEach(t => {
+        document.getElementById('panel-' + t).classList.toggle('hidden', t !== name);
+        const btn = document.getElementById('tab-btn-' + t);
+        btn.classList.toggle('border-cyan-500', t === name);
+        btn.classList.toggle('text-cyan-600',   t === name);
+        btn.classList.toggle('border-transparent', t !== name);
+        btn.classList.toggle('text-zinc-400',   t !== name);
+    });
+    history.replaceState(null, '', '?tab=' + name);
+}
+
+// ─── Modals ────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.add('hidden');    document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') ['modalFbDetails','modalEditFb','modalFfDetails','modalEditFf'].forEach(closeModal);
+});
+
+// ─── Rating slider (formulaire envoi) ──────────────────────────────
+function updateRating(v) {
+    document.getElementById('ratingDisplay').textContent = '⭐ ' + v + ' / 5';
+    document.getElementById('ratingHidden').value = v;
+}
+
+// ─── Détails feedback employé ──────────────────────────────────────
+function loadFbDetails(id) {
+    fetch('/employee/relations/feedbacks/' + id + '/details')
+        .then(r => r.json())
+        .then(fb => {
+            const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-28 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
+            const stars = Array(5).fill(0).map((_, i) => i < fb.rating ? '★' : '☆').join('');
+            let html = row('De', fb.from_username) + row('À', fb.to_username) + row('Type', fb.feedback_type)
+                     + row('Note', `<span class="text-amber-500">${stars}</span> (${fb.rating}/5)`)
+                     + row('Date', fb.created_at?.substring(0, 10));
+            if (fb.comment) html += `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire</p><p>${fb.comment}</p></div>`;
+            document.getElementById('fbDetailsBody').innerHTML = html;
+            openModal('modalFbDetails');
+        });
+}
+
+// ─── Modifier feedback employé ─────────────────────────────────────
+function openEditFb(fb) {
+    document.getElementById('editFbType').value      = fb.feedback_type || 'performance';
+    document.getElementById('editRatingRange').value  = fb.rating || 3;
+    document.getElementById('editRatingHidden').value = fb.rating || 3;
+    document.getElementById('editRatingDisplay').textContent = '⭐ ' + (fb.rating || 3);
+    document.getElementById('editFbComment').value    = fb.comment || '';
+    document.getElementById('editFbAnon').checked     = !!fb.is_anonymous;
+    document.getElementById('editFbForm').action      = '/employee/relations/feedbacks/' + fb.id + '/edit';
+    openModal('modalEditFb');
+}
+
+// ─── Sessions (AJAX) ───────────────────────────────────────────────
+const ffOldFormationId = {{ (ffOld is iterable and 'formation_id' in ffOld and ffOld['formation_id']) ? ffOld['formation_id'] : 'null' }};
+const ffOldSessionId = {{ (ffOld is iterable and 'session_id' in ffOld and ffOld['session_id']) ? ffOld['session_id'] : 'null' }};
+
+function loadSessions(formationId) {
+    const sel = document.getElementById('sessionSelect');
+    sel.innerHTML = '<option value="">Chargement...</option>';
+    if (!formationId) { sel.innerHTML = '<option value="">Sélectionnez d\'abord une formation</option>'; return; }
+    fetch('/employee/relations/feedbacks-formation/sessions?formation_id=' + formationId)
+        .then(r => r.json())
+        .then(sessions => {
+            sel.innerHTML = '<option value="">Aucune session spécifique</option>';
+            sessions.forEach(s => {
+                sel.innerHTML += `<option value="${s.id_session}">${s.date_debut} — ${s.lieu}</option>`;
+            });
+            if (ffOldSessionId) {
+                sel.value = String(ffOldSessionId);
+            }
+        });
+}
+
+// ─── Détails feedback formation ────────────────────────────────────
+function loadFfDetails(id) {
+    fetch('/employee/relations/ff/' + id + '/details')
+        .then(r => r.json())
+        .then(ff => {
+            const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-32 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
+            const stars = Array(5).fill(0).map((_, i) => i < ff.rating ? '★' : '☆').join('');
+            let html = row('Formation', ff.formation_name) + row('Session', ff.session_name)
+                     + row('Note', `<span class="text-amber-500">${stars}</span> (${ff.rating}/5)`)
+                     + row('Recommandé', ff.recommande ? '✅ Oui' : '❌ Non')
+                     + row('Date', ff.created_at?.substring(0, 10));
+            if (ff.contenu_comment)      html += `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Contenu</p><p>${ff.contenu_comment}</p></div>`;
+            if (ff.formateur_comment)    html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Formateur</p><p>${ff.formateur_comment}</p></div>`;
+            if (ff.organisation_comment) html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Organisation</p><p>${ff.organisation_comment}</p></div>`;
+            document.getElementById('ffDetailsBody').innerHTML = html;
+            openModal('modalFfDetails');
+        });
+}
+
+// ─── Modifier feedback formation ───────────────────────────────────
+function openEditFf(ff) {
+    document.getElementById('editFfRatingRange').value  = ff.rating || 3;
+    document.getElementById('editFfRatingDisplay').textContent = '⭐ ' + (ff.rating || 3);
+    document.getElementById('editFfContenu').value      = ff.contenu_comment || '';
+    document.getElementById('editFfFormateur').value    = ff.formateur_comment || '';
+    document.getElementById('editFfOrganisation').value = ff.organisation_comment || '';
+    document.getElementById('editFfRec').checked        = !!ff.recommande;
+    document.getElementById('editFfForm').action        = '/employee/relations/feedbacks-formation/' + ff.id + '/edit';
+    openModal('modalEditFf');
+}
+
+if (ffOldFormationId) {
+    loadSessions(ffOldFormationId);
+}
+
+{% if fbEditErrors is not empty %}
+openModal('modalEditFb');
+{% endif %}
+{% if ffEditErrors is not empty %}
+openModal('modalEditFf');
+{% endif %}
+</script>
+{% endblock %}

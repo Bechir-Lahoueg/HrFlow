@@ -2,11 +2,11 @@
 
 namespace App\Controller\rh;
 
-use App\Service\ProjectService;
-use App\Service\ProjectTaskService;
-use App\Service\ProjectCollaboratorService;
-use App\Service\ProjectMilestoneService;
-use App\Service\ProjectUpdateService;
+use App\Service\Projet\ProjectService;
+use App\Service\Projet\ProjectTaskService;
+use App\Service\Projet\ProjectCollaboratorService;
+use App\Service\Projet\ProjectMilestoneService;
+use App\Service\Projet\ProjectUpdateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -146,7 +146,7 @@ class RhProjectController extends AbstractController
                     'priorities' => ['low', 'medium', 'high', 'critical'],
                     'old_data' => $data,
                     'errors' => $errors
-                ]);
+                ], new Response(null, 422));
             }
 
 
@@ -166,7 +166,7 @@ class RhProjectController extends AbstractController
     // MODIFIER UN PROJET
     // ═══════════════════════════════════════════════════════════════
 
-    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\d+'])]
+    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\\d+'])]
     public function edit(int $id, Request $request): Response
     {
         $project = $this->projectService->getProjectById($id);
@@ -176,6 +176,22 @@ class RhProjectController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
+            $errors = $this->projectService->validate($data);
+
+            if (count($errors) > 0) {
+                foreach ($errors as $message) {
+                    $this->addFlash('error', $message);
+                }
+
+                return $this->render('DashboardHr/Project/edit.html.twig', [
+                    'project' => $project,
+                    'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
+                    'priorities' => ['low', 'medium', 'high', 'critical'],
+                    'old_data' => $data,
+                    'errors' => $errors,
+                ], new Response(null, 422));
+            }
+
             $this->projectService->updateProject($id, $data);
             $this->addFlash('success', 'Projet modifié avec succès !');
             return $this->redirectToRoute('rh_project_show', ['id' => $id]);
@@ -185,6 +201,8 @@ class RhProjectController extends AbstractController
             'project' => $project,
             'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
             'priorities' => ['low', 'medium', 'high', 'critical'],
+            'old_data' => [],
+            'errors' => [],
         ]);
     }
 

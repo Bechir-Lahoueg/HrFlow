@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Form\Shared\AccountSettingsType;
 use App\Security\DbUser;
-use App\Service\HrFlowMailer;
+use App\Service\Shared\HrFlowMailer;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;

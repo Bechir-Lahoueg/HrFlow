@@ -21,7 +21,7 @@ services:
             - '../src/Kernel.php'
 
     # HrFlow Mailer — inject the sender address from .env
-    App\Service\HrFlowMailer:
+    App\Service\Shared\HrFlowMailer:
         arguments:
             $senderAddress: '%env(MAILER_FROM)%'
 

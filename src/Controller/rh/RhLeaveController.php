@@ -4,8 +4,8 @@ namespace App\Controller\rh;
 
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
-use App\Service\LeaveBalanceService;
-use App\Service\LeaveRequestService;
+use App\Service\Rh\LeaveBalanceService;
+use App\Service\Rh\LeaveRequestService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;

@@ -11,7 +11,9 @@ Plateforme RH developpee avec Symfony pour centraliser les processus de gestion 
 HR Flow est un projet web collaboratif qui couvre plusieurs besoins metier RH:
 
 - Authentification et gestion des roles
+- 
 - Recrutement et suivi des candidatures
+-
 - Gestion des conges et notifications
 - Formation des employes
 - Espace d'administration et tableaux de bord

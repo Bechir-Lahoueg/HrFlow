@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\Rh\EmployeeRepository;
-use App\Service\LeaveBalanceService;
-use App\Service\LeaveRequestService;
+use App\Service\Rh\LeaveBalanceService;
+use App\Service\Rh\LeaveRequestService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

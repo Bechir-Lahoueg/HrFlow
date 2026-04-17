@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use App\Service\HrFlowMailer;
+use App\Service\Shared\HrFlowMailer;
 
 final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {

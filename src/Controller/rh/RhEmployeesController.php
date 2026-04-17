@@ -6,7 +6,7 @@ use App\Entity\Rh\Employee;
 use App\Repository\Rh\EmployeeRepository;
 use App\Repository\Rh\UserRepository;
 use App\Security\DbUser;
-use App\Service\LeaveRequestService;
+use App\Service\Rh\LeaveRequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
