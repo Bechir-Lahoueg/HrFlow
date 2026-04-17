@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Formation;
 
 use App\Entity\Formation\EmployeeNotification;
 use App\Entity\Formation\Formation;
 use App\Entity\Formation\SessionFormation;
+use App\Entity\Rh\LeaveNotification;
 use App\Repository\Formation\ParticipationFormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -64,6 +65,27 @@ final class FormationChangeNotificationService
         return $this->notifyEmployees($employees, $subject, $message, 'session_updated', $formation, $session);
     }
 
+    public function notifySessionDeleted(SessionFormation $session): int
+    {
+        $formation = $session->getFormation();
+        if ($formation === null) {
+            return 0;
+        }
+
+        $subject = sprintf('Suppression de session: %s', (string) $formation->getTitre());
+        $message = sprintf(
+            "Bonjour,\n\nLa session de la formation '%s' a ete supprimee par le service RH.\nMerci de consulter votre espace employe pour les prochaines disponibilites.\n\nEquipe HrFlow",
+            (string) $formation->getTitre()
+        );
+
+        $employees = $this->participationRepository->findNotifiableEmployeesBySession((int) $session->getId());
+        if ($employees === []) {
+            return 0;
+        }
+
+        return $this->notifyEmployees($employees, $subject, $message, 'session_deleted', $formation, $session);
+    }
+
     private function sendToEmployeesForFormation(Formation $formation, string $type, string $subject, string $message): int
     {
         $employees = $this->participationRepository->findNotifiableEmployeesByFormation((int) $formation->getId());
@@ -93,6 +115,17 @@ final class FormationChangeNotificationService
                 ->setIsRead(false);
 
             $this->em->persist($notification);
+
+            $leaveStyleNotification = (new LeaveNotification())
+                ->setRecipientType(LeaveNotification::RECIPIENT_EMPLOYEE)
+                ->setRecipientId((int) $employee->getId())
+                ->setLeaveRequestId($referenceId)
+                ->setType($type)
+                ->setTitle((string) $formation->getTitre())
+                ->setMessage($message)
+                ->setIsRead(false);
+
+            $this->em->persist($leaveStyleNotification);
             $queuedInApp++;
 
             $emailAddress = $employee->getEmail();

@@ -1,0 +1,121 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Mes Statistiques{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+        <main class="p-6 lg:p-8 max-w-[1440px] mx-auto space-y-8">
+
+            {# ═══ HERO BANNER ═══ #}
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-900 p-8 sm:p-10 text-white animate-slide-up">
+                <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-violet-500/10 blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-indigo-200 uppercase tracking-[0.15em]">Analyse</span>
+                        </div>
+                        <h1 class="text-3xl sm:text-4xl font-display leading-[1.1] tracking-tight">Mes Statistiques</h1>
+                        <p class="text-slate-300/90 max-w-lg text-[14px] leading-relaxed">Évolution de votre rémunération pour {{ annee }}.</p>
+                    </div>
+                    <form method="get" action="{{ path('app_employee_payroll_stats') }}" class="self-start sm:self-auto">
+                        <select name="annee" onchange="this.form.submit()" class="rounded-xl bg-white/10 border border-white/20 text-white text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-400 backdrop-blur-sm">
+                            {% for y in (annee - 2)..(annee + 1) %}
+                                <option value="{{ y }}" {{ y == annee ? 'selected' : '' }} class="text-gray-900">{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            {# ═══ KPI CARDS ═══ #}
+            <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-slide-up stagger-1">
+                <div class="card-surface rounded-2xl p-5 stat-stripe stat-stripe-blue">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Brut</span>
+                    <p class="mt-2 text-2xl font-display font-bold text-slate-800 dark:text-zinc-100 font-mono-num">{{ totalBrut|number_format(2, '.', ' ') }} <span class="text-sm font-normal text-slate-400">DT</span></p>
+                </div>
+                <div class="card-surface rounded-2xl p-5 stat-stripe stat-stripe-emerald">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Primes</span>
+                    <p class="mt-2 text-2xl font-display font-bold text-slate-800 dark:text-zinc-100 font-mono-num">{{ totalPrimes|number_format(2, '.', ' ') }} <span class="text-sm font-normal text-slate-400">DT</span></p>
+                </div>
+                <div class="card-surface rounded-2xl p-5 stat-stripe stat-stripe-rose">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Déductions</span>
+                    <p class="mt-2 text-2xl font-display font-bold text-slate-800 dark:text-zinc-100 font-mono-num">{{ totalDeductions|number_format(2, '.', ' ') }} <span class="text-sm font-normal text-slate-400">DT</span></p>
+                </div>
+                <div class="card-surface rounded-2xl p-5 stat-stripe stat-stripe-violet">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Net</span>
+                    <p class="mt-2 text-2xl font-display font-bold text-slate-800 dark:text-zinc-100 font-mono-num">{{ totalNet|number_format(2, '.', ' ') }} <span class="text-sm font-normal text-slate-400">DT</span></p>
+                </div>
+            </section>
+
+            {# ═══ CHARTS ═══ #}
+            {% if hasData %}
+            <section class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up stagger-2">
+                {# Salary evolution #}
+                <div class="card-surface rounded-2xl p-6">
+                    <h2 class="text-lg font-display font-bold text-slate-800 dark:text-zinc-100 mb-4">Évolution salariale</h2>
+                    <div style="position:relative;height:300px">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+
+                {# Primes vs Deductions #}
+                <div class="card-surface rounded-2xl p-6">
+                    <h2 class="text-lg font-display font-bold text-slate-800 dark:text-zinc-100 mb-4">Primes vs Déductions</h2>
+                    <div style="position:relative;height:300px">
+                        <canvas id="primesDeductionsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            <script type="module">
+                import { Chart, registerables } from 'chart.js';
+                Chart.register(...registerables);
+                const opts = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } },
+                    scales: { y: { beginAtZero: true } },
+                };
+                new Chart(document.getElementById('evolutionChart'), {
+                    type: 'line',
+                    data: {{ { labels: monthLabels, datasets: [
+                        { label: "Salaire Brut", data: brutData, borderColor: "#3b82f6", backgroundColor: "rgba(59,130,246,0.08)", fill: true, tension: 0.35 },
+                        { label: "Salaire Net",  data: netData,  borderColor: "#8b5cf6", backgroundColor: "rgba(139,92,246,0.08)",  fill: true, tension: 0.35 }
+                    ]}|json_encode|raw }},
+                    options: opts,
+                });
+                new Chart(document.getElementById('primesDeductionsChart'), {
+                    type: 'bar',
+                    data: {{ { labels: monthLabels, datasets: [
+                        { label: "Primes",      data: primesData,     backgroundColor: "#10b981", borderRadius: 6 },
+                        { label: "Déductions",  data: deductionsData, backgroundColor: "#f43f5e", borderRadius: 6 }
+                    ]}|json_encode|raw }},
+                    options: opts,
+                });
+            </script>
+            {% else %}
+            <div class="card-surface rounded-2xl p-10 text-center animate-slide-up stagger-2">
+                <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-zinc-600 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                </svg>
+                <p class="text-slate-500 dark:text-zinc-400 font-medium">Aucune fiche de paie disponible.</p>
+                <p class="text-sm text-slate-400 dark:text-zinc-500 mt-1">Les statistiques s'afficheront dès que des fiches de paie seront générées.</p>
+            </div>
+            {% endif %}
+
+            {# ═══ BACK LINK ═══ #}
+            <div class="animate-slide-up stagger-3">
+                <a href="{{ path('app_employee_payroll_fiches') }}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                    Retour aux fiches de paie
+                </a>
+            </div>
+
+        </main>
+    </div>
+</div>
+{% endblock %}

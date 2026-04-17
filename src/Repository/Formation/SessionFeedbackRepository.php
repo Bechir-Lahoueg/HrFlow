@@ -68,6 +68,24 @@ class SessionFeedbackRepository extends ServiceEntityRepository
 
         return $map;
     }
+
+    public function deleteBySessionId(int $sessionId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\SessionFeedback sf WHERE sf.session = :sessionId'
+        )
+            ->setParameter('sessionId', $sessionId)
+            ->execute();
+    }
+
+    public function deleteByFormationId(int $formationId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\SessionFeedback sf WHERE sf.formation = :formationId'
+        )
+            ->setParameter('formationId', $formationId)
+            ->execute();
+    }
 }
 
 

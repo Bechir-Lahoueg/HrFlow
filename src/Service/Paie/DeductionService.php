@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Paie;
 
 use App\DTO\Payroll\DeductionRequestDTO;
 use App\DTO\Payroll\DeductionResponseDTO;
@@ -9,6 +9,7 @@ use App\Enum\DeductionType;
 use App\Exception\Payroll\EmployeeNotFoundException;
 use App\Repository\Paie\DeductionRepository;
 use App\Repository\Rh\EmployeeRepository;
+use App\Service\Shared\CachingService;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -88,6 +89,13 @@ final class DeductionService
 
         if ($dto->dateDeduction === null) {
             throw new \DomainException('Deduction date is required');
+        }
+
+        // Block if the target period is already locked (paid)
+        $targetMois = (int) $dto->dateDeduction->format('m');
+        $targetAnnee = (int) $dto->dateDeduction->format('Y');
+        if ($this->fichePaieService->isPeriodLocked($dto->employeeId, $targetMois, $targetAnnee)) {
+            throw new \DomainException('Impossible d\'ajouter une déduction : la fiche de paie de cette période est déjà payée.');
         }
 
         $deduction = new Deduction();

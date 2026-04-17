@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Paie;
 
 use App\DTO\Payroll\FichePaieRequestDTO;
 use App\DTO\Payroll\FichePaieResponseDTO;
@@ -15,6 +15,7 @@ use App\Repository\Paie\FichePaieRepository;
 use App\Repository\Paie\PrimeRepository;
 use App\Repository\Paie\DeductionRepository;
 use App\Repository\Rh\EmployeeRepository;
+use App\Service\Shared\CachingService;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -324,5 +325,71 @@ final class FichePaieService
         if ($brut < 0) {
             throw InvalidSalaryException::negativeAmount($salaireBrut);
         }
+
+        // SMIG Tunisie — minimum wage check
+        if ($brut > 0 && $brut < 450.00) {
+            throw new InvalidSalaryException(
+                sprintf('Le salaire brut (%.2f DT) est inférieur au SMIG (450.00 DT).', $brut)
+            );
+        }
+    }
+
+    /**
+     * Check if a period is locked (fiche already marked as paid).
+     * Used to block adding primes/deductions to a locked period.
+     */
+    public function isPeriodLocked(int $employeeId, int $mois, int $annee): bool
+    {
+        $fiche = $this->fichePaieRepository->findByEmployeeAndPeriodSingle($employeeId, $mois, $annee);
+        return $fiche !== null && $fiche->isStatutPaiement();
+    }
+
+    /**
+     * Get monthly evolution for a given employee and year.
+     * Returns an array of monthly payroll data for charts.
+     *
+     * @return array<int, array{mois: int, brut: string, primes: string, deductions: string, net: string}>
+     */
+    public function getMonthlyEvolution(int $employeeId, int $annee): array
+    {
+        $fiches = $this->fichePaieRepository->findBy(
+            ['employee' => $employeeId, 'annee' => $annee],
+            ['mois' => 'ASC']
+        );
+
+        return array_map(fn(FichePaie $f) => [
+            'mois' => $f->getMois(),
+            'brut' => $f->getSalaireBrut(),
+            'primes' => $f->getTotalPrimes(),
+            'deductions' => $f->getTotalDeductions(),
+            'net' => $f->getSalaireNet(),
+        ], $fiches);
+    }
+
+    /**
+     * Get global monthly stats for all employees managed by an RH.
+     *
+     * @return array<int, array{mois: int, annee: int, totalBrut: string, totalPrimes: string, totalDeductions: string, totalNet: string, count: int}>
+     */
+    public function getMonthlyStatsByRh(int $rhId, int $annee): array
+    {
+        $qb = $this->fichePaieRepository->createQueryBuilder('fp')
+            ->select(
+                'fp.mois',
+                'SUM(fp.salaireBrut) as totalBrut',
+                'SUM(fp.totalPrimes) as totalPrimes',
+                'SUM(fp.totalDeductions) as totalDeductions',
+                'SUM(fp.salaireNet) as totalNet',
+                'COUNT(fp.id) as ficheCount'
+            )
+            ->join('fp.employee', 'e')
+            ->where('e.rhId = :rhId')
+            ->andWhere('fp.annee = :annee')
+            ->setParameter('rhId', $rhId)
+            ->setParameter('annee', $annee)
+            ->groupBy('fp.mois')
+            ->orderBy('fp.mois', 'ASC');
+
+        return $qb->getQuery()->getResult();
     }
 }

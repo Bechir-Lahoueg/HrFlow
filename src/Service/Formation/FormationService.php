@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Formation;
 
 use App\Entity\Formation\Formation;
 use App\Entity\Formation\SessionFormation;
 use App\Repository\Formation\FormationRepository;
+use App\Repository\Formation\ParticipationFormationRepository;
+use App\Repository\Formation\PresenceFormationRepository;
+use App\Repository\Formation\SessionFeedbackRepository;
 use App\Repository\Formation\SessionFormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -14,6 +17,9 @@ final class FormationService
         private readonly EntityManagerInterface $em,
         private readonly FormationRepository $formationRepository,
         private readonly SessionFormationRepository $sessionFormationRepository,
+        private readonly ParticipationFormationRepository $participationRepository,
+        private readonly PresenceFormationRepository $presenceRepository,
+        private readonly SessionFeedbackRepository $sessionFeedbackRepository,
     ) {
     }
 
@@ -88,6 +94,53 @@ final class FormationService
 
         $this->em->remove($formation);
         $this->em->flush();
+    }
+
+    public function deleteSessionWithRelations(SessionFormation $session): void
+    {
+        $sessionId = (int) $session->getId();
+
+        $this->em->beginTransaction();
+        try {
+            $this->sessionFeedbackRepository->deleteBySessionId($sessionId);
+            $this->presenceRepository->deleteBySessionId($sessionId);
+            $this->participationRepository->deleteBySessionId($sessionId);
+
+            $managedSession = $this->sessionFormationRepository->find($sessionId);
+            if ($managedSession !== null) {
+                $this->em->remove($managedSession);
+                $this->em->flush();
+            }
+
+            $this->em->commit();
+        } catch (\Throwable $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+    public function deleteFormationWithRelations(Formation $formation): void
+    {
+        $formationId = (int) $formation->getId();
+
+        $this->em->beginTransaction();
+        try {
+            $this->sessionFeedbackRepository->deleteByFormationId($formationId);
+            $this->presenceRepository->deleteByFormationId($formationId);
+            $this->participationRepository->deleteByFormationId($formationId);
+            $this->sessionFormationRepository->deleteByFormationId($formationId);
+
+            $managedFormation = $this->formationRepository->find($formationId);
+            if ($managedFormation !== null) {
+                $this->em->remove($managedFormation);
+                $this->em->flush();
+            }
+
+            $this->em->commit();
+        } catch (\Throwable $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 
     public function getFormationById(int $id): ?Formation

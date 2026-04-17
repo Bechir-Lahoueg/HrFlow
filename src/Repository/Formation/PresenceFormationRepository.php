@@ -59,4 +59,30 @@ class PresenceFormationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function deleteBySessionId(int $sessionId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\PresenceFormation pr
+             WHERE pr.participation IN (
+                SELECT p_sub.id FROM App\\Entity\\Formation\\ParticipationFormation p_sub WHERE p_sub.session = :sessionId
+             )'
+        )
+            ->setParameter('sessionId', $sessionId)
+            ->execute();
+    }
+
+    public function deleteByFormationId(int $formationId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\PresenceFormation pr
+             WHERE pr.participation IN (
+                SELECT p_sub.id FROM App\\Entity\\Formation\\ParticipationFormation p_sub
+                JOIN p_sub.session s_sub
+                WHERE s_sub.formation = :formationId
+             )'
+        )
+            ->setParameter('formationId', $formationId)
+            ->execute();
+    }
 }

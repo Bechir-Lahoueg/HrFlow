@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Rh;
 
 use App\Entity\Rh\LeaveBalance;
 use App\Repository\Rh\EmployeeRepository;

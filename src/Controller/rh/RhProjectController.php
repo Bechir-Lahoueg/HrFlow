@@ -2,11 +2,11 @@
 
 namespace App\Controller\rh;
 
-use App\Service\ProjectService;
-use App\Service\ProjectTaskService;
-use App\Service\ProjectCollaboratorService;
-use App\Service\ProjectMilestoneService;
-use App\Service\ProjectUpdateService;
+use App\Service\Projet\ProjectService;
+use App\Service\Projet\ProjectTaskService;
+use App\Service\Projet\ProjectCollaboratorService;
+use App\Service\Projet\ProjectMilestoneService;
+use App\Service\Projet\ProjectUpdateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

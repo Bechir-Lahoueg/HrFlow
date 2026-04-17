@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Paie;
 
 use App\DTO\Payroll\PrimeRequestDTO;
 use App\DTO\Payroll\PrimeResponseDTO;
@@ -9,6 +9,7 @@ use App\Enum\PrimeType;
 use App\Exception\Payroll\EmployeeNotFoundException;
 use App\Repository\Paie\PrimeRepository;
 use App\Repository\Rh\EmployeeRepository;
+use App\Service\Shared\CachingService;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -88,6 +89,13 @@ final class PrimeService
 
         if ($dto->dateAttribution === null) {
             throw new \DomainException('Attribution date is required');
+        }
+
+        // Block if the target period is already locked (paid)
+        $targetMois = (int) $dto->dateAttribution->format('m');
+        $targetAnnee = (int) $dto->dateAttribution->format('Y');
+        if ($this->fichePaieService->isPeriodLocked($dto->employeeId, $targetMois, $targetAnnee)) {
+            throw new \DomainException('Impossible d\'ajouter une prime : la fiche de paie de cette période est déjà payée.');
         }
 
         $prime = new Prime();
