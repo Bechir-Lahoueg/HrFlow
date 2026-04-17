@@ -87,6 +87,16 @@ final class LeaveNotificationController extends AbstractController
             $this->repository->getEntityManager()->flush();
         }
 
+        $type = $notification->getType();
+        if (str_starts_with($type, 'formation_') || str_starts_with($type, 'session_')) {
+            $user = $this->getUser();
+            if (method_exists($user, 'isEmployee') && $user->isEmployee()) {
+                return $this->redirectToRoute('employee_formation_index');
+            }
+
+            return $this->redirectToRoute('rh_formation_list');
+        }
+
         // Redirect to the appropriate leave page based on role
         $user = $this->getUser();
         if (method_exists($user, 'isEmployee') && $user->isEmployee()) {
