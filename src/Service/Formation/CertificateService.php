@@ -7,11 +7,14 @@ use Dompdf\Options;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Twig\Environment;
 
+
+
 class CertificateService
 {
     public function __construct(
         private readonly Environment $twig,
-        private readonly ParameterBagInterface $params
+        private readonly ParameterBagInterface $params,
+        private readonly QrCodeService $qrCodeService
     ) {
     }
 
@@ -24,7 +27,8 @@ class CertificateService
         \DateTimeInterface $dateDebut,
         \DateTimeInterface $dateFin,
         string $organisme,
-        ?string $rhCreatorName = null
+        ?string $rhCreatorName = null,
+        ?string $token = null
     ): array {
         $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
@@ -33,6 +37,13 @@ class CertificateService
         $dompdf = new Dompdf($pdfOptions);
 
         $templateBackground = $this->buildTemplateBackgroundDataUri();
+
+
+        $qrCodeDataUri = null;
+        if ($token) {
+            $qrCodeDataUri = $this->qrCodeService->generateQrCode($token);
+        }
+
 
         $html = $this->twig->render('DashboardEmployee/formation/certificate/template.html.twig', [
             'name' => $employeeName,
@@ -43,6 +54,8 @@ class CertificateService
             'today' => new \DateTime(),
             'template_background' => $templateBackground,
             'rh_creator_name' => $rhCreatorName,
+            'qr_code' => $qrCodeDataUri,
+            'token' => $token,
         ]);
 
         if (function_exists('mb_convert_encoding')) {
