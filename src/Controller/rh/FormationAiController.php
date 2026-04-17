@@ -2,7 +2,7 @@
 
 namespace App\Controller\rh;
 
-use App\Service\AiService;
+use App\Service\Shared\AiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

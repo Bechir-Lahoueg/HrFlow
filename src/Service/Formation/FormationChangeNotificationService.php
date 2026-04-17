@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Formation;
 
 use App\Entity\Formation\EmployeeNotification;
 use App\Entity\Formation\Formation;

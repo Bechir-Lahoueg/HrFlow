@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Formation;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;

@@ -11,9 +11,9 @@ use App\Exception\Payroll\InvalidSalaryException;
 use App\Exception\Payroll\EmployeeNotFoundException;
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
-use App\Service\FichePaieService;
-use App\Service\PrimeService;
-use App\Service\DeductionService;
+use App\Service\Paie\FichePaieService;
+use App\Service\Paie\PrimeService;
+use App\Service\Paie\DeductionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -118,6 +118,53 @@ final class RhPayrollController extends AbstractController
             'filterMois'     => $filterMois,
             'filterAnnee'    => $filterAnnee,
             'filterStatut'   => $filterStatut,
+        ]);
+    }
+
+    /**
+     * RH Statistics Dashboard — charts & KPIs
+     */
+    #[Route('/statistiques', name: 'app_rh_payroll_stats', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function statistiques(
+        Request $request,
+        FichePaieService $fichePaieService,
+        EmployeeRepository $employeeRepository,
+    ): Response {
+        $rhId = $this->getCurrentRhId();
+        $annee = (int) $request->query->get('annee', date('Y'));
+
+        $stats = $fichePaieService->getStatsByRh($rhId);
+        $monthlyEvolution = $fichePaieService->getMonthlyStatsByRh($rhId, $annee);
+
+        // Build chart data for masse salariale evolution
+        $monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        $brutData = array_fill(0, 12, 0);
+        $primesData = array_fill(0, 12, 0);
+        $deductionsData = array_fill(0, 12, 0);
+        $netData = array_fill(0, 12, 0);
+
+        foreach ($monthlyEvolution as $row) {
+            $idx = (int) $row['mois'] - 1;
+            $brutData[$idx] = (float) $row['totalBrut'];
+            $primesData[$idx] = (float) $row['totalPrimes'];
+            $deductionsData[$idx] = (float) $row['totalDeductions'];
+            $netData[$idx] = (float) $row['totalNet'];
+        }
+
+        // Employees with high deductions (for Jitsi suggestion)
+        $highDeductionEmployees = $employeeRepository->findWithHighDeductions($rhId, 3, 3);
+
+        return $this->render('DashboardHr/remuneration/statistiques.html.twig', [
+            'user' => $this->getUser(),
+            'stats' => $stats,
+            'annee' => $annee,
+            'monthLabels' => $monthLabels,
+            'brutData' => $brutData,
+            'primesData' => $primesData,
+            'deductionsData' => $deductionsData,
+            'netData' => $netData,
+            'highDeductionEmployees' => $highDeductionEmployees,
         ]);
     }
 

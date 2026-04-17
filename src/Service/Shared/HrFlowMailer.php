@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Shared;
 
 use App\Entity\Rh\LeaveRequest;
 use App\Repository\Rh\UserRepository;
