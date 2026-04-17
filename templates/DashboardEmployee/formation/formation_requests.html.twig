@@ -143,9 +143,11 @@
                                     {% set canDownloadCertificate = participation.session.statut == 'Terminee' and attendance >= 80 and (participation.statutParticipation == 'Accepte' or participation.statutParticipation == 'Certificat obtenu') %}
 
                                     {% if canDownloadCertificate %}
-                                        <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#145EB7]/10 text-[#145EB7] border border-[#145EB7]/30 hover:bg-[#145EB7]/20 transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v-9m0 9l-3-3m3 3l3-3M21 16.5v1.125A2.625 2.625 0 0118.375 20.25H5.625A2.625 2.625 0 013 17.625V16.5"/></svg>
-                                            Telecharger
+                                        <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}"
+                                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-semibold transition-all"
+                                           title="Télécharger le certificat PDF">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                                            PDF
                                         </a>
                                     {% elseif participation.certificatObtenu %}
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Obtenu</span>
