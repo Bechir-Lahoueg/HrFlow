@@ -122,7 +122,7 @@ final class RhFormationController extends AbstractController
 
         if ($this->isCsrfTokenValid('delete-formation-' . $idInt, $request->request->get('_token'))) {
             $sentCount = $this->formationChangeNotificationService->notifyFormationDeleted($formation);
-            $this->formationService->deleteFormation($idInt);
+            $this->formationService->deleteFormationWithRelations($formation);
 
             if ($sentCount > 0) {
                 $this->addFlash('success', sprintf('%d notification(s) envoyee(s) aux inscrits.', $sentCount));
@@ -243,7 +243,7 @@ final class RhFormationController extends AbstractController
     }
 
     #[Route('/session/{id}/delete', name: 'rh_formation_session_delete', methods: ['POST'])]
-    public function deleteSession(string $id, Request $request, SessionService $sessionService, \Doctrine\ORM\EntityManagerInterface $em): Response
+    public function deleteSession(string $id, Request $request, SessionService $sessionService): Response
     {
         $idInt = (int) $id;
         $session = $sessionService->getSessionById($idInt);
@@ -258,13 +258,12 @@ final class RhFormationController extends AbstractController
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
         }
 
-        if ($session->getParticipations()->count() > 0) {
-            $this->addFlash('error', 'Impossible de supprimer cette session: des participants sont déjà inscrits.');
-            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formationId]);
-        }
+        $sentCount = $this->formationChangeNotificationService->notifySessionDeleted($session);
+        $this->formationService->deleteSessionWithRelations($session);
 
-        $em->remove($session);
-        $em->flush();
+        if ($sentCount > 0) {
+            $this->addFlash('success', sprintf('%d notification(s) envoyee(s) aux inscrits.', $sentCount));
+        }
 
         $this->addFlash('success', 'Session supprimée avec succès.');
 

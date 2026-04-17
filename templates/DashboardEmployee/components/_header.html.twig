@@ -44,7 +44,7 @@
                 <div id="leave-notifications-menu" class="hidden absolute right-0 mt-2 w-96 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl z-20 overflow-hidden">
                     <div class="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Notifications Conges</p>
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Notifications</p>
                             <p class="text-[11px] text-zinc-500" id="leave-notif-count-label">—</p>
                         </div>
                         <form id="leave-mark-read-form" method="post" action="{{ path('leave_notifications_mark_all_read') }}" class="hidden">
@@ -121,14 +121,14 @@
 
     function renderList(notifications) {
         if (!notifications.length) {
-            return '<div class="px-4 py-8 text-center"><p class="text-sm text-zinc-400">Aucune nouvelle notification.</p><p class="text-[11px] text-zinc-400 mt-1">Les mises a jour de vos conges apparaitront ici.</p></div>';
+            return '<div class="px-4 py-8 text-center"><p class="text-sm text-zinc-400">Aucune nouvelle notification.</p><p class="text-[11px] text-zinc-400 mt-1">Les mises a jour conges et formations apparaitront ici.</p></div>';
         }
         return notifications.map(function (n) {
             var approved = n.type.indexOf('approved') !== -1;
             var rejected = n.type.indexOf('rejected') !== -1;
-            var dot = approved ? 'bg-emerald-500' : (rejected ? 'bg-rose-500' : 'bg-amber-500');
-            var tag = approved ? 'bg-emerald-100 text-emerald-700' : (rejected ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700');
-            var tagLabel = approved ? 'Accepte' : (rejected ? 'Refuse' : 'En attente');
+            var dot = approved ? 'bg-emerald-500' : (rejected ? 'bg-rose-500' : 'bg-sky-500');
+            var tag = approved ? 'bg-emerald-100 text-emerald-700' : (rejected ? 'bg-rose-100 text-rose-700' : 'bg-sky-100 text-sky-700');
+            var tagLabel = approved ? 'Accepte' : (rejected ? 'Refuse' : 'Information');
             var msg = n.message.length > 120 ? n.message.slice(0, 120) + '…' : n.message;
             var url = openBase.replace('__ID__', n.id);
             return '<a href="' + url + '" class="group block px-4 py-3 border-b border-zinc-100 dark:border-zinc-800/60 hover:bg-amber-50/70 dark:hover:bg-zinc-800/60 transition-colors">'
