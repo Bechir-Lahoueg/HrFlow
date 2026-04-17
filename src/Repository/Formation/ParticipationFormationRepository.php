@@ -182,4 +182,25 @@ class ParticipationFormationRepository extends ServiceEntityRepository
 
         return $count > 0;
     }
+
+    public function deleteBySessionId(int $sessionId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\ParticipationFormation p WHERE p.session = :sessionId'
+        )
+            ->setParameter('sessionId', $sessionId)
+            ->execute();
+    }
+
+    public function deleteByFormationId(int $formationId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\ParticipationFormation p
+             WHERE p.session IN (
+                SELECT s_sub.id FROM App\\Entity\\Formation\\SessionFormation s_sub WHERE s_sub.formation = :formationId
+             )'
+        )
+            ->setParameter('formationId', $formationId)
+            ->execute();
+    }
 }

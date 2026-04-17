@@ -124,15 +124,13 @@
 
                 {# ══════════ Filtres ══════════ #}
                 <div class="flex justify-end gap-4 mb-6 bg-zinc-50/50 dark:bg-zinc-800/20 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/50">
+                    {% set formationTypes = ['Technique', 'Soft Skills', 'Management', 'Leadership', 'Langues', 'Qualité', 'Sécurité', 'Conformité', 'Bureautique', 'Finance', 'RH', 'Digital', 'Autre'] %}
                     <form method="get" action="{{ path('rh_formation_list') }}" class="flex items-center gap-2 w-full md:w-auto">
                         <select name="type" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
                             <option value="">Tous les types</option>
-                            <option value="Technique" {% if filters.type == 'Technique' %}selected{% endif %}>Technique</option>
-                            <option value="Management" {% if filters.type == 'Management' %}selected{% endif %}>Management</option>
-                            <option value="Langues" {% if filters.type == 'Langues' %}selected{% endif %}>Langues</option>
-                            <option value="Qualité" {% if filters.type == 'Qualité' %}selected{% endif %}>Qualité</option>
-                            <option value="Sécurité" {% if filters.type == 'Sécurité' %}selected{% endif %}>Sécurité</option>
-                            <option value="Autre" {% if filters.type == 'Autre' %}selected{% endif %}>Autre</option>
+                            {% for type in formationTypes %}
+                                <option value="{{ type }}" {% if filters.type == type %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
                         </select>
 
                         <select name="sort" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
@@ -157,6 +155,22 @@
                 </div>
 
                 {# Grid des Formations #}
+                {% set formationTypeStyles = {
+                    'Technique': 'background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;',
+                    'Soft Skills': 'background:#fce7f3;color:#9d174d;border:1px solid #f9a8d4;',
+                    'Management': 'background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;',
+                    'Leadership': 'background:#cffafe;color:#155e75;border:1px solid #67e8f9;',
+                    'Langues': 'background:#ffedd5;color:#9a3412;border:1px solid #fdba74;',
+                    'Qualité': 'background:#fef9c3;color:#854d0e;border:1px solid #fde047;',
+                    'Sécurité': 'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;',
+                    'Conformité': 'background:#e0e7ff;color:#3730a3;border:1px solid #a5b4fc;',
+                    'Bureautique': 'background:#f3e8ff;color:#7e22ce;border:1px solid #d8b4fe;',
+                    'Finance': 'background:#dcfce7;color:#166534;border:1px solid #86efac;',
+                    'RH': 'background:#e0f2fe;color:#075985;border:1px solid #7dd3fc;',
+                    'Digital': 'background:#ccfbf1;color:#0f766e;border:1px solid #5eead4;',
+                    'Autre': 'background:#f3f4f6;color:#374151;border:1px solid #d1d5db;'
+                } %}
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
                         <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id}) }}'"
@@ -182,7 +196,8 @@
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider whitespace-nowrap ml-2">{{ formation.type }}</span>
+                                    {% set typeStyle = formationTypeStyles[formation.type]|default('background:#f3f4f6;color:#374151;border:1px solid #d1d5db;') %}
+                                    <span class="text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider whitespace-nowrap ml-2" style="{{ typeStyle }}">{{ formation.type }}</span>
                                 </div>
                                 <div class="mb-4 space-y-2">
                                     <div>
