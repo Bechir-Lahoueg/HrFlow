@@ -155,7 +155,20 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 {% endfor %}
 
     <div class="form-card">
-        <form action="{{ project is defined ? path('rh_project_edit', {id: project.id}) : path('rh_project_new') }}" method="POST">
+
+        {# Résumé des erreurs côté serveur (utile si les flashes/session ne s'affichent pas) #}
+        {% if errors is defined and errors|length > 0 %}
+            <div class="alert alert-danger rounded-3 mb-3" role="alert">
+                <strong>Veuillez corriger les erreurs suivantes :</strong>
+                <ul class="mb-0 mt-2">
+                    {% for message in errors %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form action="{{ project is defined ? path('rh_project_edit', {id: project.id}) : path('rh_project_new') }}" method="POST" novalidate>
 
             {# ── Infos générales ── #}
             <div class="form-section">
@@ -164,16 +177,16 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                     <label class="form-label">Nom du projet *</label>
                     <input type="text" name="name"
                            class="form-control {% if errors.name is defined %}is-invalid{% endif %}"
-                           value="{{ old_data.name ?? project.name ?? '' }}" required
+                           value="{{ old_data.name ?? project.name ?? '' }}"
                            placeholder="Ex: Refonte site web...">
-                    {% if errors.name is defined %}
-                        <div class="invalid-feedback">{{ errors.name }}</div>
+                    {% if errors.name|default(null) %}
+                        <div class="invalid-feedback d-block">{{ errors.name }}</div>
                     {% endif %}
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Description</label>
                     <textarea name="description" class="form-control" rows="3"
-                              placeholder="Décrivez les objectifs et le périmètre du projet...">{{ project.description ?? '' }}</textarea>
+                              placeholder="Décrivez les objectifs et le périmètre du projet...">{{ old_data.description ?? project.description ?? '' }}</textarea>
                 </div>
             </div>
 
@@ -193,11 +206,14 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                         {% for s in statuses %}
                         <div>
                             <input type="radio" name="status" id="status_{{ s.val }}" value="{{ s.val }}" class="status-option"
-                                   {% if (project.status ?? 'planning') == s.val %}checked{% endif %}>
+                                   {% if (old_data.status ?? project.status ?? 'planning') == s.val %}checked{% endif %}>
                             <label for="status_{{ s.val }}" class="status-label w-100">{{ s.label }}</label>
                         </div>
                         {% endfor %}
                     </div>
+                    {% if errors.status|default(null) %}
+                        <div class="text-danger mt-2" style="font-size:.85rem; font-weight:600">{{ errors.status }}</div>
+                    {% endif %}
                 </div>
                 <div>
                     <label class="form-label">Priorité</label>
@@ -211,7 +227,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                         {% for p in priorities %}
                         <div>
                             <input type="radio" name="priority" id="prio_{{ p.val }}" value="{{ p.val }}" class="priority-option"
-                                   {% if (project.priority ?? 'medium') == p.val %}checked{% endif %}>
+                                   {% if (old_data.priority ?? project.priority ?? 'medium') == p.val %}checked{% endif %}>
                             <label for="prio_{{ p.val }}" class="priority-label w-100">
                                 <span style="font-size:1.3rem">{{ p.emoji }}</span>
                                 {{ p.label }}
@@ -219,6 +235,9 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                         </div>
                         {% endfor %}
                     </div>
+                    {% if errors.priority|default(null) %}
+                        <div class="text-danger mt-2" style="font-size:.85rem; font-weight:600">{{ errors.priority }}</div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -231,8 +250,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                         <input type="date" name="start_date"
                                class="form-control {% if errors.start_date is defined %}is-invalid{% endif %}"
                                value="{{ old_data.start_date ?? project.start_date ?? 'now'|date('Y-m-d') }}">
-                        {% if errors.start_date is defined %}
-                            <div class="invalid-feedback">{{ errors.start_date }}</div>
+                        {% if errors.start_date|default(null) %}
+                            <div class="invalid-feedback d-block">{{ errors.start_date }}</div>
                         {% endif %}
                     </div>
                     <div class="col-md-6">
@@ -240,8 +259,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                         <input type="date" name="end_date"
                                class="form-control {% if errors.end_date is defined %}is-invalid{% endif %}"
                                value="{{ old_data.end_date ?? project.end_date ?? '' }}">
-                        {% if errors.end_date is defined %}
-                            <div class="invalid-feedback">{{ errors.end_date }}</div>
+                        {% if errors.end_date|default(null) %}
+                            <div class="invalid-feedback d-block">{{ errors.end_date }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -258,7 +277,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                             <input type="number" name="budget"
                                    class="form-control {% if errors.budget is defined %}is-invalid{% endif %}"
                                    value="{{ old_data.budget ?? project.budget ?? '' }}" min="0" step="100">
-                            {% if errors.budget is defined %}
+                            {% if errors.budget|default(null) %}
                                 <div class="invalid-feedback d-block">{{ errors.budget }}</div>
                             {% endif %}
                         </div>
@@ -266,10 +285,14 @@ textarea.form-control { resize: vertical; min-height: 90px; }
                     <div class="col-md-6">
                         <label class="form-label">Heures estimées</label>
                         <div class="input-group">
-                            <input type="number" name="estimated_hours" class="form-control"
-                                   value="{{ project.estimated_hours ?? '' }}" min="0"
+                            <input type="number" name="estimated_hours"
+                                   class="form-control {% if errors.estimated_hours is defined %}is-invalid{% endif %}"
+                                   value="{{ old_data.estimated_hours ?? project.estimated_hours ?? '' }}" min="0"
                                    placeholder="0">
                             <span class="input-group-text">h</span>
+                            {% if errors.estimated_hours|default(null) %}
+                                <div class="invalid-feedback d-block">{{ errors.estimated_hours }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
