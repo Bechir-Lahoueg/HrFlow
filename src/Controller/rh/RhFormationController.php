@@ -2,12 +2,12 @@
 
 namespace App\Controller\rh;
 
-use App\Service\FormationService;
-use App\Service\FormationChangeNotificationService;
-use App\Service\ParticipationService;
-use App\Service\PresenceService;
-use App\Service\SessionFeedbackService;
-use App\Service\SessionService;
+use App\Service\Formation\FormationService;
+use App\Service\Formation\FormationChangeNotificationService;
+use App\Service\Formation\ParticipationService;
+use App\Service\Formation\PresenceService;
+use App\Service\Formation\SessionFeedbackService;
+use App\Service\Formation\SessionService;
 use App\Form\Formation\FormationType;
 use App\Form\Formation\SessionFormationType;
 use App\Entity\Formation\Formation;

@@ -2,11 +2,11 @@
 
 namespace App\Controller\employee;
 
-use App\Service\FormationService;
-use App\Service\ParticipationService;
-use App\Service\CertificateService;
-use App\Service\SessionFeedbackService;
-use App\Service\SessionService;
+use App\Service\Formation\FormationService;
+use App\Service\Formation\ParticipationService;
+use App\Service\Formation\CertificateService;
+use App\Service\Formation\SessionFeedbackService;
+use App\Service\Formation\SessionService;
 use App\Repository\Formation\EmployeeNotificationRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;

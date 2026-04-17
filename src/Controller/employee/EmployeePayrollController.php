@@ -4,11 +4,12 @@ namespace App\Controller\employee;
 
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
-use App\Service\DeductionService;
-use App\Service\FichePaieService;
-use App\Service\FichePaiePdfService;
-use App\Service\PrimeService;
+use App\Service\Paie\DeductionService;
+use App\Service\Paie\FichePaieService;
+use App\Service\Paie\FichePaiePdfService;
+use App\Service\Paie\PrimeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -178,6 +179,69 @@ final class EmployeePayrollController extends AbstractController
         return $this->render('DashboardEmployee/payroll/deductions_list.html.twig', [
             'user' => $this->getUser(),
             'deductions' => $deductions,
+        ]);
+    }
+
+    /**
+     * Employee payroll statistics — salary evolution charts
+     */
+    #[Route('/statistiques', name: 'app_employee_payroll_stats', methods: ['GET'])]
+    #[IsGranted('ROLE_EMPLOYEE')]
+    public function statistiques(
+        Request $request,
+        FichePaieService $fichePaieService,
+    ): Response {
+        $employeeId = $this->getCurrentEmployeeId();
+        $annee = (int) $request->query->get('annee', date('Y'));
+
+        $monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        $brutData = array_fill(0, 12, 0);
+        $primesData = array_fill(0, 12, 0);
+        $deductionsData = array_fill(0, 12, 0);
+        $netData = array_fill(0, 12, 0);
+        $totalBrut = 0.0;
+        $totalPrimes = 0.0;
+        $totalDeductions = 0.0;
+        $totalNet = 0.0;
+        $fichesCount = 0;
+        $hasData = false;
+
+        try {
+            $evolution = $fichePaieService->getMonthlyEvolution($employeeId, $annee);
+
+            foreach ($evolution as $row) {
+                $idx = (int) $row['mois'] - 1;
+                $brutData[$idx] = (float) $row['brut'];
+                $primesData[$idx] = (float) $row['primes'];
+                $deductionsData[$idx] = (float) $row['deductions'];
+                $netData[$idx] = (float) $row['net'];
+            }
+
+            $fiches = $fichePaieService->getFichePaiesByEmployee($employeeId);
+            $fichesCount = count($fiches);
+            $totalBrut = array_sum(array_map(fn($f) => (float) $f->salaireBrut, $fiches));
+            $totalPrimes = array_sum(array_map(fn($f) => (float) $f->totalPrimes, $fiches));
+            $totalDeductions = array_sum(array_map(fn($f) => (float) $f->totalDeductions, $fiches));
+            $totalNet = array_sum(array_map(fn($f) => (float) $f->salaireNet, $fiches));
+            $hasData = $fichesCount > 0;
+        } catch (\Throwable) {
+            // DB table may not exist yet — render with empty state
+        }
+
+        return $this->render('DashboardEmployee/payroll/statistiques.html.twig', [
+            'user' => $this->getUser(),
+            'annee' => $annee,
+            'monthLabels' => $monthLabels,
+            'brutData' => $brutData,
+            'primesData' => $primesData,
+            'deductionsData' => $deductionsData,
+            'netData' => $netData,
+            'totalBrut' => $totalBrut,
+            'totalPrimes' => $totalPrimes,
+            'totalDeductions' => $totalDeductions,
+            'totalNet' => $totalNet,
+            'fichesCount' => $fichesCount,
+            'hasData' => $hasData,
         ]);
     }
 

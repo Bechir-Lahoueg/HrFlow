@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Shared;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

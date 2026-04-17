@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Formation;
 
 use App\Entity\Formation\SessionFeedback;
 use App\Repository\Formation\ParticipationFormationRepository;

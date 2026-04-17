@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Paie;
 
 use App\Enum\PrimeType;
 use App\Enum\DeductionType;
