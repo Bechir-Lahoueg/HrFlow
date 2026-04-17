@@ -1,0 +1,32 @@
+{# ── Sub-navigation: Employees & Leave Requests ── #}
+{% set currentRoute = app.request.get('_route') %}
+
+<div class="mx-6 lg:mx-8 mt-4">
+    <nav class="inline-flex items-center gap-1 p-1 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/60 dark:border-zinc-800/50 shadow-sm">
+        <a href="{{ path('app_rh_employees') }}"
+           class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 flex items-center gap-2
+                  {{ currentRoute == 'app_rh_employees'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md shadow-teal-500/25'
+                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+            </svg>
+            Employes
+        </a>
+        <a href="{{ path('app_rh_leave_requests') }}"
+           class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 flex items-center gap-2
+                  {{ currentRoute == 'app_rh_leave_requests'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25'
+                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+            Demandes de conge
+            {% if (pendingLeaveCount|default(0)) > 0 %}
+                <span class="w-5 h-5 rounded-full bg-white/25 text-[10px] font-bold flex items-center justify-center {{ currentRoute == 'app_rh_leave_requests' ? '' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400' }}">
+                    {{ pendingLeaveCount }}
+                </span>
+            {% endif %}
+        </a>
+    </nav>
+</div>

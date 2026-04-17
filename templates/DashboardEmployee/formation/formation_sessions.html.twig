@@ -21,6 +21,19 @@
             color: #fff;
         }
         .btn-primary:hover{background: var(--primary-dark)}
+
+        .hf-modal-overlay{position:fixed;inset:0;background:rgba(2,46,105,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem}
+        .hf-modal{width:min(520px,100%);background:#fff;border:1px solid #D0D0D0;border-radius:16px;box-shadow:0 24px 60px -22px rgba(2,46,105,.45);overflow:hidden}
+        .hf-modal-head{background:#022E69;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+        .hf-modal-title{font-weight:800;font-size:14px;letter-spacing:.02em}
+        .hf-modal-close{background:transparent;border:0;color:#fff;font-size:18px;line-height:1;cursor:pointer}
+        .hf-modal-body{padding:18px;color:#1f2937}
+        .hf-modal-actions{padding:0 18px 18px;display:flex;justify-content:flex-end}
+        .hf-modal-btn{border:1px solid #145EB7;background:#145EB7;color:#fff;padding:8px 14px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
+        .hf-modal-btn:hover{background:#3FA9F5;border-color:#3FA9F5}
+        .hf-modal-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;border:1px solid #D0D0D0}
+        .hf-modal-badge.error{background:#fff5f5;color:#b42318;border-color:#f4c7c7}
+        .hf-modal-badge.success{background:#effaf6;color:#067647;border-color:#b7ebcf}
     </style>
 {% endblock %}
 
@@ -31,18 +44,8 @@
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardEmployee/components/_header.html.twig' %}
 
-        {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                {{ message }}
-            </div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                {{ message }}
-            </div>
-        {% endfor %}
+        {% set successFlashes = app.flashes('success') %}
+        {% set errorFlashes = app.flashes('error') %}
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
             <div class="mb-6">
@@ -113,7 +116,22 @@
                             <div class="mt-4 grid grid-cols-2 gap-3">
                                 <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
                                     <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lieu</p>
-                                    <p class="mt-1 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">{{ session.lieu ?: '—' }}</p>
+                                    {% set sessionStatut = mySessionStats is defined and mySessionStats[session.id] is defined ? mySessionStats[session.id].statut : null %}
+                                    {% set isAcceptedEmployee = sessionStatut == 'Accepte' or sessionStatut == 'Certificat obtenu' %}
+                                    {% set isHttpLink = session.lieu and (session.lieu matches '/^https?:\\/\\//i') %}
+
+                                    {% if isHttpLink %}
+                                        {% if isAcceptedEmployee %}
+                                            <a href="{{ session.lieu }}" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#145EB7] hover:text-[#3FA9F5] underline break-all">
+                                                Ouvrir le lien
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M15 13.5V18a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h4.5"/></svg>
+                                            </a>
+                                        {% else %}
+                                            <p class="mt-1 text-[12px] font-medium text-zinc-500">Lien disponible apres validation de votre inscription.</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p class="mt-1 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">{{ session.lieu ?: '—' }}</p>
+                                    {% endif %}
                                 </div>
 
                                 <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
@@ -194,6 +212,42 @@
                                     <span class="text-[11px] text-zinc-400">Non disponible</span>
                                 {% endif %}
                             </div>
+
+                            {% set canFeedback = mySessionStats is defined and mySessionStats[session.id] is defined and mySessionStats[session.id].statut == 'Accepte' and session.statut == 'Terminee' %}
+                            {% if canFeedback %}
+                                <div class="mt-3 rounded-xl border border-zinc-200 bg-white p-3">
+                                    {% if feedbackGivenBySession[session.id]|default(false) %}
+                                        <p class="text-xs font-semibold text-emerald-700">Feedback deja envoye pour cette session.</p>
+                                    {% else %}
+                                        <details>
+                                            <summary class="cursor-pointer text-xs font-bold text-[#145EB7]">Donner mon feedback</summary>
+                                            <form method="post" action="{{ path('employee_formation_feedback_submit', {id: session.id}) }}" class="mt-3 space-y-3">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('feedback-session-' ~ session.id) }}">
+                                                <div>
+                                                    <label class="text-[11px] font-semibold text-zinc-600">Note (etoiles)</label>
+                                                    <select name="rating" class="mt-1 w-full rounded-lg border-zinc-300 text-sm" required>
+                                                        <option value="">Choisir une note</option>
+                                                        <option value="5">5 - Excellent</option>
+                                                        <option value="4">4 - Tres bien</option>
+                                                        <option value="3">3 - Bien</option>
+                                                        <option value="2">2 - Moyen</option>
+                                                        <option value="1">1 - Faible</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="text-[11px] font-semibold text-zinc-600">Commentaire</label>
+                                                    <textarea name="comment" rows="3" class="mt-1 w-full rounded-lg border-zinc-300 text-sm" required></textarea>
+                                                </div>
+                                                <label class="inline-flex items-center gap-2 text-xs text-zinc-600">
+                                                    <input type="checkbox" name="is_anonymous" value="1" class="rounded border-zinc-300 text-[#145EB7]">
+                                                    Publier en anonyme
+                                                </label>
+                                                <button type="submit" class="w-full px-3 py-2 rounded-lg bg-[#145EB7] text-white text-xs font-bold hover:bg-[#3FA9F5] transition-colors">Envoyer mon feedback</button>
+                                            </form>
+                                        </details>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </article>
                     {% else %}
                         <div class="col-span-full">
@@ -207,4 +261,72 @@
         </main>
     </div>
 </div>
+
+<script>
+(function () {
+    var successMessages = {{ successFlashes|json_encode|raw }};
+    var errorMessages = {{ errorFlashes|json_encode|raw }};
+    var queue = [];
+
+    successMessages.forEach(function (message) {
+        queue.push({ type: 'success', message: message });
+    });
+    errorMessages.forEach(function (message) {
+        queue.push({ type: 'error', message: message });
+    });
+
+    function closeModal() {
+        var overlay = document.getElementById('hf-modal-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+        if (queue.length > 0) {
+            showNext();
+        }
+    }
+
+    function showNext() {
+        if (queue.length === 0 || document.getElementById('hf-modal-overlay')) return;
+
+        var data = queue.shift();
+        var label = data.type === 'error' ? 'Erreur' : 'Succes';
+
+        var overlay = document.createElement('div');
+        overlay.id = 'hf-modal-overlay';
+        overlay.className = 'hf-modal-overlay';
+        overlay.innerHTML =
+            '<div class="hf-modal" role="dialog" aria-modal="true" aria-label="Notification">' +
+                '<div class="hf-modal-head">' +
+                    '<span class="hf-modal-title">Notification</span>' +
+                    '<button type="button" class="hf-modal-close" aria-label="Fermer">&times;</button>' +
+                '</div>' +
+                '<div class="hf-modal-body">' +
+                    '<span class="hf-modal-badge ' + data.type + '">' + label + '</span>' +
+                    '<p style="margin-top:12px;font-size:14px;line-height:1.55;white-space:pre-line;">' + String(data.message).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' +
+                '</div>' +
+                '<div class="hf-modal-actions">' +
+                    '<button type="button" class="hf-modal-btn">OK</button>' +
+                '</div>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', function (event) {
+            if (event.target === overlay) {
+                closeModal();
+            }
+        });
+        overlay.querySelector('.hf-modal-close').addEventListener('click', closeModal);
+        overlay.querySelector('.hf-modal-btn').addEventListener('click', closeModal);
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && document.getElementById('hf-modal-overlay')) {
+            closeModal();
+        }
+    });
+
+    showNext();
+})();
+</script>
 {% endblock %}

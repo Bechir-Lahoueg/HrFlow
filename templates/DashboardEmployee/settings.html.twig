@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Parametres | Employe — HrFlow{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% include 'Settings/_settings_form.html.twig' %}
+    </div>
+</div>
+{% endblock %}

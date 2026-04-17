@@ -14,6 +14,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use App\Service\HrFlowMailer;
 
 final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -25,6 +26,7 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly DbUserProvider $userProvider,
+        private readonly HrFlowMailer $hrFlowMailer,
     ) {
     }
 
@@ -65,6 +67,21 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         $roles = $token->getRoleNames();
         $this->removeTargetPath($request->getSession(), $firewallName);
+
+        // Send login alert email for RH and Admin only
+        $user = $token->getUser();
+        if ($user instanceof DbUser && (in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_RH', $roles, true))) {
+            $email = $user->getEmail();
+            if ($email) {
+                $this->hrFlowMailer->sendLoginAlert(
+                    $email,
+                    $user->getFullName() ?? $user->getUsername(),
+                    in_array('ROLE_ADMIN', $roles, true) ? 'Administrateur' : 'RH',
+                    $request->getClientIp() ?? 'Inconnu',
+                    $request->headers->get('User-Agent', 'Inconnu')
+                );
+            }
+        }
 
         if (in_array('ROLE_ADMIN', $roles, true)) {
             return new RedirectResponse($this->urlGenerator->generate('app_welcome_admin'));

@@ -16,9 +16,11 @@ final class AdminLeaveController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function index(LeaveRequestService $leaveRequestService): Response
     {
+        $adminActor = (string) $this->getUser()?->getUserIdentifier();
+
         return $this->render('DashboardAdmin/leave_exceptions.html.twig', [
             'user' => $this->getUser(),
-            'leaveRequests' => $leaveRequestService->getAdminExceptionRequests(),
+            'leaveRequests' => $leaveRequestService->getAdminExceptionRequests($adminActor),
         ]);
     }
 

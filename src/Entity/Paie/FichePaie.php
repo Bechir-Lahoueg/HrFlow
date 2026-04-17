@@ -55,6 +55,9 @@ class FichePaie
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    #[ORM\Column(name: 'statut_paiement', type: 'boolean', options: ['default' => false])]
+    private bool $statutPaiement = false;
+
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -155,6 +158,17 @@ class FichePaie
     public function setSalaireNet(string $salaireNet): static
     {
         $this->salaireNet = $salaireNet;
+        return $this;
+    }
+
+    public function isStatutPaiement(): bool
+    {
+        return $this->statutPaiement;
+    }
+
+    public function setStatutPaiement(bool $statutPaiement): static
+    {
+        $this->statutPaiement = $statutPaiement;
         return $this;
     }
 

@@ -128,13 +128,14 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Lieu de la session</label>
-                            {{ form_widget(sessionForm.lieu, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'placeholder': 'Ex: Salle Polyvalente, Paris ou Distanciel'}}) }}
+                            <label id="session-lieu-label" class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Lieu de la session</label>
+                            {{ form_widget(sessionForm.lieu, {'attr': {'id': 'session-lieu', 'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'placeholder': 'Ex: Salle Polyvalente ou URL Google Maps'}}) }}
                             <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.lieu) }}</div>
+                            <p id="session-lieu-help" class="text-[11px] text-zinc-400 ml-1 italic">Pour le presentiel: adresse ou lien Google Maps. Pour l'en ligne: lien Teams/Meet/Zoom.</p>
                         </div>
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Mode</label>
-                            {{ form_widget(sessionForm.mode, {'attr': {'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
+                            {{ form_widget(sessionForm.mode, {'attr': {'id': 'session-mode', 'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all'}}) }}
                             <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.mode) }}</div>
                         </div>
                     </div>
@@ -202,5 +203,47 @@
         document.addEventListener('DOMContentLoaded', initCalculSession);
 
         document.addEventListener('turbo:load', initCalculSession);
+
+        function initModeLieuBehavior() {
+            const modeSelect = document.getElementById('session-mode');
+            const lieuInput = document.getElementById('session-lieu');
+            const lieuLabel = document.getElementById('session-lieu-label');
+            const lieuHelp = document.getElementById('session-lieu-help');
+
+            if (!modeSelect || !lieuInput || !lieuLabel || !lieuHelp) {
+                return;
+            }
+
+            const applyModeUi = () => {
+                const mode = (modeSelect.value || '')
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+
+                if (mode.includes('en ligne')) {
+                    lieuLabel.textContent = 'Lien de la session en ligne';
+                    lieuInput.placeholder = 'https://teams.microsoft.com/... ou https://meet.google.com/...';
+                    lieuHelp.textContent = 'Renseignez un lien http(s) valide: Teams, Google Meet, Zoom, Webex...';
+                    return;
+                }
+
+                if (mode.includes('presentiel')) {
+                    lieuLabel.textContent = 'Lieu de la session';
+                    lieuInput.placeholder = 'Ex: Salle Polyvalente, Tunis ou https://maps.google.com/...';
+                    lieuHelp.textContent = 'Vous pouvez saisir une adresse classique ou un lien Google Maps.';
+                    return;
+                }
+
+                lieuLabel.textContent = 'Lieu / lien de la session hybride';
+                lieuInput.placeholder = 'Ex: Salle B + https://meet.google.com/abc-defg-hij';
+                lieuHelp.textContent = 'Hybride: indiquez soit le lieu, soit le lien, ou les deux.';
+            };
+
+            modeSelect.addEventListener('change', applyModeUi);
+            applyModeUi();
+        }
+
+        document.addEventListener('DOMContentLoaded', initModeLieuBehavior);
+        document.addEventListener('turbo:load', initModeLieuBehavior);
     </script>
 {% endblock %}

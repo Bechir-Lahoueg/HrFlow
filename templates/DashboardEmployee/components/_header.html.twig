@@ -15,7 +15,8 @@
             <span class="text-zinc-400 dark:text-zinc-500">Employee</span>
             <svg class="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
             <span class="font-semibold text-zinc-800 dark:text-zinc-200">
-                {% if app.request.get('_route') == 'app_employee_leave_requests' %}My Leaves
+                {% if app.request.get('_route') == 'app_employee_leave_requests' %}Mes conges
+                {% elseif app.request.get('_route') == 'app_employee_settings' %}Parametres
                 {% else %}Dashboard{% endif %}
             </span>
         </div>
@@ -32,13 +33,32 @@
                 </svg>
             </button>
 
-            {# Notifications #}
-            <button class="relative p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
-                </svg>
-                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full glow-pulse"></span>
-            </button>
+            {# Notifications — badge and list populated by JS polling #}
+            <div class="relative" id="leave-notifications-root">
+                <button id="leave-notifications-toggle" type="button" class="relative p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+                    </svg>
+                    <span id="leave-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                </button>
+                <div id="leave-notifications-menu" class="hidden absolute right-0 mt-2 w-96 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl z-20 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Notifications Conges</p>
+                            <p class="text-[11px] text-zinc-500" id="leave-notif-count-label">—</p>
+                        </div>
+                        <form id="leave-mark-read-form" method="post" action="{{ path('leave_notifications_mark_all_read') }}" class="hidden">
+                            <input type="hidden" name="_token" value="{{ csrf_token('leave-notifications-mark-all-read') }}">
+                            <button type="submit" class="text-[11px] font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400">Marquer tout lu</button>
+                        </form>
+                    </div>
+                    <div class="max-h-96 overflow-y-auto" id="leave-notif-list">
+                        <div class="px-4 py-8 text-center">
+                            <p class="text-sm text-zinc-400">Chargement…</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {# Divider #}
             <div class="w-px h-8 bg-zinc-200 dark:bg-zinc-800/50 mx-1 hidden sm:block"></div>
@@ -59,3 +79,143 @@
         </div>
     </div>
 </header>
+
+<script>
+(function () {
+    var POLLER_KEY = '__hrflowLeaveNotifPoller';
+    if (window[POLLER_KEY] && typeof window[POLLER_KEY].stop === 'function') {
+        window[POLLER_KEY].stop();
+    }
+
+    var root   = document.getElementById('leave-notifications-root');
+    var toggle = document.getElementById('leave-notifications-toggle');
+    var menu   = document.getElementById('leave-notifications-menu');
+    if (!root || !toggle || !menu) return;
+
+    toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) {
+            runPoll();
+        }
+    });
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) menu.classList.add('hidden'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu.classList.add('hidden'); });
+
+    var badge      = document.getElementById('leave-notif-badge');
+    var countLabel = document.getElementById('leave-notif-count-label');
+    var notifList  = document.getElementById('leave-notif-list');
+    var markForm   = document.getElementById('leave-mark-read-form');
+    var pollUrl    = '{{ path("leave_notifications_poll") }}';
+    var openBase   = '{{ path("leave_notification_open", {id: "__ID__"}) }}';
+    var POLL_MENU_OPEN_MS = 15000;
+    var POLL_IDLE_MS = 120000;
+    var POLL_HIDDEN_MS = 300000;
+
+    var timer = null;
+    var inFlight = false;
+    var stopped = false;
+    var abortController = null;
+
+    function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    function renderList(notifications) {
+        if (!notifications.length) {
+            return '<div class="px-4 py-8 text-center"><p class="text-sm text-zinc-400">Aucune nouvelle notification.</p><p class="text-[11px] text-zinc-400 mt-1">Les mises a jour de vos conges apparaitront ici.</p></div>';
+        }
+        return notifications.map(function (n) {
+            var approved = n.type.indexOf('approved') !== -1;
+            var rejected = n.type.indexOf('rejected') !== -1;
+            var dot = approved ? 'bg-emerald-500' : (rejected ? 'bg-rose-500' : 'bg-amber-500');
+            var tag = approved ? 'bg-emerald-100 text-emerald-700' : (rejected ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700');
+            var tagLabel = approved ? 'Accepte' : (rejected ? 'Refuse' : 'En attente');
+            var msg = n.message.length > 120 ? n.message.slice(0, 120) + '…' : n.message;
+            var url = openBase.replace('__ID__', n.id);
+            return '<a href="' + url + '" class="group block px-4 py-3 border-b border-zinc-100 dark:border-zinc-800/60 hover:bg-amber-50/70 dark:hover:bg-zinc-800/60 transition-colors">'
+                + '<div class="flex items-start gap-3"><span class="mt-1 w-2 h-2 rounded-full ' + dot + '"></span>'
+                + '<div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-2">'
+                + '<p class="text-[12px] font-semibold text-zinc-800 dark:text-zinc-200 truncate">' + esc(n.title) + '</p>'
+                + '<span class="text-[10px] px-2 py-0.5 rounded-full ' + tag + '">' + tagLabel + '</span></div>'
+                + '<p class="mt-1 text-[12px] leading-relaxed text-zinc-600 dark:text-zinc-300">' + esc(msg) + '</p>'
+                + '<p class="mt-1 text-[10px] text-zinc-400">' + esc(n.createdAt || '') + '</p>'
+                + '</div></div></a>';
+        }).join('');
+    }
+
+    function updateUI(data) {
+        if (data.count > 0) {
+            badge.textContent = data.count > 99 ? '99+' : data.count;
+            badge.classList.remove('hidden');
+            if (markForm) markForm.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+            if (markForm) markForm.classList.add('hidden');
+        }
+        if (countLabel) countLabel.textContent = data.count + ' non lue(s)';
+        if (notifList) notifList.innerHTML = renderList(data.notifications || []);
+    }
+
+    function scheduleNext(delay) {
+        if (stopped) return;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(runPoll, delay);
+    }
+
+    function nextDelay() {
+        if (document.hidden) return POLL_HIDDEN_MS;
+        return menu.classList.contains('hidden') ? POLL_IDLE_MS : POLL_MENU_OPEN_MS;
+    }
+
+    function runPoll() {
+        if (stopped) return;
+        if (document.hidden) {
+            scheduleNext(nextDelay());
+            return;
+        }
+        if (inFlight) {
+            scheduleNext(nextDelay());
+            return;
+        }
+
+        inFlight = true;
+        abortController = new AbortController();
+
+        fetch(pollUrl, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            signal: abortController.signal,
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                updateUI(data);
+            })
+            .catch(function () {})
+            .finally(function () {
+                inFlight = false;
+                abortController = null;
+                scheduleNext(nextDelay());
+            });
+    }
+
+    function onVisibilityChange() {
+        if (!document.hidden) {
+            runPoll();
+        } else {
+            scheduleNext(nextDelay());
+        }
+    }
+
+    function stop() {
+        stopped = true;
+        if (timer) clearTimeout(timer);
+        if (abortController) abortController.abort();
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('beforeunload', stop);
+    window[POLLER_KEY] = { stop: stop };
+
+    runPoll();
+})();
+</script>

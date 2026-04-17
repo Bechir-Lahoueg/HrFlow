@@ -71,7 +71,10 @@
                         <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
                             <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
-                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Historique</h3>
+                        <div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Historique complet des demandes</h3>
+                            <p class="text-xs text-zinc-500">Toutes vos participations: en attente, acceptees, refusees et certifiees.</p>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         <input id="history-search" type="text" placeholder="Rechercher..." class="rounded-lg border-zinc-200 bg-zinc-50 text-sm w-40 focus:border-violet-400 focus:ring-violet-400 focus:bg-white">
@@ -136,13 +139,20 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-4">
-                                    {% if participation.certificatObtenu %}
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                                            Oui
-                                        </span>
+                                    {% set attendance = attendanceMap[participation.id]|default(0) %}
+                                    {% set canDownloadCertificate = participation.session.statut == 'Terminee' and attendance >= 80 and (participation.statutParticipation == 'Accepte' or participation.statutParticipation == 'Certificat obtenu') %}
+
+                                    {% if canDownloadCertificate %}
+                                        <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}"
+                                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-semibold transition-all"
+                                           title="Télécharger le certificat PDF">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                                            PDF
+                                        </a>
+                                    {% elseif participation.certificatObtenu %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Obtenu</span>
                                     {% else %}
-                                        <span class="text-[11px] text-zinc-400">Non</span>
+                                        <span class="text-[11px] text-zinc-400">Non disponible</span>
                                     {% endif %}
                                 </td>
                             </tr>

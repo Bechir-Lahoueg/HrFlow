@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#eef2ff;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:radial-gradient(circle at top,#dbeafe 0%,#eef2ff 45%,#f5f7fb 100%);padding:40px 12px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(37,99,235,0.12);">
+
+    {# Header #}
+    <tr><td style="padding:20px 32px 12px;background:#ffffff;text-align:center;">
+        <img src="{{ absolute_url(asset('logo.png')) }}" alt="HrFlow" width="124" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:124px;height:auto;">
+    </td></tr>
+
+    <tr><td style="background:linear-gradient(140deg,#1d4ed8,#2563eb 45%,#38bdf8);padding:30px 32px;">
+        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Notification RH</p>
+        <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;">Nouvelle demande de conge</h1>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Une action de validation est attendue de votre cote.</p>
+    </td></tr>
+
+    {# Body #}
+    <tr><td style="padding:30px 32px 28px;">
+        <p style="margin:0 0 16px;color:#18181b;font-size:15px;">Bonjour,</p>
+
+        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
+            <strong>{{ employee.fullName }}</strong> a soumis une nouvelle demande de conge
+            {% if leave.requestCategory == 'EXCEPTION' %}
+            <span style="color:#7c3aed;font-weight:600;">(exceptionnelle)</span>
+            {% endif %}
+            qui requiert votre attention.
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
+            <tr><td style="padding:16px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">EMPLOYE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ employee.fullName }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">TYPE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.leaveType }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">PERIODE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.startDate|date('d/m/Y') }} — {{ leave.endDate|date('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">JOURS</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.daysCount }} jour{{ leave.daysCount > 1 ? 's' : '' }}</td>
+                    </tr>
+                    {% if leave.reason %}
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">MOTIF</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.reason }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if leave.urgencyLevel %}
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">URGENCE</td>
+                        <td style="font-size:13px;text-align:right;padding:4px 0;">
+                            {% if leave.urgencyLevel == 'HIGH' %}
+                                <span style="color:#dc2626;font-weight:700;">HIGH</span>
+                            {% elseif leave.urgencyLevel == 'MEDIUM' %}
+                                <span style="color:#d97706;font-weight:700;">MEDIUM</span>
+                            {% else %}
+                                <span style="color:#6b7280;">LOW</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td></tr>
+        </table>
+
+        <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">Connectez-vous a HrFlow pour traiter cette demande dans les meilleurs delais.</p>
+    </td></tr>
+
+    {# Footer #}
+    <tr><td style="padding:18px 32px 24px;border-top:1px solid #eef2f7;text-align:center;background:#fbfcff;">
+        <p style="margin:0;color:#94a3b8;font-size:11px;">HrFlow - Gestion des ressources humaines</p>
+    </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

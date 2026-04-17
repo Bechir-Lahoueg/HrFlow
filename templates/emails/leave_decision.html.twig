@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:radial-gradient(circle at top,#e2e8f0 0%,#f8fafc 45%,#ffffff 100%);padding:40px 12px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.10);">
+
+    <tr><td style="padding:20px 32px 12px;background:#ffffff;text-align:center;">
+        <img src="{{ absolute_url(asset('logo.png')) }}" alt="HrFlow" width="124" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:124px;height:auto;">
+    </td></tr>
+
+    {# Header — green if accepted, red if refused #}
+    {% if decision == 'ACCEPTE' %}
+    <tr><td style="background:linear-gradient(140deg,#047857,#10b981 45%,#34d399);padding:30px 32px;">
+        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Decision RH</p>
+        <h1 style="margin:8px 0 0;color:#fff;font-size:24px;font-weight:800;line-height:1.2;">Demande de conge acceptee</h1>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Votre demande est validee.</p>
+    </td></tr>
+    {% else %}
+    <tr><td style="background:linear-gradient(140deg,#b91c1c,#ef4444 45%,#fb7185);padding:30px 32px;">
+        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Decision RH</p>
+        <h1 style="margin:8px 0 0;color:#fff;font-size:24px;font-weight:800;line-height:1.2;">Demande de conge refusee</h1>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Une raison de refus est fournie ci-dessous.</p>
+    </td></tr>
+    {% endif %}
+
+    {# Body #}
+    <tr><td style="padding:30px 32px 28px;">
+        <p style="margin:0 0 16px;color:#18181b;font-size:15px;">Bonjour <strong>{{ employee.fullName }}</strong>,</p>
+
+        {% if decision == 'ACCEPTE' %}
+        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
+            Votre demande de conge a ete <strong style="color:#059669;">acceptee</strong>.
+        </p>
+        {% else %}
+        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
+            Votre demande de conge a ete <strong style="color:#dc2626;">refusee</strong>.
+        </p>
+        {% endif %}
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
+            <tr><td style="padding:16px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">TYPE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.leaveType }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">PERIODE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.startDate|date('d/m/Y') }} — {{ leave.endDate|date('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">JOURS</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.daysCount }} jour{{ leave.daysCount > 1 ? 's' : '' }}</td>
+                    </tr>
+                    {% if leave.reason %}
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">MOTIF</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ leave.reason }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td></tr>
+        </table>
+
+        {% if decision == 'REFUSE' and (leave.rhComment or leave.adminComment) %}
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border-radius:8px;border:1px solid #fecaca;margin-bottom:20px;">
+            <tr><td style="padding:16px;">
+                <p style="margin:0 0 4px;color:#991b1b;font-size:12px;font-weight:600;">MOTIF DU REFUS</p>
+                <p style="margin:0;color:#dc2626;font-size:13px;">{{ leave.adminComment ?: leave.rhComment }}</p>
+            </td></tr>
+        </table>
+        {% endif %}
+
+        {% if decision == 'ACCEPTE' and (leave.rhComment or leave.adminComment) %}
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:20px;">
+            <tr><td style="padding:16px;">
+                <p style="margin:0 0 4px;color:#166534;font-size:12px;font-weight:600;">COMMENTAIRE</p>
+                <p style="margin:0;color:#15803d;font-size:13px;">{{ leave.adminComment ?: leave.rhComment }}</p>
+            </td></tr>
+        </table>
+        {% endif %}
+
+        <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">Connectez-vous a HrFlow pour consulter les details de la decision.</p>
+    </td></tr>
+
+    {# Footer #}
+    <tr><td style="padding:18px 32px 24px;border-top:1px solid #eef2f7;text-align:center;background:#fbfcff;">
+        <p style="margin:0;color:#94a3b8;font-size:11px;">HrFlow - Gestion des ressources humaines</p>
+    </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
