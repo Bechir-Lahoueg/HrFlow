@@ -31,10 +31,10 @@ class LeaveBalance
     #[ORM\Column(name: 'total_used', type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $totalUsed = '0.00';
 
-    #[ORM\Column(name: 'last_accrual_date', type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(name: 'last_accrual_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccrualDate = null;
 
-    #[ORM\Column(name: 'hire_date', type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(name: 'hire_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeInterface $hireDate = null;
 
     public function getId(): ?int
