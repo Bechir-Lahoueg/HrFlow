@@ -6,10 +6,12 @@ use App\Entity\Recrutement\Interview;
 use App\Form\Recrutement\InterviewType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
-use App\Repository\Rh\UserRepository;
+use App\Repository\UserRepository;
 use App\Security\DbUser;
+use App\Service\Recrutement\InterviewConflictDetector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,8 +38,8 @@ final class RecruitmentInterviewController extends AbstractController
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
 
         // Get current application info if filtering
@@ -75,16 +77,21 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/create', name: 'app_rh_interviews_create', methods: ['POST'])]
     #[IsGranted('ROLE_RH')]
-    public function create(Request $request, ApplicationRepository $applicaitonRepository, EntityManagerInterface $em, UserRepository $userRepository): RedirectResponse
-    {
+    public function create(
+        Request $request,
+        ApplicationRepository $applicaitonRepository,
+        EntityManagerInterface $em,
+        UserRepository $userRepository,
+        InterviewConflictDetector $conflictDetector
+    ): RedirectResponse {
         $rh = $this->getCurrentRh();
 
         $interviewers = $userRepository->findInterviewers();
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
         
         $interview = new Interview();
@@ -96,6 +103,19 @@ final class RecruitmentInterviewController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Check for conflicts
+            $validation = $conflictDetector->validateInterviewScheduling(
+                $interview->getInterviewerId(),
+                $interview->getInterviewDate()
+            );
+
+            if (!$validation['valid']) {
+                foreach ($validation['errors'] as $error) {
+                    $this->addFlash('error', $error);
+                }
+                return $this->redirectToRoute('app_rh_interviews');
+            }
+
             $em->persist($interview);
             $em->flush();
 
@@ -155,8 +175,15 @@ final class RecruitmentInterviewController extends AbstractController
 
     #[Route('/rh/recruitment/interviews/{id}/edit', name: 'app_rh_interviews_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(int $id, Request $request, InterviewRepository $interviewRepository, ApplicationRepository $applicaitonRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
-    {
+    public function edit(
+        int $id,
+        Request $request,
+        InterviewRepository $interviewRepository,
+        ApplicationRepository $applicaitonRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+        InterviewConflictDetector $conflictDetector
+    ): Response {
         $rh = $this->getCurrentRh();
         $interview = $interviewRepository->findOneByRh($id, $rh);
 
@@ -168,8 +195,8 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewers = $userRepository->findInterviewers();
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
+            $interviewerChoices[$label] = $user['id'];
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [
@@ -181,6 +208,20 @@ final class RecruitmentInterviewController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Check for conflicts (excluding current interview)
+            $validation = $conflictDetector->validateInterviewScheduling(
+                $interview->getInterviewerId(),
+                $interview->getInterviewDate(),
+                $interview->getId()
+            );
+
+            if (!$validation['valid']) {
+                foreach ($validation['errors'] as $error) {
+                    $this->addFlash('error', $error);
+                }
+                return $this->redirectToRoute('app_rh_interviews_edit', ['id' => $id]);
+            }
+
             $em->flush();
             $this->addFlash('success', 'Entretien mis à jour avec succès.');
             return $this->redirectToRoute('app_rh_interviews');
@@ -189,6 +230,73 @@ final class RecruitmentInterviewController extends AbstractController
         return $this->render('Recrutement/interview_edit.html.twig', [
             'interview' => $interview,
             'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/rh/recruitment/interviews/check-availability', name: 'app_rh_interviews_check_availability', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function checkAvailability(
+        Request $request,
+        InterviewConflictDetector $conflictDetector
+    ): JsonResponse {
+        $interviewerId = $request->query->getInt('interviewer_id');
+        $date = $request->query->get('date');
+        $excludeId = $request->query->getInt('exclude_id');
+
+        if (!$interviewerId || !$date) {
+            return $this->json(['error' => 'Missing parameters'], 400);
+        }
+
+        try {
+            $interviewDate = new \DateTime($date);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Invalid date format'], 400);
+        }
+
+        $conflictCheck = $conflictDetector->checkConflicts(
+            $interviewerId,
+            $interviewDate,
+            $excludeId > 0 ? $excludeId : null
+        );
+
+        $validation = $conflictDetector->validateInterviewScheduling(
+            $interviewerId,
+            $interviewDate,
+            $excludeId > 0 ? $excludeId : null
+        );
+
+        return $this->json([
+            'hasConflict' => $conflictCheck['hasConflict'],
+            'message' => $conflictCheck['message'],
+            'errors' => $validation['errors'],
+            'valid' => $validation['valid'],
+        ]);
+    }
+
+    #[Route('/rh/recruitment/interviews/availability-slots', name: 'app_rh_interviews_availability_slots', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function getAvailabilitySlots(
+        Request $request,
+        InterviewConflictDetector $conflictDetector
+    ): JsonResponse {
+        $interviewerId = $request->query->getInt('interviewer_id');
+        $date = $request->query->get('date');
+
+        if (!$interviewerId || !$date) {
+            return $this->json(['error' => 'Missing parameters'], 400);
+        }
+
+        try {
+            $slotDate = new \DateTime($date);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Invalid date format'], 400);
+        }
+
+        $slots = $conflictDetector->getAvailableTimeSlots($interviewerId, $slotDate);
+
+        return $this->json([
+            'slots' => $slots,
+            'date' => $slotDate->format('Y-m-d'),
         ]);
     }
 
@@ -263,6 +371,34 @@ final class RecruitmentInterviewController extends AbstractController
 
         $this->addFlash('success', 'Entretien définitivement supprimé.');
         return $this->redirectToRoute('app_rh_interviews');
+    }
+
+    #[Route('/rh/recruitment/interviews/calendar', name: 'app_rh_interviews_calendar', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function calendar(InterviewRepository $interviewRepository): Response
+    {
+        $rh = $this->getCurrentRh();
+        $interviews = $interviewRepository->findByRh($rh);
+        
+        $events = [];
+        foreach ($interviews as $interview) {
+            $events[] = [
+                'id' => $interview->getId(),
+                'title' => sprintf('%s - %s', $interview->getApplication()?->getCandidateName(), $interview->getType()),
+                'start' => $interview->getInterviewDate()->format('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('app_rh_interviews_show', ['id' => $interview->getId()]),
+                'backgroundColor' => match($interview->getResult()) {
+                    'PASSED' => '#10b981',
+                    'FAILED' => '#ef4444',
+                    'PENDING' => '#6366f1',
+                    default => '#94a3b8'
+                }
+            ];
+        }
+
+        return $this->render('Recrutement/recruitment_calendar.html.twig', [
+            'events' => json_encode($events)
+        ]);
     }
 
     #[Route('/rh/recruitment/interviews/{id}', name: 'app_rh_interviews_show', methods: ['GET'])]

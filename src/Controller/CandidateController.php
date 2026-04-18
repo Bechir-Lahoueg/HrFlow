@@ -6,6 +6,7 @@ use App\Entity\Recrutement\Application;
 use App\Entity\Recrutement\Candidate;
 use App\Entity\Recrutement\JobOffer;
 use App\Form\Recrutement\CandidateApplicationType;
+use App\Form\Recrutement\CandidatePasswordChangeType;
 use App\Form\Recrutement\CandidateProfileType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\CandidateRepository;
@@ -74,18 +75,91 @@ final class CandidateController extends AbstractController
     public function profile(Request $request): Response
     {
         $candidate = $this->getCurrentCandidate();
-        $form = $this->createForm(CandidateProfileType::class, $candidate);
-        $form->handleRequest($request);
+        $profileForm = $this->createForm(CandidateProfileType::class, $candidate);
+        $passwordForm = $this->createForm(CandidatePasswordChangeType::class);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        $profileForm->handleRequest($request);
+
+        if ($profileForm->isSubmitted() && $profileForm->isValid()) {
             $this->entityManager->flush();
             $this->addFlash('success', 'Votre profil a ete mis a jour avec succes.');
             return $this->redirectToRoute('app_candidate_profile');
         }
 
+        // Get stats for the sidebar
+        $stats = [
+            'total' => $this->applicationRepository->countAllByCandidate($candidate),
+            'interviews' => $this->applicationRepository->countByCandidateAndStatus($candidate, 'INTERVIEW'),
+        ];
+
         return $this->render('Candidate/profile.html.twig', [
-            'form' => $form->createView(),
+            'profileForm' => $profileForm->createView(),
+            'passwordForm' => $passwordForm->createView(),
+            'stats' => $stats,
         ]);
+    }
+
+    #[Route('/candidat/profil/mot-de-passe', name: 'app_candidate_change_password', methods: ['POST'])]
+    #[IsGranted('ROLE_CANDIDATE')]
+    public function changePassword(Request $request): Response
+    {
+        $candidate = $this->getCurrentCandidate();
+        $form = $this->createForm(CandidatePasswordChangeType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $currentPassword = $form->get('currentPassword')->getData();
+            $newPassword = $form->get('newPassword')->getData();
+
+            // Verify current password (SHA-256 hash)
+            $hashedCurrentPassword = hash('sha256', $currentPassword);
+            if ($candidate->getPassword() !== $hashedCurrentPassword) {
+                $this->addFlash('error', 'Le mot de passe actuel est incorrect.');
+                return $this->redirectToRoute('app_candidate_profile');
+            }
+
+            // Hash and set new password
+            $hashedNewPassword = hash('sha256', $newPassword);
+            $candidate->setPassword($hashedNewPassword);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre mot de passe a ete change avec succes.');
+        } else {
+            $this->addFlash('error', 'Veuillez verifier les informations saisies.');
+        }
+
+        return $this->redirectToRoute('app_candidate_profile');
+    }
+
+    #[Route('/candidat/profil/supprimer', name: 'app_candidate_delete_account', methods: ['POST'])]
+    #[IsGranted('ROLE_CANDIDATE')]
+    public function deleteAccount(Request $request): Response
+    {
+        $candidate = $this->getCurrentCandidate();
+
+        // Verify confirmation field
+        $confirmed = $request->request->get('delete_confirm');
+
+        if ($confirmed !== 'DELETE') {
+            $this->addFlash('error', 'Veuillez confirmer la suppression en tapant DELETE.');
+            return $this->redirectToRoute('app_candidate_profile');
+        }
+
+        // Delete all related applications first (to avoid foreign key constraints)
+        $applications = $this->applicationRepository->findByCandidate($candidate);
+        foreach ($applications as $application) {
+            $this->entityManager->remove($application);
+        }
+
+        // Delete the candidate
+        $this->entityManager->remove($candidate);
+        $this->entityManager->flush();
+
+        // Clear session and logout
+        $request->getSession()->invalidate();
+
+        $this->addFlash('success', 'Votre compte a ete supprime avec succes.');
+        return $this->redirectToRoute('app_home');
     }
 
     #[Route('/candidat/offres-emploi', name: 'app_candidate_job_offers')]
