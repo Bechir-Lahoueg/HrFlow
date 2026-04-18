@@ -18,7 +18,7 @@ final class DbUserProvider implements UserProviderInterface
     {
         // First try the users table (Admin / RH)
         $row = $this->connection->fetchAssociative(
-            'SELECT id, username, email, password, role FROM users WHERE username = :identifier OR email = :identifier LIMIT 1',
+            'SELECT id, username, email, password, role, department FROM users WHERE username = :identifier OR email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
@@ -28,7 +28,7 @@ final class DbUserProvider implements UserProviderInterface
 
         // Then try the employees table (like the Java app)
         $empRow = $this->connection->fetchAssociative(
-            'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE email = :identifier LIMIT 1',
+            'SELECT id, first_name, last_name, age, job_title, email, password, rh_id, department FROM employees WHERE email = :identifier LIMIT 1',
             ['identifier' => $identifier]
         );
 
@@ -57,7 +57,7 @@ final class DbUserProvider implements UserProviderInterface
 
         if ($user->getSource() === 'employees') {
             $row = $this->connection->fetchAssociative(
-                'SELECT id, first_name, last_name, age, job_title, email, password, rh_id FROM employees WHERE id = :id LIMIT 1',
+                'SELECT id, first_name, last_name, age, job_title, email, password, rh_id, department FROM employees WHERE id = :id LIMIT 1',
                 ['id' => $user->getId()]
             );
 
@@ -82,7 +82,7 @@ final class DbUserProvider implements UserProviderInterface
         }
 
         $row = $this->connection->fetchAssociative(
-            'SELECT id, username, email, password, role FROM users WHERE id = :id LIMIT 1',
+            'SELECT id, username, email, password, role, department FROM users WHERE id = :id LIMIT 1',
             ['id' => $user->getId()]
         );
 
@@ -106,7 +106,13 @@ final class DbUserProvider implements UserProviderInterface
             isset($row['email']) ? (string) $row['email'] : null,
             (string) $row['password'],
             (string) $row['role'],
-            'users'
+            'users',
+            null,
+            null,
+            null,
+            null,
+            null,
+            isset($row['department']) ? (string) $row['department'] : null,
         );
     }
 
@@ -126,7 +132,8 @@ final class DbUserProvider implements UserProviderInterface
             $lastName,
             (string) $row['job_title'],
             (int) $row['age'],
-            $row['rh_id'] ? (int) $row['rh_id'] : null
+            $row['rh_id'] ? (int) $row['rh_id'] : null,
+            isset($row['department']) && $row['department'] !== null ? (string) $row['department'] : null,
         );
     }
 

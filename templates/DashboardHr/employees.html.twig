@@ -117,6 +117,19 @@
                         <form method="post" action="{{ path('app_rh_employees') }}" class="space-y-4" novalidate>
                             <input type="hidden" name="_token" value="{{ csrf_token('create_employee_rh') }}">
 
+                            {# Inherited department (read-only) — auto-assigned from the RH account #}
+                            <div class="flex items-center gap-3 rounded-xl border border-sky-100 dark:border-sky-900/40 bg-sky-50/70 dark:bg-sky-950/20 px-3.5 py-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-[0.1em]">Departement (herite)</p>
+                                    <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                                        {{ rhDepartment ?: 'Aucun departement assigne a votre compte' }}
+                                    </p>
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-[0.1em]" for="first_name">Prenom</label>
@@ -231,6 +244,7 @@
                                         <th class="text-left px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30">Employe</th>
                                         <th class="text-left px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30">Email</th>
                                         <th class="text-left px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30">Poste</th>
+                                        <th class="text-left px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30">Departement</th>
                                         <th class="text-center px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30">Age</th>
                                         <th class="text-center px-6 py-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.1em] bg-zinc-50/60 dark:bg-zinc-800/30"></th>
                                     </tr>
@@ -245,6 +259,7 @@
                                             data-email="{{ employee.email|e('html_attr') }}"
                                             data-age="{{ employee.age }}"
                                             data-job-title="{{ employee.jobTitle|e('html_attr') }}"
+                                            data-department="{{ (employee.department ?: '-')|e('html_attr') }}"
                                             data-rh-id="{{ employee.rhId }}"
                                             data-rh-name="{{ user.userIdentifier|default('RH')|e('html_attr') }}"
                                             data-created-at="{{ employee.createdAt ? employee.createdAt|date('d/m/Y H:i') : '-' }}"
@@ -265,6 +280,13 @@
                                             <td class="px-6 py-4">
                                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">{{ employee.jobTitle }}</span>
                                             </td>
+                                            <td class="px-6 py-4">
+                                                {% if employee.department %}
+                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40">{{ employee.department }}</span>
+                                                {% else %}
+                                                    <span class="text-[12px] text-zinc-300 dark:text-zinc-600">—</span>
+                                                {% endif %}
+                                            </td>
                                             <td class="px-6 py-4 text-center">
                                                 <span class="text-[13px] text-zinc-500 dark:text-zinc-400 font-mono-num">{{ employee.age }}</span>
                                             </td>
@@ -276,7 +298,7 @@
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td colspan="5" class="px-6 py-20 text-center">
+                                            <td colspan="6" class="px-6 py-20 text-center">
                                                 <div class="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
                                                     <svg class="w-7 h-7 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
                                                 </div>
@@ -368,6 +390,11 @@
                         <div class="flex items-center justify-between">
                             <span class="text-[12px] text-zinc-400 dark:text-zinc-500">Poste</span>
                             <span class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200" data-employee-modal-target="detailJob">-</span>
+                        </div>
+                        <div class="h-px bg-zinc-100 dark:bg-zinc-800"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[12px] text-zinc-400 dark:text-zinc-500">Departement</span>
+                            <span class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200" data-employee-modal-target="detailDepartment">-</span>
                         </div>
                     </div>
                 </div>
