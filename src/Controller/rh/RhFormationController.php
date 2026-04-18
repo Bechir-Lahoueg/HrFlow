@@ -46,11 +46,14 @@ final class RhFormationController extends AbstractController
 
         $formations = $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir);
         $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+        $topInsights = $this->formationService->getTopInsightsByRhId($userId);
 
         return $this->render('DashboardHr/formation/formation_index.html.twig', [
             'formations' => $formations,
             'ratingMap' => $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds),
             'stats' => $this->formationService->getFormationStatsByRhId($userId),
+            'topFormations' => $topInsights['topFormations'],
+            'topFormateurs' => $topInsights['topFormateurs'],
             'filters' => [
                 'search' => $search,
                 'type' => $type,
