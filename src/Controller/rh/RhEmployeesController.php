@@ -45,6 +45,9 @@ final class RhEmployeesController extends AbstractController
         $employees = $employeeRepository->findBy(['rhId' => $rhId], ['id' => 'DESC']);
         $totalEmployees = count($employees);
 
+        $rhAccount = $userRepository->find($rhId);
+        $rhDepartment = $rhAccount?->getDepartment();
+
         if ($searchTerm !== '') {
             $needle = mb_strtolower($searchTerm);
             $employees = array_values(array_filter(
@@ -64,6 +67,7 @@ final class RhEmployeesController extends AbstractController
             'searchTerm' => $searchTerm,
             'totalEmployees' => $totalEmployees,
             'pendingLeaveCount' => $pendingLeaveCount,
+            'rhDepartment' => $rhDepartment,
         ]);
     }
 
@@ -95,6 +99,9 @@ final class RhEmployeesController extends AbstractController
             return $this->redirectToRoute('app_rh_employees');
         }
 
+        $rhId = $this->getCurrentRhId();
+        $rhAccount = $userRepository->find($rhId);
+
         $employee = new Employee();
         $employee->setFirstName($firstName)
                  ->setLastName($lastName)
@@ -102,7 +109,8 @@ final class RhEmployeesController extends AbstractController
                  ->setJobTitle($jobTitle)
                  ->setEmail($email)
                  ->setPassword(hash('sha256', $password))
-                 ->setRhId($this->getCurrentRhId());
+                 ->setRhId($rhId)
+                 ->setDepartment($rhAccount?->getDepartment());
 
         $em->persist($employee);
         $em->flush();

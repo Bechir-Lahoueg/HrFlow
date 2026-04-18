@@ -40,6 +40,7 @@ final class AdminEmployeesController extends AbstractController
             $rhById[(int) $userItem->getId()] = [
                 'username' => $userItem->getUsername(),
                 'email' => $userItem->getEmail(),
+                'department' => $userItem->getDepartment(),
             ];
         }
 
@@ -48,12 +49,23 @@ final class AdminEmployeesController extends AbstractController
             'employees' => $employeeRepository->findBy([], ['id' => 'DESC']),
             'users' => $users,
             'rhById' => $rhById,
+            'departments' => [
+                'Marketing',
+                'Developpement',
+                'Ressources Humaines',
+                'Finance',
+                'Commercial',
+                'Support',
+                'Design',
+                'Produit',
+            ],
             'form' => [
                 'first_name' => '',
                 'last_name' => '',
                 'age' => '',
                 'job_title' => '',
                 'email' => '',
+                'department' => '',
             ],
         ]);
     }
@@ -80,9 +92,10 @@ final class AdminEmployeesController extends AbstractController
         $username = trim((string) $request->request->get('username', ''));
         $email = strtolower(trim((string) $request->request->get('email', '')));
         $password = (string) $request->request->get('password', '');
+        $department = trim((string) $request->request->get('department', ''));
 
-        if ($username === '' || $email === '') {
-            $this->addFlash('error', 'Le nom d\'utilisateur et l\'email sont obligatoires.');
+        if ($username === '' || $email === '' || $department === '') {
+            $this->addFlash('error', 'Le nom d\'utilisateur, l\'email et le departement sont obligatoires.');
             return $this->redirectToRoute('app_admin_employees');
         }
 
@@ -98,7 +111,7 @@ final class AdminEmployeesController extends AbstractController
             return $this->redirectToRoute('app_admin_employees');
         }
 
-        $user->setUsername($username)->setEmail($email);
+        $user->setUsername($username)->setEmail($email)->setDepartment($department);
 
         if ($password !== '') {
             $user->setPassword(hash('sha256', $password));
@@ -120,9 +133,10 @@ final class AdminEmployeesController extends AbstractController
         $username = trim((string) $request->request->get('username', ''));
         $email = strtolower(trim((string) $request->request->get('email', '')));
         $password = (string) $request->request->get('password', '');
+        $department = trim((string) $request->request->get('department', ''));
 
-        if ($username === '' || $email === '' || $password === '') {
-            $this->addFlash('error', 'Tous les champs sont obligatoires.');
+        if ($username === '' || $email === '' || $password === '' || $department === '') {
+            $this->addFlash('error', 'Tous les champs sont obligatoires (departement inclus).');
             return $this->redirectToRoute('app_admin_employees');
         }
 
@@ -140,6 +154,7 @@ final class AdminEmployeesController extends AbstractController
         $user->setUsername($username)
              ->setEmail($email)
              ->setPassword(hash('sha256', $password))
+               ->setDepartment($department)
              ->setRole('RH');
 
         $em->persist($user);
