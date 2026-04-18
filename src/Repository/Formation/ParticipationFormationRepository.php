@@ -154,6 +154,84 @@ class ParticipationFormationRepository extends ServiceEntityRepository
         return $count > 0;
     }
 
+    public function findAcceptedInFormationExcludingSession(int $employeeId, int $formationId, int $excludedSessionId): ?ParticipationFormation
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.session', 's')
+            ->where('p.employee = :employeeId')
+            ->andWhere('s.formation = :formationId')
+            ->andWhere('s.id != :excludedSessionId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('formationId', $formationId)
+            ->setParameter('excludedSessionId', $excludedSessionId)
+            ->setParameter('statuses', ['Accepte', 'Certificat obtenu'])
+            ->orderBy('s.dateDebut', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findAcceptedWithDateOverlapExcludingSession(int $employeeId, \DateTimeInterface $startDate, \DateTimeInterface $endDate, int $excludedSessionId): ?ParticipationFormation
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.session', 's')
+            ->where('p.employee = :employeeId')
+            ->andWhere('s.id != :excludedSessionId')
+            ->andWhere('p.statutParticipation IN (:statuses)')
+            ->andWhere('NOT (s.dateFin < :startDate OR s.dateDebut > :endDate)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('excludedSessionId', $excludedSessionId)
+            ->setParameter('statuses', ['Accepte', 'Certificat obtenu'])
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('s.dateDebut', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** @return ParticipationFormation[] */
+    public function findPendingInFormationExcludingSession(int $employeeId, int $formationId, int $excludedSessionId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.session', 's')
+            ->where('p.employee = :employeeId')
+            ->andWhere('s.formation = :formationId')
+            ->andWhere('s.id != :excludedSessionId')
+            ->andWhere('p.statutParticipation = :pendingStatus')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('formationId', $formationId)
+            ->setParameter('excludedSessionId', $excludedSessionId)
+            ->setParameter('pendingStatus', 'Inscrit')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return ParticipationFormation[] */
+    public function findPendingWithDateOverlapExcludingSession(int $employeeId, \DateTimeInterface $startDate, \DateTimeInterface $endDate, int $excludedSessionId, ?int $excludedFormationId = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->join('p.session', 's')
+            ->join('s.formation', 'f')
+            ->where('p.employee = :employeeId')
+            ->andWhere('s.id != :excludedSessionId')
+            ->andWhere('p.statutParticipation = :pendingStatus')
+            ->andWhere('NOT (s.dateFin < :startDate OR s.dateDebut > :endDate)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('excludedSessionId', $excludedSessionId)
+            ->setParameter('pendingStatus', 'Inscrit')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate);
+
+        if ($excludedFormationId !== null) {
+            $qb->andWhere('f.id != :excludedFormationId')
+                ->setParameter('excludedFormationId', $excludedFormationId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function countAcceptedBySession(int $sessionId): int
     {
         return (int) $this->createQueryBuilder('p')
