@@ -126,12 +126,48 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
+                        {% set formationText = (formation.titre ~ ' ' ~ formation.type)|lower %}
+                        {% set logoByKeyword = {
+                            'angular': 'https://cdn.simpleicons.org/angular/DD0031',
+                            'symfony': 'https://cdn.simpleicons.org/symfony/000000',
+                            'php': 'https://cdn.simpleicons.org/php/777BB4',
+                            'java': 'https://cdn.simpleicons.org/openjdk/EA2D2E',
+                            'spring': 'https://cdn.simpleicons.org/spring/6DB33F',
+                            'javascript': 'https://cdn.simpleicons.org/javascript/F7DF1E',
+                            'typescript': 'https://cdn.simpleicons.org/typescript/3178C6',
+                            'node': 'https://cdn.simpleicons.org/nodedotjs/339933',
+                            'react': 'https://cdn.simpleicons.org/react/61DAFB',
+                            'vue': 'https://cdn.simpleicons.org/vuedotjs/4FC08D',
+                            'python': 'https://cdn.simpleicons.org/python/3776AB',
+                            'django': 'https://cdn.simpleicons.org/django/092E20',
+                            'mysql': 'https://cdn.simpleicons.org/mysql/4479A1',
+                            'docker': 'https://cdn.simpleicons.org/docker/2496ED',
+                            'aws': 'https://cdn.simpleicons.org/amazonaws/232F3E'
+                        } %}
+                        {% set logoImage = null %}
+                        {% for keyword, url in logoByKeyword %}
+                            {% if logoImage is null and keyword in formationText %}
+                                {% set logoImage = url %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% set fallbackImage = logoImage ?: '/logo.png' %}
+                        {% set hardFallbackImage = '/logo.png' %}
+                        {% set rawCoverImage = formation.imageUrl|default('')|trim %}
+                        {% set coverImage = rawCoverImage starts with '=' ? rawCoverImage|slice(1) : rawCoverImage %}
+                        {% if coverImage == '' %}
+                            {% set coverImage = fallbackImage %}
+                        {% endif %}
                         <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 {% set rating = ratingMap[formation.id]|default(null) %}
                                 <div class="flex justify-between items-start mb-3 gap-2">
-                                    <div class="min-w-0">
+                                    <div class="min-w-0 flex items-start gap-3">
+                                        <div class="w-11 h-11 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 shrink-0 p-0.5">
+                                            <img src="{{ coverImage }}" alt="Logo {{ formation.titre }}" class="w-full h-full rounded-full object-contain p-1 bg-white" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ hardFallbackImage }}';">
+                                        </div>
+                                        <div class="min-w-0">
                                         <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
                                         <div class="mt-1 flex items-center gap-1 flex-wrap">
                                             {% set hasReviews = rating and rating.count > 0 %}
@@ -147,6 +183,7 @@
                                             {% else %}
                                                 <span class="text-xs text-zinc-500">Aucun avis</span>
                                             {% endif %}
+                                        </div>
                                         </div>
                                     </div>
                                     {% set typeStyle = formationTypeStyles[formation.type]|default('background:#f3f4f6;color:#374151;border:1px solid #d1d5db;') %}

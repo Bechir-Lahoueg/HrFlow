@@ -42,6 +42,20 @@ class ParticipationFormation
     #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation')]
     private Collection $presences;
 
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $token = null;
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+        return $this;
+    }
+
     public function __construct()
     {
         $this->presences = new ArrayCollection();

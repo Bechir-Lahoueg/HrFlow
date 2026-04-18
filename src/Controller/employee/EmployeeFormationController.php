@@ -211,7 +211,8 @@ final class EmployeeFormationController extends AbstractController
             $session->getDateDebut(),
             $session->getDateFin(),
             $organisme,
-            $rhCreatorName
+            $rhCreatorName,
+            $token
         );
 
         if (!$participation->isCertificatObtenu()) {

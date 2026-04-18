@@ -8,6 +8,7 @@ use App\Service\Formation\ParticipationService;
 use App\Service\Formation\PresenceService;
 use App\Service\Formation\SessionFeedbackService;
 use App\Service\Formation\SessionService;
+use App\Service\Formation\ImageAiService;
 use App\Form\Formation\FormationType;
 use App\Form\Formation\SessionFormationType;
 use App\Entity\Formation\Formation;
@@ -26,6 +27,7 @@ final class RhFormationController extends AbstractController
         private readonly FormationService $formationService,
         private readonly FormationChangeNotificationService $formationChangeNotificationService,
         private readonly SessionFeedbackService $sessionFeedbackService,
+        private readonly ImageAiService $imageAiService,
     ) {
     }
 
@@ -67,6 +69,18 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $bannerUrl = $this->imageAiService->generateFormationBanner(
+                    (string) $formation->getTitre(),
+                    (string) $formation->getType(),
+                    (string) ($formation->getDescription() ?? '')
+                );
+                $formation->setImageUrl($bannerUrl);
+            } catch (\Throwable) {
+                // Keep creation flow resilient even if external AI image API fails.
+                $formation->setImageUrl(null);
+            }
+
             $em->persist($formation);
             $em->flush();
 
