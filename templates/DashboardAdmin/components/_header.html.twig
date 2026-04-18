@@ -71,7 +71,9 @@
                 </div>
                 <div class="hidden sm:block">
                     <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 leading-tight">{{ user.userIdentifier }}</p>
-                    <p class="text-[11px] text-violet-600 dark:text-violet-400 font-medium">Administrator</p>
+                    <p class="text-[11px] text-violet-600 dark:text-violet-400 font-medium">
+                        Administrator{% if user.department is defined and user.department %} <span class="text-zinc-300 dark:text-zinc-600">·</span> <span class="text-zinc-500 dark:text-zinc-400">{{ user.department }}</span>{% endif %}
+                    </p>
                 </div>
                 <svg class="w-4 h-4 text-zinc-300 dark:text-zinc-600 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
