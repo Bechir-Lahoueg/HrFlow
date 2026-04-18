@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Recrutement\Candidate;
+use App\Form\Recrutement\CandidateLoginFormType;
 use App\Form\Recrutement\CandidateRegistrationFormType;
 use App\Repository\Recrutement\CandidateRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -61,8 +62,14 @@ final class CandidateAuthController extends AbstractController
     #[Route('/candidat/connexion', name: 'app_candidate_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        $form = $this->createForm(CandidateLoginFormType::class, null, [
+            'action' => $this->generateUrl('app_login'),
+        ]);
+
+        $form->get('identifier')->setData($authenticationUtils->getLastUsername());
+
         return $this->render('Auth/candidate_login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
+            'form' => $form->createView(),
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
