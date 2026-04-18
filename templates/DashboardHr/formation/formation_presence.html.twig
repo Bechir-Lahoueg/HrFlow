@@ -16,8 +16,11 @@
         {% endfor %}
 
         <main class="p-6 max-w-5xl mx-auto">
+            {% set returnMode = app.request.query.get('return') %}
+            {% set backUrl = returnMode == 'active' ? path('rh_formation_active_sessions') : path('rh_formation_sessions', {id: formation.id}) %}
+            {% set submitUrl = returnMode == 'active' ? (path('rh_formation_session_presence', {id: session.id}) ~ '?return=active') : path('rh_formation_session_presence', {id: session.id}) %}
             <div class="mb-6">
-                <a href="{{ path('rh_formation_sessions', {id: formation.id}) }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
+                <a href="{{ backUrl }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     Retour aux sessions
                 </a>
@@ -33,7 +36,7 @@
                     <h2 class="font-bold text-zinc-800">Tableau des présences</h2>
                 </div>
 
-                <form method="post" action="{{ path('rh_formation_session_presence', {id: session.id}) }}" class="p-0 overflow-x-auto">
+                <form method="post" action="{{ submitUrl }}" class="p-0 overflow-x-auto">
                     <table class="w-full text-sm text-left whitespace-nowrap">
                         <thead class="bg-zinc-50/50 text-zinc-500 font-medium uppercase tracking-wide text-xs border-b border-zinc-100">
                             <tr>

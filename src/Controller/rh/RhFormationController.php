@@ -323,6 +323,16 @@ final class RhFormationController extends AbstractController
         ]);
     }
 
+    #[Route('/sessions/active', name: 'rh_formation_active_sessions', methods: ['GET'])]
+    public function activeSessions(SessionService $sessionService): Response
+    {
+        $userId = $this->getUser()->getId();
+
+        return $this->render('DashboardHr/formation/formation_active_sessions.html.twig', [
+            'sessions' => $sessionService->getActiveSessionsByRh($userId),
+        ]);
+    }
+
     #[Route('/{id}/feedbacks', name: 'rh_formation_feedbacks', methods: ['GET'])]
     public function feedbacks(string $id): Response
     {
@@ -369,8 +379,13 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
+        $returnToActive = $request->query->get('return') === 'active';
+
         if ($session->getStatut() !== 'En cours') {
             $this->addFlash('error', 'Vous ne pouvez faire la présence que pour des sessions En cours.');
+            if ($returnToActive) {
+                return $this->redirectToRoute('rh_formation_active_sessions');
+            }
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $session->getFormation()->getId()]);
         }
 
@@ -416,6 +431,9 @@ final class RhFormationController extends AbstractController
                 }
 
                 $this->addFlash('success', 'Présences mises  à jour avec succès.');
+                if ($returnToActive) {
+                    return $this->redirectToRoute('rh_formation_active_sessions');
+                }
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
             }
         }
