@@ -7,16 +7,22 @@ use App\Repository\Rh\EmployeeRepository;
 use App\Repository\Rh\LeaveBalanceRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class LeaveBalanceService
 {
     private const MONTHLY_ACCRUAL_DAYS = 1.8;
 
+    private readonly LoggerInterface $logger;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly LeaveBalanceRepository $leaveBalanceRepository,
         private readonly EmployeeRepository $employeeRepository,
+        ?LoggerInterface $logger = null,
     ) {
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function getEmployeeBalance(int $employeeId): array
@@ -86,7 +92,8 @@ final class LeaveBalanceService
             }
 
             return $this->leaveBalanceRepository->findByRh($rhId);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logger->error('getBalancesByRh failed', ['rhId' => $rhId, 'exception' => $e]);
             return [];
         }
     }
@@ -131,7 +138,13 @@ final class LeaveBalanceService
                 'success' => true,
                 'message' => sprintf('%.2f jour(s) ajoute(s) au solde de %s.', $creditDays, $employee->getFullName()),
             ];
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logger->error('grantManualCreditByRh failed', [
+                'rhId' => $rhId,
+                'employeeId' => $employeeId,
+                'creditDays' => $creditDays,
+                'exception' => $e,
+            ]);
             return ['success' => false, 'message' => 'Impossible d\'ajouter le credit pour le moment.'];
         }
     }
