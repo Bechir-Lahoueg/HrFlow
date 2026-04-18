@@ -205,6 +205,13 @@ final class EmployeeFormationController extends AbstractController
             $organisme = 'HrFlow';
         }
 
+        $token = $participation->getToken();
+        if ($token === null || $token === '') {
+            $token = bin2hex(random_bytes(16));
+            $participation->setToken($token);
+            $this->em->flush();
+        }
+
         $certificate = $this->certificateService->generateCertificate(
             $participation->getEmployee()?->getFullName() ?? $this->getUser()->getUserIdentifier(),
             $formation?->getTitre() ?? 'Formation',
@@ -228,6 +235,32 @@ final class EmployeeFormationController extends AbstractController
         );
 
         return $response;
+    }
+
+    #[Route('/verify/{token}', name: 'app_verify_certificate', methods: ['GET'])]
+    public function verifyCertificate(string $token): Response
+    {
+        $participation = $this->participationRepository->findOneBy(['token' => $token]);
+
+        if (!$participation) {
+            return $this->render('Verification/certificate_verify.html.twig', [
+                'isValid' => false,
+            ], new Response('', Response::HTTP_NOT_FOUND));
+        }
+
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+        $employeeName = $participation->getEmployee()?->getFullName() ?? 'Employe';
+
+        return $this->render('Verification/certificate_verify.html.twig', [
+            'isValid' => true,
+            'employeeName' => $employeeName,
+            'formationTitle' => (string) ($formation?->getTitre() ?? 'Formation'),
+            'organisme' => (string) ($formation?->getOrganisme() ?: 'HrFlow'),
+            'dateDebut' => $session?->getDateDebut(),
+            'dateFin' => $session?->getDateFin(),
+            'verifiedAt' => new \DateTime(),
+        ]);
     }
 
     #[Route('/notifications/mark-all-read', name: 'employee_notifications_mark_all_read', methods: ['POST'])]
