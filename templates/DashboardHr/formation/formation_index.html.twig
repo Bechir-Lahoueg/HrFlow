@@ -105,6 +105,50 @@
                 </div>
             </div>
 
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formations</h3>
+                        <span class="text-[11px] px-2 py-1 rounded bg-blue-50 text-blue-700 font-bold">Demandes + avis</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for item in topFormations|default([]) %}
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
+                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.titre }}</p>
+                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
+                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
+                                    <span>{{ item.feedbackCount|default(0) }} avis</span>
+                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formateurs</h3>
+                        <span class="text-[11px] px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-bold">Par organisme</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for item in topFormateurs|default([]) %}
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
+                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.organisme }}</p>
+                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
+                                    <span>{{ item.formationsCount|default(0) }} formation(s)</span>
+                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
+                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
             {# ══════════ Formation Table ══════════ #}
             <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">

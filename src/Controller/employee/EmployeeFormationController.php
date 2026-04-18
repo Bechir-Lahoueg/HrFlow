@@ -39,14 +39,102 @@ final class EmployeeFormationController extends AbstractController
     {
         $search = $request->query->get('search', '');
         $type = $request->query->get('type', '');
+        $organisme = trim((string) $request->query->get('organisme', ''));
         $sortQuery = $request->query->get('sort', 'created_at-DESC');
 
         $sortParts = explode('-', $sortQuery);
         $sort = $sortParts[0] ?? 'created_at';
         $dir = $sortParts[1] ?? 'DESC';
 
-        $formations = $this->formationService->getAllFormations($search, $type, $sort, $dir);
+        $formations = $this->formationService->getAllFormations($search, $type, $sort, $dir, $organisme);
         $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+        $ratingMap = $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds);
+
+        // Build top insights for employees from the global catalog.
+        $allFormations = $this->formationService->getAllFormations();
+        $allFormationIds = array_map(static fn($f) => (int) $f->getId(), $allFormations);
+        $allRatingMap = $this->sessionFeedbackService->getAverageRatingsByFormationIds($allFormationIds);
+
+        $topFormationRows = [];
+        foreach ($allFormations as $formation) {
+            $formationId = (int) $formation->getId();
+            $rating = $allRatingMap[$formationId] ?? ['average' => 0.0, 'count' => 0];
+
+            $topFormationRows[] = [
+                'formation' => $formation,
+                'average' => (float) ($rating['average'] ?? 0.0),
+                'count' => (int) ($rating['count'] ?? 0),
+            ];
+        }
+
+        usort($topFormationRows, static function (array $a, array $b): int {
+            $cmpAverage = $b['average'] <=> $a['average'];
+            if ($cmpAverage !== 0) {
+                return $cmpAverage;
+            }
+
+            $cmpCount = $b['count'] <=> $a['count'];
+            if ($cmpCount !== 0) {
+                return $cmpCount;
+            }
+
+            return strcmp((string) $a['formation']->getTitre(), (string) $b['formation']->getTitre());
+        });
+
+        $topFormateursMap = [];
+        foreach ($allFormations as $formation) {
+            $formationId = (int) $formation->getId();
+            $org = trim((string) $formation->getOrganisme());
+            if ($org === '') {
+                continue;
+            }
+
+            if (!isset($topFormateursMap[$org])) {
+                $topFormateursMap[$org] = [
+                    'organisme' => $org,
+                    'formationsCount' => 0,
+                    'ratingWeightedTotal' => 0.0,
+                    'feedbackCount' => 0,
+                ];
+            }
+
+            $topFormateursMap[$org]['formationsCount']++;
+
+            $rating = $allRatingMap[$formationId] ?? null;
+            $count = (int) ($rating['count'] ?? 0);
+            if ($count > 0) {
+                $average = (float) ($rating['average'] ?? 0.0);
+                $topFormateursMap[$org]['feedbackCount'] += $count;
+                $topFormateursMap[$org]['ratingWeightedTotal'] += $average * $count;
+            }
+        }
+
+        $topFormateurs = [];
+        foreach ($topFormateursMap as $row) {
+            $feedbackCount = (int) $row['feedbackCount'];
+            $average = $feedbackCount > 0 ? round((float) $row['ratingWeightedTotal'] / $feedbackCount, 1) : 0.0;
+
+            $topFormateurs[] = [
+                'organisme' => $row['organisme'],
+                'formationsCount' => (int) $row['formationsCount'],
+                'feedbackCount' => $feedbackCount,
+                'averageRating' => $average,
+            ];
+        }
+
+        usort($topFormateurs, static function (array $a, array $b): int {
+            $cmpFormations = $b['formationsCount'] <=> $a['formationsCount'];
+            if ($cmpFormations !== 0) {
+                return $cmpFormations;
+            }
+
+            $cmpRating = $b['averageRating'] <=> $a['averageRating'];
+            if ($cmpRating !== 0) {
+                return $cmpRating;
+            }
+
+            return strcmp((string) $a['organisme'], (string) $b['organisme']);
+        });
 
         $rhIds = array_values(array_unique(array_filter(array_map(
             static fn($f) => method_exists($f, 'getRhId') ? (int) $f->getRhId() : 0,
@@ -61,13 +149,89 @@ final class EmployeeFormationController extends AbstractController
 
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
-            'ratingMap' => $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds),
+            'ratingMap' => $ratingMap,
             'rhNames' => $rhNames,
+            'topFormations' => array_slice($topFormationRows, 0, 3),
+            'topFormateurs' => array_slice($topFormateurs, 0, 3),
             'filters' => [
                 'search' => $search,
                 'type' => $type,
+                'organisme' => $organisme,
                 'sort' => $sortQuery,
             ],
+        ]);
+    }
+
+    #[Route('/top-formateur/{organisme}', name: 'employee_top_formateur_formations', methods: ['GET'])]
+    public function topFormateurFormations(Request $request, string $organisme): Response
+    {
+        $organisme = trim($organisme);
+        if ($organisme === '') {
+            return $this->redirectToRoute('employee_formation_index');
+        }
+
+        $sort = (string) $request->query->get('sort', 'rating_desc');
+        $allowedSorts = ['rating_desc', 'rating_asc', 'title_asc', 'title_desc', 'duration_asc', 'duration_desc'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'rating_desc';
+        }
+
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 9;
+
+        $formations = $this->formationService->getAllFormations('', '', 'created_at', 'DESC', $organisme);
+        $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+        $ratingMap = $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds);
+
+        usort($formations, static function ($a, $b) use ($ratingMap, $sort): int {
+            $aId = (int) $a->getId();
+            $bId = (int) $b->getId();
+
+            $aAvg = (float) ($ratingMap[$aId]['average'] ?? 0.0);
+            $bAvg = (float) ($ratingMap[$bId]['average'] ?? 0.0);
+            $aCount = (int) ($ratingMap[$aId]['count'] ?? 0);
+            $bCount = (int) ($ratingMap[$bId]['count'] ?? 0);
+
+            return match ($sort) {
+                'rating_asc' => ($aAvg <=> $bAvg) ?: ($aCount <=> $bCount) ?: strcmp((string) $a->getTitre(), (string) $b->getTitre()),
+                'title_asc' => strcmp((string) $a->getTitre(), (string) $b->getTitre()),
+                'title_desc' => strcmp((string) $b->getTitre(), (string) $a->getTitre()),
+                'duration_asc' => ((int) $a->getDuree() <=> (int) $b->getDuree()) ?: strcmp((string) $a->getTitre(), (string) $b->getTitre()),
+                'duration_desc' => ((int) $b->getDuree() <=> (int) $a->getDuree()) ?: strcmp((string) $a->getTitre(), (string) $b->getTitre()),
+                default => ($bAvg <=> $aAvg) ?: ($bCount <=> $aCount) ?: strcmp((string) $a->getTitre(), (string) $b->getTitre()),
+            };
+        });
+
+        $totalFormations = count($formations);
+        $totalDuration = array_reduce($formations, static fn(int $carry, $formation): int => $carry + (int) $formation->getDuree(), 0);
+        $totalPages = max(1, (int) ceil($totalFormations / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+        $formationsPage = array_slice($formations, $offset, $perPage);
+
+        $rhIds = array_values(array_unique(array_filter(array_map(
+            static fn($f) => method_exists($f, 'getRhId') ? (int) $f->getRhId() : 0,
+            $formationsPage
+        ))));
+        $rhNames = [];
+        if ($rhIds !== []) {
+            foreach ($this->userRepository->findBy(['id' => $rhIds]) as $rhUser) {
+                $rhNames[(int) $rhUser->getId()] = $rhUser->getUsername() ?: ('RH #' . $rhUser->getId());
+            }
+        }
+
+        return $this->render('DashboardEmployee/formation/formation_top_formateur.html.twig', [
+            'organisme' => $organisme,
+            'formations' => $formationsPage,
+            'ratingMap' => $ratingMap,
+            'rhNames' => $rhNames,
+            'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalFormations' => $totalFormations,
+            'totalDuration' => $totalDuration,
         ]);
     }
 
