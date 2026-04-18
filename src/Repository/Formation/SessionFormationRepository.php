@@ -45,6 +45,22 @@ class SessionFormationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return SessionFormation[] */
+    public function findActiveByRh(int $rhId): array
+    {
+        $this->autoUpdateStatuses();
+
+        return $this->createQueryBuilder('s')
+            ->join('s.formation', 'f')
+            ->where('f.rhId = :rhId')
+            ->andWhere('s.statut = :status')
+            ->setParameter('rhId', $rhId)
+            ->setParameter('status', 'En cours')
+            ->orderBy('s.dateDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function autoUpdateStatuses(): void
     {
         $em = $this->getEntityManager();
