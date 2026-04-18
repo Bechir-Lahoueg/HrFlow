@@ -40,6 +40,10 @@ class Employee
     #[Assert\Length(max: 100, maxMessage: 'Job title cannot exceed 100 characters')]
     private ?string $jobTitle = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: 'Department cannot exceed 100 characters')]
+    private ?string $department = null;
+
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Email is required')]
     #[Assert\Email(message: 'Please enter a valid email')]
@@ -116,6 +120,17 @@ class Employee
     public function getEmail(): ?string
     {
         return $this->email;
+    }
+
+    public function getDepartment(): ?string
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?string $department): static
+    {
+        $this->department = $department;
+        return $this;
     }
 
     public function setEmail(string $email): static

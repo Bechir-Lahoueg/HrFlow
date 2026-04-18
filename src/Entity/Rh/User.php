@@ -28,6 +28,9 @@ class User
     #[ORM\Column(length: 20)]
     private ?string $role = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $department = null;
+
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -77,6 +80,17 @@ class User
     public function setRole(string $role): static
     {
         $this->role = $role;
+        return $this;
+    }
+
+    public function getDepartment(): ?string
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?string $department): static
+    {
+        $this->department = $department;
         return $this;
     }
 

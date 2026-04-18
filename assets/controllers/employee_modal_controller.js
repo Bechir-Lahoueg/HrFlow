@@ -4,7 +4,7 @@ export default class extends Controller {
     static targets = [
         'overlay', 'backdrop', 'panel',
         'detailId', 'detailFullname', 'detailEmail',
-        'detailAge', 'detailJob', 'detailRhId',
+        'detailAge', 'detailJob', 'detailDepartment', 'detailRhId',
         'detailRhName', 'detailCreated', 'detailUpdated',
         'avatarInitials', 'avatarLarge'
     ];
@@ -20,6 +20,9 @@ export default class extends Controller {
         this.detailEmailTarget.textContent = row.dataset.email || '-';
         this.detailAgeTarget.textContent = row.dataset.age ? row.dataset.age + ' ans' : '-';
         this.detailJobTarget.textContent = row.dataset.jobTitle || '-';
+        if (this.hasDetailDepartmentTarget) {
+            this.detailDepartmentTarget.textContent = row.dataset.department || '-';
+        }
         this.detailRhIdTarget.textContent = row.dataset.rhId || '-';
         this.detailRhNameTarget.textContent = row.dataset.rhName || '-';
         this.detailCreatedTarget.textContent = row.dataset.createdAt || '-';
