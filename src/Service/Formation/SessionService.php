@@ -23,6 +23,12 @@ final class SessionService
         return $this->sessionFormationRepository->findAvailable();
     }
 
+    /** @return SessionFormation[] */
+    public function getActiveSessionsByRh(int $rhId): array
+    {
+        return $this->sessionFormationRepository->findActiveByRh($rhId);
+    }
+
     public function getIdFormationBySessionId(int $sessionId): int
     {
         $session = $this->sessionFormationRepository->find($sessionId);

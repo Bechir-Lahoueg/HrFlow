@@ -139,6 +139,43 @@ final class ParticipationService
 
         $alreadyAccepted = in_array((string) $participation->getStatutParticipation(), ['Accepte', 'Certificat obtenu'], true);
         if (!$alreadyAccepted) {
+            $acceptedInSameFormation = $this->participationRepository->findAcceptedInFormationExcludingSession(
+                (int) $employee->getId(),
+                (int) $formation->getId(),
+                (int) $session->getId()
+            );
+            if ($acceptedInSameFormation) {
+                $conflictDate = $acceptedInSameFormation->getSession()?->getDateDebut()?->format('d/m/Y') ?? '-';
+                return [
+                    'ok' => false,
+                    'message' => sprintf('Vous avez deja accepte cet employe dans une autre session de cette formation (session du %s). Refusez les autres demandes avant de continuer.', $conflictDate),
+                ];
+            }
+
+            $start = $session->getDateDebut();
+            $end = $session->getDateFin();
+            if ($start && $end) {
+                $acceptedOverlap = $this->participationRepository->findAcceptedWithDateOverlapExcludingSession(
+                    (int) $employee->getId(),
+                    $start,
+                    $end,
+                    (int) $session->getId()
+                );
+
+                if ($acceptedOverlap) {
+                    $overlapSession = $acceptedOverlap->getSession();
+                    $overlapFormation = $overlapSession?->getFormation();
+                    $from = $overlapSession?->getDateDebut()?->format('d/m/Y') ?? '-';
+                    $to = $overlapSession?->getDateFin()?->format('d/m/Y') ?? '-';
+                    $title = $overlapFormation?->getTitre() ?? 'autre formation';
+
+                    return [
+                        'ok' => false,
+                        'message' => sprintf('Cet employe est deja accepte dans "%s" (%s - %s). Il ne peut pas suivre deux formations en parallele.', $title, $from, $to),
+                    ];
+                }
+            }
+
             $capacity = (int) ($session->getCapaciteMax() ?? 0);
             $acceptedCount = $this->participationRepository->countAcceptedBySession((int) $session->getId());
             if ($capacity > 0 && $acceptedCount >= $capacity) {
@@ -146,8 +183,41 @@ final class ParticipationService
             }
         }
 
+        if ($alreadyAccepted) {
+            return ['ok' => true, 'message' => 'Participation deja acceptee.'];
+        }
+
         $participation->setStatutParticipation('Accepte');
+
+        $toRefuse = [];
+        foreach ($this->participationRepository->findPendingInFormationExcludingSession((int) $employee->getId(), (int) $formation->getId(), (int) $session->getId()) as $pending) {
+            $toRefuse[(int) $pending->getId()] = $pending;
+        }
+
+        $start = $session->getDateDebut();
+        $end = $session->getDateFin();
+        if ($start && $end) {
+            foreach ($this->participationRepository->findPendingWithDateOverlapExcludingSession(
+                (int) $employee->getId(),
+                $start,
+                $end,
+                (int) $session->getId(),
+                (int) $formation->getId()
+            ) as $pending) {
+                $toRefuse[(int) $pending->getId()] = $pending;
+            }
+        }
+
+        foreach ($toRefuse as $pending) {
+            $pending->setStatutParticipation('Refuse');
+        }
+
         $this->em->flush();
+
+        $refusedCount = count($toRefuse);
+        if ($refusedCount > 0) {
+            return ['ok' => true, 'message' => sprintf('Participation acceptee. %d autre(s) demande(s) conflictuelle(s) ont ete refusee(s) automatiquement.', $refusedCount)];
+        }
 
         return ['ok' => true, 'message' => 'Participation acceptee.'];
     }

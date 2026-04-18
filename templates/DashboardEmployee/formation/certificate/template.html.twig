@@ -85,6 +85,28 @@
             font-style: italic;
             font-family: 'Brush Script MT', 'Segoe Script', cursive;
         }
+
+        .qr-box {
+            position: absolute;
+            right: 64px;
+            bottom: 56px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .qr-box img {
+            width: 110px;
+            height: 110px;
+            display: block;
+            background: #ffffff;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .qr-label {
+            margin-top: 6px;
+            font-size: 11px;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +133,13 @@
 
         {% if rh_creator_name is not empty %}
             <div class="signature">Signature electronique: {{ rh_creator_name }}</div>
+        {% endif %}
+
+        {% if qr_code is not empty %}
+            <div class="qr-box">
+                <img src="{{ qr_code }}" alt="QR verification certificat">
+                <div class="qr-label">Verifier le certificat</div>
+            </div>
         {% endif %}
 
         <div class="footer-info">
