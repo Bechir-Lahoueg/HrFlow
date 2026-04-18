@@ -254,6 +254,26 @@
                         </div>
                     </form>
                 </div>
+
+                <div class="mt-5 rounded-xl border border-zinc-200 bg-white p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center">💬</div>
+                        <p class="text-[13px] font-bold text-zinc-700">Chat d'equipe (Matrix)</p>
+                    </div>
+
+                    <div id="employeeProjectChatAlert" class="hidden text-[12px] px-3 py-2 rounded-lg mb-2"></div>
+                    <div id="employeeProjectChatMessages" class="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm" style="height:240px; overflow-y:auto;"></div>
+
+                    <form id="employeeProjectChatForm" class="mt-2 flex gap-2">
+                        <input id="employeeProjectChatInput" type="text" maxlength="1200"
+                               placeholder="Ecrire un message..."
+                               class="flex-1 rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all">
+                        <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-[12px] hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-sm active:scale-[0.98]">
+                            Envoyer
+                        </button>
+                    </form>
+                </div>
             </div>
 
         </main>
@@ -389,5 +409,178 @@ function showTaskInfo(task) {
     document.getElementById('infoTaskBody').innerHTML = html;
     openModal('modalTaskInfo');
 }
+
+const employeeProjectChatState = {
+    pollHandle: null,
+    bootstrapped: false,
+};
+
+function initEmployeeProjectChat() {
+    const form = document.getElementById('employeeProjectChatForm');
+    if (!form) {
+        return;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        sendEmployeeProjectChatMessage();
+    });
+
+    bootstrapEmployeeProjectChat();
+}
+
+function bootstrapEmployeeProjectChat() {
+    fetch('/api/projects/{{ project.id }}/chat/bootstrap', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Chat Matrix indisponible.');
+            return;
+        }
+
+        employeeProjectChatState.bootstrapped = true;
+        loadEmployeeProjectChatMessages();
+
+        if (employeeProjectChatState.pollHandle) {
+            clearInterval(employeeProjectChatState.pollHandle);
+        }
+
+        employeeProjectChatState.pollHandle = setInterval(loadEmployeeProjectChatMessages, 5000);
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Impossible d\'initialiser le chat Matrix.');
+    });
+}
+
+function loadEmployeeProjectChatMessages() {
+    if (!employeeProjectChatState.bootstrapped) {
+        return;
+    }
+
+    fetch('/api/projects/{{ project.id }}/chat/messages?limit=40', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible de charger les messages.');
+            return;
+        }
+
+        renderEmployeeProjectChatMessages(Array.isArray(data.messages) ? data.messages : []);
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant le chargement du chat.');
+    });
+}
+
+function renderEmployeeProjectChatMessages(messages) {
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '';
+    if (!messages.length) {
+        container.innerHTML = '<div class="text-zinc-400 text-sm">Aucun message pour le moment.</div>';
+        return;
+    }
+
+    messages.forEach((msg) => {
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+
+        const date = msg.origin_server_ts ? new Date(msg.origin_server_ts).toLocaleString() : '';
+        row.innerHTML =
+            '<div class="text-zinc-400 text-[11px]">' + escapeHtml(date) + '</div>'
+            + '<div class="text-sm text-zinc-700" style="white-space:pre-wrap">' + escapeHtml(msg.body || '') + '</div>';
+
+        container.appendChild(row);
+    });
+
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendEmployeeProjectChatMessage() {
+    const input = document.getElementById('employeeProjectChatInput');
+    if (!input) {
+        return;
+    }
+
+    const message = String(input.value || '').trim();
+    if (message === '') {
+        return;
+    }
+
+    const payload = new URLSearchParams();
+    payload.set('message', message);
+
+    fetch('/api/projects/{{ project.id }}/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer le message.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        input.value = '';
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'envoi du message.');
+    });
+}
+
+function showEmployeeChatAlert(type, message) {
+    const alert = document.getElementById('employeeProjectChatAlert');
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert alert-' + type + ' py-2';
+    alert.textContent = message;
+}
+
+function hideEmployeeChatAlert() {
+    const alert = document.getElementById('employeeProjectChatAlert');
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert d-none py-2';
+    alert.textContent = '';
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initEmployeeProjectChat();
+});
 </script>
 {% endblock %}
