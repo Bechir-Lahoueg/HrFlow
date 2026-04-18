@@ -65,4 +65,13 @@ class SessionFormationRepository extends ServiceEntityRepository
         ->setParameter('today', $today)
         ->execute();
     }
+
+    public function deleteByFormationId(int $formationId): int
+    {
+        return $this->getEntityManager()->createQuery(
+            'DELETE FROM App\\Entity\\Formation\\SessionFormation s WHERE s.formation = :formationId'
+        )
+            ->setParameter('formationId', $formationId)
+            ->execute();
+    }
 }

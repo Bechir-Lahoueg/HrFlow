@@ -19,6 +19,7 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
         private readonly ?string $jobTitle = null,
         private readonly ?int $age = null,
         private readonly ?int $rhId = null,
+        private readonly ?string $department = null,
     ) {
     }
 
@@ -79,6 +80,11 @@ final class DbUser implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRhId(): ?int
     {
         return $this->rhId;
+    }
+
+    public function getDepartment(): ?string
+    {
+        return $this->department;
     }
 
     public function isEmployee(): bool
