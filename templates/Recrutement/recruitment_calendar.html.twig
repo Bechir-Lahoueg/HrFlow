@@ -11,11 +11,13 @@
             padding: 16px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             width: 100%;
-            overflow: visible;
+            overflow-x: auto;
+            min-height: 600px;
         }
         .calendar-container {
             width: 100%;
             min-width: auto;
+            min-height: 500px;
         }
         .calendar-header {
             display: flex;
@@ -66,7 +68,7 @@
             background: #e2e8f0;
             border-radius: 12px;
             overflow: visible;
-        }
+            width: 100%;            min-width: 840px;        }
         .calendar-day-header {
             background: #f8fafc;
             padding: 16px 8px;
@@ -121,6 +123,12 @@
                 padding: 4px 6px;
                 font-size: 0.7em;
             }
+            .calendar-wrapper {
+                padding: 12px;
+            }
+            .calendar-container {
+                min-height: 400px;
+            }
         }
         @media (max-width: 768px) {
             .calendar-day {
@@ -129,6 +137,14 @@
             .calendar-event {
                 font-size: 0.65em;
                 padding: 3px 4px;
+            }
+            .calendar-nav {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .calendar-btn {
+                padding: 8px 16px;
+                font-size: 0.8em;
             }
         }
         .calendar-day:hover {
@@ -248,18 +264,19 @@
             </header>
 
             {# Calendar Container #}
-            <div class="calendar-wrapper">
+            <div class="calendar-wrapper" style="min-height: 700px;">
                 <div id="calendar-container" class="calendar-container">
                     <div class="calendar-header">
-                        <h2 id="calendar-title" class="calendar-title"></h2>
+                        <h2 id="calendar-title" class="calendar-title">Loading calendar...</h2>
                         <div class="calendar-nav">
                             <button id="prev-month" class="calendar-btn calendar-btn-secondary">← Précédent</button>
                             <button id="today-btn" class="calendar-btn">Aujourd'hui</button>
                             <button id="next-month" class="calendar-btn calendar-btn-secondary">Suivant →</button>
                         </div>
                     </div>
-                    <div id="calendar-grid" class="calendar-grid">
-                        <!-- Calendar rendered by JavaScript -->
+                    <div id="calendar-grid" class="calendar-grid" style="min-height: 500px; border: 1px solid #e2e8f0;">
+                        <!-- Calendar will be rendered here -->
+                        <div style="padding: 20px; text-align: center; color: #666;">Loading calendar...</div>
                     </div>
                 </div>
             </div>
@@ -282,17 +299,26 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var events = {{ events|raw }};
-            
-            // Check if no events
-            if (!events || !Array.isArray(events) || events.length === 0) {
-                document.getElementById('calendar-container').style.display = 'none';
-                document.getElementById('no-events-message').classList.remove('hidden');
-                return;
-            }
-            
-            var currentDate = new Date();
-            var currentView = 'month';
+            try {
+                var events = {{ events|raw }};
+                
+                // Debug: log events to console
+                console.log('Calendar events:', events);
+                
+                // Check if no events - handle both array and string cases
+                if (!events || (typeof events === 'string' && events === '[]') || (Array.isArray(events) && events.length === 0)) {
+                    document.getElementById('calendar-container').style.display = 'none';
+                    document.getElementById('no-events-message').classList.remove('hidden');
+                    return;
+                }
+                
+                // Ensure events is an array
+                if (typeof events === 'string') {
+                    events = JSON.parse(events);
+                }
+                
+                var currentDate = new Date();
+                var currentView = 'month';
             
             function renderCalendar() {
                 var container = document.getElementById('calendar-grid');
@@ -407,6 +433,10 @@
             
             // Initial render
             renderCalendar();
+            } catch (e) {
+                console.error('Calendar error:', e);
+                document.getElementById('calendar-grid').innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">Erreur de chargement du calendrier: ' + e.message + '</div>';
+            }
         });
     </script>
 {% endblock %}

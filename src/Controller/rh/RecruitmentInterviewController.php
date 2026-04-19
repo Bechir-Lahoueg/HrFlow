@@ -6,7 +6,7 @@ use App\Entity\Recrutement\Interview;
 use App\Form\Recrutement\InterviewType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
-use App\Repository\UserRepository;
+use App\Repository\Rh\UserRepository;
 use App\Security\DbUser;
 use App\Service\Recrutement\InterviewConflictDetector;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,8 +38,8 @@ final class RecruitmentInterviewController extends AbstractController
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
 
         // Get current application info if filtering
@@ -90,8 +90,8 @@ final class RecruitmentInterviewController extends AbstractController
 
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
         
         $interview = new Interview();
@@ -156,6 +156,18 @@ final class RecruitmentInterviewController extends AbstractController
             return $this->redirectToRoute('app_rh_interviews');
         }
 
+        // Check minimum score requirement: if PASSED, score must be >= 6
+        if ($result === 'PASSED' && $score < 6) {
+            $this->addFlash('error', 'Le score minimum pour réussir un entretien est 6/10.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
+        // If score is < 6, can't be marked as PASSED
+        if ($score > 0 && $score < 6 && $result === 'PASSED') {
+            $this->addFlash('error', 'Un candidat avec un score de ' . $score . '/10 ne peut pas être marqué comme réussi.');
+            return $this->redirectToRoute('app_rh_interviews');
+        }
+
         $rh = $this->getCurrentRh();
         $interview = $interviewRepository->findOneByRh($id, $rh);
 
@@ -195,8 +207,8 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewers = $userRepository->findInterviewers();
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
-            $label = $user['email'] ? sprintf('%s (%s)', $user['username'], $user['email']) : $user['username'];
-            $interviewerChoices[$label] = $user['id'];
+            $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
+            $interviewerChoices[$label] = $user->getId();
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [

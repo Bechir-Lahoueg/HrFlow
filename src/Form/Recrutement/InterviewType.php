@@ -14,6 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Range;
 
 class InterviewType extends AbstractType
 {
@@ -45,6 +47,9 @@ class InterviewType extends AbstractType
                     return $application->getCandidateName() . ' - ' . ($application->getJobOffer()?->getTitle() ?? '—');
                 },
                 'placeholder' => '-- Sélectionner un candidat --',
+                'constraints' => [
+                    new NotBlank(['message' => 'La candidature est requise']),
+                ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
                 ],
@@ -56,6 +61,9 @@ class InterviewType extends AbstractType
                 'label' => 'Interviewer',
                 'choices' => $options['interviewer_choices'] ?? [],
                 'placeholder' => '-- Sélectionner --',
+                'constraints' => [
+                    new NotBlank(['message' => 'L\'interviewer est requis']),
+                ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
                 ],
@@ -67,6 +75,9 @@ class InterviewType extends AbstractType
                 'label' => 'Date et heure',
                 'widget' => 'single_text',
                 'html5' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'La date et heure sont requises']),
+                ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
                 ],
@@ -82,6 +93,9 @@ class InterviewType extends AbstractType
                     'En présentiel' => 'ONSITE',
                     'Technique' => 'TECHNICAL',
                     'RH' => 'HR',
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le type d\'entretien est requis']),
                 ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
@@ -127,13 +141,22 @@ class InterviewType extends AbstractType
             ->add('score', IntegerType::class, [
                 'label' => 'Score /10',
                 'required' => false,
+                'constraints' => [
+                    new Range([
+                        'min' => 0,
+                        'max' => 10,
+                        'notInRangeMessage' => 'Le score doit être compris entre 0 et 10',
+                    ]),
+                ],
                 'attr' => [
-                    'min' => 0,
-                    'max' => 10,
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
                 ],
                 'label_attr' => [
                     'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                ],
+                'help' => 'Score minimum 6/10 pour réussir',
+                'help_attr' => [
+                    'class' => 'text-[11px] text-slate-400 mt-1',
                 ],
             ])
             ->add('result', ChoiceType::class, [
@@ -143,6 +166,9 @@ class InterviewType extends AbstractType
                     'Réussi' => 'PASSED',
                     'Échoué' => 'FAILED',
                     'No-show' => 'NO_SHOW',
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le résultat est requis']),
                 ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors',
@@ -169,3 +195,4 @@ class InterviewType extends AbstractType
         $resolver->setAllowedTypes('current_application_id', ['int', 'null']);
     }
 }
+

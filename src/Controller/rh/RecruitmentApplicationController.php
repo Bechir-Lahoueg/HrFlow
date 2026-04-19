@@ -89,6 +89,40 @@ final class RecruitmentApplicationController extends AbstractController
             $application->setStatus($status);
             $em->flush();
             $this->addFlash('success', sprintf('Statut mis à jour avec succès (%s → %s).', $previousStatus, $status));
+            
+            // If status changed to INTERVIEW, redirect to create interview form
+            if ($status === 'INTERVIEW') {
+                return $this->redirectToRoute('app_rh_interviews', ['application_id' => $application->getId()]);
+            }
+            
+            // If status changed to HIRED, reject all other applications from this candidate
+            if ($status === 'HIRED' && $application->getCandidate()) {
+                $allCandidateApplications = $applicationRepository->findBy(['candidate' => $application->getCandidate()]);
+                foreach ($allCandidateApplications as $otherApp) {
+                    if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
+                        $otherApp->setStatus('REJECTED');
+                    }
+                }
+                $em->flush();
+                $this->addFlash('info', 'Les autres candidatures du candidat ont été automatiquement rejetées.');
+            }
+            
+            // If status changed to INTERVIEW, redirect to create interview form
+            if ($status === 'INTERVIEW') {
+                return $this->redirectToRoute('app_rh_interviews', ['application_id' => $application->getId()]);
+            }
+            
+            // If status changed to HIRED, reject all other applications from this candidate
+            if ($status === 'HIRED' && $application->getCandidate()) {
+                $allCandidateApplications = $applicationRepository->findBy(['candidate' => $application->getCandidate()]);
+                foreach ($allCandidateApplications as $otherApp) {
+                    if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
+                        $otherApp->setStatus('REJECTED');
+                    }
+                }
+                $em->flush();
+                $this->addFlash('info', 'Les autres candidatures du candidat ont été automatiquement rejetées.');
+            }
         } else {
             $this->addFlash('info', 'Le statut n\'a pas changé.');
         }
