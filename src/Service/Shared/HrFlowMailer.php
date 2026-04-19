@@ -246,62 +246,6 @@ final class HrFlowMailer
         );
     }
 
-    // ──────────────────────────────────────────────
-    // 6. Formation participation accepted (→ Employee)
-    // ──────────────────────────────────────────────
-    public function sendFormationAccepted(ParticipationFormation $participation): void
-    {
-        $employee = $participation->getEmployee();
-        $session = $participation->getSession();
-        $formation = $session?->getFormation();
-
-        if (!$employee || !$employee->getEmail() || !$session || !$formation) {
-            return;
-        }
-
-        $lieu = trim((string) ($session->getLieu() ?? ''));
-        $isOnlineLink = str_starts_with(strtolower($lieu), 'http://') || str_starts_with(strtolower($lieu), 'https://');
-
-        $html = $this->twig->render('emails/formation_accepted.html.twig', [
-            'employee' => $employee,
-            'formation' => $formation,
-            'session' => $session,
-            'isOnlineLink' => $isOnlineLink,
-            'date' => new \DateTime('now'),
-        ]);
-
-        $this->send(
-            $employee->getEmail(),
-            sprintf('Participation acceptee: %s — HrFlow', (string) $formation->getTitre()),
-            $html
-        );
-    }
-
-    // ──────────────────────────────────────────────
-    // 7. Certificate available (→ Employee)
-    // ──────────────────────────────────────────────
-    public function sendCertificateAvailable(ParticipationFormation $participation): void
-    {
-        $employee = $participation->getEmployee();
-        $session = $participation->getSession();
-        $formation = $session?->getFormation();
-
-        if (!$employee || !$employee->getEmail() || !$formation) {
-            return;
-        }
-
-        $html = $this->twig->render('emails/certificate_available.html.twig', [
-            'employee' => $employee,
-            'formation' => $formation,
-            'date' => new \DateTime('now'),
-        ]);
-
-        $this->send(
-            $employee->getEmail(),
-            sprintf('Votre certificat est disponible: %s — HrFlow', (string) $formation->getTitre()),
-            $html
-        );
-    }
 
     // ──────────────────────────────────────────────
     // Internal: send email
