@@ -7,6 +7,8 @@ use App\Service\Projet\ProjectTaskService;
 use App\Service\Projet\ProjectCollaboratorService;
 use App\Service\Projet\ProjectMilestoneService;
 use App\Service\Projet\ProjectUpdateService;
+use App\Service\Projet\ProjectReportPdfService;
+use App\Service\Projet\TaskDeadlineAlertService;
 use App\Service\Shared\AiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +25,8 @@ class RhProjectController extends AbstractController
         private readonly ProjectCollaboratorService $collaboratorService,
         private readonly ProjectMilestoneService $milestoneService,
         private readonly ProjectUpdateService $updateService,
+        private readonly ProjectReportPdfService $projectReportPdfService,
+        private readonly TaskDeadlineAlertService $taskDeadlineAlertService,
         private readonly AiService $aiService,
     ) {}
 
@@ -44,14 +48,7 @@ class RhProjectController extends AbstractController
         $priorityFilter = $request->query->get('priority', '');
         $search = $request->query->get('search', '');
 
-        if ($statusFilter || $priorityFilter || $search) {
-            $projects = array_filter($projects, function ($p) use ($statusFilter, $priorityFilter, $search) {
-                if ($statusFilter && $p['status'] !== $statusFilter) return false;
-                if ($priorityFilter && $p['priority'] !== $priorityFilter) return false;
-                if ($search && stripos($p['name'], $search) === false && stripos($p['description'] ?? '', $search) === false) return false;
-                return true;
-            });
-        }
+        $projects = $this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search);
 
         return $this->render('DashboardHr/Project/index.html.twig', [
             'projects' => array_values($projects),
@@ -62,6 +59,92 @@ class RhProjectController extends AbstractController
             'statuses' => ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'],
             'priorities' => ['low', 'medium', 'high', 'critical'],
         ]);
+    }
+
+    #[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request): Response
+    {
+        $user = $this->getUser();
+        $rhId = $user->getId();
+
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $priorityFilter = trim((string) $request->query->get('priority', ''));
+        $search = trim((string) $request->query->get('search', ''));
+
+        $projects = $this->projectService->getProjectsWithDetails($rhId);
+        $projects = array_values($this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search));
+
+        $reportProjects = [];
+        foreach ($projects as $project) {
+            $projectId = (int) ($project['id'] ?? 0);
+            if ($projectId <= 0) {
+                continue;
+            }
+
+            $tasks = $this->taskService->getTasksByProject($projectId);
+            $team = $this->collaboratorService->getCollaboratorsByProject($projectId);
+            $milestones = $this->milestoneService->getMilestonesByProject($projectId);
+            $updates = $this->updateService->getUpdatesByProject($projectId, 20);
+            $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
+
+            $reportProjects[] = [
+                'project' => $project,
+                'tasks' => $tasks,
+                'team' => $team,
+                'milestones' => $milestones,
+                'updates' => $updates,
+                'analytics' => $analytics,
+            ];
+        }
+
+        $stats = $this->projectService->getProjectStats($rhId);
+        $pdf = $this->projectReportPdfService->generatePdf([
+            'reportProjects' => $reportProjects,
+            'stats' => $stats,
+            'filters' => [
+                'status' => $statusFilter,
+                'priority' => $priorityFilter,
+                'search' => $search,
+            ],
+            'generatedAt' => new \DateTimeImmutable(),
+            'rhId' => $rhId,
+        ]);
+
+        return new Response($pdf['content'], Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $pdf['fileName'] . '"',
+        ]);
+    }
+
+    #[Route('/alerts/send-task-reminders', name: 'send_task_reminders', methods: ['POST'])]
+    public function sendTaskReminders(Request $request): Response
+    {
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('rh-project-send-task-reminders', $token)) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('rh_project_index');
+        }
+
+        $user = $this->getUser();
+        $rhId = $user->getId();
+
+        $result = $this->taskDeadlineAlertService->sendAlertsForRh($rhId);
+
+        if (($result['tasksFlagged'] ?? 0) === 0) {
+            $this->addFlash('success', 'Aucune alerte a envoyer pour le moment.');
+        } else {
+            $this->addFlash(
+                'success',
+                sprintf(
+                    'Alertes envoyees: %d tache(s), %d email(s) employe, %d email RH.',
+                    (int) $result['tasksFlagged'],
+                    (int) $result['employeeEmailsSent'],
+                    (int) $result['rhEmailsSent']
+                )
+            );
+        }
+
+        return $this->redirectToRoute('rh_project_index');
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -208,7 +291,7 @@ class RhProjectController extends AbstractController
         }
 
         $this->taskService->createTask($data);
-        $this->updateService->logTaskCreated($id, $user->getId(), $data['title']);
+        $this->updateService->logTaskCreated($id, $user->getId(), $data['title'], true);
 
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse([
@@ -272,7 +355,7 @@ class RhProjectController extends AbstractController
         if ($task && $newStatus) {
             $this->taskService->updateTaskStatus($taskId, $newStatus);
             if ($newStatus === 'done') {
-                $this->updateService->logTaskCompleted($id, $user->getId(), $task['title']);
+                $this->updateService->logTaskCompleted($id, $user->getId(), $task['title'], true);
             }
             $this->projectService->updateCompletionRate($id);
             return new JsonResponse(['success' => true]);
@@ -412,7 +495,7 @@ class RhProjectController extends AbstractController
         $milestone = $this->milestoneService->getMilestoneById($milestoneId);
         $this->milestoneService->markAsCompleted($milestoneId);
         if ($milestone) {
-            $this->updateService->logMilestoneCompleted($id, $user->getId(), $milestone['name']);
+            $this->updateService->logMilestoneCompleted($id, $user->getId(), $milestone['name'], true);
         }
         $this->addFlash('success', 'Jalon marqué comme terminé !');
         return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'milestones']);
@@ -440,8 +523,9 @@ class RhProjectController extends AbstractController
             $this->updateService->createUpdate([
                 'project_id' => $id,
                 'user_id' => $user->getId(),
-                'update_type' => 'comment',
-                'title' => 'Commentaire',
+                'update_type' => 'rh_comment',
+                'actor_source' => 'rh',
+                'title' => 'Commentaire RH',
                 'content' => $content,
             ]);
             $this->addFlash('success', 'Commentaire publié !');
@@ -609,6 +693,34 @@ class RhProjectController extends AbstractController
             'criticals' => $criticals,
             'risks' => $risks,
         ];
+    }
+
+    private function applyProjectFilters(array $projects, string $statusFilter, string $priorityFilter, string $search): array
+    {
+        if ($statusFilter === '' && $priorityFilter === '' && $search === '') {
+            return $projects;
+        }
+
+        return array_filter($projects, static function (array $project) use ($statusFilter, $priorityFilter, $search): bool {
+            if ($statusFilter !== '' && (string) ($project['status'] ?? '') !== $statusFilter) {
+                return false;
+            }
+
+            if ($priorityFilter !== '' && (string) ($project['priority'] ?? '') !== $priorityFilter) {
+                return false;
+            }
+
+            if ($search !== '') {
+                $name = (string) ($project['name'] ?? '');
+                $description = (string) ($project['description'] ?? '');
+
+                if (stripos($name, $search) === false && stripos($description, $search) === false) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
     }
 
     /**

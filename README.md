@@ -85,6 +85,39 @@ php -S 127.0.0.1:8000 -t public
 php bin/phpunit
 ```
 
+## Alertes Taches Projet (Email)
+
+Une commande envoie les alertes pour :
+
+- taches en retard
+- taches avec echeance a J+1
+
+Commande manuelle :
+
+```bash
+php bin/console app:projects:send-task-reminders
+```
+
+Simulation sans envoi d'emails :
+
+```bash
+php bin/console app:projects:send-task-reminders --dry-run
+```
+
+Planification quotidienne a 08:00 :
+
+- Linux (cron):
+
+```bash
+0 8 * * * cd /chemin/vers/Esprit-PIDEV-WEB--3A4-HrFlow && php bin/console app:projects:send-task-reminders
+```
+
+- Windows (Task Scheduler via schtasks):
+
+```powershell
+schtasks /Create /SC DAILY /ST 08:00 /TN "HrFlow Task Alerts" /TR "php C:\Users\BRAHIM\Desktop\Esprit-PIDEV-WEB--3A4-HrFlow\bin\console app:projects:send-task-reminders" /F
+```
+
 ## Documentation Projet
 
 - Kanban PI et suivi des taches: [docs/README.md](docs/README.md)

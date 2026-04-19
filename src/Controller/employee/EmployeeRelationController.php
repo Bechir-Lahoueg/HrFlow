@@ -49,16 +49,16 @@ class EmployeeRelationController extends AbstractController
 
         $errors = $this->requestService->validateCreate($data);
 
-        $file = $request->files->get('attachment');
+        $file = $this->extractAttachmentFile($request);
         if ($file instanceof UploadedFile) {
             $validation = $this->validateRequestAttachment($file);
             if (!$validation['success']) {
                 $errors['attachment'] = (string) $validation['message'];
             }
-        } elseif (isset($_FILES['attachment']) && is_array($_FILES['attachment'])) {
-            $uploadError = (int) ($_FILES['attachment']['error'] ?? UPLOAD_ERR_NO_FILE);
-            if ($uploadError !== UPLOAD_ERR_NO_FILE) {
-                $errors['attachment'] = $this->mapUploadError($uploadError);
+        } else {
+            $rawUploadError = $this->extractAttachmentUploadError();
+            if ($rawUploadError !== null && $rawUploadError !== UPLOAD_ERR_NO_FILE) {
+                $errors['attachment'] = $this->mapUploadError($rawUploadError);
             }
         }
 
@@ -444,9 +444,12 @@ class EmployeeRelationController extends AbstractController
             return ['success' => false, 'message' => 'La pièce jointe dépasse 3 Mo.'];
         }
 
-        $mime = (string) $file->getMimeType();
-        $allowed = ['application/pdf', 'image/jpeg', 'image/png'];
-        if (!in_array($mime, $allowed, true)) {
+        $allowedMimes = ['application/pdf', 'image/jpeg', 'image/png'];
+        $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+        $mime = $this->resolveAttachmentMimeType($file);
+        $extension = $this->resolveAttachmentExtension($file);
+
+        if (!in_array($mime, $allowedMimes, true) && !in_array($extension, $allowedExtensions, true)) {
             return ['success' => false, 'message' => 'Format non autorisé. Utilisez PDF, JPG ou PNG.'];
         }
 
@@ -462,7 +465,10 @@ class EmployeeRelationController extends AbstractController
                 return ['success' => false, 'message' => 'Impossible de créer le dossier des pièces jointes.'];
             }
 
-            $extension = $file->guessExtension() ?: 'bin';
+            $extension = $this->resolveAttachmentExtension($file);
+            if ($extension === '') {
+                $extension = 'bin';
+            }
             $fileName = 'request_' . uniqid('', true) . '.' . $extension;
             $file->move($targetDir, $fileName);
 
@@ -482,5 +488,71 @@ class EmployeeRelationController extends AbstractController
             UPLOAD_ERR_EXTENSION => 'Téléversement bloqué par une extension PHP.',
             default => 'Téléversement de la pièce jointe échoué.',
         };
+    }
+
+    private function extractAttachmentFile(Request $request): ?UploadedFile
+    {
+        $directFile = $request->files->get('attachment');
+        if ($directFile instanceof UploadedFile) {
+            return $directFile;
+        }
+
+        $allFiles = $request->files->all();
+        if (isset($allFiles['attachment']) && $allFiles['attachment'] instanceof UploadedFile) {
+            return $allFiles['attachment'];
+        }
+
+        if (isset($_FILES['attachment']) && is_array($_FILES['attachment'])) {
+            $tmpName = (string) ($_FILES['attachment']['tmp_name'] ?? '');
+            $errorCode = (int) ($_FILES['attachment']['error'] ?? UPLOAD_ERR_NO_FILE);
+            if ($tmpName !== '' && is_file($tmpName) && $errorCode === UPLOAD_ERR_OK) {
+                $originalName = (string) ($_FILES['attachment']['name'] ?? 'attachment.bin');
+                $mimeType = (string) ($_FILES['attachment']['type'] ?? 'application/octet-stream');
+
+                return new UploadedFile($tmpName, $originalName, $mimeType, $errorCode, true);
+            }
+        }
+
+        return null;
+    }
+
+    private function extractAttachmentUploadError(): ?int
+    {
+        if (!isset($_FILES['attachment']) || !is_array($_FILES['attachment'])) {
+            return null;
+        }
+
+        return (int) ($_FILES['attachment']['error'] ?? UPLOAD_ERR_NO_FILE);
+    }
+
+    private function resolveAttachmentMimeType(UploadedFile $file): string
+    {
+        try {
+            $mime = $file->getMimeType();
+            if (is_string($mime) && $mime !== '') {
+                return strtolower($mime);
+            }
+        } catch (\Throwable) {
+            // Fallback when php_fileinfo is not available.
+        }
+
+        $clientMime = $file->getClientMimeType();
+        return is_string($clientMime) ? strtolower(trim($clientMime)) : '';
+    }
+
+    private function resolveAttachmentExtension(UploadedFile $file): string
+    {
+        $clientExtension = $file->getClientOriginalExtension();
+        if (is_string($clientExtension) && $clientExtension !== '') {
+            return strtolower(trim($clientExtension));
+        }
+
+        $originalName = $file->getClientOriginalName();
+        if (!is_string($originalName) || $originalName === '') {
+            return '';
+        }
+
+        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+        return is_string($ext) ? strtolower(trim($ext)) : '';
     }
 }
