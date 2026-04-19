@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:radial-gradient(circle at top,#dbeafe 0%,#f8fafc 45%,#ffffff 100%);padding:40px 12px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.10);">
+
+    <tr><td style="padding:20px 32px 12px;background:#ffffff;text-align:center;">
+        <img src="{{ absolute_url(asset('logo.png')) }}" alt="HrFlow" width="124" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:124px;height:auto;">
+    </td></tr>
+
+    <tr><td style="background:linear-gradient(140deg,#145EB7,#3FA9F5 45%,#7dd3fc);padding:30px 32px;">
+        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Formation</p>
+        <h1 style="margin:8px 0 0;color:#fff;font-size:24px;font-weight:800;line-height:1.2;">Votre participation est acceptee</h1>
+        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Vous etes inscrit(e) a la session de formation.</p>
+    </td></tr>
+
+    <tr><td style="padding:30px 32px 28px;">
+        <p style="margin:0 0 16px;color:#18181b;font-size:15px;">Bonjour <strong>{{ employee.fullName }}</strong>,</p>
+
+        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
+            Bonne nouvelle: votre demande de participation a ete <strong style="color:#145EB7;">acceptee</strong>.
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
+            <tr><td style="padding:16px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">FORMATION</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ formation.titre }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">ORGANISME</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ formation.organisme ?: 'HrFlow' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">PERIODE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ session.dateDebut|date('d/m/Y') }} - {{ session.dateFin|date('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">MODE</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ session.mode }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">{{ isOnlineLink ? 'LIEN' : 'LIEU' }}</td>
+                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">
+                            {% if isOnlineLink %}
+                                <a href="{{ session.lieu }}" style="color:#145EB7;text-decoration:underline;">Rejoindre la session</a>
+                            {% else %}
+                                {{ session.lieu ?: 'Non precise' }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td></tr>
+        </table>
+
+        <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">Connectez-vous a votre espace employe HrFlow pour suivre votre session et vos notifications.</p>
+    </td></tr>
+
+    <tr><td style="padding:18px 32px 24px;border-top:1px solid #eef2f7;text-align:center;background:#fbfcff;">
+        <p style="margin:0;color:#94a3b8;font-size:11px;">HrFlow - Gestion des ressources humaines</p>
+    </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+

@@ -131,7 +131,16 @@
                             <label id="session-lieu-label" class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Lieu de la session</label>
                             {{ form_widget(sessionForm.lieu, {'attr': {'id': 'session-lieu', 'class': 'custom-input block w-full rounded-xl py-4 px-5 transition-all', 'placeholder': 'Ex: Salle Polyvalente ou URL Google Maps'}}) }}
                             <div class="text-red-500 text-xs font-semibold mt-1">{{ form_errors(sessionForm.lieu) }}</div>
-                            <p id="session-lieu-help" class="text-[11px] text-zinc-400 ml-1 italic">Pour le presentiel: adresse ou lien Google Maps. Pour l'en ligne: lien Teams/Meet/Zoom.</p>
+                            {% set currentLieu = sessionForm.vars.value.lieu|default('') %}
+                            {% set lowerLieu = currentLieu|lower %}
+                            {% set hasHttpLieu = lowerLieu starts with 'http://' or lowerLieu starts with 'https://' %}
+                            {% if hasHttpLieu %}
+                                <a href="{{ currentLieu }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold" style="background:#e8f1fb; color:#145EB7; border:1px solid #c5d9f5;">
+                                    Ouvrir la reunion
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M15 13.5V18a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h4.5"/></svg>
+                                </a>
+                            {% endif %}
+                            <p id="session-lieu-help" class="text-[11px] text-zinc-400 ml-1 italic">Pour le presentiel: adresse ou lien Google Maps. Pour l'en ligne: laissez vide pour auto-generer un lien Jitsi ou saisissez votre propre lien.</p>
                         </div>
                         <div class="space-y-2">
                             <label class="text-primary-dark font-bold text-xs tracking-widest uppercase ml-1">Mode</label>
@@ -223,7 +232,7 @@
                 if (mode.includes('en ligne')) {
                     lieuLabel.textContent = 'Lien de la session en ligne';
                     lieuInput.placeholder = 'https://teams.microsoft.com/... ou https://meet.google.com/...';
-                    lieuHelp.textContent = 'Renseignez un lien http(s) valide: Teams, Google Meet, Zoom, Webex...';
+                    lieuHelp.textContent = 'Laissez vide pour auto-generer un lien Jitsi, ou renseignez un lien http(s) valide (Teams, Google Meet, Zoom...).';
                     return;
                 }
 
