@@ -153,6 +153,42 @@ final class HrFlowMailer
         }
     }
 
+    /**
+     * @param array<int,array<string,mixed>> $tasks
+     */
+    public function sendProjectTaskAlertToEmployee(string $recipientEmail, string $recipientName, array $tasks): void
+    {
+        if ($recipientEmail === '' || $tasks === []) {
+            return;
+        }
+
+        $html = $this->twig->render('emails/project_task_alert_employee.html.twig', [
+            'recipientName' => $recipientName,
+            'tasks' => $tasks,
+            'date' => new \DateTimeImmutable('now'),
+        ]);
+
+        $this->send($recipientEmail, 'Rappel taches projet — HrFlow', $html);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $tasks
+     */
+    public function sendProjectTaskAlertDigestToRh(string $recipientEmail, string $recipientName, array $tasks): void
+    {
+        if ($recipientEmail === '' || $tasks === []) {
+            return;
+        }
+
+        $html = $this->twig->render('emails/project_task_alert_rh.html.twig', [
+            'recipientName' => $recipientName,
+            'tasks' => $tasks,
+            'date' => new \DateTimeImmutable('now'),
+        ]);
+
+        $this->send($recipientEmail, 'Digest RH — alertes taches projet — HrFlow', $html);
+    }
+
     // ──────────────────────────────────────────────
     // 6. Formation participation accepted (→ Employee)
     // ──────────────────────────────────────────────

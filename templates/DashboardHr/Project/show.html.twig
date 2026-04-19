@@ -540,10 +540,10 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
             {% for update in updates %}
             <div class="activity-item">
                 <div class="activity-icon">
-                    {% if update.update_type == 'comment' %}💬
-                    {% elseif update.update_type == 'task' %}✅
-                    {% elseif update.update_type == 'milestone' %}🎯
-                    {% elseif update.update_type == 'status_change' %}🔄
+                    {% if update.update_type in ['comment', 'rh_comment'] %}💬
+                    {% elseif update.update_type in ['task', 'rh_task'] %}✅
+                    {% elseif update.update_type in ['milestone', 'rh_milestone'] %}🎯
+                    {% elseif update.update_type in ['status_change', 'rh_status_change'] %}🔄
                     {% else %}📌{% endif %}
                 </div>
                 <div style="flex:1">

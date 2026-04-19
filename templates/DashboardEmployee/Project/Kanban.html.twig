@@ -218,16 +218,16 @@
                 {% for update in updates %}
                 <div class="activity-item">
                     <div class="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 text-sm">
-                        {% if update.update_type == 'comment' %}💬
-                        {% elseif update.update_type == 'task' %}✅
-                        {% elseif update.update_type == 'milestone' %}🎯
-                        {% elseif update.update_type == 'status_change' %}🔄
+                        {% if update.update_type in ['comment', 'rh_comment'] %}💬
+                        {% elseif update.update_type in ['task', 'rh_task'] %}✅
+                        {% elseif update.update_type in ['milestone', 'rh_milestone'] %}🎯
+                        {% elseif update.update_type in ['status_change', 'rh_status_change'] %}🔄
                         {% else %}📌{% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-[13px] font-semibold text-zinc-700">{{ update.title }}</p>
                         <p class="text-[12px] text-zinc-400 mt-0.5">{{ update.content }}</p>
-                        <p class="text-[11px] text-zinc-300 mt-0.5">👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
+                        <p class="text-[11px] text-zinc-300 mt-0.5">👤 {{ update.author_name ?? 'Systeme' }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
                 {% else %}
