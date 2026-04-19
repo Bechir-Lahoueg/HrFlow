@@ -27,6 +27,7 @@ class SessionFormationType extends AbstractType
             ])
             ->add('lieu', TextType::class, [
                 'label' => 'Lieu (ou lien)',
+                'required' => false,
                 'attr' => ['placeholder' => 'Salle A ou Lien Zoom']
             ])
             ->add('mode', ChoiceType::class, [
