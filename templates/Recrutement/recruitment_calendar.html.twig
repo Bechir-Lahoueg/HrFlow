@@ -1,0 +1,412 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier des entretiens{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .calendar-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            overflow: visible;
+        }
+        .calendar-container {
+            width: 100%;
+            min-width: auto;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .calendar-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: capitalize;
+        }
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+        .calendar-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        }
+        .calendar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.4);
+        }
+        .calendar-btn-secondary {
+            background: white;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .calendar-btn-secondary:hover {
+            background: #f8fafc;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: visible;
+        }
+        .calendar-day-header {
+            background: #f8fafc;
+            padding: 16px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            letter-spacing: 0.05em;
+        }
+        .calendar-day {
+            background: white;
+            min-height: 100px;
+            height: auto;
+            padding: 6px;
+            position: relative;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        .day-events::-webkit-scrollbar {
+            width: 4px;
+        }
+        .day-events::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        @media (max-width: 1024px) {
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px;
+            }
+            .calendar-day-header {
+                padding: 12px 4px;
+                font-size: 0.65em;
+            }
+            .day-number {
+                width: 24px;
+                height: 24px;
+                font-size: 0.8em;
+            }
+            .calendar-event {
+                padding: 4px 6px;
+                font-size: 0.7em;
+            }
+        }
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 60px;
+            }
+            .calendar-event {
+                font-size: 0.65em;
+                padding: 3px 4px;
+            }
+        }
+        .calendar-day:hover {
+            background: #f8fafc;
+        }
+        .calendar-day.today {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .calendar-day.today .day-number {
+            background: #6366f1;
+            color: white;
+        }
+        .calendar-day.other-month {
+            background: #fafafa;
+            color: #94a3b8;
+        }
+        .day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        .calendar-event {
+            display: block;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+            flex-shrink: 0;
+        }
+        .calendar-event:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .calendar-event.passed { background: #10b981; }
+        .calendar-event.failed { background: #ef4444; }
+        .calendar-event.pending { background: #6366f1; }
+        .calendar-event.other { background: #94a3b8; }
+        .no-events {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .no-events-icon {
+            font-size: 3em;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardHr/components/_header.html.twig' %}
+
+        <main class="p-4 lg:p-6 w-full max-w-[1600px] mx-auto">
+            {# Header Section with Stats #}
+            <header class="mb-8">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Calendrier des entretiens</h1>
+                                <p class="text-slate-500 text-sm">Visualisez et gérez votre planning de recrutement</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {# Legend #}
+                        <div class="hidden md:flex items-center gap-4 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Légende:</span>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                <span class="text-xs font-medium text-slate-600">Réussi</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span class="text-xs font-medium text-slate-600">Échoué</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+                                <span class="text-xs font-medium text-slate-600">En attente</span>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_rh_interviews') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Liste
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            {# Calendar Container #}
+            <div class="calendar-wrapper">
+                <div id="calendar-container" class="calendar-container">
+                    <div class="calendar-header">
+                        <h2 id="calendar-title" class="calendar-title"></h2>
+                        <div class="calendar-nav">
+                            <button id="prev-month" class="calendar-btn calendar-btn-secondary">← Précédent</button>
+                            <button id="today-btn" class="calendar-btn">Aujourd'hui</button>
+                            <button id="next-month" class="calendar-btn calendar-btn-secondary">Suivant →</button>
+                        </div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid">
+                        <!-- Calendar rendered by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            {# Empty State (shown via JS if no events) #}
+            <div id="no-events-message" class="no-events hidden">
+                <div class="no-events-icon">📅</div>
+                <h3 class="text-lg font-semibold text-slate-600 mb-2">Aucun entretien planifié</h3>
+                <p class="text-sm text-slate-400 mb-4">Commencez par planifier votre premier entretien</p>
+                <a href="{{ path('app_rh_interviews') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Planifier un entretien
+                </a>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var events = {{ events|raw }};
+            
+            // Check if no events
+            if (!events || !Array.isArray(events) || events.length === 0) {
+                document.getElementById('calendar-container').style.display = 'none';
+                document.getElementById('no-events-message').classList.remove('hidden');
+                return;
+            }
+            
+            var currentDate = new Date();
+            var currentView = 'month';
+            
+            function renderCalendar() {
+                var container = document.getElementById('calendar-grid');
+                container.innerHTML = '';
+                
+                // Day headers
+                var days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                days.forEach(function(day) {
+                    var header = document.createElement('div');
+                    header.className = 'calendar-day-header';
+                    header.textContent = day;
+                    container.appendChild(header);
+                });
+                
+                var year = currentDate.getFullYear();
+                var month = currentDate.getMonth();
+                
+                // Update title
+                var monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                                  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                document.getElementById('calendar-title').textContent = monthNames[month] + ' ' + year;
+                
+                // First day of month
+                var firstDay = new Date(year, month, 1);
+                var lastDay = new Date(year, month + 1, 0);
+                var startDayOfWeek = firstDay.getDay();
+                var daysInMonth = lastDay.getDate();
+                
+                // Previous month days
+                var prevMonthLastDay = new Date(year, month, 0).getDate();
+                for (var i = startDayOfWeek - 1; i >= 0; i--) {
+                    var dayDiv = createDayElement(prevMonthLastDay - i, true, year, month - 1);
+                    container.appendChild(dayDiv);
+                }
+                
+                // Current month days
+                var today = new Date();
+                for (var day = 1; day <= daysInMonth; day++) {
+                    var isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+                    var dayDiv = createDayElement(day, false, year, month, isToday);
+                    container.appendChild(dayDiv);
+                }
+                
+                // Next month days to fill grid
+                var remainingCells = 42 - (startDayOfWeek + daysInMonth);
+                for (var day = 1; day <= remainingCells; day++) {
+                    var dayDiv = createDayElement(day, true, year, month + 1);
+                    container.appendChild(dayDiv);
+                }
+            }
+            
+            function createDayElement(day, isOtherMonth, year, month, isToday) {
+                var div = document.createElement('div');
+                div.className = 'calendar-day';
+                if (isOtherMonth) div.classList.add('other-month');
+                if (isToday) div.classList.add('today');
+
+                var dayNum = document.createElement('span');
+                dayNum.className = 'day-number';
+                dayNum.textContent = day;
+                div.appendChild(dayNum);
+
+                // Create events container
+                var eventsContainer = document.createElement('div');
+                eventsContainer.className = 'day-events';
+                div.appendChild(eventsContainer);
+
+                // Add events for this day
+                if (!isOtherMonth) {
+                    var dayEvents = events.filter(function(e) {
+                        var eventDate = new Date(e.start);
+                        return eventDate.getDate() === day &&
+                               eventDate.getMonth() === month &&
+                               eventDate.getFullYear() === year;
+                    });
+
+                    dayEvents.forEach(function(event) {
+                        var eventEl = document.createElement('a');
+                        eventEl.className = 'calendar-event';
+                        eventEl.href = event.url || '#';
+
+                        // Color based on result
+                        if (event.backgroundColor === '#10b981') eventEl.classList.add('passed');
+                        else if (event.backgroundColor === '#ef4444') eventEl.classList.add('failed');
+                        else if (event.backgroundColor === '#6366f1') eventEl.classList.add('pending');
+                        else eventEl.classList.add('other');
+
+                        var time = new Date(event.start).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+                        eventEl.innerHTML = '<strong>' + time + '</strong> ' + event.title;
+                        eventsContainer.appendChild(eventEl);
+                    });
+                }
+
+                return div;
+            }
+            
+            // Navigation
+            document.getElementById('prev-month').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+            
+            document.getElementById('next-month').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+            
+            document.getElementById('today-btn').addEventListener('click', function() {
+                currentDate = new Date();
+                renderCalendar();
+            });
+            
+            // Initial render
+            renderCalendar();
+        });
+    </script>
+{% endblock %}
