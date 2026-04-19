@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Digest RH alertes taches</title>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f8fafc; margin: 0; padding: 24px; color: #0f172a;">
+<div style="max-width: 760px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+    <div style="padding: 18px 20px; background: #1e293b; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 18px;">HrFlow - Digest RH des taches critiques</h2>
+    </div>
+
+    <div style="padding: 20px;">
+        <p style="margin-top: 0;">Bonjour {{ recipientName ?: 'RH' }},</p>
+        <p>Voici les taches en retard ou qui arrivent a echeance demain dans vos projets :</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+            <thead>
+            <tr>
+                <th style="text-align: left; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 12px;">Projet</th>
+                <th style="text-align: left; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 12px;">Employe</th>
+                <th style="text-align: left; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 12px;">Tache</th>
+                <th style="text-align: left; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 12px;">Echeance</th>
+                <th style="text-align: left; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 12px;">Alerte</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td style="border-bottom: 1px solid #e2e8f0; padding: 8px;">{{ task.project_name }}</td>
+                    <td style="border-bottom: 1px solid #e2e8f0; padding: 8px;">{{ task.employee_name ?: 'Non assigne' }}</td>
+                    <td style="border-bottom: 1px solid #e2e8f0; padding: 8px;">{{ task.title }}</td>
+                    <td style="border-bottom: 1px solid #e2e8f0; padding: 8px;">{{ task.due_date ?: 'N/A' }}</td>
+                    <td style="border-bottom: 1px solid #e2e8f0; padding: 8px;">
+                        {% if task.alert_type == 'overdue' %}
+                            <span style="color: #dc2626; font-weight: 700;">En retard</span>
+                        {% else %}
+                            <span style="color: #d97706; font-weight: 700;">Echeance demain</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <p style="margin-top: 16px;">Merci de suivre ces taches pour limiter les retards de livraison.</p>
+        <p style="margin-bottom: 0; color: #64748b; font-size: 12px;">Digest genere le {{ date|date('d/m/Y H:i') }}.</p>
+    </div>
+</div>
+</body>
+</html>
+

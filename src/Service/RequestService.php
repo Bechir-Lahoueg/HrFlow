@@ -232,13 +232,23 @@ final class RequestService
             $priority = 'medium';
         }
 
+        $attachmentUrl = $data['attachment_url'] ?? null;
+        if (is_string($attachmentUrl)) {
+            $attachmentUrl = trim($attachmentUrl);
+            if ($attachmentUrl === '') {
+                $attachmentUrl = null;
+            }
+        } else {
+            $attachmentUrl = null;
+        }
+
         return [
             'user_id' => (int)($data['user_id'] ?? 0),
             'request_type_id' => (int)($data['request_type_id'] ?? 0),
             'title' => $title,
             'description' => $description,
             'priority' => $priority,
-            'attachment_url' => $data['attachment_url'] ?? null,
+            'attachment_url' => $attachmentUrl,
         ];
     }
 }
