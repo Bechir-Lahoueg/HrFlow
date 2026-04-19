@@ -7,6 +7,7 @@ use App\Repository\Rh\EmployeeRepository;
 use App\Repository\Rh\LeaveRequestRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFormationRepository;
+use App\Service\Shared\HrFlowMailer;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ParticipationService
@@ -18,6 +19,7 @@ final class ParticipationService
         private readonly EmployeeRepository $employeeRepository,
         private readonly LeaveRequestRepository $leaveRequestRepository,
         private readonly PresenceService $presenceService,
+        private readonly HrFlowMailer $hrFlowMailer,
     ) {
     }
 
@@ -213,6 +215,7 @@ final class ParticipationService
         }
 
         $this->em->flush();
+        $this->hrFlowMailer->sendFormationAccepted($participation);
 
         $refusedCount = count($toRefuse);
         if ($refusedCount > 0) {

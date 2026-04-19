@@ -147,8 +147,18 @@
 
                             <div class="mt-4 grid grid-cols-2 gap-3">
                                 <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
-                                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Lieu</p>
-                                    <p class="mt-1 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">{{ session.lieu ?: '—' }}</p>
+                                    {% set lowerLieu = (session.lieu|default(''))|lower %}
+                                    {% set isHttpLink = lowerLieu starts with 'http://' or lowerLieu starts with 'https://' %}
+                                    {% set isJitsiLink = isHttpLink and ('meet.jit.si' in session.lieu) %}
+                                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{{ isHttpLink ? 'Lien session' : 'Lieu' }}</p>
+                                    {% if isHttpLink %}
+                                        <a href="{{ session.lieu }}" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#145EB7] hover:text-[#3FA9F5] underline break-all">
+                                            {{ isJitsiLink ? 'Ouvrir Jitsi Meet' : 'Ouvrir le lien de session' }}
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M15 13.5V18a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h4.5"/></svg>
+                                        </a>
+                                    {% else %}
+                                        <p class="mt-1 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">{{ session.lieu ?: '—' }}</p>
+                                    {% endif %}
                                 </div>
                                 <div class="rounded-xl bg-white/70 dark:bg-zinc-950/60 border border-zinc-100/70 dark:border-zinc-800/60 p-3">
                                     <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Mode</p>

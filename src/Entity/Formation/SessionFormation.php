@@ -36,7 +36,6 @@ class SessionFormation
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le lieu de la session est obligatoire.")]
     #[Assert\Length(
         max: 255,
         maxMessage: "Le lieu ne doit pas dépasser {{ limit }} caractères."

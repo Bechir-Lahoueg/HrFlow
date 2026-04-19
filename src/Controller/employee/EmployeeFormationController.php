@@ -7,6 +7,7 @@ use App\Service\Formation\ParticipationService;
 use App\Service\Formation\CertificateService;
 use App\Service\Formation\SessionFeedbackService;
 use App\Service\Formation\SessionService;
+use App\Service\Shared\HrFlowMailer;
 use App\Repository\Formation\EmployeeNotificationRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;
@@ -30,6 +31,7 @@ final class EmployeeFormationController extends AbstractController
         private readonly SessionFeedbackService $sessionFeedbackService,
         private readonly SessionFeedbackRepository $sessionFeedbackRepository,
         private readonly UserRepository $userRepository,
+        private readonly HrFlowMailer $hrFlowMailer,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -389,6 +391,7 @@ final class EmployeeFormationController extends AbstractController
         if (!$participation->isCertificatObtenu()) {
             $participation->setCertificatObtenu(true);
             $this->em->flush();
+            $this->hrFlowMailer->sendCertificateAvailable($participation);
         }
 
         $response = new Response($certificate['content']);
