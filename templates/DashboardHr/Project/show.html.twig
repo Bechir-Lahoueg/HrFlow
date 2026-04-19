@@ -573,7 +573,11 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                 <div id="rhProjectChatAlert" class="alert d-none py-2"></div>
                 <div id="rhProjectChatMessages" class="border rounded p-2 bg-light" style="height:260px; overflow-y:auto;"></div>
                 <form id="rhProjectChatForm" class="d-flex gap-2 mt-2">
+                    <input id="rhProjectChatFile" type="file" class="d-none" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
                     <input id="rhProjectChatInput" type="text" class="form-control" maxlength="1200" placeholder="Ecrire un message...">
+                    <button id="rhProjectChatAttachBtn" type="button" class="btn btn-outline-secondary">Fichier</button>
+                    <button id="rhProjectChatVoiceBtn" type="button" class="btn btn-outline-secondary">Vocal</button>
+                    <button id="rhProjectChatVideoBtn" type="button" class="btn btn-outline-secondary">Video</button>
                     <button type="submit" class="btn-prim">Envoyer</button>
                 </form>
             </div>
@@ -1142,6 +1146,13 @@ function assignTaskFromSuggestion(employeeId) {
 const rhProjectChatState = {
     pollHandle: null,
     bootstrapped: false,
+    isLoading: false,
+    hasLoadedOnce: false,
+    requestSeq: 0,
+    activeRequestSeq: 0,
+    mediaRecorder: null,
+    mediaChunks: [],
+    recording: false,
 };
 
 function initRhProjectChat() {
@@ -1154,6 +1165,39 @@ function initRhProjectChat() {
         event.preventDefault();
         sendRhProjectChatMessage();
     });
+
+    const attachBtn = document.getElementById('rhProjectChatAttachBtn');
+    const fileInput = document.getElementById('rhProjectChatFile');
+    const voiceBtn = document.getElementById('rhProjectChatVoiceBtn');
+    const videoBtn = document.getElementById('rhProjectChatVideoBtn');
+
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function () {
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files[0]) {
+                uploadRhProjectChatFile(fileInput.files[0]);
+            }
+            fileInput.value = '';
+        });
+    }
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', toggleRhVoiceRecording);
+    }
+
+    if (videoBtn) {
+        videoBtn.addEventListener('click', startRhVideoCall);
+    }
+
+    const container = document.getElementById('rhProjectChatMessages');
+    if (container) {
+        container.innerHTML = '<div class="text-muted small">Chargement du chat...</div>';
+    }
 
     bootstrapRhProjectChat();
 }
@@ -1180,7 +1224,7 @@ function bootstrapRhProjectChat() {
             clearInterval(rhProjectChatState.pollHandle);
         }
 
-        rhProjectChatState.pollHandle = setInterval(loadRhProjectChatMessages, 5000);
+        rhProjectChatState.pollHandle = setInterval(loadRhProjectChatMessages, 3000);
     })
     .catch(() => {
         showAjaxAlert('rhProjectChatAlert', 'danger', 'Impossible d\'initialiser le chat Matrix.');
@@ -1188,9 +1232,14 @@ function bootstrapRhProjectChat() {
 }
 
 function loadRhProjectChatMessages() {
-    if (!rhProjectChatState.bootstrapped) {
+    if (!rhProjectChatState.bootstrapped || rhProjectChatState.isLoading) {
         return;
     }
+
+    rhProjectChatState.isLoading = true;
+    rhProjectChatState.requestSeq += 1;
+    const requestId = rhProjectChatState.requestSeq;
+    rhProjectChatState.activeRequestSeq = requestId;
 
     fetch('/api/projects/{{ project.id }}/chat/messages?limit=40', {
         method: 'GET',
@@ -1201,16 +1250,42 @@ function loadRhProjectChatMessages() {
     })
     .then(async (response) => {
         const data = await response.json();
-        if (!response.ok || data.success === false) {
-            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible de charger les messages.');
+        if (requestId !== rhProjectChatState.activeRequestSeq) {
             return;
         }
 
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible de charger les messages.');
+            if (!rhProjectChatState.hasLoadedOnce) {
+                renderRhProjectChatStatus('Chat indisponible pour le moment.');
+            }
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        rhProjectChatState.hasLoadedOnce = true;
         renderRhProjectChatMessages(Array.isArray(data.messages) ? data.messages : []);
     })
     .catch(() => {
         showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant le chargement du chat.');
+        if (!rhProjectChatState.hasLoadedOnce) {
+            renderRhProjectChatStatus('Connexion au chat en cours...');
+        }
+    })
+    .finally(() => {
+        if (requestId === rhProjectChatState.activeRequestSeq) {
+            rhProjectChatState.isLoading = false;
+        }
     });
+}
+
+function renderRhProjectChatStatus(text) {
+    const container = document.getElementById('rhProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '<div class="text-muted small">' + escapeHtml(text) + '</div>';
 }
 
 function renderRhProjectChatMessages(messages) {
@@ -1230,14 +1305,194 @@ function renderRhProjectChatMessages(messages) {
         row.className = 'mb-2';
 
         const date = msg.origin_server_ts ? new Date(msg.origin_server_ts).toLocaleString() : '';
-        row.innerHTML =
-            '<div class="small"><span class="text-muted">' + escapeHtml(date) + '</span></div>'
-            + '<div style="font-size:.88rem; white-space:pre-wrap">' + escapeHtml(msg.body || '') + '</div>';
+        let bodyHtml = '';
+        const msgType = String(msg.msgtype || 'm.text');
+        const body = String(msg.body || '');
+        const downloadUrl = String(msg.download_url || '');
+
+        if (msgType === 'm.image' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><img src="' + escapeHtml(downloadUrl) + '" alt="image" style="max-height:220px" class="rounded border"></div>';
+        } else if (msgType === 'm.video' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><video controls style="max-height:240px" class="rounded border" src="' + escapeHtml(downloadUrl) + '"></video></div>';
+        } else if (msgType === 'm.audio' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><audio controls src="' + escapeHtml(downloadUrl) + '" style="width:100%"></audio></div>';
+        } else if (msgType === 'm.file' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><a target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '">📎 ' + escapeHtml(body || 'Fichier') + '</a></div>';
+        } else {
+            bodyHtml = '<div style="font-size:.88rem; white-space:pre-wrap">' + escapeHtml(body) + '</div>';
+        }
+
+        row.innerHTML = '<div class="small"><span class="text-muted">' + escapeHtml(date) + '</span></div>' + bodyHtml;
+
+        const eventId = String(msg.event_id || '');
+        if (eventId !== '') {
+            const reactions = (msg.reactions && typeof msg.reactions === 'object') ? msg.reactions : {};
+            const reactionBar = document.createElement('div');
+            reactionBar.className = 'mt-1 d-flex flex-wrap align-items-center gap-1';
+
+            Object.keys(reactions).forEach((key) => {
+                reactionBar.insertAdjacentHTML('beforeend', '<span class="badge bg-light text-dark border">' + escapeHtml(key) + ' ' + String(reactions[key]) + '</span>');
+            });
+
+            ['👍', '❤️', '😂'].forEach((emoji) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary py-0 px-2';
+                btn.textContent = emoji;
+                btn.addEventListener('click', function () {
+                    sendRhReaction(eventId, emoji);
+                });
+                reactionBar.appendChild(btn);
+            });
+
+            row.appendChild(reactionBar);
+        }
 
         container.appendChild(row);
     });
 
     container.scrollTop = container.scrollHeight;
+}
+
+function sendRhReaction(eventId, reaction) {
+    const payload = new URLSearchParams();
+    payload.set('eventId', eventId);
+    payload.set('reaction', reaction);
+
+    fetch('/api/projects/{{ project.id }}/chat/react', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible d\'envoyer la reaction.');
+            return;
+        }
+
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant l\'envoi de la reaction.');
+    });
+}
+
+function uploadRhProjectChatFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/projects/{{ project.id }}/chat/upload', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData,
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible d\'envoyer le fichier.');
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant l\'upload du fichier.');
+    });
+}
+
+function toggleRhVoiceRecording() {
+    if (rhProjectChatState.recording) {
+        if (rhProjectChatState.mediaRecorder) {
+            rhProjectChatState.mediaRecorder.stop();
+        }
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Enregistrement vocal non supporte sur ce navigateur.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+            const recorder = new MediaRecorder(stream);
+            rhProjectChatState.mediaChunks = [];
+            rhProjectChatState.mediaRecorder = recorder;
+            rhProjectChatState.recording = true;
+            updateRhVoiceButton();
+
+            recorder.ondataavailable = function (event) {
+                if (event.data && event.data.size > 0) {
+                    rhProjectChatState.mediaChunks.push(event.data);
+                }
+            };
+
+            recorder.onstop = function () {
+                stream.getTracks().forEach((track) => track.stop());
+                rhProjectChatState.recording = false;
+                updateRhVoiceButton();
+
+                if (!rhProjectChatState.mediaChunks.length) {
+                    return;
+                }
+
+                const blob = new Blob(rhProjectChatState.mediaChunks, { type: 'audio/webm' });
+                const file = new File([blob], 'vocal-' + Date.now() + '.webm', { type: 'audio/webm' });
+                uploadRhProjectChatFile(file);
+                rhProjectChatState.mediaChunks = [];
+                rhProjectChatState.mediaRecorder = null;
+            };
+
+            recorder.start();
+        })
+        .catch(() => {
+            showAjaxAlert('rhProjectChatAlert', 'danger', 'Acces micro refuse ou indisponible.');
+        });
+}
+
+function updateRhVoiceButton() {
+    const button = document.getElementById('rhProjectChatVoiceBtn');
+    if (!button) {
+        return;
+    }
+
+    button.textContent = rhProjectChatState.recording ? 'Stop' : 'Vocal';
+    button.className = rhProjectChatState.recording ? 'btn btn-danger' : 'btn btn-outline-secondary';
+}
+
+function startRhVideoCall() {
+    fetch('/api/projects/{{ project.id }}/chat/video-call', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible de lancer l\'appel video.');
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        if (data.url) {
+            window.open(String(data.url), '_blank', 'noopener');
+        }
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant le lancement de l\'appel video.');
+    });
 }
 
 function sendRhProjectChatMessage() {

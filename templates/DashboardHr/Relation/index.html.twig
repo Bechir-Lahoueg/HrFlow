@@ -282,6 +282,8 @@
                                     <th class="py-3 px-4 text-left">À</th>
                                     <th class="py-3 px-4 text-left">Type</th>
                                     <th class="py-3 px-4 text-left">Note</th>
+
+                                    <th class="py-3 px-4 text-left">Emotion</th>
                                     <th class="py-3 px-4 text-left">Statut</th>
                                     <th class="py-3 px-4 text-left">Date</th>
                                     <th class="py-3 px-4 text-left">Action</th>
@@ -300,6 +302,20 @@
                                         {% for i in 1..5 %}{{ i <= fb.rating ? '★' : '☆' }}{% endfor %}
                                     </span>
                                     <span class="text-[11px] text-zinc-400 ml-1">{{ fb.rating }}/5</span>
+                                </td>
+                                {% set emotionLabel = (fb.emotion_label ?? 'unknown')|lower %}
+                                {% set emotionScore = ((fb.emotion_score ?? 0) * 100)|round %}
+                                <td class="py-3 px-4">
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-full
+                                        {{ emotionLabel == 'anger' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                        {{ emotionLabel == 'joy' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ emotionLabel == 'sadness' ? 'bg-blue-50 text-blue-700 border border-blue-200' : '' }}
+                                        {{ emotionLabel == 'fear' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
+                                        {{ emotionLabel == 'love' ? 'bg-pink-50 text-pink-700 border border-pink-200' : '' }}
+                                        {{ emotionLabel == 'surprise' ? 'bg-violet-50 text-violet-700 border border-violet-200' : '' }}
+                                        {{ emotionLabel not in ['anger','joy','sadness','fear','love','surprise'] ? 'bg-zinc-100 text-zinc-500 border border-zinc-200' : '' }}">
+                                        {{ emotionLabel|capitalize }} {{ emotionScore }}%
+                                    </span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="text-[11px] font-bold px-2 py-0.5 rounded-full
@@ -322,7 +338,7 @@
                                 </td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="7" class="py-12 text-center text-zinc-400 text-sm">Aucun feedback.</td></tr>
+                            <tr><td colspan="8" class="py-12 text-center text-zinc-400 text-sm">Aucun feedback.</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -564,6 +580,7 @@ function loadFeedbackDetails(id) {
                 row('À', fb.to_username) +
                 row('Type', fb.feedback_type) +
                 row('Note', fb.rating_stars + ' (' + fb.rating + '/5)') +
+                row('Emotion', (fb.emotion_label ? String(fb.emotion_label).toUpperCase() : 'UNKNOWN') + ' (' + Math.round((Number(fb.emotion_score) || 0) * 100) + '%)') +
                 row('Date', fb.created_at?.substring(0,10)) +
                 (fb.comment ? `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire</p><p class="text-zinc-600">${fb.comment}</p></div>` : '');
             openModal('modalDetails');
