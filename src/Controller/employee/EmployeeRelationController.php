@@ -6,6 +6,7 @@ use App\Service\FeedbackService;
 use App\Service\FeedbackFormationService;
 use App\Service\RequestService;
 use App\Service\RequestTypeService;
+use App\Service\Shared\HuggingFaceEmotionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,7 @@ class EmployeeRelationController extends AbstractController
         private readonly RequestTypeService        $requestTypeService,
         private readonly FeedbackService           $feedbackService,
         private readonly FeedbackFormationService  $ffService,
+        private readonly HuggingFaceEmotionService $emotionService,
     ) {}
 
     // ═══════════════════════════════════════════════════════════════
@@ -164,6 +166,10 @@ class EmployeeRelationController extends AbstractController
             return $this->render('DashboardEmployee/Relation/feedbacks.html.twig', $viewData, new Response(null, 422));
         }
 
+        $emotion = $this->emotionService->analyze((string) ($data['comment'] ?? ''));
+        $data['emotion_label'] = $emotion['label'];
+        $data['emotion_score'] = $emotion['score'];
+
         $this->feedbackService->add($data);
         $this->addFlash('success', 'Feedback envoyé avec succès !');
         return $this->redirectToRoute('employee_relation_feedbacks');
@@ -186,6 +192,11 @@ class EmployeeRelationController extends AbstractController
                 $viewData['fbEditId'] = $id;
                 return $this->render('DashboardEmployee/Relation/feedbacks.html.twig', $viewData, new Response(null, 422));
             }
+
+            $emotion = $this->emotionService->analyze((string) ($data['comment'] ?? ''));
+            $data['emotion_label'] = $emotion['label'];
+            $data['emotion_score'] = $emotion['score'];
+
             $this->feedbackService->update($id, $data);
             $this->addFlash('success', 'Feedback modifié.');
         }

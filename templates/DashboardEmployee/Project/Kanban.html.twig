@@ -265,9 +265,22 @@
                     <div id="employeeProjectChatMessages" class="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm" style="height:240px; overflow-y:auto;"></div>
 
                     <form id="employeeProjectChatForm" class="mt-2 flex gap-2">
+                        <input id="employeeProjectChatFile" type="file" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
                         <input id="employeeProjectChatInput" type="text" maxlength="1200"
                                placeholder="Ecrire un message..."
                                class="flex-1 rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all">
+                        <button id="employeeProjectChatAttachBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Fichier
+                        </button>
+                        <button id="employeeProjectChatVoiceBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Vocal
+                        </button>
+                        <button id="employeeProjectChatVideoBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Video
+                        </button>
                         <button type="submit"
                                 class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-[12px] hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-sm active:scale-[0.98]">
                             Envoyer
@@ -413,6 +426,13 @@ function showTaskInfo(task) {
 const employeeProjectChatState = {
     pollHandle: null,
     bootstrapped: false,
+    isLoading: false,
+    hasLoadedOnce: false,
+    requestSeq: 0,
+    activeRequestSeq: 0,
+    mediaRecorder: null,
+    mediaChunks: [],
+    recording: false,
 };
 
 function initEmployeeProjectChat() {
@@ -425,6 +445,39 @@ function initEmployeeProjectChat() {
         event.preventDefault();
         sendEmployeeProjectChatMessage();
     });
+
+    const attachBtn = document.getElementById('employeeProjectChatAttachBtn');
+    const fileInput = document.getElementById('employeeProjectChatFile');
+    const voiceBtn = document.getElementById('employeeProjectChatVoiceBtn');
+    const videoBtn = document.getElementById('employeeProjectChatVideoBtn');
+
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function () {
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files[0]) {
+                uploadEmployeeProjectChatFile(fileInput.files[0]);
+            }
+            fileInput.value = '';
+        });
+    }
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', toggleEmployeeVoiceRecording);
+    }
+
+    if (videoBtn) {
+        videoBtn.addEventListener('click', startEmployeeVideoCall);
+    }
+
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (container) {
+        container.innerHTML = '<div class="text-zinc-400 text-sm">Chargement du chat...</div>';
+    }
 
     bootstrapEmployeeProjectChat();
 }
@@ -451,7 +504,7 @@ function bootstrapEmployeeProjectChat() {
             clearInterval(employeeProjectChatState.pollHandle);
         }
 
-        employeeProjectChatState.pollHandle = setInterval(loadEmployeeProjectChatMessages, 5000);
+        employeeProjectChatState.pollHandle = setInterval(loadEmployeeProjectChatMessages, 3000);
     })
     .catch(() => {
         showEmployeeChatAlert('danger', 'Impossible d\'initialiser le chat Matrix.');
@@ -459,9 +512,14 @@ function bootstrapEmployeeProjectChat() {
 }
 
 function loadEmployeeProjectChatMessages() {
-    if (!employeeProjectChatState.bootstrapped) {
+    if (!employeeProjectChatState.bootstrapped || employeeProjectChatState.isLoading) {
         return;
     }
+
+    employeeProjectChatState.isLoading = true;
+    employeeProjectChatState.requestSeq += 1;
+    const requestId = employeeProjectChatState.requestSeq;
+    employeeProjectChatState.activeRequestSeq = requestId;
 
     fetch('/api/projects/{{ project.id }}/chat/messages?limit=40', {
         method: 'GET',
@@ -472,16 +530,42 @@ function loadEmployeeProjectChatMessages() {
     })
     .then(async (response) => {
         const data = await response.json();
-        if (!response.ok || data.success === false) {
-            showEmployeeChatAlert('danger', data.message || 'Impossible de charger les messages.');
+        if (requestId !== employeeProjectChatState.activeRequestSeq) {
             return;
         }
 
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible de charger les messages.');
+            if (!employeeProjectChatState.hasLoadedOnce) {
+                renderEmployeeProjectChatStatus('Chat indisponible pour le moment.');
+            }
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        employeeProjectChatState.hasLoadedOnce = true;
         renderEmployeeProjectChatMessages(Array.isArray(data.messages) ? data.messages : []);
     })
     .catch(() => {
         showEmployeeChatAlert('danger', 'Erreur reseau pendant le chargement du chat.');
+        if (!employeeProjectChatState.hasLoadedOnce) {
+            renderEmployeeProjectChatStatus('Connexion au chat en cours...');
+        }
+    })
+    .finally(() => {
+        if (requestId === employeeProjectChatState.activeRequestSeq) {
+            employeeProjectChatState.isLoading = false;
+        }
     });
+}
+
+function renderEmployeeProjectChatStatus(text) {
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '<div class="text-zinc-400 text-sm">' + escapeHtml(text) + '</div>';
 }
 
 function renderEmployeeProjectChatMessages(messages) {
@@ -501,14 +585,196 @@ function renderEmployeeProjectChatMessages(messages) {
         row.className = 'mb-2';
 
         const date = msg.origin_server_ts ? new Date(msg.origin_server_ts).toLocaleString() : '';
-        row.innerHTML =
-            '<div class="text-zinc-400 text-[11px]">' + escapeHtml(date) + '</div>'
-            + '<div class="text-sm text-zinc-700" style="white-space:pre-wrap">' + escapeHtml(msg.body || '') + '</div>';
+        let bodyHtml = '';
+        const msgType = String(msg.msgtype || 'm.text');
+        const body = String(msg.body || '');
+        const downloadUrl = String(msg.download_url || '');
+
+        if (msgType === 'm.image' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><img src="' + escapeHtml(downloadUrl) + '" alt="image" class="max-h-40 rounded border border-zinc-200"></div>';
+        } else if (msgType === 'm.video' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><video controls class="max-h-48 rounded border border-zinc-200" src="' + escapeHtml(downloadUrl) + '"></video></div>';
+        } else if (msgType === 'm.audio' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><audio controls src="' + escapeHtml(downloadUrl) + '" class="w-full"></audio></div>';
+        } else if (msgType === 'm.file' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><a class="text-emerald-600 hover:underline" target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '">📎 ' + escapeHtml(body || 'Fichier') + '</a></div>';
+        } else {
+            bodyHtml = '<div class="text-sm text-zinc-700" style="white-space:pre-wrap">' + escapeHtml(body) + '</div>';
+        }
+
+        row.innerHTML = '<div class="text-zinc-400 text-[11px]">' + escapeHtml(date) + '</div>' + bodyHtml;
+
+        const eventId = String(msg.event_id || '');
+        if (eventId !== '') {
+            const reactions = (msg.reactions && typeof msg.reactions === 'object') ? msg.reactions : {};
+            const reactionBar = document.createElement('div');
+            reactionBar.className = 'mt-1 flex flex-wrap items-center gap-1';
+
+            Object.keys(reactions).forEach((key) => {
+                reactionBar.insertAdjacentHTML('beforeend', '<span class="px-2 py-0.5 rounded-full bg-zinc-200 text-[11px]">' + escapeHtml(key) + ' ' + String(reactions[key]) + '</span>');
+            });
+
+            ['👍', '❤️', '😂'].forEach((emoji) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-1.5 py-0.5 rounded border border-zinc-200 bg-white text-[11px]';
+                btn.textContent = emoji;
+                btn.addEventListener('click', function () {
+                    sendEmployeeReaction(eventId, emoji);
+                });
+                reactionBar.appendChild(btn);
+            });
+
+            row.appendChild(reactionBar);
+        }
 
         container.appendChild(row);
     });
 
     container.scrollTop = container.scrollHeight;
+}
+
+function sendEmployeeReaction(eventId, reaction) {
+    const payload = new URLSearchParams();
+    payload.set('eventId', eventId);
+    payload.set('reaction', reaction);
+
+    fetch('/api/projects/{{ project.id }}/chat/react', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer la reaction.');
+            return;
+        }
+
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'envoi de la reaction.');
+    });
+}
+
+function uploadEmployeeProjectChatFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/projects/{{ project.id }}/chat/upload', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData,
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer le fichier.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'upload du fichier.');
+    });
+}
+
+function toggleEmployeeVoiceRecording() {
+    if (employeeProjectChatState.recording) {
+        if (employeeProjectChatState.mediaRecorder) {
+            employeeProjectChatState.mediaRecorder.stop();
+        }
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showEmployeeChatAlert('danger', 'Enregistrement vocal non supporte sur ce navigateur.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+            const recorder = new MediaRecorder(stream);
+            employeeProjectChatState.mediaChunks = [];
+            employeeProjectChatState.mediaRecorder = recorder;
+            employeeProjectChatState.recording = true;
+            updateEmployeeVoiceButton();
+
+            recorder.ondataavailable = function (event) {
+                if (event.data && event.data.size > 0) {
+                    employeeProjectChatState.mediaChunks.push(event.data);
+                }
+            };
+
+            recorder.onstop = function () {
+                stream.getTracks().forEach((track) => track.stop());
+                employeeProjectChatState.recording = false;
+                updateEmployeeVoiceButton();
+
+                if (!employeeProjectChatState.mediaChunks.length) {
+                    return;
+                }
+
+                const blob = new Blob(employeeProjectChatState.mediaChunks, { type: 'audio/webm' });
+                const file = new File([blob], 'vocal-' + Date.now() + '.webm', { type: 'audio/webm' });
+                uploadEmployeeProjectChatFile(file);
+                employeeProjectChatState.mediaChunks = [];
+                employeeProjectChatState.mediaRecorder = null;
+            };
+
+            recorder.start();
+        })
+        .catch(() => {
+            showEmployeeChatAlert('danger', 'Acces micro refuse ou indisponible.');
+        });
+}
+
+function updateEmployeeVoiceButton() {
+    const button = document.getElementById('employeeProjectChatVoiceBtn');
+    if (!button) {
+        return;
+    }
+
+    button.textContent = employeeProjectChatState.recording ? 'Stop' : 'Vocal';
+    button.className = employeeProjectChatState.recording
+        ? 'px-3 py-2 rounded-lg border border-red-300 bg-red-50 text-red-600 text-[12px] font-bold transition-all'
+        : 'px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all';
+}
+
+function startEmployeeVideoCall() {
+    fetch('/api/projects/{{ project.id }}/chat/video-call', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible de lancer l\'appel video.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        if (data.url) {
+            window.open(String(data.url), '_blank', 'noopener');
+        }
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant le lancement de l\'appel video.');
+    });
 }
 
 function sendEmployeeProjectChatMessage() {
