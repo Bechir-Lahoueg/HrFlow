@@ -44,7 +44,7 @@ final class CachingService
     /**
      * Invalidate all cache keys matching a pattern
      *
-     * @param string $pattern Pattern to match (e.g., "payroll:*", "employee:123:*")
+     * @param string $pattern Pattern to match (e.g., "payroll_*", "employee_123_*")
      */
     public function forgetPattern(string $pattern): void
     {
@@ -58,9 +58,9 @@ final class CachingService
      */
     public static function payrollStatsKey(int $rhId, ?int $mois = null, ?int $annee = null): string
     {
-        $key = "payroll:stats:rh:{$rhId}";
+        $key = "payroll_stats_rh_{$rhId}";
         if ($mois !== null && $annee !== null) {
-            $key .= ":{$mois}:{$annee}";
+            $key .= "_{$mois}_{$annee}";
         }
         return $key;
     }
@@ -70,7 +70,7 @@ final class CachingService
      */
     public static function employeeFichesKey(int $employeeId): string
     {
-        return "payroll:fiches:employee:{$employeeId}";
+        return "payroll_fiches_employee_{$employeeId}";
     }
 
     /**
@@ -78,7 +78,7 @@ final class CachingService
      */
     public static function employeePrimesKey(int $employeeId): string
     {
-        return "payroll:primes:employee:{$employeeId}";
+        return "payroll_primes_employee_{$employeeId}";
     }
 
     /**
@@ -86,7 +86,7 @@ final class CachingService
      */
     public static function employeeDeductionsKey(int $employeeId): string
     {
-        return "payroll:deductions:employee:{$employeeId}";
+        return "payroll_deductions_employee_{$employeeId}";
     }
 
     /**

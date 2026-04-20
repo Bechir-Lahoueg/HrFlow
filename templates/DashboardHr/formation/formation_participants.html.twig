@@ -137,7 +137,11 @@
                                             </form>
                                             <form method="post" action="{{ path('rh_formation_participation_reject', {id: participation.id}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('reject-participation-' ~ participation.id) }}">
-                                                <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
+                                                <input type="hidden" name="refusal_reason" value="">
+                                                <button
+                                                    type="submit"
+                                                    onclick="const reason = window.prompt('Motif du refus (optionnel) :', ''); if (reason === null) { return false; } this.form.querySelector('input[name=&quot;refusal_reason&quot;]').value = reason.trim();"
+                                                    class="text-xs font-bold px-3 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                                     Refuser
                                                 </button>
