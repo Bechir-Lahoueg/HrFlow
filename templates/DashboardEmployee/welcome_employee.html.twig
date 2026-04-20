@@ -95,7 +95,7 @@
                         </div>
                         <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">Courses</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">--</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ trainingCount|default(0) }}</p>
                     <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Training Courses</p>
                     <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                         <div class="h-full w-1/2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
@@ -112,8 +112,8 @@
                         </div>
                         <span class="text-[11px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-2 py-0.5 rounded-md">Files</span>
                     </div>
-                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">--</p>
-                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Documents</p>
+                    <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ certificateCount|default(0) }}</p>
+                    <p class="text-[13px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">Certificats</p>
                     <div class="mt-3 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                         <div class="h-full w-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"></div>
                     </div>
@@ -248,7 +248,7 @@
                     </div>
                 </a>
 
-                <a href="#" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-emerald-200 dark:hover:border-emerald-500/20 transition-all duration-200 card-hover">
+                <a href="{{ path('employee_formation_index') }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm dark:shadow-none hover:border-emerald-200 dark:hover:border-emerald-500/20 transition-all duration-200 card-hover">
                     <div class="flex items-center gap-4">
                         <div class="w-11 h-11 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-400/10 transition-colors">
                             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
@@ -274,6 +274,124 @@
                     </div>
                 </a>
             </div>
+
+        {# ═══════════════ Formation Charts ═══════════════ #}
+        {% if formationsByMonth is defined and formationsByMonth|length > 0 %}
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up">
+
+            {# ── Line Chart : Évolution formations ── #}
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Évolution des formations</h3>
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">12 derniers mois</p>
+                    </div>
+                </div>
+                <canvas id="lineChart" height="120"></canvas>
+            </div>
+
+            {# ── Bar Chart : Taux de présence ── #}
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Taux de présence</h3>
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Par formation suivie</p>
+                    </div>
+                </div>
+                {% if attendanceData|default([])|length > 0 %}
+                    <canvas id="barChart" height="120"></canvas>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center h-32 text-zinc-300 dark:text-zinc-600">
+                        <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z"/></svg>
+                        <p class="text-[13px]">Aucune donnée de présence</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Chart.js #}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script>
+        (function () {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+            const textColor  = isDark ? '#71717a' : '#a1a1aa';
+
+            // ── Line Chart ──
+            // On récupère les clés (Mois)
+            const lineLabels = {{ formationsByMonth|keys|json_encode|raw }};
+
+            // On récupère les valeurs en bouclant sur le tableau pour créer un index simple
+            const lineData   = {{ formationsByMonth|map(v => v)|json_encode|raw }};
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: lineLabels,
+                    datasets: [{
+                        label: 'Formations',
+                        data: lineData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.08)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#10b981',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.4,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } },
+                        y: { ticks: { color: textColor, font: { size: 11 }, stepSize: 1, precision: 0 }, grid: { color: gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // ── Bar Chart ──
+            {% if attendanceData|default([])|length > 0 %}
+            const barLabels = {{ attendanceData|map(d => d.label)|json_encode|raw }};
+            const barData   = {{ attendanceData|map(d => d.value)|json_encode|raw }};
+            const barColors = barData.map(v => v >= 80 ? '#10b981' : v >= 50 ? '#f59e0b' : '#ef4444');
+
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Présence %',
+                        data: barData,
+                        backgroundColor: barColors,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: textColor, font: { size: 11 } }, grid: { display: false } },
+                        y: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true, max: 100,
+                             title: { display: true, text: '%', color: textColor } }
+                    }
+                }
+            });
+            {% endif %}
+        })();
+        </script>
 
         </main>
     </div>
