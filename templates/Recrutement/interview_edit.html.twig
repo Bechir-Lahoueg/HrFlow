@@ -98,8 +98,18 @@
                         label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                         input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
                     }) }}
+                    {{ form_widget_with_errors(form.score, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
+                    {{ form_widget_with_errors(form.result, {
+                        container_class: 'mb-4',
+                        label_class: 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                        input_class: 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors'
+                    }) }}
 
-                    <div class="flex items-center gap-3 pt-4">
+                    <div class="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-zinc-700 mt-6">
                         <a href="{{ path('app_rh_interviews') }}" class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200">
                             Annuler
                         </a>

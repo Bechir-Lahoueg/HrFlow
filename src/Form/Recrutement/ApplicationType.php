@@ -16,6 +16,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Email as EmailConstraint;
 
 class ApplicationType extends AbstractType
 {
@@ -26,6 +28,9 @@ class ApplicationType extends AbstractType
         $builder
             ->add('candidateName', TextType::class, [
                 'label' => 'Nom du candidat',
+                'constraints' => [
+                    new NotBlank(['message' => 'Le nom du candidat est requis']),
+                ],
                 'attr' => [
                     'placeholder' => 'Nom complet du candidat',
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-colors',
@@ -39,6 +44,9 @@ class ApplicationType extends AbstractType
                 'class' => JobOffer::class,
                 'choice_label' => 'title',
                 'placeholder' => 'Sélectionner une offre',
+                'constraints' => [
+                    new NotBlank(['message' => 'L\'offre d\'emploi est requise']),
+                ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
                 ],
@@ -73,7 +81,7 @@ class ApplicationType extends AbstractType
                 ],
             ])
             ->add('coverLetterFile', FileType::class, [
-                'label' => 'Cover Letter',
+                'label' => 'Lettre de motivation',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -84,13 +92,19 @@ class ApplicationType extends AbstractType
                             'application/msword',
                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                         ],
-                        'mimeTypesMessage' => 'Please upload a valid PDF or Word document',
+                        'mimeTypesMessage' => 'Veuillez télécharger un PDF ou Word valide',
                     ])
                 ],
                 'attr' => [
-                    'class' => 'form-control',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100',
                 ],
-                'help' => $isEdit ? 'Leave empty to keep current cover letter' : 'Upload PDF or Word document (max 5MB)',
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                ],
+                'help' => $isEdit ? 'Laissez vide pour conserver la lettre actuelle' : 'Téléchargez un PDF ou Word (max 5MB)',
+                'help_attr' => [
+                    'class' => 'text-[11px] text-slate-400 mt-1',
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
@@ -102,6 +116,63 @@ class ApplicationType extends AbstractType
                     'Recruté' => 'HIRED',
                     'Rejeté' => 'REJECTED',
                 ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le statut est requis']),
+                ],
+                'attr' => [
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                ],
+            ])
+            ->add('emailAddress', EmailType::class, [
+                'label' => 'Email du candidat',
+                'required' => false,
+                'constraints' => [
+                    new EmailConstraint(['message' => 'Veuillez entrer une adresse email valide']),
+                ],
+                'attr' => [
+                    'placeholder' => 'candidat@example.com',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                ],
+            ])
+            ->add('department', ChoiceType::class, [
+                'label' => 'Département',
+                'required' => false,
+                'placeholder' => '-- Sélectionner un département --',
+                'choices' => [
+                    'Ressources Humaines' => 'RH',
+                    'Informatique' => 'IT',
+                    'Finance' => 'Finance',
+                    'Commercial' => 'Commercial',
+                    'Marketing' => 'Marketing',
+                    'Opérations' => 'Opérations',
+                    'Support Client' => 'Support',
+                    'Autre' => 'Autre',
+                ],
+                'attr' => [
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
+                ],
+            ])
+            ->add('experienceLevel', ChoiceType::class, [
+                'label' => 'Niveau d\'expérience',
+                'required' => false,
+                'placeholder' => '-- Sélectionner un niveau --',
+                'choices' => [
+                    'Débutant' => 'ENTRY',
+                    'Junior' => 'JUNIOR',
+                    'Confirmé' => 'MID',
+                    'Senior' => 'SENIOR',
+                    'Lead' => 'LEAD',
+                    'Cadre' => 'EXECUTIVE',
+                ],
                 'attr' => [
                     'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
                 ],
@@ -110,71 +181,59 @@ class ApplicationType extends AbstractType
                 ],
             ])
             ->add('notes', TextareaType::class, [
-                'label' => 'Notes',
+                'label' => 'Notes supplémentaires',
                 'required' => false,
                 'attr' => [
                     'rows' => 3,
-                    'placeholder' => 'Enter any additional notes',
-                    'class' => 'form-control',
+                    'placeholder' => 'Entrez vos observations ou notes',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 placeholder-slate-400 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors resize-none',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
             ])
-            ->add('department', TextType::class, [
-                'label' => 'Department',
+            ->add('source', ChoiceType::class, [
+                'label' => 'Source de la candidature',
                 'required' => false,
-                'attr' => [
-                    'placeholder' => 'Enter department',
-                    'class' => 'form-control',
-                ],
-            ])
-            ->add('experienceLevel', ChoiceType::class, [
-                'label' => 'Experience Level',
-                'required' => false,
+                'placeholder' => '-- Sélectionner une source --',
                 'choices' => [
-                    'Entry Level' => 'ENTRY',
-                    'Junior' => 'JUNIOR',
-                    'Mid-Level' => 'MID',
-                    'Senior' => 'SENIOR',
-                    'Lead' => 'LEAD',
-                    'Executive' => 'EXECUTIVE',
+                    'LinkedIn' => 'LinkedIn',
+                    'Indeed' => 'Indeed',
+                    'Recommandation' => 'Referral',
+                    'Site web' => 'Website',
+                    'Email' => 'Email',
+                    'Autre' => 'Other',
                 ],
-                'placeholder' => 'Select experience level',
                 'attr' => [
-                    'class' => 'form-control',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
                 ],
-            ])
-            ->add('emailAddress', EmailType::class, [
-                'label' => 'Email Address',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'Enter email address',
-                    'class' => 'form-control',
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
             ])
             ->add('employee', EntityType::class, [
-                'label' => 'Associated Employee',
+                'label' => 'Employé associé',
                 'class' => Employee::class,
                 'required' => false,
-                'placeholder' => 'Select employee (if internal)',
+                'placeholder' => '-- Sélectionner un employé interne --',
                 'attr' => [
-                    'class' => 'form-control',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
                 ],
-            ])
-            ->add('source', TextType::class, [
-                'label' => 'Source',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'e.g., LinkedIn, Indeed, Referral',
-                    'class' => 'form-control',
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
             ]);
 
         if (!$isEdit) {
             $builder->add('appliedAt', DateTimeType::class, [
-                'label' => 'Applied At',
+                'label' => 'Date de candidature',
                 'widget' => 'single_text',
                 'data' => new \DateTime(),
                 'attr' => [
-                    'class' => 'form-control',
+                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 transition-colors',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
             ]);
         }

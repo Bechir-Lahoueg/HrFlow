@@ -104,7 +104,7 @@
                     <div class="flex-1 h-3 bg-slate-200 dark:bg-zinc-600 rounded-full overflow-hidden">
                         <div class="h-full rounded-full {% if interview.score >= 70 %}bg-emerald-500{% elseif interview.score >= 50 %}bg-amber-500{% else %}bg-rose-500{% endif %}" style="width: {{ interview.score }}%"></div>
                     </div>
-                    <span class="text-lg font-bold text-slate-800 dark:text-white">{{ (interview.score / 10)|round(1) }}/10</span>
+                    <span class="text-lg font-bold text-slate-800 dark:text-white">{{ interview.score }}/100</span>
                 </div>
             </div>
             {% endif %}
