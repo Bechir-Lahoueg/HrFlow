@@ -9,6 +9,7 @@ use App\Repository\Recrutement\InterviewRepository;
 use App\Repository\Rh\UserRepository;
 use App\Security\DbUser;
 use App\Service\Recrutement\InterviewConflictDetector;
+use App\Service\Recrutement\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class RecruitmentInterviewController extends AbstractController
 {
+    public function __construct(
+        private readonly NotificationService $notificationService
+    ) {
+    }
     #[Route('/rh/recruitment/interviews', name: 'app_rh_interviews', methods: ['GET'])]
     #[IsGranted('ROLE_RH')]
     public function index(
@@ -119,6 +124,13 @@ final class RecruitmentInterviewController extends AbstractController
             $em->persist($interview);
             $em->flush();
 
+            // Send notification to candidate
+            try {
+                $this->notificationService->sendInterviewScheduledEmail($interview);
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+            }
+
             $this->addFlash('success', 'Entretien planifié avec succès.');
             return $this->redirectToRoute('app_rh_interviews');
         }
@@ -151,20 +163,20 @@ final class RecruitmentInterviewController extends AbstractController
             return $this->redirectToRoute('app_rh_interviews');
         }
 
-        if ($score < 0 || $score > 10) {
-            $this->addFlash('error', 'Le score doit être entre 0 et 10.');
+        if ($score < 0 || $score > 100) {
+            $this->addFlash('error', 'Le score doit être entre 0 et 100.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
-        // Check minimum score requirement: if PASSED, score must be >= 6
-        if ($result === 'PASSED' && $score < 6) {
-            $this->addFlash('error', 'Le score minimum pour réussir un entretien est 6/10.');
+        // Check minimum score requirement: if PASSED, score must be >= 60
+        if ($result === 'PASSED' && $score < 60) {
+            $this->addFlash('error', 'Le score minimum pour réussir un entretien est 60/100.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
-        // If score is < 6, can't be marked as PASSED
-        if ($score > 0 && $score < 6 && $result === 'PASSED') {
-            $this->addFlash('error', 'Un candidat avec un score de ' . $score . '/10 ne peut pas être marqué comme réussi.');
+        // If score is < 60, can't be marked as PASSED
+        if ($score > 0 && $score < 60 && $result === 'PASSED') {
+            $this->addFlash('error', 'Un candidat avec un score de ' . $score . '/100 ne peut pas être marqué comme réussi.');
             return $this->redirectToRoute('app_rh_interviews');
         }
 
@@ -180,6 +192,13 @@ final class RecruitmentInterviewController extends AbstractController
         $interview->setScore($score);
         $interview->setFeedback($feedback ?: null);
         $em->flush();
+
+        // Send notification to candidate about the result
+        try {
+            $this->notificationService->sendInterviewResultEmail($interview);
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+        }
 
         $this->addFlash('success', 'Évaluation enregistrée avec succès.');
         return $this->redirectToRoute('app_rh_interviews');

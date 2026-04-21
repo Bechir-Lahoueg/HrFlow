@@ -139,13 +139,13 @@ class InterviewType extends AbstractType
                 ],
             ])
             ->add('score', IntegerType::class, [
-                'label' => 'Score /10',
+                'label' => 'Score /100',
                 'required' => false,
                 'constraints' => [
                     new Range([
                         'min' => 0,
-                        'max' => 10,
-                        'notInRangeMessage' => 'Le score doit être compris entre 0 et 10',
+                        'max' => 100,
+                        'notInRangeMessage' => 'Le score doit être compris entre 0 et 100',
                     ]),
                 ],
                 'attr' => [
@@ -154,7 +154,7 @@ class InterviewType extends AbstractType
                 'label_attr' => [
                     'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
-                'help' => 'Score minimum 6/10 pour réussir',
+                'help' => 'Score minimum 60/100 pour réussir',
                 'help_attr' => [
                     'class' => 'text-[11px] text-slate-400 mt-1',
                 ],

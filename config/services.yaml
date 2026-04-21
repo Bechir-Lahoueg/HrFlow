@@ -9,6 +9,7 @@ parameters:
     matrix_bot_user_id: '%env(string:MATRIX_BOT_USER_ID)%'
     huggingface_api_token: '%env(string:HUGGINGFACE_API_TOKEN)%'
     huggingface_emotion_model: '%env(string:HUGGINGFACE_EMOTION_MODEL)%'
+    upload_dir: '%env(UPLOAD_DIR)%'
 
 services:
     # default configuration for services in *this* file
@@ -40,6 +41,11 @@ services:
         arguments:
             $apiToken: '%huggingface_api_token%'
             $model: '%huggingface_emotion_model%'
+
+    # Recruitment Notification Service
+    App\Service\Recrutement\NotificationService:
+        arguments:
+            $senderAddress: '%env(MAILER_FROM)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

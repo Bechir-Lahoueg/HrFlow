@@ -3,11 +3,14 @@
 namespace App\Controller\rh;
 
 use App\Entity\Recrutement\Application;
+use App\Form\Recrutement\BulkApplicationActionType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
 use App\Repository\Recrutement\JobOfferRepository;
 use App\Security\DbUser;
+use App\Service\Recrutement\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,19 +20,33 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class RecruitmentApplicationController extends AbstractController
 {
-    #[Route('/rh/recruitment/applications', name: 'app_rh_applications', methods: ['GET'])]
+    public function __construct(
+        private readonly NotificationService $notificationService
+    ) {
+    }
+    #[Route('/rh/recruitment/applications', name: 'app_rh_applications', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function index(
         Request $request,
         ApplicationRepository $applicationRepository,
-        JobOfferRepository $jobOfferRepository
+        JobOfferRepository $jobOfferRepository,
+        PaginatorInterface $paginator,
+        EntityManagerInterface $em
     ): Response {
         $rh = $this->getCurrentRh();
         $jobOfferId = $request->query->getInt('job_offer_id');
         $status = $request->query->get('status');
         $department = $request->query->get('department');
+        $search = $request->query->get('search');
 
-        $applications = $applicationRepository->findByRh($rh, $jobOfferId ?: null, $status, $department);
+        $query = $applicationRepository->findByRhQuery($rh, $jobOfferId ?: null, $status, $department, $search);
+        
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            20 // items per page
+        );
+        
         $allOffers = $jobOfferRepository->findByRh($rh);
         $stats = [
             'totalApplications' => $applicationRepository->countByRh($rh),
@@ -43,12 +60,81 @@ final class RecruitmentApplicationController extends AbstractController
             $currentOffer = $jobOfferRepository->findOneByRh($jobOfferId, $rh);
         }
 
-        return $this->render('Recrutement/recruitment_applications.html.twig', [
+        // Get applications for bulk form (only active, non-deleted)
+        $applications = $applicationRepository->findByRh($rh, $jobOfferId ?: null, $status, $department, $search);
+        
+        // Create bulk action form
+        $bulkForm = $this->createForm(BulkApplicationActionType::class, null, [
             'applications' => $applications,
+        ]);
+        $bulkForm->handleRequest($request);
+        
+        // Handle bulk form submission
+        if ($bulkForm->isSubmitted() && $bulkForm->isValid()) {
+            $selected = $bulkForm->get('selected')->getData();
+            $action = $bulkForm->get('action')->getData();
+            
+            if (empty($selected)) {
+                $this->addFlash('error', 'Aucune candidature sélectionnée.');
+                return $this->redirectToRoute('app_rh_applications');
+            }
+            
+            $count = 0;
+            foreach ($selected as $application) {
+                switch ($action) {
+                    case 'review':
+                        $application->setStatus('REVIEWING');
+                        $count++;
+                        break;
+                    case 'interview':
+                        $application->setStatus('INTERVIEW');
+                        $count++;
+                        break;
+                    case 'offer':
+                        $application->setStatus('OFFER');
+                        $count++;
+                        break;
+                    case 'hire':
+                        $application->setStatus('HIRED');
+                        $count++;
+                        // Auto-reject other applications from this candidate
+                        if ($application->getCandidate()) {
+                            $candidateApps = $applicationRepository->findBy(['candidate' => $application->getCandidate()]);
+                            foreach ($candidateApps as $otherApp) {
+                                if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
+                                    $otherApp->setStatus('REJECTED');
+                                }
+                            }
+                        }
+                        break;
+                    case 'reject':
+                        $application->setStatus('REJECTED');
+                        $count++;
+                        break;
+                }
+            }
+            
+            $em->flush();
+            
+            $actionLabels = [
+                'review' => 'passées en revue',
+                'interview' => 'passées en entretien',
+                'offer' => 'avec offre envoyée',
+                'hire' => 'recrutées',
+                'reject' => 'rejetées',
+            ];
+            
+            $this->addFlash('success', sprintf('%d candidature(s) %s avec succès.', $count, $actionLabels[$action] ?? $action));
+            return $this->redirectToRoute('app_rh_applications');
+        }
+        
+        return $this->render('Recrutement/recruitment_applications.html.twig', [
+            'pagination' => $pagination,
             'allOffers' => $allOffers,
             'currentOffer' => $currentOffer,
             'stats' => $stats,
             'deletedApplications' => $applicationRepository->findDeletedByRh($rh),
+            'bulkForm' => $bulkForm->createView(),
         ]);
     }
 
@@ -90,21 +176,11 @@ final class RecruitmentApplicationController extends AbstractController
             $em->flush();
             $this->addFlash('success', sprintf('Statut mis à jour avec succès (%s → %s).', $previousStatus, $status));
             
-            // If status changed to INTERVIEW, redirect to create interview form
-            if ($status === 'INTERVIEW') {
-                return $this->redirectToRoute('app_rh_interviews', ['application_id' => $application->getId()]);
-            }
-            
-            // If status changed to HIRED, reject all other applications from this candidate
-            if ($status === 'HIRED' && $application->getCandidate()) {
-                $allCandidateApplications = $applicationRepository->findBy(['candidate' => $application->getCandidate()]);
-                foreach ($allCandidateApplications as $otherApp) {
-                    if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
-                        $otherApp->setStatus('REJECTED');
-                    }
-                }
-                $em->flush();
-                $this->addFlash('info', 'Les autres candidatures du candidat ont été automatiquement rejetées.');
+            // Send notification to candidate
+            try {
+                $this->notificationService->sendStatusUpdateEmail($application);
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
             }
             
             // If status changed to INTERVIEW, redirect to create interview form
