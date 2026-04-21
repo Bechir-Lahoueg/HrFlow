@@ -9,6 +9,7 @@ use App\Service\Formation\PresenceService;
 use App\Service\Formation\SessionFeedbackService;
 use App\Service\Formation\SessionService;
 use App\Service\Formation\ImageAiService;
+use App\Service\Shared\JitsiMeetService;
 use App\Form\Formation\FormationType;
 use App\Form\Formation\SessionFormationType;
 use App\Entity\Formation\Formation;
@@ -28,6 +29,7 @@ final class RhFormationController extends AbstractController
         private readonly FormationChangeNotificationService $formationChangeNotificationService,
         private readonly SessionFeedbackService $sessionFeedbackService,
         private readonly ImageAiService $imageAiService,
+        private readonly JitsiMeetService $jitsiMeetService,
     ) {
     }
 
@@ -182,6 +184,7 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
             $this->validateSessionLocationField($session, $form);
         }
 
@@ -229,6 +232,7 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
             $this->validateSessionLocationField($session, $form);
         }
 
@@ -367,7 +371,8 @@ final class RhFormationController extends AbstractController
     {
         $idInt = (int) $id;
         if ($this->isCsrfTokenValid('reject-participation-' . $idInt, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($idInt, 'Refuse');
+            $reason = trim((string) $request->request->get('refusal_reason', ''));
+            $participationService->updateStatus($idInt, 'Refuse', $reason !== '' ? $reason : null);
             $this->addFlash('success', 'Participation refusée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
@@ -458,13 +463,44 @@ final class RhFormationController extends AbstractController
 
     private function validateSessionLocationField(SessionFormation $session, FormInterface $form): void
     {
-        $mode = strtolower(trim((string) $session->getMode()));
-        $mode = str_replace(['é', 'è', 'ê'], 'e', $mode);
+        $mode = $this->normalizeSessionMode((string) $session->getMode());
         $lieu = trim((string) $session->getLieu());
 
-        if ($mode === 'en ligne' && !$this->isValidHttpUrl($lieu)) {
+        if ($mode !== 'en ligne' && $lieu === '') {
+            $form->get('lieu')->addError(new FormError('Le lieu de la session est obligatoire pour ce mode.'));
+            return;
+        }
+
+        if ($mode === 'en ligne' && $lieu === '') {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
+            $lieu = trim((string) $session->getLieu());
+        }
+
+        if ($mode === 'en ligne' && $lieu !== '' && !$this->isValidHttpUrl($lieu)) {
             $form->get('lieu')->addError(new FormError('Pour une session en ligne, veuillez renseigner un lien valide (Teams, Google Meet, Zoom...).'));
         }
+    }
+
+    private function applyOnlineMeetingLinkIfNeeded(SessionFormation $session): void
+    {
+        $mode = $this->normalizeSessionMode((string) $session->getMode());
+        $lieu = trim((string) $session->getLieu());
+
+        if ($mode !== 'en ligne' || $lieu !== '') {
+            return;
+        }
+
+        $formationId = (int) ($session->getFormation()?->getId() ?? 0);
+        $formationId = max(1, $formationId);
+
+        $session->setLieu($this->jitsiMeetService->generateFormationSessionLink($formationId, $session->getId()));
+    }
+
+    private function normalizeSessionMode(string $mode): string
+    {
+        $normalized = strtolower(trim($mode));
+
+        return str_replace(['é', 'è', 'ê'], 'e', $normalized);
     }
 
     private function isValidHttpUrl(string $value): bool

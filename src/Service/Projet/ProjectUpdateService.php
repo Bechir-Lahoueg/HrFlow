@@ -6,54 +6,99 @@ use Doctrine\DBAL\Connection;
 
 final class ProjectUpdateService
 {
+    private ?bool $hasActorSourceColumn = null;
+
     public function __construct(private readonly Connection $connection) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CRUD UPDATES (Activités)
     // ═══════════════════════════════════════════════════════════════
 
-    public function getUpdatesByProject(int $projectId, int $limit = 50): array
+    public function getUpdatesByProject(int $projectId, int $limit = 50, ?int $authorUserId = null, bool $includeProjectRhUpdates = false): array
     {
+        $safeLimit = max(1, min(200, $limit));
+        $authorUserId = $authorUserId !== null && $authorUserId > 0 ? $authorUserId : null;
+        $hasActorSource = $this->supportsActorSourceColumn();
+
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT u.*,
-                    CASE
-                        WHEN e.id IS NOT NULL THEN CONCAT(e.first_name, ' ', e.last_name)
-                        WHEN us.id IS NOT NULL THEN us.username
-                        ELSE 'Système'
-                    END as author_name
-                 FROM project_updates u
-                 LEFT JOIN employees e ON u.user_id = e.id
-                 LEFT JOIN users us ON u.user_id = us.id
-                 WHERE u.project_id = :projectId
-                 ORDER BY u.created_at DESC
-                 LIMIT :limit",
-                [
-                    'projectId' => $projectId,
-                    'limit' => (int) $limit
-                ],
-                [
-                    'projectId' => \PDO::PARAM_INT,
-                    'limit' => \PDO::PARAM_INT
-                ]
-            );
-        } catch (\Throwable $e) {
-            return [];
+            if ($hasActorSource) {
+                $sql = "SELECT u.*,
+                        CASE
+                            WHEN u.actor_source = 'rh' THEN COALESCE(us.username, CONCAT('RH #', u.user_id))
+                            ELSE COALESCE(CONCAT(e.first_name, ' ', e.last_name), 'Employe #', u.user_id)
+                        END AS author_name
+                    FROM project_updates u
+                    LEFT JOIN employees e ON u.user_id = e.id AND (u.actor_source IS NULL OR u.actor_source <> 'rh')
+                    LEFT JOIN users us ON u.user_id = us.id AND u.actor_source = 'rh'
+                    WHERE u.project_id = :projectId";
+            } else {
+                $sql = "SELECT u.*,
+                        CASE
+                            WHEN LEFT(COALESCE(u.update_type, ''), 3) = 'rh_' THEN COALESCE(us.username, CONCAT('RH #', u.user_id))
+                            WHEN e.id IS NOT NULL THEN CONCAT(e.first_name, ' ', e.last_name)
+                            WHEN us.id IS NOT NULL THEN us.username
+                            ELSE 'Systeme'
+                        END AS author_name
+                    FROM project_updates u
+                    INNER JOIN projects p ON p.id = u.project_id
+                    LEFT JOIN employees e ON u.user_id = e.id
+                    LEFT JOIN users us ON u.user_id = us.id
+                    WHERE u.project_id = :projectId";
+            }
+
+            $params = [
+                'projectId' => $projectId,
+            ];
+
+            if ($authorUserId !== null) {
+                if ($includeProjectRhUpdates && $hasActorSource) {
+                    $sql .= " AND (
+                        u.user_id = :authorUserId
+                        OR u.actor_source = 'rh'
+                    )";
+                } elseif ($includeProjectRhUpdates) {
+                    $sql .= " AND (
+                        u.user_id = :authorUserId
+                        OR LEFT(COALESCE(u.update_type, ''), 3) = 'rh_'
+                    )";
+                } else {
+                    $sql .= ' AND u.user_id = :authorUserId';
+                }
+                $params['authorUserId'] = $authorUserId;
+            }
+
+            $sql .= " ORDER BY u.created_at DESC LIMIT {$safeLimit}";
+
+            return $this->connection->fetchAllAssociative($sql, $params);
+        } catch (\Throwable) {
+            // Fallback defensif: evite une liste vide si la requete enrichie echoue.
+            $fallbackSql = "SELECT u.*, 'Systeme' AS author_name
+                            FROM project_updates u
+                            WHERE u.project_id = :projectId
+                            ORDER BY u.created_at DESC
+                            LIMIT {$safeLimit}";
+
+            return $this->connection->fetchAllAssociative($fallbackSql, ['projectId' => $projectId]);
         }
     }
 
     public function createUpdate(array $data): void
         {
-            $this->connection->insert('project_updates', [
+            $insertData = [
                 'project_id'  => $data['project_id'],
-                'user_id'     => $data['user_id'], // C'est l'ID de l'employé
+                'user_id'     => $data['user_id'],
                 'update_type' => $data['update_type'] ?? 'comment',
                 'title'       => $data['title'],
                 'content'     => $data['content'] ?? null,
-                // 'created_at' est un TIMESTAMP, MySQL peut le gérer seul,
-                // mais on peut le forcer ici si nécessaire :
                 'created_at'  => date('Y-m-d H:i:s'),
-            ]);
+            ];
+
+            if ($this->supportsActorSourceColumn()) {
+                $source = (string) ($data['actor_source'] ?? 'employee');
+                $insertData['actor_source'] = $source === 'rh' ? 'rh' : 'employee';
+            }
+
+            $this->connection->insert('project_updates', $insertData);
         }
 
     public function deleteUpdate(int $id): void
@@ -65,34 +110,37 @@ final class ProjectUpdateService
     // LOGS AUTOMATIQUES
     // ═══════════════════════════════════════════════════════════════
 
-    public function logTaskCreated(int $projectId, int $employeeId, string $taskTitle): void
+    public function logTaskCreated(int $projectId, int $employeeId, string $taskTitle, bool $isRh = false): void
         {
             $this->createUpdate([
                 'project_id'  => $projectId,
                 'user_id'     => $employeeId,
-                'update_type' => 'task',
+                'update_type' => $isRh ? 'rh_task' : 'task',
+                'actor_source' => $isRh ? 'rh' : 'employee',
                 'title'       => 'Nouvelle tâche créée',
                 'content'     => "Tâche '{$taskTitle}' ajoutée au projet",
             ]);
         }
 
-    public function logTaskCompleted(int $projectId, int $userId, string $taskTitle): void
+    public function logTaskCompleted(int $projectId, int $userId, string $taskTitle, bool $isRh = false): void
     {
         $this->createUpdate([
             'project_id' => $projectId,
             'user_id' => $userId,
-            'update_type' => 'task',
+            'update_type' => $isRh ? 'rh_task' : 'task',
+            'actor_source' => $isRh ? 'rh' : 'employee',
             'title' => 'Tâche terminée',
             'content' => "Tâche '{$taskTitle}' marquée comme terminée",
         ]);
     }
 
-    public function logMilestoneCompleted(int $projectId, int $userId, string $milestoneName): void
+    public function logMilestoneCompleted(int $projectId, int $userId, string $milestoneName, bool $isRh = false): void
     {
         $this->createUpdate([
             'project_id' => $projectId,
             'user_id' => $userId,
-            'update_type' => 'milestone',
+            'update_type' => $isRh ? 'rh_milestone' : 'milestone',
+            'actor_source' => $isRh ? 'rh' : 'employee',
             'title' => 'Jalon atteint',
             'content' => "Le jalon '{$milestoneName}' a été complété 🎉",
         ]);
@@ -127,11 +175,11 @@ final class ProjectUpdateService
     public function getTypeIcon(string $type): string
     {
         return match($type) {
-            'comment' => '💬',
-            'task' => '✅',
-            'milestone' => '🎯',
+            'comment', 'rh_comment' => '💬',
+            'task', 'rh_task' => '✅',
+            'milestone', 'rh_milestone' => '🎯',
             'document' => '📎',
-            'status_change' => '🔄',
+            'status_change', 'rh_status_change' => '🔄',
             default => '📌',
         };
     }
@@ -140,10 +188,13 @@ final class ProjectUpdateService
     {
         return match($type) {
             'comment' => 'Commentaire',
+            'rh_comment' => 'Commentaire RH',
             'task' => 'Tâche',
+            'rh_task' => 'Action RH',
             'milestone' => 'Jalon',
+            'rh_milestone' => 'Jalon RH',
             'document' => 'Document',
-            'status_change' => 'Changement de statut',
+            'status_change', 'rh_status_change' => 'Changement de statut',
             default => $type,
         };
     }
@@ -151,12 +202,28 @@ final class ProjectUpdateService
     public function getTypeBadgeClass(string $type): string
     {
         return match($type) {
-            'comment' => 'badge bg-info',
-            'task' => 'badge bg-success',
-            'milestone' => 'badge bg-primary',
+            'comment', 'rh_comment' => 'badge bg-info',
+            'task', 'rh_task' => 'badge bg-success',
+            'milestone', 'rh_milestone' => 'badge bg-primary',
             'document' => 'badge bg-warning',
-            'status_change' => 'badge bg-secondary',
+            'status_change', 'rh_status_change' => 'badge bg-secondary',
             default => 'badge bg-light',
         };
+    }
+
+    private function supportsActorSourceColumn(): bool
+    {
+        if ($this->hasActorSourceColumn !== null) {
+            return $this->hasActorSourceColumn;
+        }
+
+        try {
+            $columns = $this->connection->createSchemaManager()->listTableColumns('project_updates');
+            $this->hasActorSourceColumn = array_key_exists('actor_source', $columns);
+        } catch (\Throwable) {
+            $this->hasActorSourceColumn = false;
+        }
+
+        return $this->hasActorSourceColumn;
     }
 }
