@@ -92,7 +92,7 @@ class EmployeeProjectController extends AbstractController
         }
 
         $myCollaboration = $this->getMyCollaboration($id, $employeeId);
-        $updates = $this->updateService->getUpdatesByProject($id, 15);
+        $updates = $this->updateService->getUpdatesByProject($id, 15, $employeeId, true);
 
         $totalMyTasks = count($myTasks);
         $doneMyTasks = count(array_filter($myTasks, fn($t) => $t['status'] === 'done'));
@@ -135,6 +135,7 @@ class EmployeeProjectController extends AbstractController
                 'project_id' => $id,
                 'user_id' => $employeeId,
                 'update_type' => 'task',
+                'actor_source' => 'employee',
                 'title' => 'Tâche déplacée',
                 'content' => $task['title'] . ' → ' . $newStatus,
             ]);
@@ -170,6 +171,7 @@ class EmployeeProjectController extends AbstractController
                 'project_id' => $id,
                 'user_id' => $employeeId,
                 'update_type' => 'task',
+                'actor_source' => 'employee',
                 'title' => 'Heures loggées',
                 'content' => $hours . 'h ajoutées sur: ' . $task['title'],
             ]);
@@ -198,6 +200,7 @@ class EmployeeProjectController extends AbstractController
                 'project_id' => $id,
                 'user_id' => $employeeId,
                 'update_type' => 'comment',
+                'actor_source' => 'employee',
                 'title' => 'Commentaire',
                 'content' => $content,
             ]);

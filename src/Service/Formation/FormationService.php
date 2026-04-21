@@ -34,12 +34,12 @@ final class FormationService
     }
 
     /** @return Formation[] */
-    public function getAllFormations(string $search = '', string $type = '', string $sort = 'createdAt', string $dir = 'DESC'): array
+    public function getAllFormations(string $search = '', string $type = '', string $sort = 'createdAt', string $dir = 'DESC', string $organisme = ''): array
     {
         $sortMap = ['created_at' => 'createdAt'];
         $sort = $sortMap[$sort] ?? $sort;
 
-        return $this->formationRepository->findAllFiltered($search, $type, $sort, $dir);
+        return $this->formationRepository->findAllFiltered($search, $type, $sort, $dir, $organisme);
     }
 
     public function getFormationStatsByRhId(int $rhId): array
@@ -48,6 +48,22 @@ final class FormationService
             return $this->formationRepository->getStatsByRh($rhId);
         } catch (\Throwable) {
             return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
+        }
+    }
+
+    /** @return array{topFormations: array<int, array<string, mixed>>, topFormateurs: array<int, array<string, mixed>>} */
+    public function getTopInsightsByRhId(int $rhId): array
+    {
+        try {
+            return [
+                'topFormations' => $this->formationRepository->findTopFormationsByRh($rhId, 5),
+                'topFormateurs' => $this->formationRepository->findTopFormateursByRh($rhId, 5),
+            ];
+        } catch (\Throwable) {
+            return [
+                'topFormations' => [],
+                'topFormateurs' => [],
+            ];
         }
     }
 

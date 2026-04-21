@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Paie;
+namespace App\Service\Shared;
 
 use App\Entity\Rh\Employee;
 
@@ -26,10 +26,27 @@ final class JitsiMeetService
             $suffix ? '-' . $suffix : ''
         );
 
-        // Sanitize room name (only alphanumeric + dash)
-        $roomName = preg_replace('/[^a-zA-Z0-9\-]/', '', $roomName);
+        return self::JITSI_BASE_URL . $this->sanitizeRoomName($roomName);
+    }
 
-        return self::JITSI_BASE_URL . $roomName;
+    /**
+     * Generate a Jitsi link for online training sessions.
+     */
+    public function generateFormationSessionLink(int $formationId, ?int $sessionId = null): string
+    {
+        $roomName = sprintf(
+            'hrflow-formation-%d-%s%s',
+            $formationId,
+            date('Ymd'),
+            $sessionId ? '-session-' . $sessionId : ''
+        );
+
+        return self::JITSI_BASE_URL . $this->sanitizeRoomName($roomName);
+    }
+
+    private function sanitizeRoomName(string $roomName): string
+    {
+        return (string) preg_replace('/[^a-zA-Z0-9\-]/', '', $roomName);
     }
 
     /**

@@ -7,6 +7,9 @@ use App\Service\Projet\ProjectTaskService;
 use App\Service\Projet\ProjectCollaboratorService;
 use App\Service\Projet\ProjectMilestoneService;
 use App\Service\Projet\ProjectUpdateService;
+use App\Service\Projet\ProjectReportPdfService;
+use App\Service\Projet\TaskDeadlineAlertService;
+use App\Service\Shared\AiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +25,9 @@ class RhProjectController extends AbstractController
         private readonly ProjectCollaboratorService $collaboratorService,
         private readonly ProjectMilestoneService $milestoneService,
         private readonly ProjectUpdateService $updateService,
+        private readonly ProjectReportPdfService $projectReportPdfService,
+        private readonly TaskDeadlineAlertService $taskDeadlineAlertService,
+        private readonly AiService $aiService,
     ) {}
 
     // ═══════════════════════════════════════════════════════════════
@@ -42,14 +48,7 @@ class RhProjectController extends AbstractController
         $priorityFilter = $request->query->get('priority', '');
         $search = $request->query->get('search', '');
 
-        if ($statusFilter || $priorityFilter || $search) {
-            $projects = array_filter($projects, function ($p) use ($statusFilter, $priorityFilter, $search) {
-                if ($statusFilter && $p['status'] !== $statusFilter) return false;
-                if ($priorityFilter && $p['priority'] !== $priorityFilter) return false;
-                if ($search && stripos($p['name'], $search) === false && stripos($p['description'] ?? '', $search) === false) return false;
-                return true;
-            });
-        }
+        $projects = $this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search);
 
         return $this->render('DashboardHr/Project/index.html.twig', [
             'projects' => array_values($projects),
@@ -62,6 +61,92 @@ class RhProjectController extends AbstractController
         ]);
     }
 
+    #[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request): Response
+    {
+        $user = $this->getUser();
+        $rhId = $user->getId();
+
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $priorityFilter = trim((string) $request->query->get('priority', ''));
+        $search = trim((string) $request->query->get('search', ''));
+
+        $projects = $this->projectService->getProjectsWithDetails($rhId);
+        $projects = array_values($this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search));
+
+        $reportProjects = [];
+        foreach ($projects as $project) {
+            $projectId = (int) ($project['id'] ?? 0);
+            if ($projectId <= 0) {
+                continue;
+            }
+
+            $tasks = $this->taskService->getTasksByProject($projectId);
+            $team = $this->collaboratorService->getCollaboratorsByProject($projectId);
+            $milestones = $this->milestoneService->getMilestonesByProject($projectId);
+            $updates = $this->updateService->getUpdatesByProject($projectId, 20);
+            $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
+
+            $reportProjects[] = [
+                'project' => $project,
+                'tasks' => $tasks,
+                'team' => $team,
+                'milestones' => $milestones,
+                'updates' => $updates,
+                'analytics' => $analytics,
+            ];
+        }
+
+        $stats = $this->projectService->getProjectStats($rhId);
+        $pdf = $this->projectReportPdfService->generatePdf([
+            'reportProjects' => $reportProjects,
+            'stats' => $stats,
+            'filters' => [
+                'status' => $statusFilter,
+                'priority' => $priorityFilter,
+                'search' => $search,
+            ],
+            'generatedAt' => new \DateTimeImmutable(),
+            'rhId' => $rhId,
+        ]);
+
+        return new Response($pdf['content'], Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $pdf['fileName'] . '"',
+        ]);
+    }
+
+    #[Route('/alerts/send-task-reminders', name: 'send_task_reminders', methods: ['POST'])]
+    public function sendTaskReminders(Request $request): Response
+    {
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('rh-project-send-task-reminders', $token)) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('rh_project_index');
+        }
+
+        $user = $this->getUser();
+        $rhId = $user->getId();
+
+        $result = $this->taskDeadlineAlertService->sendAlertsForRh($rhId);
+
+        if (($result['tasksFlagged'] ?? 0) === 0) {
+            $this->addFlash('success', 'Aucune alerte a envoyer pour le moment.');
+        } else {
+            $this->addFlash(
+                'success',
+                sprintf(
+                    'Alertes envoyees: %d tache(s), %d email(s) employe, %d email RH.',
+                    (int) $result['tasksFlagged'],
+                    (int) $result['employeeEmailsSent'],
+                    (int) $result['rhEmailsSent']
+                )
+            );
+        }
+
+        return $this->redirectToRoute('rh_project_index');
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // DÉTAILS D'UN PROJET
     // ═══════════════════════════════════════════════════════════════
@@ -69,52 +154,7 @@ class RhProjectController extends AbstractController
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'])]
     public function show(int $id): Response
     {
-    // --- AJOUT : On récupère le RH connecté ---
-        $user = $this->getUser();
-        $rhId = $user->getId();
-
-        $project = $this->projectService->getProjectById($id);
-        if (!$project) {
-            throw $this->createNotFoundException('Projet non trouvé');
-        }
-
-        $tasks = $this->taskService->getTasksByProject($id);
-        $team = $this->collaboratorService->getCollaboratorsByProject($id);
-        $milestones = $this->milestoneService->getMilestonesByProject($id);
-        $updates = $this->updateService->getUpdatesByProject($id, 20);
-        $milestoneStats = $this->milestoneService->getProjectMilestoneStats($id);
-
-        // Organiser les tâches pour le Kanban
-        $tasksByStatus = [
-            'todo' => [],
-            'in_progress' => [],
-            'review' => [],
-            'done' => [],
-        ];
-        foreach ($tasks as $task) {
-            $status = $task['status'] ?? 'todo';
-            if (isset($tasksByStatus[$status])) {
-                $tasksByStatus[$status][] = $task;
-            }
-        }
-
-        // Calculer les analytics
-        $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
-
-        // Employés disponibles pour ajout
-        $availableEmployees = $this->collaboratorService->getAvailableEmployees($id, $rhId);
-
-        return $this->render('DashboardHr/Project/show.html.twig', [
-            'project' => $project,
-            'tasks' => $tasks,
-            'tasksByStatus' => $tasksByStatus,
-            'team' => $team,
-            'milestones' => $milestones,
-            'updates' => $updates,
-            'milestoneStats' => $milestoneStats,
-            'analytics' => $analytics,
-            'availableEmployees' => $availableEmployees,
-        ]);
+        return $this->renderProjectShow($id);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -232,8 +272,34 @@ class RhProjectController extends AbstractController
         $data = $request->request->all();
         $data['project_id'] = $id;
 
+        $errors = $this->taskService->validate($data);
+        if (count($errors) > 0) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => false,
+                    'errors' => $errors,
+                    'message' => 'Veuillez corriger les erreurs du formulaire.',
+                ], 422);
+            }
+
+            return $this->renderProjectShow($id, [
+                'taskCreateErrors' => $errors,
+                'taskCreateData' => $data,
+                'activeTab' => 'kanban',
+                'openModal' => 'modalNewTask',
+            ], 422);
+        }
+
         $this->taskService->createTask($data);
-        $this->updateService->logTaskCreated($id, $user->getId(), $data['title']);
+        $this->updateService->logTaskCreated($id, $user->getId(), $data['title'], true);
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Tache creee avec succes.',
+            ]);
+        }
+
         $this->addFlash('success', 'Tâche créée !');
         return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'kanban']);
     }
@@ -242,7 +308,39 @@ class RhProjectController extends AbstractController
     public function editTask(int $id, int $taskId, Request $request): Response
     {
         $data = $request->request->all();
+        $data['project_id'] = $id;
+
+        $errors = $this->taskService->validate($data);
+        if (count($errors) > 0) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => false,
+                    'errors' => $errors,
+                    'message' => 'Veuillez corriger les erreurs du formulaire.',
+                ], 422);
+            }
+
+            $task = $this->taskService->getTaskById($taskId);
+
+            return $this->renderProjectShow($id, [
+                'taskEditErrors' => $errors,
+                'taskEditData' => $data,
+                'taskEditTaskId' => $taskId,
+                'taskEditOriginal' => $task,
+                'activeTab' => 'kanban',
+                'openModal' => 'modalEditTask',
+            ], 422);
+        }
+
         $this->taskService->updateTask($taskId, $data);
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Tache modifiee avec succes.',
+            ]);
+        }
+
         $this->addFlash('success', 'Tâche modifiée !');
         return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'kanban']);
     }
@@ -257,7 +355,7 @@ class RhProjectController extends AbstractController
         if ($task && $newStatus) {
             $this->taskService->updateTaskStatus($taskId, $newStatus);
             if ($newStatus === 'done') {
-                $this->updateService->logTaskCompleted($id, $user->getId(), $task['title']);
+                $this->updateService->logTaskCompleted($id, $user->getId(), $task['title'], true);
             }
             $this->projectService->updateCompletionRate($id);
             return new JsonResponse(['success' => true]);
@@ -273,6 +371,53 @@ class RhProjectController extends AbstractController
         return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'kanban']);
     }
 
+    #[Route('/{id}/tasks/{taskId}/ai-suggestions', name: 'task_ai_suggestions', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['GET'])]
+    public function aiTaskSuggestions(int $id, int $taskId): JsonResponse
+    {
+        $task = $this->taskService->getTaskById($taskId);
+        if (!$task || (int) ($task['project_id'] ?? 0) !== $id) {
+            return new JsonResponse(['success' => false, 'message' => 'Tache introuvable.'], 404);
+        }
+
+        $candidates = $this->taskService->getProjectAssigneeCandidates($id);
+        if ($candidates === []) {
+            return new JsonResponse(['success' => false, 'message' => 'Aucun collaborateur actif disponible.'], 422);
+        }
+
+        $aiSuggestions = $this->aiService->suggestTaskAssignees($task, $candidates);
+        $suggestions = $this->buildTaskSuggestions($aiSuggestions, $candidates, $task);
+
+        return new JsonResponse([
+            'success' => true,
+            'suggestions' => $suggestions,
+        ]);
+    }
+
+    #[Route('/{id}/tasks/{taskId}/assign', name: 'task_assign', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
+    public function assignTask(int $id, int $taskId, Request $request): JsonResponse
+    {
+        $task = $this->taskService->getTaskById($taskId);
+        if (!$task || (int) ($task['project_id'] ?? 0) !== $id) {
+            return new JsonResponse(['success' => false, 'message' => 'Tache introuvable.'], 404);
+        }
+
+        $employeeId = (int) $request->request->get('employee_id', 0);
+        if ($employeeId <= 0) {
+            return new JsonResponse(['success' => false, 'message' => 'Employe invalide.'], 422);
+        }
+
+        if (!$this->collaboratorService->isCollaborator($id, $employeeId)) {
+            return new JsonResponse(['success' => false, 'message' => 'Employe non membre actif de ce projet.'], 422);
+        }
+
+        $ok = $this->taskService->assignTaskToEmployee($taskId, $employeeId);
+        if (!$ok) {
+            return new JsonResponse(['success' => false, 'message' => 'Impossible d\'assigner cette tache.'], 500);
+        }
+
+        return new JsonResponse(['success' => true, 'message' => 'Tache assignee avec succes.']);
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // GESTION DE L'ÉQUIPE
     // ═══════════════════════════════════════════════════════════════
@@ -280,13 +425,36 @@ class RhProjectController extends AbstractController
     #[Route('/{id}/team/add', name: 'team_add', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function addTeamMember(int $id, Request $request): Response
     {
-        $user = $this->getUser();
         $data = $request->request->all();
         $data['project_id'] = $id;
 
-        $this->collaboratorService->addCollaborator($data);
-        $this->addFlash('success', 'Membre ajouté à l\'équipe !');
-        return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'team']);
+        $result = $this->collaboratorService->addCollaborator($data);
+        if (($result['success'] ?? false) === true) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => $result['message'] ?? 'Membre ajoute avec succes.',
+                ]);
+            }
+
+            $this->addFlash('success', $result['message'] ?? 'Membre ajoute a l\'equipe !');
+            return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'team']);
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => false,
+                'errors' => $result['errors'] ?? ['_global' => ($result['message'] ?? 'Impossible d\'ajouter ce membre.')],
+                'message' => $result['message'] ?? 'Impossible d\'ajouter ce membre.',
+            ], 422);
+        }
+
+        return $this->renderProjectShow($id, [
+            'teamAddErrors' => $result['errors'] ?? ['_global' => ($result['message'] ?? 'Impossible d\'ajouter ce membre.')],
+            'teamAddData' => $result['data'] ?? $data,
+            'activeTab' => 'team',
+            'openModal' => 'modalAddMember',
+        ], 422);
     }
 
     #[Route('/{id}/team/{collabId}/remove', name: 'team_remove', requirements: ['id' => '\d+', 'collabId' => '\d+'], methods: ['POST'])]
@@ -327,7 +495,7 @@ class RhProjectController extends AbstractController
         $milestone = $this->milestoneService->getMilestoneById($milestoneId);
         $this->milestoneService->markAsCompleted($milestoneId);
         if ($milestone) {
-            $this->updateService->logMilestoneCompleted($id, $user->getId(), $milestone['name']);
+            $this->updateService->logMilestoneCompleted($id, $user->getId(), $milestone['name'], true);
         }
         $this->addFlash('success', 'Jalon marqué comme terminé !');
         return $this->redirectToRoute('rh_project_show', ['id' => $id, '_fragment' => 'milestones']);
@@ -355,8 +523,9 @@ class RhProjectController extends AbstractController
             $this->updateService->createUpdate([
                 'project_id' => $id,
                 'user_id' => $user->getId(),
-                'update_type' => 'comment',
-                'title' => 'Commentaire',
+                'update_type' => 'rh_comment',
+                'actor_source' => 'rh',
+                'title' => 'Commentaire RH',
                 'content' => $content,
             ]);
             $this->addFlash('success', 'Commentaire publié !');
@@ -368,6 +537,63 @@ class RhProjectController extends AbstractController
     // ═══════════════════════════════════════════════════════════════
     // ANALYTICS HELPER
     // ═══════════════════════════════════════════════════════════════
+
+    private function renderProjectShow(int $id, array $formState = [], int $status = 200): Response
+    {
+        $user = $this->getUser();
+        $rhId = $user->getId();
+
+        $project = $this->projectService->getProjectById($id);
+        if (!$project) {
+            throw $this->createNotFoundException('Projet non trouvé');
+        }
+
+        $tasks = $this->taskService->getTasksByProject($id);
+        $team = $this->collaboratorService->getCollaboratorsByProject($id);
+        $milestones = $this->milestoneService->getMilestonesByProject($id);
+        $updates = $this->updateService->getUpdatesByProject($id, 20);
+        $milestoneStats = $this->milestoneService->getProjectMilestoneStats($id);
+
+        $tasksByStatus = [
+            'todo' => [],
+            'in_progress' => [],
+            'review' => [],
+            'done' => [],
+        ];
+        foreach ($tasks as $task) {
+            $taskStatus = $task['status'] ?? 'todo';
+            if (isset($tasksByStatus[$taskStatus])) {
+                $tasksByStatus[$taskStatus][] = $task;
+            }
+        }
+
+        $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
+        $availableEmployees = $this->collaboratorService->getAvailableEmployees($id, $rhId);
+        $remainingAssignableHours = $this->collaboratorService->getRemainingAssignableHours($id);
+
+        return $this->render('DashboardHr/Project/show.html.twig', array_merge([
+            'project' => $project,
+            'tasks' => $tasks,
+            'tasksByStatus' => $tasksByStatus,
+            'team' => $team,
+            'milestones' => $milestones,
+            'updates' => $updates,
+            'milestoneStats' => $milestoneStats,
+            'analytics' => $analytics,
+            'availableEmployees' => $availableEmployees,
+            'remainingAssignableHours' => $remainingAssignableHours,
+            'taskCreateErrors' => [],
+            'taskCreateData' => [],
+            'taskEditErrors' => [],
+            'taskEditData' => [],
+            'taskEditTaskId' => null,
+            'taskEditOriginal' => null,
+            'teamAddErrors' => [],
+            'teamAddData' => [],
+            'activeTab' => null,
+            'openModal' => null,
+        ], $formState), new Response(null, $status));
+    }
 
     private function calculateAnalytics(array $project, array $tasks, array $team, array $milestones): array
     {
@@ -467,5 +693,92 @@ class RhProjectController extends AbstractController
             'criticals' => $criticals,
             'risks' => $risks,
         ];
+    }
+
+    private function applyProjectFilters(array $projects, string $statusFilter, string $priorityFilter, string $search): array
+    {
+        if ($statusFilter === '' && $priorityFilter === '' && $search === '') {
+            return $projects;
+        }
+
+        return array_filter($projects, static function (array $project) use ($statusFilter, $priorityFilter, $search): bool {
+            if ($statusFilter !== '' && (string) ($project['status'] ?? '') !== $statusFilter) {
+                return false;
+            }
+
+            if ($priorityFilter !== '' && (string) ($project['priority'] ?? '') !== $priorityFilter) {
+                return false;
+            }
+
+            if ($search !== '') {
+                $name = (string) ($project['name'] ?? '');
+                $description = (string) ($project['description'] ?? '');
+
+                if (stripos($name, $search) === false && stripos($description, $search) === false) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * @param array<int,array{employee_id:int,score:int,reason:string}> $aiSuggestions
+     * @param array<int,array<string,mixed>> $candidates
+     * @param array<string,mixed> $task
+     * @return array<int,array<string,mixed>>
+     */
+    private function buildTaskSuggestions(array $aiSuggestions, array $candidates, array $task): array
+    {
+        $byEmployeeId = [];
+        foreach ($candidates as $candidate) {
+            $employeeId = (int) ($candidate['employee_id'] ?? 0);
+            if ($employeeId <= 0) {
+                continue;
+            }
+
+            $byEmployeeId[$employeeId] = [
+                'employee_id' => $employeeId,
+                'username' => (string) ($candidate['username'] ?? 'N/A'),
+                'job_title' => (string) ($candidate['job_title'] ?? 'N/A'),
+                'active_project_tasks' => (int) ($candidate['active_project_tasks'] ?? 0),
+                'active_total_tasks' => (int) ($candidate['active_total_tasks'] ?? 0),
+            ];
+        }
+
+        $result = [];
+        foreach ($aiSuggestions as $item) {
+            $employeeId = (int) ($item['employee_id'] ?? 0);
+            if (!isset($byEmployeeId[$employeeId])) {
+                continue;
+            }
+
+            $result[] = array_merge($byEmployeeId[$employeeId], [
+                'score' => (int) ($item['score'] ?? 0),
+                'reason' => (string) ($item['reason'] ?? 'Profil adapte a la tache.'),
+            ]);
+        }
+
+        if ($result !== []) {
+            return array_slice($result, 0, 3);
+        }
+
+        $taskText = mb_strtolower(trim((string) (($task['title'] ?? '') . ' ' . ($task['description'] ?? ''))));
+        $fallback = [];
+        foreach ($byEmployeeId as $candidate) {
+            $jobTitle = mb_strtolower((string) $candidate['job_title']);
+            $jobMatch = ($taskText !== '' && $jobTitle !== '' && str_contains($taskText, $jobTitle)) ? 25 : 0;
+            $loadPenalty = min(50, ((int) $candidate['active_total_tasks']) * 5);
+            $score = max(1, 70 + $jobMatch - $loadPenalty);
+
+            $fallback[] = array_merge($candidate, [
+                'score' => $score,
+                'reason' => 'Suggestion fallback: adaptation metier et charge actuelle.',
+            ]);
+        }
+
+        usort($fallback, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
+        return array_slice($fallback, 0, 3);
     }
 }
