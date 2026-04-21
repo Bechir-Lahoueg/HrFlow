@@ -26,6 +26,8 @@ final class FeedbackService
                 'rating'        => $data['rating'],
                 'comment'       => $data['comment'],
                 'is_anonymous'  => $data['is_anonymous'] ? 1 : 0,
+                'emotion_label' => $data['emotion_label'],
+                'emotion_score' => $data['emotion_score'],
                 'status'        => 'submitted',
                 'created_at'    => date('Y-m-d H:i:s'),
                 'updated_at'    => date('Y-m-d H:i:s'),
@@ -71,7 +73,7 @@ final class FeedbackService
                 ORDER BY f.created_at DESC",
                 [$rhId, $rhId]
             );
-            return $this->applyAnonymity($rows);
+            return $this->applyAnonymity($this->applyEmotionFallback($rows));
         } catch (\Throwable) {
             return [];
         }
@@ -91,7 +93,7 @@ final class FeedbackService
                 ORDER BY f.created_at DESC",
                 [$employeeId]
             );
-            return $this->applyAnonymity($rows);
+            return $this->applyAnonymity($this->applyEmotionFallback($rows));
         } catch (\Throwable) {
             return [];
         }
@@ -100,7 +102,7 @@ final class FeedbackService
     public function getSentByEmployee(int $employeeId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
+            $rows = $this->connection->fetchAllAssociative(
                 "SELECT f.*,
                     CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
                     CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
@@ -111,6 +113,7 @@ final class FeedbackService
                 ORDER BY f.created_at DESC",
                 [$employeeId]
             );
+            return $this->applyEmotionFallback($rows);
         } catch (\Throwable) {
             return [];
         }
@@ -119,7 +122,7 @@ final class FeedbackService
     public function getById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
+            $row = $this->connection->fetchAssociative(
                 "SELECT f.*,
                     CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
                     CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
@@ -129,6 +132,13 @@ final class FeedbackService
                 WHERE f.id = ?",
                 [$id]
             ) ?: null;
+
+            if (!is_array($row)) {
+                return null;
+            }
+
+            $normalized = $this->applyEmotionFallback([$row]);
+            return $normalized[0] ?? $row;
         } catch (\Throwable) {
             return null;
         }
@@ -147,6 +157,8 @@ final class FeedbackService
                 'rating'        => $data['rating'],
                 'comment'       => $data['comment'],
                 'is_anonymous'  => $data['is_anonymous'] ? 1 : 0,
+                'emotion_label' => $data['emotion_label'],
+                'emotion_score' => $data['emotion_score'],
                 'updated_at'    => date('Y-m-d H:i:s'),
             ], ['id' => $id]);
             return true;
@@ -258,6 +270,8 @@ final class FeedbackService
             'rating' => $rating,
             'comment' => $comment,
             'is_anonymous' => !empty($data['is_anonymous']),
+            'emotion_label' => strtolower(trim((string)($data['emotion_label'] ?? 'unknown'))),
+            'emotion_score' => max(0.0, min(1.0, (float)($data['emotion_score'] ?? 0.0))),
         ];
     }
 
@@ -267,6 +281,32 @@ final class FeedbackService
             if ($row['is_anonymous']) {
                 $row['from_username'] = '👤 Anonyme';
             }
+            return $row;
+        }, $rows);
+    }
+
+    private function applyEmotionFallback(array $rows): array
+    {
+        return array_map(function ($row) {
+            $label = strtolower(trim((string) ($row['emotion_label'] ?? 'unknown')));
+            $score = (float) ($row['emotion_score'] ?? 0.0);
+
+            if ($label !== '' && $label !== 'unknown' && $score > 0.0) {
+                return $row;
+            }
+
+            $rating = (int) ($row['rating'] ?? 0);
+            if ($rating >= 4) {
+                $row['emotion_label'] = 'joy';
+                $row['emotion_score'] = 0.6;
+            } elseif ($rating <= 2 && $rating > 0) {
+                $row['emotion_label'] = 'anger';
+                $row['emotion_score'] = 0.6;
+            } else {
+                $row['emotion_label'] = 'neutral';
+                $row['emotion_score'] = 0.5;
+            }
+
             return $row;
         }, $rows);
     }

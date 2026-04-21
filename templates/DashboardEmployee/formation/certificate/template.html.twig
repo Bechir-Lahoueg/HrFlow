@@ -3,119 +3,231 @@
 <head>
     <style>
         @page {
+            size: A4 landscape;
             margin: 0;
         }
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica', sans-serif;
+        }
+
+        html, body {
+            width: 297mm;
+            height: 210mm;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
             background-image: url('{{ template_background ?: "" }}');
             background-size: 100% 100%;
             background-repeat: no-repeat;
-            width: 100%;
-            height: 100%;
+            position: relative;
         }
 
         .container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 297mm;
+            height: 210mm;
         }
 
-        .text-element {
-            position: absolute;
-            text-align: center;
-            width: 100%;
-            color: #ffffff;
-        }
-
+        /* ── Nom du participant ─────────────────────────────────────
+           Centré horizontalement, dans la zone vide entre
+           "Ce certificat est fièrement décerné à" et "Pour avoir…"
+           L'image montre ce bloc vers ~42-48% de hauteur.
+        ────────────────────────────────────────────────────────── */
         .name {
-            top: 400px;
-            font-size: 60px;
-            font-style: italic;
-        }
-
-        .formation {
-            top: 550px;
-            font-size: 40px;
-            font-style: italic;
-        }
-
-        .date-debut {
-            top: 650px;
-            left: 100px;
-            width: 240px;
-            text-align: left;
-            font-size: 20px;
-        }
-
-        .date-fin {
-            top: 650px;
-            left: 850px;
-            width: 240px;
-            text-align: left;
-            font-size: 20px;
-        }
-
-        .organisme {
-            top: 695px;
-            left: 265px;
-            width: 520px;
-            text-align: left;
-            font-size: 28px;
-        }
-
-        .footer-info {
             position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 36px;
-            font-size: 14px;
-            padding: 0 50px;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65%;
+            text-align: center;
             color: #ffffff;
+            font-size: 38pt;
+            font-style: italic;
+            font-weight: bold;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
+        /* ── Nom de la formation ────────────────────────────────────
+           Centré, juste après "Pour avoir Participer à la formation de :"
+           ~60-65% de hauteur.
+        ────────────────────────────────────────────────────────── */
+        .formation {
+            position: absolute;
+            top: 68%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            text-align: center;
+            color: #ffffff;
+            font-size: 24pt;
+            font-style: italic;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Date début ─────────────────────────────────────────────
+           Côté gauche, label "Date début:" est à ~76% de hauteur.
+           La valeur se place juste après le label, légèrement décalée.
+        ────────────────────────────────────────────────────────── */
+        .date-debut {
+            position: absolute;
+            top: 79%;
+            left: 4%;
+            color: #ffffff;
+            font-size: 14pt;
+            font-weight: normal;
+        }
+
+        /* ── Date fin ───────────────────────────────────────────────
+           Côté droit, aligné sur la même ligne que date début.
+        ────────────────────────────────────────────────────────── */
+        .date-fin {
+            position: absolute;
+            top: 79%;
+            right: 4%;
+            color: #ffffff;
+            font-size: 14pt;
+            font-weight: normal;
+            text-align: right;
+        }
+
+        /* ── Organisation ───────────────────────────────────────────
+           Sous "Organisation:" qui est à ~85% de hauteur.
+        ────────────────────────────────────────────────────────── */
+        .organisme {
+            position: absolute;
+            top: 88.5%;
+            left: 4%;
+            color: #ffffff;
+            font-size: 14pt;
+            font-weight: normal;
+        }
+
+        /* ── Signature électronique ─────────────────────────────────
+           Bas gauche, au-dessus du footer.
+        ────────────────────────────────────────────────────────── */
         .signature {
             position: absolute;
-            left: 70px;
-            bottom: 22px;
-            color: #ffffff;
-            font-size: 15px;
+            left: 4%;
+            bottom: 3%;
+            color: #a8c4e0;
+            font-size: 10pt;
             font-style: italic;
             font-family: 'Brush Script MT', 'Segoe Script', cursive;
+        }
+
+        /* ── QR Code ────────────────────────────────────────────────
+           Bas droit, zone dégagée sous les losanges bleus.
+        ────────────────────────────────────────────────────────── */
+        .qr-box {
+            position: absolute;
+            right: 3%;
+            bottom: 3%;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .qr-box img {
+            width: 50pt;
+            height: 50pt;
+            display: block;
+            background: #ffffff;
+            padding: 3px;
+            border-radius: 4px;
+        }
+
+        .qr-label {
+            margin-top: 4px;
+            font-size: 7pt;
+            color: #a8c4e0;
+        }
+
+        /* ── Date d'émission ────────────────────────────────────────
+           Bas droit, au-dessus du QR code.
+        ────────────────────────────────────────────────────────── */
+        .footer-date {
+            position: absolute;
+            bottom: 2%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #a8c4e0;
+            font-size: 9pt;
+            text-align: center;
+        }
+
+        .certificate-token {
+            margin-top: 3px;
+            color: #c8d9ea;
+            font-size: 6.8pt;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.4px;
+            max-width: 95pt;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="text-element name">
+
+        {# ── Nom du participant ── #}
+        <div class="name">
             {{ name }}
         </div>
 
-        <div class="text-element formation">
+        {# ── Intitulé de la formation ── #}
+        <div class="formation">
             {{ formation }}
         </div>
 
-        <div class="text-element date-debut">
+        {# ── Date début (valeur seule, le label est dans l'image) ── #}
+        <div class="date-debut">
             {{ debut|date('d/m/Y') }}
         </div>
 
-        <div class="text-element date-fin">
+        {# ── Date fin (valeur seule, le label est dans l'image) ── #}
+        <div class="date-fin">
             {{ fin|date('d/m/Y') }}
         </div>
 
-        <div class="text-element organisme">
+        {# ── Organisme (valeur seule, le label est dans l'image) ── #}
+        <div class="organisme">
             {{ org is defined and org|trim != '' ? org : 'HrFlow' }}
         </div>
 
+        {# ── Signature électronique ── #}
         {% if rh_creator_name is not empty %}
-            <div class="signature">Signature electronique: {{ rh_creator_name }}</div>
+            <div class="signature">Signature électronique : {{ rh_creator_name }}</div>
         {% endif %}
 
-        <div class="footer-info">
-            <span style="float: right;">Fait le : {{ today|date('d/m/Y') }}</span>
+        {# ── QR Code de vérification ── #}
+        {% if qr_code is not empty %}
+            <div class="qr-box">
+                <img src="{{ qr_code }}" alt="QR de vérification du certificat">
+                <div class="qr-label">Vérifier le certificat</div>
+                {% if token is not empty %}
+                    <div class="certificate-token">
+                        Token : {{ token }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# ── Date d'émission ── #}
+        <div class="footer-date">
+            Émis le : {{ today|date('d/m/Y') }}
         </div>
+
     </div>
 </body>
 </html>

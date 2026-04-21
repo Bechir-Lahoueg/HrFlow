@@ -143,7 +143,7 @@
                                     {% set canDownloadCertificate = participation.session.statut == 'Terminee' and attendance >= 80 and (participation.statutParticipation == 'Accepte' or participation.statutParticipation == 'Certificat obtenu') %}
 
                                     {% if canDownloadCertificate %}
-                                        <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#145EB7]/10 text-[#145EB7] border border-[#145EB7]/30 hover:bg-[#145EB7]/20 transition-colors">
+                                        <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="cert-download-from-requests inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#145EB7]/10 text-[#145EB7] border border-[#145EB7]/30 hover:bg-[#145EB7]/20 transition-colors">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v-9m0 9l-3-3m3 3l3-3M21 16.5v1.125A2.625 2.625 0 0118.375 20.25H5.625A2.625 2.625 0 013 17.625V16.5"/></svg>
                                             Telecharger
                                         </a>
@@ -166,8 +166,28 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script>
 (function () {
+    function fireConfettiBurst() {
+        if (typeof confetti !== 'function') {
+            return;
+        }
+
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+    }
+
+    document.querySelectorAll('.cert-download-from-requests').forEach(function (btn) {
+        if (btn.dataset.confettiBound === '1') {
+            return;
+        }
+
+        btn.dataset.confettiBound = '1';
+        btn.addEventListener('click', function () {
+            fireConfettiBurst();
+        });
+    });
+
     var historySearch = document.getElementById('history-search');
     var historyStatus = document.getElementById('history-status');
     var historyBody = document.getElementById('history-body');

@@ -4,6 +4,11 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    matrix_client_url: '%env(string:MATRIX_CLIENT_URL)%'
+    matrix_access_token: '%env(string:MATRIX_ACCESS_TOKEN)%'
+    matrix_bot_user_id: '%env(string:MATRIX_BOT_USER_ID)%'
+    huggingface_api_token: '%env(string:HUGGINGFACE_API_TOKEN)%'
+    huggingface_emotion_model: '%env(string:HUGGINGFACE_EMOTION_MODEL)%'
 
 services:
     # default configuration for services in *this* file
@@ -24,6 +29,17 @@ services:
     App\Service\Shared\HrFlowMailer:
         arguments:
             $senderAddress: '%env(MAILER_FROM)%'
+
+    App\Service\Shared\MatrixService:
+        arguments:
+            $matrixClientUrl: '%matrix_client_url%'
+            $matrixAccessToken: '%matrix_access_token%'
+            $matrixBotUserId: '%matrix_bot_user_id%'
+
+    App\Service\Shared\HuggingFaceEmotionService:
+        arguments:
+            $apiToken: '%huggingface_api_token%'
+            $model: '%huggingface_emotion_model%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

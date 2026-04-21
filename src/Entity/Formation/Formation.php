@@ -48,6 +48,9 @@ class Formation
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $objectifs = null;
 
+    #[ORM\Column(name: 'image', length: 255, nullable: true)]
+    private ?string $imageUrl = null;
+
     #[ORM\Column(name: 'id_rh')]
     private ?int $rhId = null;
 
@@ -134,6 +137,17 @@ class Formation
     public function setObjectifs(?string $objectifs): static
     {
         $this->objectifs = $objectifs;
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): static
+    {
+        $this->imageUrl = $imageUrl;
         return $this;
     }
 

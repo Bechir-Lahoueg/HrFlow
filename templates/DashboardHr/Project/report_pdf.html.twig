@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport projets RH</title>
+    <style>
+        @page { margin: 26px 24px; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 11px; color: #1f2937; }
+        h1, h2, h3 { margin: 0; }
+        .header { border: 1px solid #dbeafe; background: #f8fbff; padding: 14px; margin-bottom: 14px; }
+        .header-table { width: 100%; border-collapse: collapse; }
+        .header-table td { vertical-align: top; }
+        .logo { width: 58px; height: 58px; border: 1px solid #dbeafe; border-radius: 8px; background: #ffffff; }
+        .app-name { font-size: 18px; font-weight: bold; color: #1d4ed8; margin-bottom: 2px; }
+        .title { font-size: 15px; font-weight: bold; color: #0f172a; margin-bottom: 4px; }
+        .subtitle { color: #64748b; font-size: 10px; }
+        .meta { text-align: right; font-size: 10px; color: #475569; line-height: 1.5; }
+        .filters { margin-top: 6px; }
+
+        .kpi-grid { width: 100%; border-collapse: separate; border-spacing: 8px; margin-bottom: 16px; }
+        .kpi { border: 1px solid #e2e8f0; background: #ffffff; padding: 8px; }
+        .kpi-label { font-size: 9px; color: #64748b; text-transform: uppercase; }
+        .kpi-value { margin-top: 4px; font-size: 18px; font-weight: bold; color: #111827; }
+
+        .project-block { border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 16px; page-break-inside: avoid; }
+        .project-title { font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 8px; }
+        .project-meta { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .project-meta td { border: 1px solid #e5e7eb; padding: 6px 7px; }
+        .project-meta .label { width: 24%; font-weight: bold; background: #f8fafc; }
+
+        .section-title { font-size: 12px; font-weight: bold; color: #1e3a8a; margin-top: 8px; margin-bottom: 5px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .data-table th, .data-table td { border: 1px solid #e5e7eb; padding: 5px; vertical-align: top; }
+        .data-table th { background: #f1f5f9; text-align: left; color: #334155; font-size: 10px; }
+        .muted { color: #64748b; font-style: italic; }
+        .small { font-size: 9px; color: #475569; }
+
+        .footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td style="width: 70px;">
+                    {% if logoDataUri %}
+                        <img class="logo" src="{{ logoDataUri }}" alt="Hr-Flow">
+                    {% else %}
+                        <div class="logo"></div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="app-name">Hr-Flow</div>
+                    <div class="title">Rapport complet des projets RH</div>
+                    <div class="subtitle">Synthese operationnelle des projets, equipes, taches, jalons et activites</div>
+                </td>
+                <td class="meta" style="width: 220px;">
+                    <div><strong>Date:</strong> {{ generatedAt|date('d/m/Y H:i') }}</div>
+                    <div><strong>RH ID:</strong> {{ rhId }}</div>
+                    <div class="filters">
+                        <strong>Filtres:</strong><br>
+                        Statut: {{ filters.status ?: 'Tous' }}<br>
+                        Priorite: {{ filters.priority ?: 'Toutes' }}<br>
+                        Recherche: {{ filters.search ?: 'Aucune' }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="kpi-grid">
+        <tr>
+            <td class="kpi">
+                <div class="kpi-label">Total projets</div>
+                <div class="kpi-value">{{ stats.total_projects ?? 0 }}</div>
+            </td>
+            <td class="kpi">
+                <div class="kpi-label">Projets en cours</div>
+                <div class="kpi-value">{{ stats.active_projects ?? 0 }}</div>
+            </td>
+            <td class="kpi">
+                <div class="kpi-label">Projets termines</div>
+                <div class="kpi-value">{{ stats.completed_projects ?? 0 }}</div>
+            </td>
+            <td class="kpi">
+                <div class="kpi-label">Taux global</div>
+                <div class="kpi-value">{{ stats.completion_rate ?? 0 }}%</div>
+            </td>
+        </tr>
+    </table>
+
+    {% if reportProjects is empty %}
+        <p class="muted">Aucun projet ne correspond aux filtres selectionnes.</p>
+    {% endif %}
+
+    {% for block in reportProjects %}
+        {% set project = block.project %}
+        {% set tasks = block.tasks %}
+        {% set team = block.team %}
+        {% set milestones = block.milestones %}
+        {% set updates = block.updates %}
+        {% set analytics = block.analytics %}
+
+        <div class="project-block">
+            <div class="project-title">Projet #{{ project.id }} - {{ project.name }}</div>
+
+            <table class="project-meta">
+                <tr>
+                    <td class="label">Statut</td>
+                    <td>{{ project.status|replace({'_':' '})|capitalize }}</td>
+                    <td class="label">Priorite</td>
+                    <td>{{ project.priority|capitalize }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Periode</td>
+                    <td>{{ project.start_date ?: 'N/A' }} -> {{ project.end_date ?: 'N/A' }}</td>
+                    <td class="label">Avancement</td>
+                    <td>{{ project.completion_rate ?? 0 }}%</td>
+                </tr>
+                <tr>
+                    <td class="label">Heures</td>
+                    <td>Estimees: {{ project.estimated_hours ?? 0 }} h | Reelles: {{ project.actual_hours ?? 0 }} h</td>
+                    <td class="label">Sante</td>
+                    <td>{{ analytics.health_score ?? 0 }}/100 ({{ analytics.health_status ?? 'n/a' }})</td>
+                </tr>
+            </table>
+
+            <div class="section-title">Taches ({{ tasks|length }})</div>
+            {% if tasks is empty %}
+                <p class="muted">Aucune tache.</p>
+            {% else %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Statut</th>
+                            <th>Priorite</th>
+                            <th>Assigne a</th>
+                            <th>Debut</th>
+                            <th>Echeance</th>
+                            <th>Heures</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>{{ task.status|replace({'_':' '})|capitalize }}</td>
+                                <td>{{ task.priority|capitalize }}</td>
+                                <td>{{ task.assigned_to_name ?: 'Non assignee' }}</td>
+                                <td>{{ attribute(task, 'start_date')|default('N/A') }}</td>
+                                <td>{{ task.due_date ?: 'N/A' }}</td>
+                                <td>{{ task.estimated_hours ?? 0 }} h</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            <div class="section-title">Equipe ({{ team|length }})</div>
+            {% if team is empty %}
+                <p class="muted">Aucun membre actif.</p>
+            {% else %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Collaborateur</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Job title</th>
+                            <th>H. allouees</th>
+                            <th>H. travaillees</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in team %}
+                            <tr>
+                                <td>{{ member.username ?: 'N/A' }}</td>
+                                <td>{{ member.email ?: 'N/A' }}</td>
+                                <td>{{ member.role ?: 'N/A' }}</td>
+                                <td>{{ member.job_title ?: 'N/A' }}</td>
+                                <td>{{ member.assigned_hours ?? 0 }} h</td>
+                                <td>{{ member.worked_hours ?? 0 }} h</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            <div class="section-title">Jalons ({{ milestones|length }})</div>
+            {% if milestones is empty %}
+                <p class="muted">Aucun jalon.</p>
+            {% else %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Statut</th>
+                            <th>Date cible</th>
+                            <th>Date completion</th>
+                            <th>Progression</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for milestone in milestones %}
+                            <tr>
+                                <td>{{ milestone.name }}</td>
+                                <td>{{ milestone.status|replace({'_':' '})|capitalize }}</td>
+                                <td>{{ milestone.target_date ?: 'N/A' }}</td>
+                                <td>{{ milestone.completion_date ?: 'N/A' }}</td>
+                                <td>{{ milestone.completion_rate ?? 0 }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            <div class="section-title">Activites recentes ({{ updates|length }})</div>
+            {% if updates is empty %}
+                <p class="muted">Aucune activite recente.</p>
+            {% else %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Auteur</th>
+                            <th>Type</th>
+                            <th>Titre</th>
+                            <th>Contenu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for update in updates %}
+                            <tr>
+                                <td class="small">{{ update.created_at ? update.created_at|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td>{{ update.author_name ?: 'Systeme' }}</td>
+                                <td>{{ update.update_type ?: 'N/A' }}</td>
+                                <td>{{ update.title ?: 'N/A' }}</td>
+                                <td>{{ update.content ?: '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="footer">
+        Rapport genere automatiquement par Hr-Flow - {{ generatedAt|date('d/m/Y H:i') }}
+    </div>
+</body>
+</html>
+
+

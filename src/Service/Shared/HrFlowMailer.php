@@ -2,11 +2,14 @@
 
 namespace App\Service\Shared;
 
+use App\Entity\Formation\ParticipationFormation;
 use App\Entity\Rh\LeaveRequest;
 use App\Repository\Rh\UserRepository;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
+use Symfony\Component\Mime\Address;
+
 
 /**
  * Central mailing service for HrFlow.
@@ -32,11 +35,15 @@ final class HrFlowMailer
     // ──────────────────────────────────────────────
     public function sendLoginAlert(string $recipientEmail, string $recipientName, string $role, string $ip, string $userAgent): void
     {
+        $browser = trim($userAgent) !== '' ? $userAgent : 'Inconnu';
+
         $html = $this->twig->render('emails/login_alert.html.twig', [
             'name' => $recipientName,
             'role' => $role,
             'ip' => $ip,
             'userAgent' => $userAgent,
+            'browser' => $browser,
+            'location' => 'Localisation non disponible',
             'date' => new \DateTime('now'),
         ]);
 
@@ -60,8 +67,8 @@ final class HrFlowMailer
         ]);
 
         $subject = $decision === 'ACCEPTE'
-            ? 'Votre demande de conge a ete acceptee — HrFlow'
-            : 'Votre demande de conge a ete refusee — HrFlow';
+            ? 'Votre demande de congé à été acceptée — HrFlow'
+            : 'Votre demande de congé à été refusée — HrFlow';
 
         $this->send($employee->getEmail(), $subject, $html);
     }
@@ -150,6 +157,132 @@ final class HrFlowMailer
         }
     }
 
+    /**
+     * @param array<int,array<string,mixed>> $tasks
+     */
+    public function sendProjectTaskAlertToEmployee(string $recipientEmail, string $recipientName, array $tasks): void
+    {
+        if ($recipientEmail === '' || $tasks === []) {
+            return;
+        }
+
+        $html = $this->twig->render('emails/project_task_alert_employee.html.twig', [
+            'recipientName' => $recipientName,
+            'tasks' => $tasks,
+            'date' => new \DateTimeImmutable('now'),
+        ]);
+
+        $this->send($recipientEmail, 'Rappel taches projet — HrFlow', $html);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $tasks
+     */
+    public function sendProjectTaskAlertDigestToRh(string $recipientEmail, string $recipientName, array $tasks): void
+    {
+        if ($recipientEmail === '' || $tasks === []) {
+            return;
+        }
+
+        $html = $this->twig->render('emails/project_task_alert_rh.html.twig', [
+            'recipientName' => $recipientName,
+            'tasks' => $tasks,
+            'date' => new \DateTimeImmutable('now'),
+        ]);
+
+        $this->send($recipientEmail, 'Digest RH — alertes taches projet — HrFlow', $html);
+    }
+
+    // ──────────────────────────────────────────────
+    // 6. Formation participation accepted (→ Employee)
+    // ──────────────────────────────────────────────
+    public function sendFormationAccepted(ParticipationFormation $participation): void
+    {
+        $employee = $participation->getEmployee();
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+
+        if (!$employee || !$employee->getEmail() || !$session || !$formation) {
+            return;
+        }
+
+        $lieu = trim((string) ($session->getLieu() ?? ''));
+        $isOnlineLink = str_starts_with(strtolower($lieu), 'http://') || str_starts_with(strtolower($lieu), 'https://');
+
+        $html = $this->twig->render('emails/formation_accepted.html.twig', [
+            'employee' => $employee,
+            'formation' => $formation,
+            'session' => $session,
+            'isOnlineLink' => $isOnlineLink,
+            'date' => new \DateTime('now'),
+        ]);
+
+        $this->send(
+            $employee->getEmail(),
+            sprintf('Participation acceptée: %s — HrFlow', (string) $formation->getTitre()),
+            $html
+        );
+    }
+
+    // ──────────────────────────────────────────────
+    // 7. Formation participation refused (→ Employee)
+    // ──────────────────────────────────────────────
+    public function sendFormationRejected(ParticipationFormation $participation, ?string $refusalReason = null): void
+    {
+        $employee = $participation->getEmployee();
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+
+        if (!$employee || !$employee->getEmail() || !$session || !$formation) {
+            return;
+        }
+
+        $lieu = trim((string) ($session->getLieu() ?? ''));
+        $isOnlineLink = str_starts_with(strtolower($lieu), 'http://') || str_starts_with(strtolower($lieu), 'https://');
+
+        $html = $this->twig->render('emails/formation_rejected.html.twig', [
+            'employee' => $employee,
+            'formation' => $formation,
+            'session' => $session,
+            'isOnlineLink' => $isOnlineLink,
+            'refusalReason' => $refusalReason,
+            'date' => new \DateTime('now'),
+        ]);
+
+        $this->send(
+            $employee->getEmail(),
+            sprintf('Participation non retenue: %s — HrFlow', (string) $formation->getTitre()),
+            $html
+        );
+    }
+
+    // ──────────────────────────────────────────────
+    // 8. Certificate available (→ Employee)
+    // ──────────────────────────────────────────────
+    public function sendCertificateAvailable(ParticipationFormation $participation): void
+    {
+        $employee = $participation->getEmployee();
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+
+        if (!$employee || !$employee->getEmail() || !$formation) {
+            return;
+        }
+
+        $html = $this->twig->render('emails/certificate_available.html.twig', [
+            'employee' => $employee,
+            'formation' => $formation,
+            'date' => new \DateTime('now'),
+        ]);
+
+        $this->send(
+            $employee->getEmail(),
+            sprintf('Votre certificat est disponible: %s — HrFlow', (string) $formation->getTitre()),
+            $html
+        );
+    }
+
+
     // ──────────────────────────────────────────────
     // Internal: send email
     // ──────────────────────────────────────────────
@@ -157,7 +290,7 @@ final class HrFlowMailer
     {
         try {
             $email = (new Email())
-                ->from($this->senderAddress)
+                ->from(new Address($this->senderAddress, 'HR-Flow Team'))
                 ->to($to)
                 ->subject($subject)
                 ->html($htmlBody);
