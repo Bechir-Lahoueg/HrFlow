@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Certificats | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .cert-trophy-badge {
+            animation: cert-trophy-float 2.2s ease-in-out infinite;
+            box-shadow: 0 10px 24px -14px rgba(250, 204, 21, 0.9);
+        }
+
+        .cert-trophy-icon {
+            animation: cert-trophy-spark 1.8s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes cert-trophy-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes cert-trophy-spark {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            40% { transform: rotate(-6deg) scale(1.05); }
+            80% { transform: rotate(6deg) scale(1.07); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid" data-certificates-view="1">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        <main class="p-6 space-y-6 max-w-7xl mx-auto">
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-teal-700 to-cyan-700 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/20 blur-3xl"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-200 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-100 uppercase tracking-wider">Certificate Hub</span>
+                            <span class="cert-trophy-badge inline-flex items-center gap-1 rounded-full border border-amber-200/50 bg-amber-100/90 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-700">
+                                <span class="cert-trophy-icon">🏆</span>
+                                Bravo !
+                            </span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes certificats</h2>
+                        <p class="mt-3 text-[15px] text-cyan-50/90 max-w-xl leading-relaxed">Retrouvez vos formations terminees, verifiez votre eligibilite et telechargez vos certificats en un clic.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-100/70 font-bold">Formations suivies</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ certificateRows|length }}</p>
+                        </div>
+                        <div class="rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-100/70 font-bold">Certificats dispo</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ certificateRows|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {% for row in certificateRows %}
+                        {% set formation = row.formation %}
+                        {% set session = row.session %}
+                        {% set participation = row.participation %}
+                        {% set attendance = row.attendance %}
+                        {% set canDownload = true %}
+
+                        <article class="rounded-2xl border border-zinc-100 dark:border-zinc-800/60 bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-950 dark:to-zinc-900 p-5">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-zinc-400">Formation</p>
+                                    <h3 class="mt-1 text-[15px] font-bold text-zinc-900 dark:text-zinc-100 line-clamp-2">{{ formation.titre }}</h3>
+                                </div>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold
+                                    bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Disponible
+                                </span>
+                            </div>
+
+                            <div class="mt-4 rounded-xl bg-white/80 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800/60 p-3 space-y-1.5 text-[12px]">
+                                <p><span class="font-semibold text-zinc-500">Organisme:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ formation.organisme ?: 'HrFlow' }}</span></p>
+                                <p><span class="font-semibold text-zinc-500">Periode:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ session.dateDebut|date('d/m/Y') }} - {{ session.dateFin|date('d/m/Y') }}</span></p>
+                                <p><span class="font-semibold text-zinc-500">Mode:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ session.mode }}</span></p>
+                                <p><span class="font-semibold text-zinc-500">Presence:</span> <span class="font-bold {{ attendance >= 80 ? 'text-emerald-600' : 'text-amber-600' }}">{{ attendance }}%</span></p>
+                            </div>
+
+                            <div class="mt-4 flex gap-2">
+                                <a href="{{ path('employee_formation_sessions', {id: formation.id}) }}" class="px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition">Voir details</a>
+                                <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="cert-download-btn px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition inline-flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/></svg>
+                                    Telecharger
+                                </a>
+                            </div>
+                        </article>
+                    {% else %}
+                        <div class="col-span-full py-14 text-center text-zinc-400 text-sm bg-zinc-50 border border-zinc-100 rounded-xl border-dashed">
+                            Aucun certificat disponible pour le moment.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script>
+        (function () {
+            var CONFETTI_SRC = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+
+            function isCertificatesView() {
+                return !!document.querySelector('[data-certificates-view="1"]');
+            }
+
+            function ensureConfetti(ready) {
+                if (typeof confetti === 'function') {
+                    ready();
+                    return;
+                }
+
+                var existing = document.querySelector('script[data-cert-confetti="1"]');
+                if (existing) {
+                    existing.addEventListener('load', ready, { once: true });
+                    return;
+                }
+
+                var script = document.createElement('script');
+                script.src = CONFETTI_SRC;
+                script.async = true;
+                script.dataset.certConfetti = '1';
+                script.addEventListener('load', ready, { once: true });
+                document.head.appendChild(script);
+            }
+
+            function fireConfettiBurst() {
+                ensureConfetti(function () {
+                    if (typeof confetti !== 'function') {
+                        return;
+                    }
+
+                    confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } });
+                    setTimeout(function () {
+                        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } });
+                        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } });
+                    }, 180);
+                });
+            }
+
+            function bindCertificateConfetti() {
+                if (!isCertificatesView()) {
+                    return;
+                }
+
+                fireConfettiBurst();
+
+                document.querySelectorAll('.cert-download-btn').forEach(function (btn) {
+                    if (btn.dataset.confettiBound === '1') {
+                        return;
+                    }
+
+                    btn.dataset.confettiBound = '1';
+                    btn.addEventListener('click', function () {
+                        fireConfettiBurst();
+                    });
+                });
+            }
+
+            function initCertificatesConfetti() {
+                if (!isCertificatesView()) {
+                    return;
+                }
+
+                bindCertificateConfetti();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCertificatesConfetti, { once: true });
+            } else {
+                initCertificatesConfetti();
+            }
+
+            document.addEventListener('turbo:load', initCertificatesConfetti);
+            window.addEventListener('pageshow', initCertificatesConfetti);
+        })();
+    </script>
+{% endblock %}
+
+
+

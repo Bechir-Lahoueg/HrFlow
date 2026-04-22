@@ -19,6 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class CandidateController extends AbstractController
 {
@@ -50,6 +52,7 @@ final class CandidateController extends AbstractController
 
         $recentApplications = $this->applicationRepository->findByCandidate($candidate);
         $upcomingInterviews = $this->interviewRepository->findUpcomingByCandidate($candidate->getId());
+        
 
         return $this->render('Candidate/dashboard.html.twig', [
             'stats' => $stats,

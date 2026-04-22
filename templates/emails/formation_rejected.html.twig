@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Participation à la formation non retenue – HR Flow</title>
+</head>
+<body style="width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;background-color:#f0f1f5;margin:0;padding:0;">
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#f0f1f5" style="background-color:#f0f1f5;">
+    <tbody>
+    <tr>
+        <td style="background-color:#f0f1f5;">
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;min-height:600px;margin:0 auto;background-color:#ffffff;">
+                <tbody>
+                <tr>
+                    <td style="vertical-align:top;">
+                        <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;max-width:100%;background:linear-gradient(90deg,#3fa9f5,#145eb7,#022e69);">
+                            <tbody>
+                            <tr>
+                                <td style="text-align:center;padding:16px 20px;">
+                                    <span style="color:#ffffff;font-size:17px;font-weight:700;font-family:Helvetica,Arial,sans-serif;line-height:1.2;display:block;text-align:right;">Formation HR Flow</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="vertical-align:top;padding:20px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;">
+                            <tbody>
+                            <tr>
+                                <td style="color:#022e69;font-size:14px;text-align:left;line-height:1.6;">
+                                    Bonjour <strong>{{ employee.fullName }}</strong>,<br><br>
+                                    Votre demande de participation n'a pas été retenue pour cette session.
+                                    Vous trouverez ci-dessous les détails liés à la décision.
+                                </td>
+                            </tr>
+
+                            <tr><td style="height:16px;">&nbsp;</td></tr>
+
+                            <tr>
+                                <td style="border:1px solid #fecaca;background:#fff1f2;border-radius:16px;padding:14px;">
+                                    <span style="color:#b91c1c;font-size:16px;font-weight:700;display:block;">Participation non retenue</span>
+                                    <span style="color:#7f1d1d;font-size:13px;display:block;margin-top:8px;line-height:1.5;">
+                                        Cette décision peut être liée à des contraintes de capacité, de priorité, ou de planning.
+                                        Vous pouvez consulter d'autres sessions disponibles depuis votre espace employé.
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr><td style="height:16px;">&nbsp;</td></tr>
+
+                            <tr>
+                                <td style="color:#022e69;font-size:19px;font-weight:700;text-align:center;">Détails de la formation</td>
+                            </tr>
+
+                            <tr><td style="height:16px;">&nbsp;</td></tr>
+
+                            <tr>
+                                <td>
+                                    <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+                                        <tbody>
+                                        <tr>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;font-weight:700;text-align:center;width:33%;">Formation</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;font-weight:700;text-align:center;width:33%;">Période</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;font-weight:700;text-align:center;width:34%;">Mode</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;text-align:center;">{{ formation.titre }}</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;text-align:center;">{{ session.dateDebut|date('d/m/Y') }}<br>→ {{ session.dateFin|date('d/m/Y') }}</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;text-align:center;">{{ session.mode }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <tr><td style="height:16px;">&nbsp;</td></tr>
+
+                            <tr>
+                                <td>
+                                    <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+                                        <tbody>
+                                        <tr>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;font-weight:700;text-align:center;width:50%;">Organisme</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;font-weight:700;text-align:center;width:50%;">{{ isOnlineLink ? 'Lien de session' : 'Lieu' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;text-align:center;">{{ formation.organisme ?: 'HrFlow' }}</td>
+                                            <td style="padding:10px;border:2px solid #cccccc;color:#022e69;font-size:13px;text-align:center;">
+                                                {% if isOnlineLink %}
+                                                    <a href="{{ session.lieu }}" style="color:#145eb7;text-decoration:underline;">Voir le lien de session</a>
+                                                {% else %}
+                                                    {{ session.lieu ?: 'Non précisé' }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            {% if refusalReason is defined and refusalReason is not empty %}
+                                <tr><td style="height:16px;">&nbsp;</td></tr>
+                                <tr>
+                                    <td style="border:1px solid #d0d0d0;background:#f8fafc;border-radius:12px;padding:12px;">
+                                        <span style="display:block;color:#022e69;font-size:13px;font-weight:700;">Motif communiqué</span>
+                                        <span style="display:block;color:#334155;font-size:13px;line-height:1.5;margin-top:6px;">{{ refusalReason }}</span>
+                                    </td>
+                                </tr>
+                            {% endif %}
+
+                            <tr><td style="height:16px;">&nbsp;</td></tr>
+
+                            <tr>
+                                <td style="color:#022e69;font-size:13px;text-align:center;line-height:1.6;">
+                                    Pour toute question, contactez notre équipe d'assistance
+                                    &lt; <a href="mailto:hr.flow26@gmail.com" style="color:#022e69;text-decoration:none;">hr.flow26@gmail.com</a> &gt;
+                                </td>
+                            </tr>
+
+                            <tr><td style="height:24px;">&nbsp;</td></tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="vertical-align:top;">
+                        <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;max-width:100%;background:linear-gradient(90deg,#3fa9f5,#145eb7,#022e69);">
+                            <tbody>
+                            <tr>
+                                <td style="padding:20px;text-align:center;">
+                                    <span style="color:#ffffff;font-size:11px;font-family:Helvetica,Arial,sans-serif;line-height:1.4;display:block;">
+                                        HR Flow, gestion des ressources humaines<br>
+                                        &copy; {{ "now"|date("Y") }} HR Flow, Inc. All rights reserved. &nbsp; Privacy Policy
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
+

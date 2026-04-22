@@ -1,61 +1,346 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#ecfeff;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:radial-gradient(circle at top,#ccfbf1 0%,#ecfeff 45%,#f8fafc 100%);padding:40px 12px;">
-<tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(13,148,136,0.15);">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+   <meta name="x-apple-disable-message-reformatting">
+   <title>Alerte de sécurité HR Flow</title>
+   <style>
+       @media (max-width: 450px) {
+           .mobile-hide { display: none !important; }
+           .mobile-show { display: table !important; }
+           .mobile-full { width: 100% !important; }
+       }
+   </style>
+</head>
+<body style="width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;background-color:#f0f1f5;margin:0;padding:0;">
 
-    {# Header #}
-    <tr><td style="padding:20px 32px 12px;background:#ffffff;text-align:center;">
-        <img src="{{ absolute_url(asset('logo.png')) }}" alt="HrFlow" width="124" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;max-width:124px;height:auto;">
-    </td></tr>
 
-    <tr><td style="background:linear-gradient(140deg,#0f766e,#14b8a6 45%,#2dd4bf);padding:30px 32px;">
-        <p style="margin:0;color:rgba(255,255,255,0.92);font-size:12px;letter-spacing:0.8px;text-transform:uppercase;font-weight:700;">Securite compte</p>
-        <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:800;line-height:1.2;">Alerte de connexion</h1>
-        <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;">Un nouvel acces a votre compte vient d'etre detecte.</p>
-    </td></tr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#f0f1f5" style="background-color:#f0f1f5;">
+   <tbody>
+   <tr>
+       <td style="background-color:#f0f1f5;">
 
-    {# Body #}
-    <tr><td style="padding:30px 32px 28px;">
-        <p style="margin:0 0 16px;color:#18181b;font-size:15px;">Bonjour <strong>{{ name }}</strong>,</p>
 
-        <p style="margin:0 0 20px;color:#3f3f46;font-size:14px;line-height:1.6;">
-            Un appareil vient de se connecter a votre compte <strong>{{ role }}</strong> sur HrFlow.
-        </p>
+           <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                  style="max-width:600px;min-height:600px;margin:0 auto;background-color:#ffffff;">
+               <tbody>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;">
-            <tr><td style="padding:16px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">DATE</td>
-                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ date|date('d/m/Y a H:i') }}</td>
-                    </tr>
-                    <tr>
-                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">ADRESSE IP</td>
-                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ ip }}</td>
-                    </tr>
-                    <tr>
-                        <td style="color:#71717a;font-size:12px;font-weight:600;padding:4px 0;">NAVIGATEUR</td>
-                        <td style="color:#18181b;font-size:13px;text-align:right;padding:4px 0;">{{ userAgent|length > 60 ? userAgent[:60] ~ '...' : userAgent }}</td>
-                    </tr>
-                </table>
-            </td></tr>
-        </table>
 
-        <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">
-            Si vous n'etes pas a l'origine de cette connexion, contactez immediatement votre administrateur.
-        </p>
-    </td></tr>
+               {# ── Header dégradé ── #}
+               <tr>
+                   <td style="vertical-align:top;">
+                       <table border="0" cellpadding="0" cellspacing="0" align="center"
+                              style="width:100%;max-width:100%;background:linear-gradient(90deg,#3fa9f5,#145eb7,#022e69);">
+                           <tbody>
+                           <tr>
+                               <td style="text-align:center;padding:16px 20px;">
+                                   <table border="0" cellpadding="0" cellspacing="0"
+                                          style="width:100%;max-width:538px;margin:0 auto;">
+                                       <tbody>
+                                       <tr>
+                                           <td style="vertical-align:middle;">
+                                               <span style="color:#ffffff;font-size:17px;font-weight:700;
+                                                            font-family:Helvetica,Arial,sans-serif;
+                                                            line-height:1.2;display:block;text-align:right;">
+                                                   Alerte de sécurité HR Flow
+                                               </span>
+                                           </td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+                           </tbody>
+                       </table>
+                   </td>
+               </tr>
 
-    {# Footer #}
-    <tr><td style="padding:18px 32px 24px;border-top:1px solid #eef2f7;text-align:center;background:#fbfffe;">
-        <p style="margin:0;color:#94a3b8;font-size:11px;">HrFlow - Gestion des ressources humaines</p>
-    </td></tr>
 
+               {# ── Corps principal ── #}
+               <tr>
+                   <td style="vertical-align:top;padding:0;">
+                       <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                           <tbody>
+
+
+                           {# Salutation + intro #}
+                           <tr>
+                               <td style="padding:20px 20px 0;">
+                                   <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                                          role="presentation"
+                                          style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;">
+                                       <tbody>
+                                       <tr>
+                                           <td style="color:#022e69;font-size:14px;text-align:left;">
+                                               Bonjour <strong>{{ name }}</strong>,
+                                               <br><br>
+                                               Nous avons détecté une activité de connexion inhabituelle sur votre compte HR Flow.
+                                               Veuillez examiner les détails ci-dessous pour vous assurer que cette activité a été autorisée par vous.
+                                           </td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Bloc "Connexion suspecte détectée" #}
+                           <tr>
+                               <td style="padding:0 20px;">
+                                   <table border="0" cellpadding="0" cellspacing="0"
+                                          style="width:100%;border-collapse:separate;border-spacing:0;">
+                                       <tbody>
+                                       <tr>
+                                           {# Icône / illustration #}
+                                           <td width="22%" style="vertical-align:middle;border-radius:20px;">
+                                               <img src="{{ absolute_url(asset('images/security_alert.png')) }}"
+                                                    width="125" height="99" alt="Alerte sécurité"
+                                                    style="display:block;width:100%;height:auto;max-width:125px;">
+                                           </td>
+                                           <td width="17px" style="font-size:0;">&nbsp;</td>
+                                           {# Texte d'alerte #}
+                                           <td style="vertical-align:middle;background-color:#ffffff;
+                                                      border-radius:20px;padding:11px;
+                                                      border:1px solid #e8eaf0;">
+                                               <span style="color:#022e69;font-size:16px;font-weight:700;
+                                                            font-family:Helvetica,Arial,sans-serif;display:block;">
+                                                   Connexion suspecte détectée
+                                               </span>
+                                               <span style="color:#022e69;font-size:13px;
+                                                            font-family:Helvetica,Arial,sans-serif;
+                                                            display:block;margin-top:10px;line-height:1.5;">
+                                                   Pour garantir la sécurité de vos données, nous vous informons
+                                                   de cette nouvelle activité. Veuillez vérifier s'il s'agit bien
+                                                   de vous et nous signaler toute anomalie.
+                                               </span>
+                                           </td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Titre "Détails de la connexion" #}
+                           <tr>
+                               <td style="color:#022e69;font-size:19px;font-weight:700;
+                                          font-family:Helvetica,Arial,sans-serif;
+                                          text-align:center;padding:0 20px;">
+                                   Détails de la connexion
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Tableau des détails — variables dynamiques #}
+                           <tr>
+                               <td style="padding:0 20px;">
+                                   <table border="0" cellpadding="0" cellspacing="0"
+                                          style="width:100%;border-collapse:collapse;">
+                                       <tbody>
+                                       {# En-têtes #}
+                                       <tr>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;font-weight:700;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;width:25%;">
+                                               Date et heure
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;font-weight:700;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;width:25%;">
+                                               Adresse IP
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;font-weight:700;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;width:25%;">
+                                               Navigateur
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;font-weight:700;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;width:25%;">
+                                               Localisation
+                                           </td>
+                                       </tr>
+                                       {# Valeurs dynamiques #}
+                                       <tr>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;">
+                                               {{ date|date('d/m/Y à H:i') }}
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;">
+                                               {{ ip }}
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;">
+                                               {{ browser }}
+                                           </td>
+                                           <td style="padding:10px;border:2px solid #cccccc;
+                                                      color:#022e69;font-size:13px;
+                                                      font-family:Helvetica,Arial,sans-serif;
+                                                      text-align:center;">
+                                               {{ location }}
+                                           </td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Message bas du tableau #}
+                           <tr>
+                               <td style="color:#022e69;font-size:13px;
+                                          font-family:Helvetica,Arial,sans-serif;
+                                          text-align:center;padding:0 20px;line-height:1.6;">
+                                   Si vous reconnaissez cette activité, aucune action supplémentaire n'est requise.
+                                   Dans le cas contraire, veuillez réinitialiser votre mot de passe pour sécuriser votre compte.
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Séparateur #}
+                           <tr>
+                               <td style="padding:0 20px;">
+                                   <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+                                       <tbody>
+                                       <tr>
+                                           <td style="height:1px;background-color:#000000;line-height:1px;font-size:0;">&nbsp;</td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           {# Section Next Steps #}
+                           <tr>
+                               <td style="color:#022e69;font-size:25px;font-weight:700;
+                                          font-family:Helvetica,Arial,sans-serif;
+                                          text-align:center;padding:0 20px;">
+                                   Next Steps
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:16px;">&nbsp;</td></tr>
+
+
+                           <tr>
+                               <td style="padding:0 20px;">
+                                   <table width="100%" cellpadding="0" cellspacing="0"
+                                          style="border-collapse:collapse;font-family:Helvetica,Arial,sans-serif;">
+                                       <tbody>
+                                       <tr>
+                                           <td style="width:24px;vertical-align:top;padding-right:8px;
+                                                      text-align:right;white-space:nowrap;">
+                                               <span style="font-size:13px;color:#022e69;">•</span>
+                                           </td>
+                                           <td style="font-size:13px;color:#022e69;vertical-align:top;padding-bottom:8px;">
+                                               <strong>Réinitialiser votre mot de passe :</strong>
+                                               accéder à votre compte pour modifier votre mot de passe immédiatement.
+                                           </td>
+                                       </tr>
+                                       <tr>
+                                           <td style="width:24px;vertical-align:top;padding-right:8px;
+                                                      text-align:right;white-space:nowrap;">
+                                               <span style="font-size:13px;color:#022e69;">•</span>
+                                           </td>
+                                           <td style="font-size:13px;color:#022e69;vertical-align:top;padding-bottom:8px;">
+                                               <strong>Vérifier l'activité du compte :</strong>
+                                               Consultez vos activités récentes sur HR Flow pour repérer tout changement non autorisé.
+                                           </td>
+                                       </tr>
+                                       <tr>
+                                           <td style="width:24px;vertical-align:top;padding-right:8px;
+                                                      text-align:right;white-space:nowrap;">
+                                               <span style="font-size:13px;color:#022e69;">•</span>
+                                           </td>
+                                           <td style="font-size:13px;color:#022e69;vertical-align:top;">
+                                               <strong>Contacter le support :</strong>
+                                               Si vous avez des questions ou des doutes, contactez notre équipe d'assistance
+                                               &lt; <a href="mailto:hr.flow26@gmail.com"
+                                                       style="color:#022e69;text-decoration:none;">hr.flow26@gmail.com</a> &gt;
+                                           </td>
+                                       </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+
+
+                           <tr><td style="height:24px;">&nbsp;</td></tr>
+
+
+                           </tbody>
+                       </table>
+                   </td>
+               </tr>
+
+
+               {# ── Footer dégradé ── #}
+               <tr>
+                   <td style="vertical-align:top;">
+                       <table border="0" cellpadding="0" cellspacing="0" align="center"
+                              style="width:100%;max-width:100%;
+                                     background:linear-gradient(90deg,#3fa9f5,#145eb7,#022e69);">
+                           <tbody>
+                           <tr>
+                               <td style="padding:20px;text-align:center;">
+                                   <span style="color:#ffffff;font-size:11px;
+                                                font-family:Helvetica,Arial,sans-serif;
+                                                line-height:1.4;display:block;">
+                                       HR Flow, gestion des ressources humaines<br>
+                                       &copy; {{ "now"|date("Y") }} HR Flow, Inc. All rights reserved. &nbsp; Privacy Policy
+                                   </span>
+                               </td>
+                           </tr>
+                           </tbody>
+                       </table>
+                   </td>
+               </tr>
+
+
+               </tbody>
+           </table>
+
+
+       </td>
+   </tr>
+   </tbody>
 </table>
-</td></tr>
-</table>
+
+
 </body>
 </html>
+

@@ -371,7 +371,8 @@ final class RhFormationController extends AbstractController
     {
         $idInt = (int) $id;
         if ($this->isCsrfTokenValid('reject-participation-' . $idInt, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($idInt, 'Refuse');
+            $reason = trim((string) $request->request->get('refusal_reason', ''));
+            $participationService->updateStatus($idInt, 'Refuse', $reason !== '' ? $reason : null);
             $this->addFlash('success', 'Participation refusée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));

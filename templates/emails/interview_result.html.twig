@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Résultat de votre entretien</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    {% if resultLabel == 'Réussi' %}
+    <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 30px; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">HrFlow - Félicitations !</h1>
+    </div>
+    {% elseif resultLabel == 'Échoué' %}
+    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 30px; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">HrFlow - Résultat de votre entretien</h1>
+    </div>
+    {% else %}
+    <div style="background: linear-gradient(135deg, #6b7280, #4b5563); padding: 30px; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">HrFlow - Résultat de votre entretien</h1>
+    </div>
+    {% endif %}
+    
+    <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb;">
+        <p>Bonjour <strong>{{ application.candidateName }}</strong>,</p>
+        
+        <p>Nous avons le plaisir de vous informer du résultat de votre entretien pour le poste de <strong>{{ application.jobOffer.title }}</strong>.</p>
+        
+        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid {% if resultLabel == 'Réussi' %}#10b981{% elseif resultLabel == 'Échoué' %}#ef4444{% else %}#6b7280{% endif %};">
+            <p style="margin: 0; color: #6b7280; font-size: 14px;">Résultat</p>
+            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: {% if resultLabel == 'Réussi' %}#10b981{% elseif resultLabel == 'Échoué' %}#ef4444{% else %}#6b7280{% endif %};">{{ resultLabel }}</p>
+        </div>
+        
+        {% if resultLabel == 'Réussi' %}
+        <p>Bravo ! Votre candidature a été retenue. Nous vous contacterons bientôt pour les prochaines étapes.</p>
+        {% elseif resultLabel == 'Échoué' %}
+        <p>Nous vous remercions pour votre intérêt et le temps consacré à ce processus. Nous encourageons notre équipe à garder votre profil en consideration pour de futures opportunités.</p>
+        {% else %}
+        <p>Le résultat de votre entretien est en attente. Nous vous tiendrons informé des prochaines étapes.</p>
+        {% endif %}
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ url('app_candidate_applications') }}" style="background: #0d9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Voir mes candidatures</a>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">
+            Cet email a été envoyé automatiquement. Merci de ne pas y répondre directement.
+        </p>
+    </div>
+</body>
+</html>

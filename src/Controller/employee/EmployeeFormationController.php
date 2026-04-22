@@ -254,6 +254,47 @@ final class EmployeeFormationController extends AbstractController
         ]);
     }
 
+    #[Route('/my-certificates', name: 'employee_formation_certificates', methods: ['GET'])]
+    public function myCertificates(): Response
+    {
+        $userId = $this->getUser()->getId();
+        $participations = $this->participationService->getEmployeeParticipations($userId);
+
+        $certificateRows = [];
+        foreach ($participations as $participation) {
+            $session = $participation->getSession();
+            $formation = $session?->getFormation();
+            if (!$session || !$formation) {
+                continue;
+            }
+
+            $attendance = $this->participationService->getAttendancePercentage((int) $participation->getId());
+            $isEligible = $session->getStatut() === 'Terminee' && $attendance >= 80;
+            if (!$isEligible) {
+                continue;
+            }
+
+            $certificateRows[] = [
+                'participation' => $participation,
+                'session' => $session,
+                'formation' => $formation,
+                'attendance' => $attendance,
+                'isEligible' => true,
+            ];
+        }
+
+        usort($certificateRows, static function (array $a, array $b): int {
+            $aDate = $a['session']->getDateFin();
+            $bDate = $b['session']->getDateFin();
+
+            return ($bDate?->getTimestamp() ?? 0) <=> ($aDate?->getTimestamp() ?? 0);
+        });
+
+        return $this->render('DashboardEmployee/formation/formation_certificates.html.twig', [
+            'certificateRows' => $certificateRows,
+        ]);
+    }
+
     #[Route('/{id}/sessions', name: 'employee_formation_sessions')]
     public function sessions(string $id): Response
     {
