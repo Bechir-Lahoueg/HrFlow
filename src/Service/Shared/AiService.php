@@ -6,11 +6,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class AiService
 {
-    private const GROQ_API_KEY = "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";
     private const URL = "https://api.groq.com/openai/v1/chat/completions";
 
     public function __construct(
-        private readonly HttpClientInterface $httpClient
+        private readonly HttpClientInterface $httpClient,
+        private readonly string $groqApiKey
     ) {}
 
     /**
@@ -38,7 +38,7 @@ final class AiService
 
             $response = $this->httpClient->request('POST', self::URL, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . self::GROQ_API_KEY,
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
@@ -105,7 +105,7 @@ final class AiService
 
             $response = $this->httpClient->request('POST', self::URL, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . self::GROQ_API_KEY,
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
@@ -190,7 +190,7 @@ final class AiService
 
             $response = $this->httpClient->request('POST', self::URL, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . self::GROQ_API_KEY,
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [

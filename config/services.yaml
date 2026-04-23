@@ -57,6 +57,10 @@ services:
             $senderAddress: '%env(MAILER_FROM)%'
             $emailsEnabled: '%env(bool:RECRUITMENT_EMAILS_ENABLED)%'
 
+    App\Service\Shared\AiService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     # Auto-tag all classes implementing ToolInterface
