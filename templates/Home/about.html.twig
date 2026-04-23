@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HrFlow | A propos{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    <section class="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24">
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-100 via-white to-[#fafafa]"></div>
+        <div class="absolute -top-16 left-1/4 h-72 w-72 rounded-full bg-teal-300/20 blur-3xl"></div>
+        <div class="absolute top-12 right-1/4 h-80 w-80 rounded-full bg-emerald-300/20 blur-3xl"></div>
+
+        <div class="relative max-w-7xl mx-auto px-6">
+            <div class="max-w-3xl">
+                <span class="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-teal-700">
+                    A propos de HrFlow
+                </span>
+                <h1 class="mt-6 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                    Une plateforme RH moderne,
+                    <span class="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">concue pour simplifier votre quotidien</span>
+                </h1>
+                <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+                    HrFlow centralise le recrutement, la gestion des conges, la paie et la relation employe dans une interface claire.
+                    Notre mission est d'aider les equipes RH a gagner du temps et a prendre de meilleures decisions.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="pb-20 lg:pb-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Entreprises accompagnees</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">2,000+</p>
+                    <p class="mt-2 text-sm text-slate-500">Des structures de toutes tailles nous font confiance.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Taches automatisees</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">85%</p>
+                    <p class="mt-2 text-sm text-slate-500">Moins de saisie manuelle, plus de pilotage strategique.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Satisfaction utilisateurs</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">96%</p>
+                    <p class="mt-2 text-sm text-slate-500">Une experience fluide pour RH, managers et collaborateurs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pb-20 lg:pb-28">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:p-12">
+                <div class="grid grid-cols-1 gap-10 lg:grid-cols-2">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-slate-900">Notre vision</h2>
+                        <p class="mt-4 text-base leading-relaxed text-slate-600">
+                            Nous croyons que la fonction RH doit etre un levier de croissance. HrFlow apporte des outils concrets pour
+                            structurer les processus RH, fluidifier la communication interne et suivre la performance sociale en temps reel.
+                        </p>
+                        <a href="{{ path('app_contact') }}" class="mt-8 inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-lg">
+                            Discuter avec notre equipe
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <h3 class="text-lg font-bold text-slate-900">Recrutement intelligent</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600">Suivez les candidats de la candidature a l'entretien depuis un seul espace.</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <h3 class="text-lg font-bold text-slate-900">Paie et remuneration</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600">Visualisez et gerez les composantes de remuneration en toute transparence.</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <h3 class="text-lg font-bold text-slate-900">Developpement des talents</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600">Pilotez les formations et la progression des competences de vos equipes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'Components/footer.html.twig' %}
+</div>
+{% endblock %}
