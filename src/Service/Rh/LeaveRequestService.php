@@ -59,6 +59,8 @@ final class LeaveRequestService
         string $requestMode = self::CATEGORY_NORMAL,
         ?string $urgencyLevel = null,
         ?string $attachmentPath = null,
+        ?string $attachmentOcrText = null,
+        ?string $attachmentOcrSummary = null,
     ): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
@@ -139,6 +141,8 @@ final class LeaveRequestService
             $leaveRequest->setWorkflowStatus(self::WORKFLOW_RH_PENDING);
             $leaveRequest->setUrgencyLevel($normalizedUrgency);
             $leaveRequest->setAttachmentPath($attachmentPath);
+            $leaveRequest->setAttachmentOcrText($attachmentOcrText);
+            $leaveRequest->setAttachmentOcrSummary($attachmentOcrSummary);
             $leaveRequest->appendAuditLog($employee->getFullName(), 'EXCEPTION_REQUEST_CREATED', trim($reason));
         } else {
             $leaveRequest->setRequestCategory(self::CATEGORY_NORMAL);
