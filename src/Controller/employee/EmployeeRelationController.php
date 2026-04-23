@@ -326,7 +326,7 @@ class EmployeeRelationController extends AbstractController
     public function feedbackDetails(int $id): JsonResponse
     {
         $fb = $this->feedbackService->getById($id);
-        if ($fb && $fb['is_anonymous']) $fb['from_username'] = '👤 Anonyme';
+        if ($fb && $fb['is_anonymous']) $fb['from_username'] = 'Anonyme';
         if ($fb) $fb['rating_stars'] = $this->feedbackService->getRatingStars((int)$fb['rating']);
         return new JsonResponse($fb ?? []);
     }
