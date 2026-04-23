@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidature - {{ application.candidateName }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .document-title {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .candidate-header {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .candidate-name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        .candidate-meta {
+            color: #6b7280;
+            font-size: 10pt;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #4f46e5;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #4b5563;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        .info-value {
+            margin-top: 3px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-reviewing { background: #dbeafe; color: #1e40af; }
+        .status-interview { background: #e0e7ff; color: #3730a3; }
+        .status-offer { background: #d1fae5; color: #065f46; }
+        .status-hired { background: #ccfbf1; color: #115e59; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .notes-box {
+            background: #fefce8;
+            border-left: 4px solid #eab308;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .job-info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .job-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+        .timeline {
+            margin-top: 20px;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .timeline-date {
+            width: 150px;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+        .timeline-content {
+            flex: 1;
+            padding-left: 15px;
+            border-left: 2px solid #e5e7eb;
+        }
+        .documents-list {
+            list-style: none;
+            padding: 0;
+        }
+        .documents-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .documents-list li:before {
+            content: "📄 ";
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">HrFlow</div>
+        <div class="document-title">Fiche de Candidature</div>
+    </div>
+
+    <div class="candidate-header">
+        <div class="candidate-name">{{ application.candidateName }}</div>
+        <div class="candidate-meta">
+            Candidature #{{ application.id }} | Déposée le {{ application.appliedAt|date('d/m/Y à H:i') }}
+        </div>
+        <div style="margin-top: 10px;">
+            <span class="status-badge status-{{ application.status|lower }}">
+                {{ application.getStatusLabel() }}
+            </span>
+        </div>
+    </div>
+
+    <div class="job-info">
+        <div class="job-title">{{ jobOffer.title }}</div>
+        <div style="color: #6b7280;">
+            {{ jobOffer.department ?: '' }} {{ jobOffer.location ? '• ' ~ jobOffer.location : '' }}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Informations du candidat</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Nom complet</div>
+                <div class="info-value">{{ application.candidateName }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ application.emailAddress ?: 'Non renseigné' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Département souhaité</div>
+                <div class="info-value">{{ application.department ?: 'Non spécifié' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Niveau d'expérience</div>
+                <div class="info-value">{{ application.experienceLevel ?: 'Non spécifié' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Source</div>
+                <div class="info-value">{{ application.source ?: 'Directe' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Date de candidature</div>
+                <div class="info-value">{{ application.appliedAt|date('d/m/Y H:i') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Documents</div>
+        <ul class="documents-list">
+            <li>CV: {{ application.cvPath ? '✓ Fourni' : '✗ Non fourni' }}</li>
+            {% if application.coverLetterPath %}
+            <li>Lettre de motivation: ✓ Fournie</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    {% if application.notes %}
+    <div class="section">
+        <div class="section-title">Notes</div>
+        <div class="notes-box">
+            {{ application.notes|nl2br }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="timeline">
+        <div class="section-title">Historique</div>
+        <div class="timeline-item">
+            <div class="timeline-date">{{ application.appliedAt|date('d/m/Y H:i') }}</div>
+            <div class="timeline-content">Candidature reçue</div>
+        </div>
+        {% if application.status != 'PENDING' %}
+        <div class="timeline-item">
+            <div class="timeline-date">{{ application.appliedAt|date('d/m/Y H:i') }}</div>
+            <div class="timeline-content">Statut mis à jour: {{ application.getStatusLabel() }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        Document généré le {{ generatedAt|date('d/m/Y à H:i') }} | HrFlow Recruitment System<br>
+        Confidentiel - Usage interne uniquement
+    </div>
+</body>
+</html>

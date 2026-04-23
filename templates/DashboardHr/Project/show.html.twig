@@ -7,14 +7,14 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 :root {
-    --primary: #4f46e5;
-    --primary-light: #818cf8;
-    --primary-dark: #3730a3;
+    --primary: #06b6d4;
+    --primary-light: #22d3ee;
+    --primary-dark: #0f172a;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --surface: #ffffff;
-    --bg: #f8fafc;
+    --bg: #f8f9fb;
     --border: #e2e8f0;
     --text: #1e293b;
     --text-muted: #64748b;
@@ -26,8 +26,10 @@
 body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
 .project-hero {
-    background: linear-gradient(135deg, #1e1b4b 0%, var(--primary) 60%, var(--primary-light) 100%);
-    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #0e7490 100%);
+    border-radius: 1rem;
     padding: 2rem;
     color: white;
     margin-bottom: 1.5rem;
@@ -39,36 +41,41 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
 .tab-nav {
     background: var(--surface);
-    border-radius: var(--radius);
-    padding: .5rem;
+    border-radius: .875rem;
+    padding: 0;
     display: flex;
-    gap: .25rem;
+    gap: 0;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border);
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    overflow: hidden;
 }
 .tab-btn {
-    padding: .6rem 1.25rem;
-    border-radius: 8px;
-    border: none;
+    padding: .95rem 1.25rem;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--text-muted);
-    font-weight: 600;
-    font-size: .875rem;
+    font-weight: 700;
+    font-size: .78rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all .2s;
     text-decoration: none;
     white-space: nowrap;
 }
-.tab-btn.active, .tab-btn:hover { background: var(--primary); color: white; }
+.tab-btn.active { border-bottom-color: var(--primary); color: #0891b2; background: #f8fafc; }
+.tab-btn:hover { color: #334155; background: #f8fafc; }
 
 .tab-content-panel { display: none; }
 .tab-content-panel.active { display: block; }
 
 .card-panel {
     background: var(--surface);
-    border-radius: var(--radius);
+    border-radius: .875rem;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border);
@@ -93,7 +100,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     min-height: 400px;
     transition: border-color .2s, background .2s;
 }
-.kanban-col.drag-over { border-color: var(--primary); background: #ede9fe; }
+.kanban-col.drag-over { border-color: var(--primary); background: #ecfeff; }
 .kanban-col-header { font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: .75rem; display: flex; justify-content: space-between; align-items: center; }
 .col-todo .kanban-col-header { color: #6b7280; }
 .col-in_progress .kanban-col-header { color: #d97706; }
@@ -148,7 +155,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     background: var(--bg);
     transition: all .2s;
 }
-.team-member-row:hover { background: #ede9fe; border-color: var(--primary-light); }
+.team-member-row:hover { background: #ecfeff; border-color: var(--primary-light); }
 .member-avatar {
     width: 40px; height: 40px;
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
@@ -184,7 +191,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     padding: .75rem 0;
     border-bottom: 1px solid var(--border);
 }
-.activity-icon { width: 32px; height: 32px; border-radius: 50%; background: #ede9fe; display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+.activity-icon { width: 32px; height: 32px; border-radius: 50%; background: #ecfeff; display: flex; align-items: center; justify-content: center; color: #0e7490; flex-shrink: 0; }
 
 /* Analytics */
 .health-score-circle {
@@ -210,10 +217,11 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 .modal-custom .modal-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius) var(--radius) 0 0; }
 .form-label { font-weight: 600; font-size: .825rem; color: var(--text); margin-bottom: .35rem; }
 .form-control, .form-select { border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; font-size: .875rem; }
-.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(8,145,178,.12); }
 
 .btn-prim { background: var(--primary); color: white; border: none; padding: .6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all .2s; }
-.btn-prim:hover { background: var(--primary-dark); transform: translateY(-1px); color: white; }
+.btn-prim { background: linear-gradient(135deg, #0f172a, #334155); font-size: .8rem; font-weight: 700; }
+.btn-prim:hover { background: linear-gradient(135deg, #1e293b, #334155); transform: translateY(-1px); color: white; }
 </style>
 {% endblock %}
 
@@ -230,31 +238,28 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
     {% for type, messages in app.flashes %}
         {% for msg in messages %}
-        <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3 shadow-sm mb-3">
-            {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="px-4 py-3 rounded-xl {% if type == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %} border text-sm font-medium flex items-center gap-2 animate-slide-up mb-3">
+            <i class="bi {{ type == 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }}" aria-hidden="true"></i>
+            {{ msg }}
         </div>
         {% endfor %}
     {% endfor %}
 
     {# HERO #}
     <div class="project-hero">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl"></div>
+        <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-violet-300/10 blur-3xl"></div>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 position-relative" style="z-index:1">
             <div style="flex:1">
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <a href="{{ path('rh_project_index') }}" style="color:rgba(255,255,255,.7); text-decoration:none; font-size:.85rem;">← Projets</a>
+                    <a href="{{ path('rh_project_index') }}" style="color:#bae6fd; text-decoration:none; font-size:.85rem;">← Projets</a>
                 </div>
-                <h1>
-                    {% if project.status == 'in_progress' %}🟢
-                    {% elseif project.status == 'completed' %}✅
-                    {% elseif project.status == 'on_hold' %}🟡
-                    {% elseif project.status == 'cancelled' %}❌
-                    {% else %}📋{% endif %}
-                    {{ project.name }}
-                </h1>
+                <h1>{{ project.name }}</h1>
                 <div class="hero-meta">
-                    <span>📅 {{ project.start_date|date('d/m/Y') }} → {{ project.end_date|date('d/m/Y') }}</span>
-                    {% if project.budget %}<span>💰 {{ project.budget|number_format(0, ',', ' ') }} €</span>{% endif %}
-                    {% if project.estimated_hours %}<span>⏱️ {{ project.actual_hours ?? 0 }}h / {{ project.estimated_hours }}h</span>{% endif %}
+                    <span>{{ project.status|replace({'_': ' '})|capitalize }}</span>
+                    <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ project.start_date|date('d/m/Y') }} → {{ project.end_date|date('d/m/Y') }}</span>
+                    {% if project.budget %}<span>{{ project.budget|number_format(0, ',', ' ') }} €</span>{% endif %}
+                    {% if project.estimated_hours %}<span>{{ project.actual_hours ?? 0 }}h / {{ project.estimated_hours }}h</span>{% endif %}
                 </div>
                 <div class="mt-2" style="max-width:400px">
                     <div style="font-size:.8rem; opacity:.8; margin-bottom:.3rem">Avancement: {{ project.completion_rate ?? 0 }}%</div>
@@ -262,11 +267,11 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                 </div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="btn btn-light btn-sm fw-semibold">✏️ Modifier</a>
+                <a href="{{ path('rh_project_edit', {id: project.id}) }}" class="btn btn-light btn-sm fw-semibold">Modifier</a>
                 <form action="{{ path('rh_project_delete', {id: project.id}) }}" method="POST"
                       onsubmit="return confirm('Supprimer ce projet ?')">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-                    <button class="btn btn-danger btn-sm fw-semibold">🗑️ Supprimer</button>
+                    <button class="btn btn-danger btn-sm fw-semibold">Supprimer</button>
                 </form>
             </div>
         </div>
@@ -274,29 +279,29 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
     {# TABS #}
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('kanban', this)">📋 Kanban</button>
-        <button class="tab-btn" onclick="switchTab('team', this)">👥 Équipe ({{ team|length }})</button>
-        <button class="tab-btn" onclick="switchTab('milestones', this)">🎯 Jalons ({{ milestones|length }})</button>
-        <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
-        <button class="tab-btn" onclick="switchTab('activity', this)">📝 Activités</button>
+        <button class="tab-btn active" onclick="switchTab('kanban', this)">Kanban</button>
+        <button class="tab-btn" onclick="switchTab('team', this)">Equipe ({{ team|length }})</button>
+        <button class="tab-btn" onclick="switchTab('milestones', this)">Jalons ({{ milestones|length }})</button>
+        <button class="tab-btn" onclick="switchTab('analytics', this)">Analytics</button>
+        <button class="tab-btn" onclick="switchTab('activity', this)">Activites</button>
     </div>
 
     {# ── TAB : KANBAN ────────────────────────────── #}
     <div id="tab-kanban" class="tab-content-panel active">
         <div class="card-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="section-title">📋 Tableau Kanban
+                <div class="section-title">Tableau Kanban
                     <small class="text-muted fw-normal" style="font-size:.8rem">— {{ analytics.completed_tasks }}/{{ analytics.total_tasks }} tâches terminées</small>
                 </div>
-                <button class="btn-prim" onclick="openModal('modalNewTask')">＋ Nouvelle tâche</button>
+                <button class="btn-prim" onclick="openModal('modalNewTask')">Ajouter une tache</button>
             </div>
 
             <div class="kanban-board">
                 {% set columns = {
-                    'todo': {label: '📋 À FAIRE', class: 'col-todo'},
-                    'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
-                    'review': {label: '👁️ REVIEW', class: 'col-review'},
-                    'done': {label: '✅ TERMINÉ', class: 'col-done'}
+                    'todo': {label: 'A FAIRE', class: 'col-todo'},
+                    'in_progress': {label: 'EN COURS', class: 'col-in_progress'},
+                    'review': {label: 'REVIEW', class: 'col-review'},
+                    'done': {label: 'TERMINE', class: 'col-done'}
                 } %}
                 {% for statusKey, col in columns %}
                 <div class="kanban-col {{ col.class }}" id="col-{{ statusKey }}"
@@ -316,21 +321,25 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                         <div class="ps-1">
                             <div class="task-title">{{ task.title }}</div>
                             <div class="task-assignee">
-                                {% if task.assigned_to_name %}👤 {{ task.assigned_to_name }}
-                                {% else %}<span style="color:#ef4444">⚠️ Non assigné</span>{% endif %}
+                                {% if task.assigned_to_name %}{{ task.assigned_to_name }}
+                                {% else %}<span style="color:#ef4444">Non assigne</span>{% endif %}
                             </div>
                             {% if task.due_date %}
                             <div class="task-due {% if task.due_date < 'now'|date('Y-m-d') and task.status != 'done' %}overdue{% endif %}">
-                                📅 {{ task.due_date|date('d/m/Y') }}
+                                {{ task.due_date|date('d/m/Y') }}
                             </div>
                             {% endif %}
                             <div class="mt-2 d-flex gap-1 flex-wrap">
+                                {% if not task.assigned_to %}
+                                <button onclick="openAiSuggestModal({{ task.id }})"
+                                        class="btn btn-outline-primary btn-sm" style="font-size:.7rem; padding:.2em .6em;">Suggestions IA</button>
+                                {% endif %}
                                 <button onclick="openEditTask({{ task|json_encode|e('html_attr') }})"
-                                        class="btn btn-outline-secondary btn-sm" style="font-size:.7rem; padding:.2em .6em;">✏️</button>
+                                        class="btn btn-outline-secondary btn-sm" style="font-size:.7rem; padding:.2em .6em;">Modifier</button>
                                 <form action="{{ path('rh_project_task_delete', {id: project.id, taskId: task.id}) }}" method="POST" class="d-inline"
                                       onsubmit="return confirm('Supprimer cette tâche ?')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('task-delete' ~ task.id) }}">
-                                    <button class="btn btn-outline-danger btn-sm" style="font-size:.7rem; padding:.2em .6em;">🗑️</button>
+                                    <button class="btn btn-outline-danger btn-sm" style="font-size:.7rem; padding:.2em .6em;">Supprimer</button>
                                 </form>
                             </div>
                         </div>
@@ -346,13 +355,13 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     <div id="tab-team" class="tab-content-panel" id="team">
         <div class="card-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="section-title">👥 Équipe du Projet</div>
-                <button class="btn-prim" onclick="openModal('modalAddMember')">＋ Ajouter un membre</button>
+                <div class="section-title">Equipe du Projet</div>
+                <button class="btn-prim" onclick="openModal('modalAddMember')">Ajouter un membre</button>
             </div>
 
             {% if team is empty %}
             <div class="text-center py-4 text-muted">
-                <div style="font-size:2.5rem">👤</div>
+                <div style="font-size:2.5rem">-</div>
                 <p>Aucun membre dans l'équipe pour l'instant.</p>
             </div>
             {% else %}
@@ -388,8 +397,8 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     <div id="tab-milestones" class="tab-content-panel">
         <div class="card-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="section-title">🎯 Jalons ({{ milestones|length }})</div>
-                <button class="btn-prim" onclick="openModal('modalNewMilestone')">＋ Nouveau Jalon</button>
+                <div class="section-title">Jalons ({{ milestones|length }})</div>
+                <button class="btn-prim" onclick="openModal('modalNewMilestone')">Ajouter un jalon</button>
             </div>
             <div class="row g-2 mb-3 text-center">
                 <div class="col-4"><div class="bg-light rounded p-2"><div class="fw-bold text-success">{{ milestoneStats.completed_milestones }}</div><div style="font-size:.75rem" class="text-muted">Terminés</div></div></div>
@@ -397,7 +406,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                 <div class="col-4"><div class="bg-light rounded p-2"><div class="fw-bold text-danger">{{ milestoneStats.overdue_milestones }}</div><div style="font-size:.75rem" class="text-muted">En retard</div></div></div>
             </div>
             {% if milestones is empty %}
-            <div class="text-center py-4 text-muted"><div style="font-size:2.5rem">🎯</div><p>Aucun jalon défini.</p></div>
+            <div class="text-center py-4 text-muted"><p>Aucun jalon defini.</p></div>
             {% endif %}
             {% for milestone in milestones %}
             {% set overdue = milestone.status != 'completed' and milestone.target_date < 'now'|date('Y-m-d') %}
@@ -407,7 +416,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                     <div class="fw-semibold">{{ milestone.name }}</div>
                     <div style="font-size:.8rem; color:var(--text-muted)">{{ milestone.description }}</div>
                     <div class="d-flex gap-2 align-items-center mt-1 flex-wrap">
-                        <span style="font-size:.75rem">📅 {{ milestone.target_date|date('d/m/Y') }}</span>
+                        <span style="font-size:.75rem">{{ milestone.target_date|date('d/m/Y') }}</span>
                         <span class="badge bg-{{ milestone.status == 'completed' ? 'success' : (overdue ? 'danger' : 'secondary') }} text-white" style="font-size:.7rem">
                             {{ milestone.status|replace({'_': ' '})|capitalize }}
                         </span>
@@ -418,15 +427,15 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                     {% if milestone.status != 'completed' %}
                     <form action="{{ path('rh_project_milestone_complete', {id: project.id, milestoneId: milestone.id}) }}" method="POST">
                         <input type="hidden" name="_token" value="{{ csrf_token('ms-complete' ~ milestone.id) }}">
-                        <button class="btn btn-sm btn-success" style="font-size:.72rem; white-space:nowrap">✅ Terminer</button>
+                        <button class="btn btn-sm btn-success" style="font-size:.72rem; white-space:nowrap">Terminer</button>
                     </form>
                     {% endif %}
                     <button onclick="openEditMilestone({{ milestone|json_encode|e('html_attr') }})"
-                            class="btn btn-sm btn-outline-secondary" style="font-size:.72rem">✏️</button>
+                            class="btn btn-sm btn-outline-secondary" style="font-size:.72rem">Modifier</button>
                     <form action="{{ path('rh_project_milestone_delete', {id: project.id, milestoneId: milestone.id}) }}" method="POST"
                           onsubmit="return confirm('Supprimer ce jalon ?')">
                         <input type="hidden" name="_token" value="{{ csrf_token('ms-delete' ~ milestone.id) }}">
-                        <button class="btn btn-sm btn-outline-danger" style="font-size:.72rem">🗑️</button>
+                        <button class="btn btn-sm btn-outline-danger" style="font-size:.72rem">Supprimer</button>
                     </form>
                 </div>
             </div>
@@ -440,7 +449,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
             {# Santé #}
             <div class="col-md-4">
                 <div class="card-panel text-center">
-                    <div class="section-title justify-content-center">💚 Santé du Projet</div>
+                    <div class="section-title justify-content-center">Sante du Projet</div>
                     <div class="health-score-circle health-{{ analytics.health_status }}">
                         {{ analytics.health_score }}
                         <div style="font-size:.6rem; font-weight:500">/ 100</div>
@@ -456,19 +465,19 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                     {% endfor %}
                     {% endif %}
                     {% if analytics.criticals is empty and analytics.warnings is empty %}
-                    <div class="alert alert-success py-2">✅ Aucune alerte — projet en bonne santé</div>
+                    <div class="alert alert-success py-2">Aucune alerte - projet en bonne sante</div>
                     {% endif %}
                 </div>
             </div>
             {# Prédiction #}
             <div class="col-md-4">
                 <div class="card-panel">
-                    <div class="section-title">🔮 Prédiction de Fin</div>
+                    <div class="section-title">Prediction de Fin</div>
                     {% if analytics.prediction %}
                     {% set pred = analytics.prediction %}
                     <div class="mb-2">
                         <span class="badge bg-{{ pred.status == 'on_track' ? 'success' : (pred.status == 'early' ? 'info' : 'danger') }} text-white">
-                            {{ pred.status == 'on_track' ? '✅ Dans les temps' : (pred.status == 'early' ? '🟢 En avance' : '🔴 En retard') }}
+                            {{ pred.status == 'on_track' ? 'Dans les temps' : (pred.status == 'early' ? 'En avance' : 'En retard') }}
                         </span>
                     </div>
                     <table class="table table-sm" style="font-size:.83rem">
@@ -486,7 +495,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
                     </table>
                     {% else %}
                     <div class="text-muted text-center py-3">
-                        <div style="font-size:2rem">⚪</div>
+                        <div style="font-size:2rem">-</div>
                         <p style="font-size:.85rem">Pas assez de données.<br>Terminez quelques tâches pour activer les prédictions.</p>
                     </div>
                     {% endif %}
@@ -495,21 +504,20 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
             {# Risques #}
             <div class="col-md-4">
                 <div class="card-panel">
-                    <div class="section-title">⚠️ Risques Identifiés</div>
+                    <div class="section-title">Risques identifies</div>
                     {% if analytics.risks is empty %}
                     <div class="text-center py-3">
-                        <div style="font-size:2rem">✅</div>
+                        <div style="font-size:2rem">-</div>
                         <p class="text-success fw-semibold">Aucun risque détecté</p>
                     </div>
                     {% endif %}
                     {% for risk in analytics.risks %}
                     <div class="risk-card risk-{{ risk.severity }}">
                         <div class="fw-bold" style="font-size:.875rem">
-                            {{ risk.severity == 'high' ? '🟠' : (risk.severity == 'critical' ? '🔴' : '🟡') }}
                             {{ risk.title }}
                         </div>
                         <div style="font-size:.8rem; margin:.3rem 0">{{ risk.description }}</div>
-                        <div style="font-size:.77rem; color:#059669; font-style:italic">💡 {{ risk.recommendation }}</div>
+                        <div style="font-size:.77rem; color:#059669; font-style:italic">{{ risk.recommendation }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -517,7 +525,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
             {# Stats tâches #}
             <div class="col-12">
                 <div class="card-panel">
-                    <div class="section-title">📊 Métriques des Tâches</div>
+                    <div class="section-title">Metriques des Taches</div>
                     <div class="row g-3 text-center">
                         <div class="col-6 col-md-3"><div class="bg-primary bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-primary">{{ analytics.total_tasks }}</div><div class="text-muted" style="font-size:.8rem">Total</div></div></div>
                         <div class="col-6 col-md-3"><div class="bg-success bg-opacity-10 rounded p-3"><div class="fw-bold fs-4 text-success">{{ analytics.completed_tasks }}</div><div class="text-muted" style="font-size:.8rem">Terminées</div></div></div>
@@ -532,40 +540,78 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
     {# ── TAB : ACTIVITÉS ─────────────────────────── #}
     <div id="tab-activity" class="tab-content-panel" id="activity">
         <div class="card-panel">
-            <div class="section-title">📝 Journal d'Activités</div>
+            <div class="section-title">Journal d'activites</div>
             {% for update in updates %}
             <div class="activity-item">
                 <div class="activity-icon">
-                    {% if update.update_type == 'comment' %}💬
-                    {% elseif update.update_type == 'task' %}✅
-                    {% elseif update.update_type == 'milestone' %}🎯
-                    {% elseif update.update_type == 'status_change' %}🔄
-                    {% else %}📌{% endif %}
+                    {% if update.update_type in ['comment', 'rh_comment'] %}
+                        <i class="bi bi-chat-text-fill" aria-hidden="true"></i>
+                    {% elseif update.update_type in ['task', 'rh_task'] %}
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    {% elseif update.update_type in ['milestone', 'rh_milestone'] %}
+                        <i class="bi bi-flag-fill" aria-hidden="true"></i>
+                    {% elseif update.update_type in ['status_change', 'rh_status_change'] %}
+                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                    {% else %}
+                        <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+                    {% endif %}
                 </div>
                 <div style="flex:1">
                     <div class="fw-semibold" style="font-size:.875rem">{{ update.title }}</div>
                     <div style="font-size:.8rem; color:var(--text-muted)">{{ update.content }}</div>
                     <div style="font-size:.75rem; color:#94a3b8; margin-top:.2rem">
-                        👤 {{ update.author_name }} · {{ update.created_at|date('d/m/Y H:i') }}
+                        {{ update.author_name }} · {{ update.created_at|date('d/m/Y H:i') }}
                     </div>
                 </div>
             </div>
             {% else %}
             <div class="text-center py-4 text-muted">
-                <div style="font-size:2.5rem">📭</div><p>Aucune activité enregistrée.</p>
+                <p>Aucune activite enregistree.</p>
             </div>
             {% endfor %}
 
             <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
-                <div class="section-title" style="margin-bottom:.75rem">💬 Ajouter un commentaire</div>
+                <div class="section-title" style="margin-bottom:.75rem">Ajouter un commentaire</div>
                 <form action="{{ path('rh_project_comment', {id: project.id}) }}" method="POST">
                     <textarea name="content" class="form-control mb-2" rows="2" placeholder="Écrire un commentaire..."></textarea>
                     <button type="submit" class="btn-prim">Publier</button>
                 </form>
             </div>
+
+            <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
+                <div class="section-title" style="margin-bottom:.75rem">Chat d'equipe (Matrix)</div>
+                <div id="rhProjectChatAlert" class="alert d-none py-2"></div>
+                <div id="rhProjectChatMessages" class="border rounded p-2 bg-light" style="height:260px; overflow-y:auto;"></div>
+                <form id="rhProjectChatForm" class="d-flex gap-2 mt-2">
+                    <input id="rhProjectChatFile" type="file" class="d-none" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
+                    <input id="rhProjectChatInput" type="text" class="form-control" maxlength="1200" placeholder="Ecrire un message...">
+                    <button id="rhProjectChatAttachBtn" type="button" class="btn btn-outline-secondary">Fichier</button>
+                    <button id="rhProjectChatVoiceBtn" type="button" class="btn btn-outline-secondary">Vocal</button>
+                    <button id="rhProjectChatVideoBtn" type="button" class="btn btn-outline-secondary">Video</button>
+                    <button type="submit" class="btn-prim">Envoyer</button>
+                </form>
+            </div>
         </div>
     </div>
 
+</div>
+
+{# Modal Suggestions IA #}
+<div id="modalAiSuggest" class="modal fade modal-custom" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Suggestions IA d'assignation</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div id="aiSuggestAlert" class="alert d-none py-2"></div>
+            <div id="aiSuggestLoading" class="text-muted">Chargement des suggestions...</div>
+            <div id="aiSuggestList" class="d-flex flex-column gap-2"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        </div>
+    </div></div>
 </div>
 
 {# ══════════════ MODALS ══════════════ #}
@@ -574,31 +620,52 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 <div id="modalNewTask" class="modal fade modal-custom" tabindex="-1">
     <div class="modal-dialog modal-lg"><div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">➕ Nouvelle Tâche</h5>
+            <h5 class="modal-title">Nouvelle Tache</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <form action="{{ path('rh_project_task_new', {id: project.id}) }}" method="POST">
+        <form id="newTaskForm" action="{{ path('rh_project_task_new', {id: project.id}) }}" method="POST">
             <div class="modal-body">
-                <div class="mb-3"><label class="form-label">Titre *</label><input type="text" name="title" class="form-control" required></div>
-                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div id="newTaskAjaxAlert" class="alert d-none py-2"></div>
+                {% if taskCreateErrors.project_id is defined or taskCreateErrors.project_end_date is defined %}
+                <div class="alert alert-danger py-2">
+                    {{ taskCreateErrors.project_id ?? taskCreateErrors.project_end_date }}
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label class="form-label">Titre *</label>
+                    <input type="text" name="title" class="form-control {% if taskCreateErrors.title is defined %}is-invalid{% endif %}" value="{{ taskCreateData.title ?? '' }}">
+                    {% if taskCreateErrors.title is defined %}<div class="invalid-feedback">{{ taskCreateErrors.title }}</div>{% endif %}
+                </div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2">{{ taskCreateData.description ?? '' }}</textarea></div>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Assigné à</label>
                         <select name="assigned_to" class="form-select">
                             <option value="">Non assigné</option>
-                            {% for member in team %}<option value="{{ member.employee_id }}">{{ member.username }}</option>{% endfor %}
+                            {% for member in team %}
+                            <option value="{{ member.employee_id }}" {% if (taskCreateData.assigned_to ?? '') == member.employee_id %}selected{% endif %}>{{ member.username }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Priorité</label>
                         <select name="priority" class="form-select">
-                            <option value="low">🟢 Faible</option>
-                            <option value="medium" selected>🟡 Moyenne</option>
-                            <option value="high">🔴 Haute</option>
+                            <option value="low" {% if (taskCreateData.priority ?? 'medium') == 'low' %}selected{% endif %}>Faible</option>
+                            <option value="medium" {% if (taskCreateData.priority ?? 'medium') == 'medium' %}selected{% endif %}>Moyenne</option>
+                            <option value="high" {% if (taskCreateData.priority ?? 'medium') == 'high' %}selected{% endif %}>Haute</option>
                         </select>
                     </div>
-                    <div class="col-md-6"><label class="form-label">Heures estimées</label><input type="number" name="estimated_hours" class="form-control" min="0"></div>
-                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" class="form-control"></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Heures estimées</label>
+                        <input type="number" name="estimated_hours" class="form-control {% if taskCreateErrors.estimated_hours is defined %}is-invalid{% endif %}" value="{{ taskCreateData.estimated_hours ?? '' }}">
+                        {% if taskCreateErrors.estimated_hours is defined %}<div class="invalid-feedback">{{ taskCreateErrors.estimated_hours }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date de début *</label>
+                        <input type="date" name="start_date" class="form-control {% if taskCreateErrors.start_date is defined %}is-invalid{% endif %}" value="{{ taskCreateData.start_date ?? '' }}">
+                        {% if taskCreateErrors.start_date is defined %}<div class="invalid-feedback">{{ taskCreateErrors.start_date }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" class="form-control" value="{{ taskCreateData.due_date ?? '' }}"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -613,40 +680,61 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 <div id="modalEditTask" class="modal fade modal-custom" tabindex="-1">
     <div class="modal-dialog modal-lg"><div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">✏️ Modifier la Tâche</h5>
+            <h5 class="modal-title">Modifier la Tache</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <form id="editTaskForm" method="POST">
+        <form id="editTaskForm" method="POST" {% if taskEditTaskId %}action="{{ path('rh_project_task_edit', {id: project.id, taskId: taskEditTaskId}) }}"{% endif %}>
             <div class="modal-body">
-                <div class="mb-3"><label class="form-label">Titre *</label><input type="text" name="title" id="editTaskTitle" class="form-control" required></div>
-                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" id="editTaskDesc" class="form-control" rows="2"></textarea></div>
+                <div id="editTaskAjaxAlert" class="alert d-none py-2"></div>
+                {% if taskEditErrors.project_id is defined or taskEditErrors.project_end_date is defined %}
+                <div class="alert alert-danger py-2">
+                    {{ taskEditErrors.project_id ?? taskEditErrors.project_end_date }}
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label class="form-label">Titre *</label>
+                    <input type="text" name="title" id="editTaskTitle" class="form-control {% if taskEditErrors.title is defined %}is-invalid{% endif %}" value="{{ taskEditData.title ?? '' }}">
+                    {% if taskEditErrors.title is defined %}<div class="invalid-feedback">{{ taskEditErrors.title }}</div>{% endif %}
+                </div>
+                <div class="mb-3"><label class="form-label">Description</label><textarea name="description" id="editTaskDesc" class="form-control" rows="2">{{ taskEditData.description ?? '' }}</textarea></div>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Statut</label>
                         <select name="status" id="editTaskStatus" class="form-select">
-                            <option value="todo">📋 À faire</option>
-                            <option value="in_progress">⏳ En cours</option>
-                            <option value="review">👁️ Review</option>
-                            <option value="done">✅ Terminé</option>
+                            <option value="todo" {% if (taskEditData.status ?? 'todo') == 'todo' %}selected{% endif %}>A faire</option>
+                            <option value="in_progress" {% if (taskEditData.status ?? 'todo') == 'in_progress' %}selected{% endif %}>En cours</option>
+                            <option value="review" {% if (taskEditData.status ?? 'todo') == 'review' %}selected{% endif %}>Review</option>
+                            <option value="done" {% if (taskEditData.status ?? 'todo') == 'done' %}selected{% endif %}>Termine</option>
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Assigné à</label>
                         <select name="assigned_to" id="editTaskAssignee" class="form-select">
                             <option value="">Non assigné</option>
-                            {% for member in team %}<option value="{{ member.employee_id }}">{{ member.username }}</option>{% endfor %}
+                            {% for member in team %}
+                            <option value="{{ member.employee_id }}" {% if (taskEditData.assigned_to ?? '') == member.employee_id %}selected{% endif %}>{{ member.username }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Priorité</label>
                         <select name="priority" id="editTaskPriority" class="form-select">
-                            <option value="low">🟢 Faible</option>
-                            <option value="medium">🟡 Moyenne</option>
-                            <option value="high">🔴 Haute</option>
+                            <option value="low" {% if (taskEditData.priority ?? 'medium') == 'low' %}selected{% endif %}>Faible</option>
+                            <option value="medium" {% if (taskEditData.priority ?? 'medium') == 'medium' %}selected{% endif %}>Moyenne</option>
+                            <option value="high" {% if (taskEditData.priority ?? 'medium') == 'high' %}selected{% endif %}>Haute</option>
                         </select>
                     </div>
-                    <div class="col-md-6"><label class="form-label">Heures estimées</label><input type="number" name="estimated_hours" id="editTaskHours" class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" id="editTaskDue" class="form-control"></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Heures estimées</label>
+                        <input type="number" name="estimated_hours" id="editTaskHours" class="form-control {% if taskEditErrors.estimated_hours is defined %}is-invalid{% endif %}" value="{{ taskEditData.estimated_hours ?? '' }}">
+                        {% if taskEditErrors.estimated_hours is defined %}<div class="invalid-feedback">{{ taskEditErrors.estimated_hours }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date de début *</label>
+                        <input type="date" name="start_date" id="editTaskStart" class="form-control {% if taskEditErrors.start_date is defined %}is-invalid{% endif %}" value="{{ taskEditData.start_date ?? '' }}">
+                        {% if taskEditErrors.start_date is defined %}<div class="invalid-feedback">{{ taskEditErrors.start_date }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Date limite</label><input type="date" name="due_date" id="editTaskDue" class="form-control" value="{{ taskEditData.due_date ?? '' }}"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -661,22 +749,46 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 <div id="modalAddMember" class="modal fade modal-custom" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">👥 Ajouter un Membre</h5>
+            <h5 class="modal-title">Ajouter un Membre</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <form action="{{ path('rh_project_team_add', {id: project.id}) }}" method="POST">
+        <form id="addMemberForm" action="{{ path('rh_project_team_add', {id: project.id}) }}" method="POST">
             <div class="modal-body">
+                <div id="addMemberAjaxAlert" class="alert d-none py-2"></div>
+                {% if teamAddErrors.project_id is defined or teamAddErrors._global is defined %}
+                <div class="alert alert-danger py-2">
+                    {{ teamAddErrors.project_id ?? teamAddErrors._global }}
+                </div>
+                {% endif %}
                 <div class="mb-3">
-                    <label class="form-label">Employé</label>
-                    <select name="employee_id" class="form-select" required>
-                        <option value="">Choisir un employé...</option>
+                    <label class="form-label">Employe</label>
+                    <select id="memberEmployeeSelect" name="employee_id" class="form-select {% if teamAddErrors.employee_id is defined %}is-invalid{% endif %}" onchange="updateSelectedEmployeeJobTitle()">
+                        <option value="">Choisir un employe...</option>
                         {% for emp in availableEmployees %}
-                        <option value="{{ emp.id }}">{{ emp.username }}</option>
+                        <option value="{{ emp.id }}" data-job-title="{{ (emp.job_title ?? 'Membre')|e('html_attr') }}" {% if (teamAddData.employee_id ?? '') == emp.id %}selected{% endif %}>{{ emp.username }} — {{ emp.job_title ?? 'Membre' }}</option>
                         {% endfor %}
                     </select>
+                    {% if teamAddErrors.employee_id is defined %}<div class="invalid-feedback">{{ teamAddErrors.employee_id }}</div>{% endif %}
                 </div>
-                <div class="mb-3"><label class="form-label">Rôle dans le projet</label><input type="text" name="role" class="form-control" placeholder="Ex: Développeur, Designer..."></div>
-                <div class="mb-3"><label class="form-label">Heures allouées</label><input type="number" name="assigned_hours" class="form-control" min="0" placeholder="Optionnel"></div>
+                <div class="mb-3">
+                    <label class="form-label">Role (emploi)</label>
+                    <input type="text" id="selectedEmployeeJobTitle" class="form-control" value="" placeholder="Selectionnez un employe" readonly>
+                    <div class="form-text">Le role est rempli automatiquement depuis le job_title de l'employe.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Heures allouees</label>
+                    <input
+                        type="number"
+                        name="assigned_hours"
+                        class="form-control {% if teamAddErrors.assigned_hours is defined %}is-invalid{% endif %}"
+                        value="{{ teamAddData.assigned_hours ?? '' }}"
+                        placeholder="0"
+                    >
+                    {% if teamAddErrors.assigned_hours is defined %}<div class="invalid-feedback">{{ teamAddErrors.assigned_hours }}</div>{% endif %}
+                    {% if remainingAssignableHours is not null %}
+                    <div class="form-text">Heures restantes allouables sur le projet: {{ remainingAssignableHours }} h.</div>
+                    {% endif %}
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -690,7 +802,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 <div id="modalNewMilestone" class="modal fade modal-custom" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">🎯 Nouveau Jalon</h5>
+            <h5 class="modal-title">Nouveau Jalon</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <form action="{{ path('rh_project_milestone_new', {id: project.id}) }}" method="POST">
@@ -711,7 +823,7 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 <div id="modalEditMilestone" class="modal fade modal-custom" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">✏️ Modifier le Jalon</h5>
+            <h5 class="modal-title">Modifier le Jalon</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <form id="editMilestoneForm" method="POST">
@@ -748,7 +860,8 @@ function switchTab(name, btn) {
 
 // Restore tab from URL hash
 (function() {
-    const hash = window.location.hash.replace('#', '');
+    const forcedTab = '{{ activeTab ?? '' }}';
+    const hash = forcedTab !== '' ? forcedTab : window.location.hash.replace('#', '');
     const map = {'team': 1, 'milestones': 2, 'analytics': 3, 'activity': 4};
     if (hash && map[hash] !== undefined) {
         const btns = document.querySelectorAll('.tab-btn');
@@ -761,6 +874,124 @@ function openModal(id) {
     new bootstrap.Modal(document.getElementById(id)).show();
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    const modalToOpen = '{{ openModal ?? '' }}';
+    updateSelectedEmployeeJobTitle();
+    if (modalToOpen) {
+        openModal(modalToOpen);
+    }
+
+    setupAjaxModalForm('newTaskForm', 'modalNewTask', 'newTaskAjaxAlert');
+    setupAjaxModalForm('editTaskForm', 'modalEditTask', 'editTaskAjaxAlert');
+    setupAjaxModalForm('addMemberForm', 'modalAddMember', 'addMemberAjaxAlert', updateSelectedEmployeeJobTitle);
+});
+
+function setupAjaxModalForm(formId, modalId, alertId, afterRenderCallback) {
+    const form = document.getElementById(formId);
+    if (!form) {
+        return;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitModalFormAjax(form, modalId, alertId, afterRenderCallback);
+    });
+}
+
+function submitModalFormAjax(form, modalId, alertId, afterRenderCallback) {
+    clearAjaxErrors(form, alertId);
+
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: new FormData(form)
+    })
+    .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+            applyAjaxErrors(form, data.errors || {}, alertId, data.message || 'Veuillez corriger les erreurs du formulaire.');
+            openModal(modalId);
+            if (typeof afterRenderCallback === 'function') {
+                afterRenderCallback();
+            }
+            return;
+        }
+
+        window.location.reload();
+    })
+    .catch(() => {
+        showAjaxAlert(alertId, 'danger', 'Une erreur technique est survenue.');
+        openModal(modalId);
+    });
+}
+
+function clearAjaxErrors(form, alertId) {
+    form.querySelectorAll('.is-invalid').forEach((input) => input.classList.remove('is-invalid'));
+    form.querySelectorAll('[data-ajax-error="1"]').forEach((el) => el.remove());
+    hideAjaxAlert(alertId);
+}
+
+function applyAjaxErrors(form, errors, alertId, fallbackMessage) {
+    let hasFieldError = false;
+
+    Object.keys(errors).forEach((field) => {
+        const input = form.querySelector('[name="' + field + '"]');
+        if (!input) {
+            return;
+        }
+
+        hasFieldError = true;
+        input.classList.add('is-invalid');
+
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback d-block';
+        feedback.setAttribute('data-ajax-error', '1');
+        feedback.textContent = errors[field];
+        input.insertAdjacentElement('afterend', feedback);
+    });
+
+    if (!hasFieldError) {
+        const globalMessage = errors._global || errors.project_id || errors.project_end_date || fallbackMessage;
+        showAjaxAlert(alertId, 'danger', globalMessage);
+    }
+}
+
+function showAjaxAlert(alertId, type, message) {
+    const alert = document.getElementById(alertId);
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert alert-' + type + ' py-2';
+    alert.textContent = message;
+}
+
+function hideAjaxAlert(alertId) {
+    const alert = document.getElementById(alertId);
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert d-none py-2';
+    alert.textContent = '';
+}
+
+function updateSelectedEmployeeJobTitle() {
+    const employeeSelect = document.getElementById('memberEmployeeSelect');
+    const roleInput = document.getElementById('selectedEmployeeJobTitle');
+    if (!employeeSelect || !roleInput) {
+        return;
+    }
+
+    const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
+    const jobTitle = selectedOption ? (selectedOption.getAttribute('data-job-title') || 'Membre') : 'Membre';
+    roleInput.value = employeeSelect.value ? jobTitle : '';
+}
+
 // ─── EDIT TASK ───────────────────────────────────────────────────
 function openEditTask(task) {
     document.getElementById('editTaskTitle').value = task.title || '';
@@ -768,6 +999,7 @@ function openEditTask(task) {
     document.getElementById('editTaskStatus').value = task.status || 'todo';
     document.getElementById('editTaskPriority').value = task.priority || 'medium';
     document.getElementById('editTaskHours').value = task.estimated_hours || '';
+    document.getElementById('editTaskStart').value = task.start_date || '';
     document.getElementById('editTaskDue').value = task.due_date || '';
     const assigneeSelect = document.getElementById('editTaskAssignee');
     if (task.assigned_to) assigneeSelect.value = task.assigned_to;
@@ -788,6 +1020,7 @@ function openEditMilestone(ms) {
 
 // ─── KANBAN DRAG & DROP ──────────────────────────────────────────
 let draggedTaskId = null;
+let aiSuggestionTaskId = null;
 
 function handleDragStart(event, taskId) {
     draggedTaskId = taskId;
@@ -823,5 +1056,505 @@ function handleDrop(event, newStatus) {
 
     draggedTaskId = null;
 }
+
+function openAiSuggestModal(taskId) {
+    aiSuggestionTaskId = taskId;
+    const list = document.getElementById('aiSuggestList');
+    const loading = document.getElementById('aiSuggestLoading');
+    list.innerHTML = '';
+    loading.classList.remove('d-none');
+    hideAjaxAlert('aiSuggestAlert');
+    openModal('modalAiSuggest');
+
+    fetch('/rh/projects/{{ project.id }}/tasks/' + taskId + '/ai-suggestions', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        loading.classList.add('d-none');
+
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('aiSuggestAlert', 'danger', data.message || 'Impossible de recuperer les suggestions IA.');
+            return;
+        }
+
+        renderAiSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
+    })
+    .catch(() => {
+        loading.classList.add('d-none');
+        showAjaxAlert('aiSuggestAlert', 'danger', 'Erreur reseau lors de la recuperation des suggestions IA.');
+    });
+}
+
+function renderAiSuggestions(suggestions) {
+    const list = document.getElementById('aiSuggestList');
+    list.innerHTML = '';
+
+    if (!suggestions.length) {
+        showAjaxAlert('aiSuggestAlert', 'warning', 'Aucune suggestion disponible pour cette tache.');
+        return;
+    }
+
+    suggestions.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'border rounded p-3';
+        card.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start gap-2">'
+            + '<div>'
+            + '<div class="fw-semibold">' + escapeHtml(item.username || 'N/A') + ' <span class="badge bg-primary ms-1">' + String(item.score ?? 0) + '/100</span></div>'
+            + '<div class="text-muted" style="font-size:.82rem">' + escapeHtml(item.job_title || 'N/A') + '</div>'
+            + '<div class="mt-1" style="font-size:.82rem">' + escapeHtml(item.reason || '') + '</div>'
+            + '<div class="text-muted mt-1" style="font-size:.75rem">Charge: projet ' + String(item.active_project_tasks ?? 0) + ' | total ' + String(item.active_total_tasks ?? 0) + '</div>'
+            + '</div>'
+            + '<button type="button" class="btn btn-sm btn-success">Assigner</button>'
+            + '</div>';
+
+        const btn = card.querySelector('button');
+        btn.addEventListener('click', function () {
+            assignTaskFromSuggestion(item.employee_id);
+        });
+
+        list.appendChild(card);
+    });
+}
+
+function assignTaskFromSuggestion(employeeId) {
+    if (!aiSuggestionTaskId) {
+        return;
+    }
+
+    const payload = new URLSearchParams();
+    payload.set('employee_id', String(employeeId));
+
+    fetch('/rh/projects/{{ project.id }}/tasks/' + aiSuggestionTaskId + '/assign', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('aiSuggestAlert', 'danger', data.message || 'Impossible d\'assigner cette tache.');
+            return;
+        }
+
+        window.location.reload();
+    })
+    .catch(() => {
+        showAjaxAlert('aiSuggestAlert', 'danger', 'Erreur reseau pendant l\'assignation.');
+    });
+}
+
+const rhProjectChatState = {
+    pollHandle: null,
+    bootstrapped: false,
+    isLoading: false,
+    hasLoadedOnce: false,
+    requestSeq: 0,
+    activeRequestSeq: 0,
+    mediaRecorder: null,
+    mediaChunks: [],
+    recording: false,
+};
+
+function initRhProjectChat() {
+    const form = document.getElementById('rhProjectChatForm');
+    if (!form) {
+        return;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        sendRhProjectChatMessage();
+    });
+
+    const attachBtn = document.getElementById('rhProjectChatAttachBtn');
+    const fileInput = document.getElementById('rhProjectChatFile');
+    const voiceBtn = document.getElementById('rhProjectChatVoiceBtn');
+    const videoBtn = document.getElementById('rhProjectChatVideoBtn');
+
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function () {
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files[0]) {
+                uploadRhProjectChatFile(fileInput.files[0]);
+            }
+            fileInput.value = '';
+        });
+    }
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', toggleRhVoiceRecording);
+    }
+
+    if (videoBtn) {
+        videoBtn.addEventListener('click', startRhVideoCall);
+    }
+
+    const container = document.getElementById('rhProjectChatMessages');
+    if (container) {
+        container.innerHTML = '<div class="text-muted small">Chargement du chat...</div>';
+    }
+
+    bootstrapRhProjectChat();
+}
+
+function bootstrapRhProjectChat() {
+    fetch('/api/projects/{{ project.id }}/chat/bootstrap', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Chat Matrix indisponible.');
+            return;
+        }
+
+        rhProjectChatState.bootstrapped = true;
+        loadRhProjectChatMessages();
+
+        if (rhProjectChatState.pollHandle) {
+            clearInterval(rhProjectChatState.pollHandle);
+        }
+
+        rhProjectChatState.pollHandle = setInterval(loadRhProjectChatMessages, 3000);
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Impossible d\'initialiser le chat Matrix.');
+    });
+}
+
+function loadRhProjectChatMessages() {
+    if (!rhProjectChatState.bootstrapped || rhProjectChatState.isLoading) {
+        return;
+    }
+
+    rhProjectChatState.isLoading = true;
+    rhProjectChatState.requestSeq += 1;
+    const requestId = rhProjectChatState.requestSeq;
+    rhProjectChatState.activeRequestSeq = requestId;
+
+    fetch('/api/projects/{{ project.id }}/chat/messages?limit=40', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (requestId !== rhProjectChatState.activeRequestSeq) {
+            return;
+        }
+
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible de charger les messages.');
+            if (!rhProjectChatState.hasLoadedOnce) {
+                renderRhProjectChatStatus('Chat indisponible pour le moment.');
+            }
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        rhProjectChatState.hasLoadedOnce = true;
+        renderRhProjectChatMessages(Array.isArray(data.messages) ? data.messages : []);
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant le chargement du chat.');
+        if (!rhProjectChatState.hasLoadedOnce) {
+            renderRhProjectChatStatus('Connexion au chat en cours...');
+        }
+    })
+    .finally(() => {
+        if (requestId === rhProjectChatState.activeRequestSeq) {
+            rhProjectChatState.isLoading = false;
+        }
+    });
+}
+
+function renderRhProjectChatStatus(text) {
+    const container = document.getElementById('rhProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '<div class="text-muted small">' + escapeHtml(text) + '</div>';
+}
+
+function renderRhProjectChatMessages(messages) {
+    const container = document.getElementById('rhProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '';
+    if (!messages.length) {
+        container.innerHTML = '<div class="text-muted small">Aucun message pour le moment.</div>';
+        return;
+    }
+
+    messages.forEach((msg) => {
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+
+        const date = msg.origin_server_ts ? new Date(msg.origin_server_ts).toLocaleString() : '';
+        let bodyHtml = '';
+        const msgType = String(msg.msgtype || 'm.text');
+        const body = String(msg.body || '');
+        const downloadUrl = String(msg.download_url || '');
+
+        if (msgType === 'm.image' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><img src="' + escapeHtml(downloadUrl) + '" alt="image" style="max-height:220px" class="rounded border"></div>';
+        } else if (msgType === 'm.video' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><video controls style="max-height:240px" class="rounded border" src="' + escapeHtml(downloadUrl) + '"></video></div>';
+        } else if (msgType === 'm.audio' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><audio controls src="' + escapeHtml(downloadUrl) + '" style="width:100%"></audio></div>';
+        } else if (msgType === 'm.file' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><a target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '">Fichier: ' + escapeHtml(body || 'Piece jointe') + '</a></div>';
+        } else {
+            bodyHtml = '<div style="font-size:.88rem; white-space:pre-wrap">' + escapeHtml(body) + '</div>';
+        }
+
+        row.innerHTML = '<div class="small"><span class="text-muted">' + escapeHtml(date) + '</span></div>' + bodyHtml;
+
+        const eventId = String(msg.event_id || '');
+        if (eventId !== '') {
+            const reactions = (msg.reactions && typeof msg.reactions === 'object') ? msg.reactions : {};
+            const reactionBar = document.createElement('div');
+            reactionBar.className = 'mt-1 d-flex flex-wrap align-items-center gap-1';
+
+            Object.keys(reactions).forEach((key) => {
+                reactionBar.insertAdjacentHTML('beforeend', '<span class="badge bg-light text-dark border">' + escapeHtml(key) + ' ' + String(reactions[key]) + '</span>');
+            });
+
+            ['+1', 'heart', 'lol'].forEach((emoji) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary py-0 px-2';
+                btn.textContent = emoji;
+                btn.addEventListener('click', function () {
+                    sendRhReaction(eventId, emoji);
+                });
+                reactionBar.appendChild(btn);
+            });
+
+            row.appendChild(reactionBar);
+        }
+
+        container.appendChild(row);
+    });
+
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendRhReaction(eventId, reaction) {
+    const payload = new URLSearchParams();
+    payload.set('eventId', eventId);
+    payload.set('reaction', reaction);
+
+    fetch('/api/projects/{{ project.id }}/chat/react', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible d\'envoyer la reaction.');
+            return;
+        }
+
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant l\'envoi de la reaction.');
+    });
+}
+
+function uploadRhProjectChatFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/projects/{{ project.id }}/chat/upload', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData,
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible d\'envoyer le fichier.');
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant l\'upload du fichier.');
+    });
+}
+
+function toggleRhVoiceRecording() {
+    if (rhProjectChatState.recording) {
+        if (rhProjectChatState.mediaRecorder) {
+            rhProjectChatState.mediaRecorder.stop();
+        }
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Enregistrement vocal non supporte sur ce navigateur.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+            const recorder = new MediaRecorder(stream);
+            rhProjectChatState.mediaChunks = [];
+            rhProjectChatState.mediaRecorder = recorder;
+            rhProjectChatState.recording = true;
+            updateRhVoiceButton();
+
+            recorder.ondataavailable = function (event) {
+                if (event.data && event.data.size > 0) {
+                    rhProjectChatState.mediaChunks.push(event.data);
+                }
+            };
+
+            recorder.onstop = function () {
+                stream.getTracks().forEach((track) => track.stop());
+                rhProjectChatState.recording = false;
+                updateRhVoiceButton();
+
+                if (!rhProjectChatState.mediaChunks.length) {
+                    return;
+                }
+
+                const blob = new Blob(rhProjectChatState.mediaChunks, { type: 'audio/webm' });
+                const file = new File([blob], 'vocal-' + Date.now() + '.webm', { type: 'audio/webm' });
+                uploadRhProjectChatFile(file);
+                rhProjectChatState.mediaChunks = [];
+                rhProjectChatState.mediaRecorder = null;
+            };
+
+            recorder.start();
+        })
+        .catch(() => {
+            showAjaxAlert('rhProjectChatAlert', 'danger', 'Acces micro refuse ou indisponible.');
+        });
+}
+
+function updateRhVoiceButton() {
+    const button = document.getElementById('rhProjectChatVoiceBtn');
+    if (!button) {
+        return;
+    }
+
+    button.textContent = rhProjectChatState.recording ? 'Stop' : 'Vocal';
+    button.className = rhProjectChatState.recording ? 'btn btn-danger' : 'btn btn-outline-secondary';
+}
+
+function startRhVideoCall() {
+    fetch('/api/projects/{{ project.id }}/chat/video-call', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible de lancer l\'appel video.');
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        if (data.url) {
+            window.open(String(data.url), '_blank', 'noopener');
+        }
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant le lancement de l\'appel video.');
+    });
+}
+
+function sendRhProjectChatMessage() {
+    const input = document.getElementById('rhProjectChatInput');
+    if (!input) {
+        return;
+    }
+
+    const message = String(input.value || '').trim();
+    if (message === '') {
+        return;
+    }
+
+    const payload = new URLSearchParams();
+    payload.set('message', message);
+
+    fetch('/api/projects/{{ project.id }}/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showAjaxAlert('rhProjectChatAlert', 'danger', data.message || 'Impossible d\'envoyer le message.');
+            return;
+        }
+
+        hideAjaxAlert('rhProjectChatAlert');
+        input.value = '';
+        loadRhProjectChatMessages();
+    })
+    .catch(() => {
+        showAjaxAlert('rhProjectChatAlert', 'danger', 'Erreur reseau pendant l\'envoi du message.');
+    });
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initRhProjectChat();
+});
 </script>
 {% endblock %}

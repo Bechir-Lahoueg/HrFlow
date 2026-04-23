@@ -119,20 +119,6 @@ class JobOfferType extends AbstractType
                     'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
                 ],
             ]);
-
-        if (!$isEdit) {
-            $builder->add('createdAt', DateTimeType::class, [
-                'label' => 'Created At',
-                'widget' => 'single_text',
-                'data' => new \DateTime(),
-                'attr' => [
-                    'class' => 'w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-3.5 py-2.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-violet-300',
-                ],
-                'label_attr' => [
-                    'class' => 'block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider',
-                ],
-            ]);
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void

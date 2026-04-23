@@ -8,6 +8,8 @@ use App\Service\Formation\ParticipationService;
 use App\Service\Formation\PresenceService;
 use App\Service\Formation\SessionFeedbackService;
 use App\Service\Formation\SessionService;
+use App\Service\Formation\ImageAiService;
+use App\Service\Shared\JitsiMeetService;
 use App\Form\Formation\FormationType;
 use App\Form\Formation\SessionFormationType;
 use App\Entity\Formation\Formation;
@@ -26,6 +28,8 @@ final class RhFormationController extends AbstractController
         private readonly FormationService $formationService,
         private readonly FormationChangeNotificationService $formationChangeNotificationService,
         private readonly SessionFeedbackService $sessionFeedbackService,
+        private readonly ImageAiService $imageAiService,
+        private readonly JitsiMeetService $jitsiMeetService,
     ) {
     }
 
@@ -44,11 +48,14 @@ final class RhFormationController extends AbstractController
 
         $formations = $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir);
         $formationIds = array_map(static fn($f) => (int) $f->getId(), $formations);
+        $topInsights = $this->formationService->getTopInsightsByRhId($userId);
 
         return $this->render('DashboardHr/formation/formation_index.html.twig', [
             'formations' => $formations,
             'ratingMap' => $this->sessionFeedbackService->getAverageRatingsByFormationIds($formationIds),
             'stats' => $this->formationService->getFormationStatsByRhId($userId),
+            'topFormations' => $topInsights['topFormations'],
+            'topFormateurs' => $topInsights['topFormateurs'],
             'filters' => [
                 'search' => $search,
                 'type' => $type,
@@ -67,6 +74,18 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $bannerUrl = $this->imageAiService->generateFormationBanner(
+                    (string) $formation->getTitre(),
+                    (string) $formation->getType(),
+                    (string) ($formation->getDescription() ?? '')
+                );
+                $formation->setImageUrl($bannerUrl);
+            } catch (\Throwable) {
+                // Keep creation flow resilient even if external AI image API fails.
+                $formation->setImageUrl(null);
+            }
+
             $em->persist($formation);
             $em->flush();
 
@@ -165,6 +184,7 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
             $this->validateSessionLocationField($session, $form);
         }
 
@@ -212,6 +232,7 @@ final class RhFormationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
             $this->validateSessionLocationField($session, $form);
         }
 
@@ -309,6 +330,16 @@ final class RhFormationController extends AbstractController
         ]);
     }
 
+    #[Route('/sessions/active', name: 'rh_formation_active_sessions', methods: ['GET'])]
+    public function activeSessions(SessionService $sessionService): Response
+    {
+        $userId = $this->getUser()->getId();
+
+        return $this->render('DashboardHr/formation/formation_active_sessions.html.twig', [
+            'sessions' => $sessionService->getActiveSessionsByRh($userId),
+        ]);
+    }
+
     #[Route('/{id}/feedbacks', name: 'rh_formation_feedbacks', methods: ['GET'])]
     public function feedbacks(string $id): Response
     {
@@ -340,7 +371,8 @@ final class RhFormationController extends AbstractController
     {
         $idInt = (int) $id;
         if ($this->isCsrfTokenValid('reject-participation-' . $idInt, (string) $request->request->get('_token'))) {
-            $participationService->updateStatus($idInt, 'Refuse');
+            $reason = trim((string) $request->request->get('refusal_reason', ''));
+            $participationService->updateStatus($idInt, 'Refuse', $reason !== '' ? $reason : null);
             $this->addFlash('success', 'Participation refusée.');
         }
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('rh_formation_list'));
@@ -355,8 +387,13 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
+        $returnToActive = $request->query->get('return') === 'active';
+
         if ($session->getStatut() !== 'En cours') {
             $this->addFlash('error', 'Vous ne pouvez faire la présence que pour des sessions En cours.');
+            if ($returnToActive) {
+                return $this->redirectToRoute('rh_formation_active_sessions');
+            }
             return $this->redirectToRoute('rh_formation_sessions', ['id' => $session->getFormation()->getId()]);
         }
 
@@ -402,6 +439,9 @@ final class RhFormationController extends AbstractController
                 }
 
                 $this->addFlash('success', 'Présences mises  à jour avec succès.');
+                if ($returnToActive) {
+                    return $this->redirectToRoute('rh_formation_active_sessions');
+                }
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
             }
         }
@@ -423,13 +463,44 @@ final class RhFormationController extends AbstractController
 
     private function validateSessionLocationField(SessionFormation $session, FormInterface $form): void
     {
-        $mode = strtolower(trim((string) $session->getMode()));
-        $mode = str_replace(['é', 'è', 'ê'], 'e', $mode);
+        $mode = $this->normalizeSessionMode((string) $session->getMode());
         $lieu = trim((string) $session->getLieu());
 
-        if ($mode === 'en ligne' && !$this->isValidHttpUrl($lieu)) {
+        if ($mode !== 'en ligne' && $lieu === '') {
+            $form->get('lieu')->addError(new FormError('Le lieu de la session est obligatoire pour ce mode.'));
+            return;
+        }
+
+        if ($mode === 'en ligne' && $lieu === '') {
+            $this->applyOnlineMeetingLinkIfNeeded($session);
+            $lieu = trim((string) $session->getLieu());
+        }
+
+        if ($mode === 'en ligne' && $lieu !== '' && !$this->isValidHttpUrl($lieu)) {
             $form->get('lieu')->addError(new FormError('Pour une session en ligne, veuillez renseigner un lien valide (Teams, Google Meet, Zoom...).'));
         }
+    }
+
+    private function applyOnlineMeetingLinkIfNeeded(SessionFormation $session): void
+    {
+        $mode = $this->normalizeSessionMode((string) $session->getMode());
+        $lieu = trim((string) $session->getLieu());
+
+        if ($mode !== 'en ligne' || $lieu !== '') {
+            return;
+        }
+
+        $formationId = (int) ($session->getFormation()?->getId() ?? 0);
+        $formationId = max(1, $formationId);
+
+        $session->setLieu($this->jitsiMeetService->generateFormationSessionLink($formationId, $session->getId()));
+    }
+
+    private function normalizeSessionMode(string $mode): string
+    {
+        $normalized = strtolower(trim($mode));
+
+        return str_replace(['é', 'è', 'ê'], 'e', $normalized);
     }
 
     private function isValidHttpUrl(string $value): bool

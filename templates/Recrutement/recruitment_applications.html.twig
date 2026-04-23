@@ -34,8 +34,8 @@
         {% endfor %}
 
 
-        <div class ="flex justify-center" >
-        {% include 'Recrutement/_recruitment_nav.html.twig' %}
+        <div class="flex justify-center px-6 pt-2 pb-4">
+            {% include 'Recrutement/_recruitment_nav.html.twig' %}
         </div>
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
@@ -126,8 +126,10 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="flex-1 min-w-[160px]">
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Statut</label>
+                        <div class="flex-1 min-w-[160px]">                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Rechercher</label>
+                            <input name="search" type="text" value="{{ app.request.query.get('search') }}" class="w-full rounded-lg border border-slate-200 bg-slate-50 dark:bg-zinc-800 dark:border-zinc-700 px-3 py-2 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300 placeholder-slate-400" placeholder="Nom ou email..." />
+                        </div>
+                        <div class="flex-1 min-w-[140px]">                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Statut</label>
                             <select name="status" class="w-full rounded-lg border border-slate-200 bg-slate-50 dark:bg-zinc-800 dark:border-zinc-700 px-3 py-2 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300">
                                 <option value="">Tous</option>
                                 <option value="PENDING" {% if app.request.query.get('status') == 'PENDING' %}selected{% endif %}>En attente</option>
@@ -152,12 +154,27 @@
                             </a>
                         </div>
                     </form>
+                    
+{# Bulk Actions Form - Single Symfony Form wrapping table #}
+    {% if bulkForm %}
+    {{ form_start(bulkForm, {'attr': {'class': 'bulk-form'}}) }}
+    <div class="mt-4 flex items-center gap-3 p-3 bg-slate-50 dark:bg-zinc-800 rounded-lg border border-slate-200 dark:border-zinc-700">
+        <span class="text-xs font-semibold text-slate-500 uppercase shrink-0">Actions groupées:</span>
+        {{ form_widget(bulkForm.action, {'attr': {'class': 'rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-sm text-slate-700 dark:text-zinc-300 focus:outline-none focus:border-teal-300'}}) }}
+        <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-bold bg-teal-600 text-white hover:bg-teal-700 transition-colors shrink-0">
+            Appliquer
+        </button>
+    </div>
+                    {% endif %}
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
+                <div class="overflow-x-auto -mx-5 px-5">
+                    <table class="w-full text-sm min-w-[900px]">
                         <thead>
                             <tr class="border-b border-slate-100 dark:border-zinc-800 text-left">
+                                <th class="px-3 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider w-10">
+                                    {# Bulk selection via Symfony form #}
+                                </th>
                                 <th class="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Candidat</th>
                                 <th class="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Offre / Département</th>
                                 <th class="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Expérience</th>
@@ -169,8 +186,17 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50 dark:divide-zinc-800/50">
-                            {% for app in applications %}
+                            {% if bulkForm %}
+                            {% for app in pagination %}
                             <tr class="app-row">
+                                <td class="px-3 py-4">
+                                    {# Render checkbox from Symfony form by matching choice value to app id #}
+                                    {% for choice in bulkForm.selected %}
+                                        {% if choice.vars.value == app.id %}
+                                            {{ form_widget(choice, {'attr': {'class': 'rounded border-slate-300 text-teal-600 focus:ring-teal-500'}}) }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shrink-0 shadow-sm shadow-teal-500/20">
@@ -291,9 +317,26 @@
                                 </td>
                             </tr>
                             {% endfor %}
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
+                {{ form_end(bulkForm) }}
+                
+                {# Pagination #}
+                {% if pagination is defined and pagination.pageCount > 1 %}
+                <div class="mt-6 flex justify-center">
+                    {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/sliding.html.twig', {}, {
+                        'class': 'pagination flex gap-1',
+                        'page_attr': 'class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"',
+                        'current_class': 'px-3 py-1.5 rounded-lg text-sm font-bold bg-teal-600 text-white',
+                        'first_page_class': 'px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100',
+                        'last_page_class': 'px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100',
+                        'previous_class': 'px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100',
+                        'next_class': 'px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100'
+                    }) }}
+                </div>
+                {% endif %}
             </section>
 
             {# ══════════ Deleted Applications Section ══════════ #}
@@ -431,6 +474,66 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const openModal = document.querySelector('[id$="Modal"]:not(.hidden)');
         if (openModal) closeModal(openModal.id);
+    }
+});
+
+// Bulk actions functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllApplications');
+    const checkboxes = document.querySelectorAll('.application-checkbox');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const bulkForm = document.getElementById('bulkActionForm');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            updateSelectedCount();
+            // Uncheck "select all" if any checkbox is unchecked
+            if (!checkbox.checked && selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+            }
+            // Check "select all" if all checkboxes are checked
+            if (selectAllCheckbox) {
+                const allChecked = Array.from(checkboxes).every(function(cb) {
+                    return cb.checked;
+                });
+                selectAllCheckbox.checked = allChecked;
+            }
+        });
+    });
+    
+    function updateSelectedCount() {
+        const checkedCount = document.querySelectorAll('.application-checkbox:checked').length;
+        if (selectedCountSpan) {
+            selectedCountSpan.textContent = checkedCount + ' sélectionné(s)';
+        }
+    }
+    
+    if (bulkForm) {
+        bulkForm.addEventListener('submit', function(e) {
+            const checkedCount = document.querySelectorAll('.application-checkbox:checked').length;
+            const action = bulkForm.querySelector('select[name="action"]').value;
+            
+            if (checkedCount === 0) {
+                e.preventDefault();
+                alert('Veuillez sélectionner au moins une candidature.');
+                return;
+            }
+            
+            if (!action) {
+                e.preventDefault();
+                alert('Veuillez sélectionner une action.');
+                return;
+            }
+        });
     }
 });
 </script>

@@ -11,6 +11,10 @@
         .filter-chip{transition:all .2s}
         .filter-chip:hover{transform:translateY(-1px)}
         .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+        .rank-badge{min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;font-size:11px;font-weight:800}
+        .rank-gold{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
+        .rank-silver{background:#e5e7eb;color:#374151;border:1px solid #9ca3af}
+        .rank-bronze{background:#ffedd5;color:#9a3412;border:1px solid #fb923c}
     </style>
 {% endblock %}
 
@@ -49,7 +53,7 @@
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Développez vos compétences</h2>
                         <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Découvrez nos formations et inscrivez-vous aux sessions disponibles.</p>
                     </div>
-                    <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="grid gap-3 sm:grid-cols-3">
                         <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
                             <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Formations</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ formations|length }}</p>
@@ -60,8 +64,88 @@
                             <p class="mt-1 text-3xl font-extrabold font-mono-num"><a href="{{ path('employee_formation_requests') }}" class="hover:text-cyan-300 transition-colors">Voir</a></p>
                             <p class="text-xs text-cyan-100/60 mt-1">suivi</p>
                         </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Mes Certificats</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num"><a href="{{ path('employee_formation_certificates') }}" class="hover:text-cyan-300 transition-colors">Voir</a></p>
+                            <p class="text-xs text-cyan-100/60 mt-1">reussite</p>
+                        </div>
                     </div>
                 </div>
+            </section>
+
+            {# ══════════ Top 3 ══════════ #}
+            <section class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up">
+                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
+                            Top 3 Formations
+                        </h3>
+                        <span class="text-[11px] font-semibold text-zinc-500">Basé sur les notes</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for row in topFormations|default([])|slice(0, 3) %}
+                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                            <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: row.formation.id}) }}'" class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 hover:border-indigo-300 hover:ring-2 hover:ring-indigo-500/10 transition cursor-pointer bg-zinc-50/40 dark:bg-zinc-800/20">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3 min-w-0">
+                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ row.formation.titre }}</p>
+                                            <p class="text-xs text-zinc-500 truncate">{{ row.formation.organisme ?: 'Organisme non renseigné' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="flex items-center justify-end gap-0.5">
+                                            {% for i in 1..5 %}
+                                                <span class="text-sm {{ row.average >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                            {% endfor %}
+                                        </div>
+                                        <p class="text-[11px] text-zinc-500 mt-0.5">{{ row.count }} avis</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
+                            Top 3 Formateurs
+                        </h3>
+                        <span class="text-[11px] font-semibold text-zinc-500">Par organisme</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for formateur in topFormateurs|default([])|slice(0, 3) %}
+                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                            <div class="block rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 bg-zinc-50/40 dark:bg-zinc-800/20">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3 min-w-0">
+                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ formateur.organisme }}</p>
+                                            <p class="text-xs text-zinc-500">{{ formateur.formationsCount }} formation(s)</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="flex items-center justify-end gap-0.5">
+                                            {% for i in 1..5 %}
+                                                <span class="text-sm {{ formateur.averageRating >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                            {% endfor %}
+                                        </div>
+                                        <p class="text-[11px] text-zinc-500 mt-0.5">{{ formateur.feedbackCount }} avis</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
+                        {% endfor %}
+                    </div>
+                </article>
             </section>
 
             {# ══════════ Formation Table ══════════ #}
@@ -69,7 +153,7 @@
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
                         </div>
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Catalogue des Formations</h3>
                     </div>
@@ -95,17 +179,27 @@
                             <option value="duree-DESC" {% if filters.sort == 'duree-DESC' %}selected{% endif %}>Durée (Décroissant)</option>
                         </select>
 
+                        {% if filters.organisme %}
+                            <input type="hidden" name="organisme" value="{{ filters.organisme }}">
+                        {% endif %}
+
                         <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center shadow-sm" title="Filtrer">
                             Filtrer
                         </button>
 
-                        {% if filters.type or (filters.sort != 'created_at-DESC') %}
+                        {% if filters.type or filters.organisme or (filters.sort != 'created_at-DESC') %}
                         <a href="{{ path('employee_formation_index') }}" class="text-zinc-400 hover:text-red-500 transition" title="Réinitialiser filtres">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </a>
                         {% endif %}
                     </form>
                 </div>
+                {% if filters.organisme %}
+                    <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 text-xs font-semibold">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14"/></svg>
+                        Formateur: {{ filters.organisme }}
+                    </div>
+                {% endif %}
 
                 {# Grid des Formations #}
                 {% set formationTypeStyles = {
@@ -126,12 +220,48 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
+                        {% set formationText = (formation.titre ~ ' ' ~ formation.type)|lower %}
+                        {% set logoByKeyword = {
+                            'angular': 'https://cdn.simpleicons.org/angular/DD0031',
+                            'symfony': 'https://cdn.simpleicons.org/symfony/000000',
+                            'php': 'https://cdn.simpleicons.org/php/777BB4',
+                            'java': 'https://cdn.simpleicons.org/openjdk/EA2D2E',
+                            'spring': 'https://cdn.simpleicons.org/spring/6DB33F',
+                            'javascript': 'https://cdn.simpleicons.org/javascript/F7DF1E',
+                            'typescript': 'https://cdn.simpleicons.org/typescript/3178C6',
+                            'node': 'https://cdn.simpleicons.org/nodedotjs/339933',
+                            'react': 'https://cdn.simpleicons.org/react/61DAFB',
+                            'vue': 'https://cdn.simpleicons.org/vuedotjs/4FC08D',
+                            'python': 'https://cdn.simpleicons.org/python/3776AB',
+                            'django': 'https://cdn.simpleicons.org/django/092E20',
+                            'mysql': 'https://cdn.simpleicons.org/mysql/4479A1',
+                            'docker': 'https://cdn.simpleicons.org/docker/2496ED',
+                            'aws': 'https://cdn.simpleicons.org/amazonaws/232F3E'
+                        } %}
+                        {% set logoImage = null %}
+                        {% for keyword, url in logoByKeyword %}
+                            {% if logoImage is null and keyword in formationText %}
+                                {% set logoImage = url %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% set fallbackImage = logoImage ?: '/logo.png' %}
+                        {% set hardFallbackImage = '/logo.png' %}
+                        {% set rawCoverImage = formation.imageUrl|default('')|trim %}
+                        {% set coverImage = rawCoverImage starts with '=' ? rawCoverImage|slice(1) : rawCoverImage %}
+                        {% if coverImage == '' %}
+                            {% set coverImage = fallbackImage %}
+                        {% endif %}
                         <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 {% set rating = ratingMap[formation.id]|default(null) %}
                                 <div class="flex justify-between items-start mb-3 gap-2">
-                                    <div class="min-w-0">
+                                    <div class="min-w-0 flex items-start gap-3">
+                                        <div class="w-11 h-11 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 shrink-0 p-0.5">
+                                            <img src="{{ coverImage }}" alt="Logo {{ formation.titre }}" class="w-full h-full rounded-full object-contain p-1 bg-white" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ hardFallbackImage }}';">
+                                        </div>
+                                        <div class="min-w-0">
                                         <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
                                         <div class="mt-1 flex items-center gap-1 flex-wrap">
                                             {% set hasReviews = rating and rating.count > 0 %}
@@ -145,8 +275,12 @@
                                                     Voir avis ({{ rating.count }})
                                                 </a>
                                             {% else %}
-                                                <span class="text-xs text-zinc-500">Aucun avis</span>
+                                                {% for i in 1..5 %}
+                                                    <span class="text-sm text-zinc-300">★</span>
+                                                {% endfor %}
+                                                <span class="text-xs text-zinc-500 ml-1">0/5</span>
                                             {% endif %}
+                                        </div>
                                         </div>
                                     </div>
                                     {% set typeStyle = formationTypeStyles[formation.type]|default('background:#f3f4f6;color:#374151;border:1px solid #d1d5db;') %}

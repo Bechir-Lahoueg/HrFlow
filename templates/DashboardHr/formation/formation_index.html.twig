@@ -82,7 +82,7 @@
                     <p class="text-[13px] text-zinc-400 mt-1 font-medium">Formations</p>
                     <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-slate-400 to-slate-300"></div></div>
                 </div>
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2">
+                <div onclick="window.location.href='{{ path('rh_formation_active_sessions') }}'" class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2 cursor-pointer">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
                             <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -104,6 +104,50 @@
                     <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div></div>
                 </div>
             </div>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formations</h3>
+                        <span class="text-[11px] px-2 py-1 rounded bg-blue-50 text-blue-700 font-bold">Demandes + avis</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for item in topFormations|default([]) %}
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
+                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.titre }}</p>
+                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
+                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
+                                    <span>{{ item.feedbackCount|default(0) }} avis</span>
+                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formateurs</h3>
+                        <span class="text-[11px] px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-bold">Par organisme</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for item in topFormateurs|default([]) %}
+                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
+                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.organisme }}</p>
+                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
+                                    <span>{{ item.formationsCount|default(0) }} formation(s)</span>
+                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
+                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
 
             {# ══════════ Formation Table ══════════ #}
             <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
@@ -173,12 +217,48 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for formation in formations %}
+                        {% set formationText = (formation.titre ~ ' ' ~ formation.type)|lower %}
+                        {% set logoByKeyword = {
+                            'angular': 'https://cdn.simpleicons.org/angular/DD0031',
+                            'symfony': 'https://cdn.simpleicons.org/symfony/000000',
+                            'php': 'https://cdn.simpleicons.org/php/777BB4',
+                            'java': 'https://cdn.simpleicons.org/openjdk/EA2D2E',
+                            'spring': 'https://cdn.simpleicons.org/spring/6DB33F',
+                            'javascript': 'https://cdn.simpleicons.org/javascript/F7DF1E',
+                            'typescript': 'https://cdn.simpleicons.org/typescript/3178C6',
+                            'node': 'https://cdn.simpleicons.org/nodedotjs/339933',
+                            'react': 'https://cdn.simpleicons.org/react/61DAFB',
+                            'vue': 'https://cdn.simpleicons.org/vuedotjs/4FC08D',
+                            'python': 'https://cdn.simpleicons.org/python/3776AB',
+                            'django': 'https://cdn.simpleicons.org/django/092E20',
+                            'mysql': 'https://cdn.simpleicons.org/mysql/4479A1',
+                            'docker': 'https://cdn.simpleicons.org/docker/2496ED',
+                            'aws': 'https://cdn.simpleicons.org/amazonaws/232F3E'
+                        } %}
+                        {% set logoImage = null %}
+                        {% for keyword, url in logoByKeyword %}
+                            {% if logoImage is null and keyword in formationText %}
+                                {% set logoImage = url %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% set fallbackImage = logoImage ?: '/logo.png' %}
+                        {% set hardFallbackImage = '/logo.png' %}
+                        {% set rawCoverImage = formation.imageUrl|default('')|trim %}
+                        {% set coverImage = rawCoverImage starts with '=' ? rawCoverImage|slice(1) : rawCoverImage %}
+                        {% if coverImage == '' %}
+                            {% set coverImage = fallbackImage %}
+                        {% endif %}
                         <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id}) }}'"
                              class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
                             <div>
                                 {% set rating = ratingMap[formation.id]|default(null) %}
                                 <div class="flex justify-between items-start mb-3 gap-2">
-                                    <div class="min-w-0">
+                                    <div class="min-w-0 flex items-start gap-3">
+                                        <div class="w-11 h-11 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 shrink-0 p-0.5">
+                                            <img src="{{ coverImage }}" alt="Logo {{ formation.titre }}" class="w-full h-full rounded-full object-contain p-1 bg-white" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ hardFallbackImage }}';">
+                                        </div>
+                                        <div class="min-w-0">
                                         <h4 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
                                         <div class="mt-1 flex items-center gap-1 flex-wrap">
                                             {% set hasReviews = rating and rating.count > 0 %}
@@ -194,6 +274,7 @@
                                             {% else %}
                                                 <span class="text-xs text-zinc-500">Aucun avis</span>
                                             {% endif %}
+                                        </div>
                                         </div>
                                     </div>
                                     {% set typeStyle = formationTypeStyles[formation.type]|default('background:#f3f4f6;color:#374151;border:1px solid #d1d5db;') %}

@@ -7,6 +7,7 @@ use App\Repository\Rh\EmployeeRepository;
 use App\Repository\Rh\LeaveRequestRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
 use App\Repository\Formation\SessionFormationRepository;
+use App\Service\Shared\HrFlowMailer;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ParticipationService
@@ -18,6 +19,7 @@ final class ParticipationService
         private readonly EmployeeRepository $employeeRepository,
         private readonly LeaveRequestRepository $leaveRequestRepository,
         private readonly PresenceService $presenceService,
+        private readonly HrFlowMailer $hrFlowMailer,
     ) {
     }
 
@@ -97,7 +99,7 @@ final class ParticipationService
         return $this->participationRepository->findByRhId($rhId, $status, $formationId, $priorityOnly);
     }
 
-    public function updateStatus(int $participationId, string $status): void
+    public function updateStatus(int $participationId, string $status, ?string $refusalReason = null): void
     {
         $participation = $this->participationRepository->find($participationId);
         if (!$participation) {
@@ -106,6 +108,11 @@ final class ParticipationService
 
         $participation->setStatutParticipation($status);
         $this->em->flush();
+
+        if ($status === 'Refuse') {
+            $reason = $refusalReason !== null ? trim($refusalReason) : null;
+            $this->hrFlowMailer->sendFormationRejected($participation, $reason !== '' ? $reason : null);
+        }
     }
 
     /**
@@ -139,6 +146,43 @@ final class ParticipationService
 
         $alreadyAccepted = in_array((string) $participation->getStatutParticipation(), ['Accepte', 'Certificat obtenu'], true);
         if (!$alreadyAccepted) {
+            $acceptedInSameFormation = $this->participationRepository->findAcceptedInFormationExcludingSession(
+                (int) $employee->getId(),
+                (int) $formation->getId(),
+                (int) $session->getId()
+            );
+            if ($acceptedInSameFormation) {
+                $conflictDate = $acceptedInSameFormation->getSession()?->getDateDebut()?->format('d/m/Y') ?? '-';
+                return [
+                    'ok' => false,
+                    'message' => sprintf('Vous avez deja accepte cet employe dans une autre session de cette formation (session du %s). Refusez les autres demandes avant de continuer.', $conflictDate),
+                ];
+            }
+
+            $start = $session->getDateDebut();
+            $end = $session->getDateFin();
+            if ($start && $end) {
+                $acceptedOverlap = $this->participationRepository->findAcceptedWithDateOverlapExcludingSession(
+                    (int) $employee->getId(),
+                    $start,
+                    $end,
+                    (int) $session->getId()
+                );
+
+                if ($acceptedOverlap) {
+                    $overlapSession = $acceptedOverlap->getSession();
+                    $overlapFormation = $overlapSession?->getFormation();
+                    $from = $overlapSession?->getDateDebut()?->format('d/m/Y') ?? '-';
+                    $to = $overlapSession?->getDateFin()?->format('d/m/Y') ?? '-';
+                    $title = $overlapFormation?->getTitre() ?? 'autre formation';
+
+                    return [
+                        'ok' => false,
+                        'message' => sprintf('Cet employe est deja accepte dans "%s" (%s - %s). Il ne peut pas suivre deux formations en parallele.', $title, $from, $to),
+                    ];
+                }
+            }
+
             $capacity = (int) ($session->getCapaciteMax() ?? 0);
             $acceptedCount = $this->participationRepository->countAcceptedBySession((int) $session->getId());
             if ($capacity > 0 && $acceptedCount >= $capacity) {
@@ -146,8 +190,54 @@ final class ParticipationService
             }
         }
 
+        if ($alreadyAccepted) {
+            return ['ok' => true, 'message' => 'Participation deja acceptee.'];
+        }
+
         $participation->setStatutParticipation('Accepte');
+
+        $toRefuse = [];
+        foreach ($this->participationRepository->findPendingInFormationExcludingSession((int) $employee->getId(), (int) $formation->getId(), (int) $session->getId()) as $pending) {
+            $toRefuse[(int) $pending->getId()] = $pending;
+        }
+
+        $start = $session->getDateDebut();
+        $end = $session->getDateFin();
+        if ($start && $end) {
+            foreach ($this->participationRepository->findPendingWithDateOverlapExcludingSession(
+                (int) $employee->getId(),
+                $start,
+                $end,
+                (int) $session->getId(),
+                (int) $formation->getId()
+            ) as $pending) {
+                $toRefuse[(int) $pending->getId()] = $pending;
+            }
+        }
+
+        foreach ($toRefuse as $pending) {
+            $pending->setStatutParticipation('Refuse');
+        }
+
         $this->em->flush();
+        $this->hrFlowMailer->sendFormationAccepted($participation);
+        foreach ($toRefuse as $pending) {
+            $pendingSession = $pending->getSession();
+            $pendingFormation = $pendingSession?->getFormation();
+            $autoReason = 'Votre demande a ete refusee automatiquement car vous avez deja ete accepte(e) dans une session prioritaire.';
+
+            if ($pendingFormation && $formation && (int) $pendingFormation->getId() === (int) $formation->getId()) {
+                $acceptedDate = $session->getDateDebut()?->format('d/m/Y') ?? '-';
+                $autoReason = sprintf('Votre demande a ete refusee automatiquement car vous avez deja ete accepte(e) dans la session du %s de cette formation.', $acceptedDate);
+            }
+
+            $this->hrFlowMailer->sendFormationRejected($pending, $autoReason);
+        }
+
+        $refusedCount = count($toRefuse);
+        if ($refusedCount > 0) {
+            return ['ok' => true, 'message' => sprintf('Participation acceptee. %d autre(s) demande(s) conflictuelle(s) ont ete refusee(s) automatiquement.', $refusedCount)];
+        }
 
         return ['ok' => true, 'message' => 'Participation acceptee.'];
     }

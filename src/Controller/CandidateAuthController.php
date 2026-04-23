@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Recrutement\Candidate;
+use App\Form\Recrutement\CandidateLoginFormType;
 use App\Form\Recrutement\CandidateRegistrationFormType;
+use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\CandidateRepository;
+use App\Repository\Recrutement\JobOfferRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +19,9 @@ final class CandidateAuthController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly CandidateRepository $candidateRepository
+        private readonly CandidateRepository $candidateRepository,
+        private readonly JobOfferRepository $jobOfferRepository,
+        private readonly ApplicationRepository $applicationRepository,
     ) {
     }
 
@@ -61,9 +66,22 @@ final class CandidateAuthController extends AbstractController
     #[Route('/candidat/connexion', name: 'app_candidate_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        $form = $this->createForm(CandidateLoginFormType::class, null, [
+            'action' => $this->generateUrl('app_login'),
+        ]);
+
+        $form->get('identifier')->setData($authenticationUtils->getLastUsername());
+
+        $candidateStats = [
+            'openOffersCount' => $this->jobOfferRepository->countPublicOpenOffers(),
+            'candidatesCount' => $this->candidateRepository->count([]),
+            'responseRate' => $this->applicationRepository->getGlobalResponseRate(),
+        ];
+
         return $this->render('Auth/candidate_login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
+            'form' => $form->createView(),
             'error' => $authenticationUtils->getLastAuthenticationError(),
+            'candidateStats' => $candidateStats,
         ]);
     }
 }

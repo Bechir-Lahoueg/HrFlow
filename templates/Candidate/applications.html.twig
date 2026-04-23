@@ -1,161 +1,238 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Candidatures | Espace Candidat{% endblock %}
+{% block title %}Mes Candidatures | HrFlow{% endblock %}
 
 {% block stylesheets %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #f5f6f8; color: #1a1d23; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-anim { animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) both; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e8eaed;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: box-shadow .2s, border-color .2s;
+        }
+        .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); border-color: #d1d5db; }
+
+        /* Status chip */
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 99px;
+            font-size: 11px; font-weight: 700;
+        }
+
+        /* Progress stepper */
+        .step-dot {
+            width: 26px; height: 26px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0;
+        }
+        .step-dot.done   { background: #16a34a; color: #fff; }
+        .step-dot.active { background: #16a34a; color: #fff; box-shadow: 0 0 0 4px #dcfce7; }
+        .step-dot.idle   { background: #f1f3f5; color: #9ca3af; }
+        .step-line { flex: 1; height: 2px; margin-bottom: 16px; border-radius: 2px; }
+
+        /* Stat filter chips */
+        .filter-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 99px;
+            font-size: 12px; font-weight: 600;
+            background: #fff; border: 1px solid #e8eaed; color: #374151;
+            cursor: pointer; transition: border-color .15s, background .15s;
+            text-decoration: none;
+        }
+        .filter-chip:hover { border-color: #16a34a; color: #15803d; }
+        .filter-chip .count {
+            padding: 1px 7px; border-radius: 99px;
+            background: #f1f3f5; color: #6b7280;
+            font-size: 10px; font-weight: 700;
+        }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 20px; border-radius: 10px;
+            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            border: none; cursor: pointer; text-decoration: none;
+            transition: background .15s, box-shadow .15s, transform .12s;
+        }
+        .btn-primary:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,.25); }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; padding: 72px 24px;
+            background: #fff; border: 1px solid #e8eaed; border-radius: 16px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
-    {# Navigation #}
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-16">
-                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[2.5] origin-left">
-                </a>
+<div style="min-height:100vh; background:#f5f6f8;">
+    {% include 'Candidate/components/_header.html.twig' %}
 
-                <div class="hidden md:flex items-center gap-1">
-                    <a href="{{ path('app_candidate_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Tableau de bord
-                    </a>
-                    <a href="{{ path('app_candidate_applications') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50">
-                        Mes candidatures
-                    </a>
-                    <a href="{{ path('app_candidate_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Offres d'emploi
-                    </a>
-                    <a href="{{ path('app_candidate_interviews') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mes entretiens
-                    </a>
-                    <a href="{{ path('app_candidate_profile') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mon profil
-                    </a>
-                </div>
+    <main style="max-width:1100px; margin:0 auto; padding:28px 20px 60px;">
 
-                <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-600 hidden sm:block">{{ app.user.username }}</span>
-                    <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        Deconnexion
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-6 py-8">
         {# Page Header #}
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">Mes candidatures</h1>
-            <p class="text-slate-600">Suivez l'etat de vos candidatures et restez informe de leur evolution.</p>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:24px;" class="card-anim">
+            <div>
+                <h1 style="font-size:22px; font-weight:700; color:#1a1d23; margin:0 0 4px;">Mes candidatures</h1>
+                <p style="font-size:14px; color:#6b7280; margin:0;">Suivez l'état de toutes vos candidatures en temps réel.</p>
+            </div>
+            {% if applications|length > 0 %}
+                <a href="{{ path('app_candidate_job_offers') }}" class="btn-primary">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Nouvelle candidature
+                </a>
+            {% endif %}
         </div>
 
         {% if applications|length > 0 %}
+
+            {# Status Filter Chips #}
+            {% set statusGroups = {
+                'Toutes': applications|length,
+                'En attente': applications|filter(a => a.status == 'PENDING')|length,
+                'En revue': applications|filter(a => a.status == 'REVIEWING')|length,
+                'Entretien': applications|filter(a => a.status == 'INTERVIEW')|length,
+                'Offre': applications|filter(a => a.status in ['OFFER', 'HIRED'])|length,
+                'Rejetées': applications|filter(a => a.status == 'REJECTED')|length
+            } %}
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;" class="card-anim">
+                {% for label, count in statusGroups %}
+                    {% if count > 0 or label == 'Toutes' %}
+                        <span class="filter-chip">
+                            {{ label }}
+                            <span class="count">{{ count }}</span>
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
             {# Applications List #}
-            <div class="space-y-4">
-                {% for application in applications %}
-                    <article class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                        <div class="p-6">
-                            <div class="flex flex-col lg:flex-row lg:items-center gap-6">
-                                {# Job Info #}
-                                <div class="flex-1">
-                                    <div class="flex items-start gap-4">
-                                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shrink-0">
-                                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h2 class="text-xl font-bold text-slate-900 mb-1 truncate">{{ application.jobOffer.title }}</h2>
-                                            <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                                                {% if application.jobOffer.department %}
-                                                    <span class="inline-flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
-                                                        {{ application.jobOffer.department }}
-                                                    </span>
-                                                {% endif %}
-                                                {% if application.jobOffer.location %}
-                                                    <span class="inline-flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                                                        {{ application.jobOffer.location }}
-                                                    </span>
-                                                {% endif %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for i, application in applications %}
+                    {% set progressSteps = { 'PENDING': 1, 'REVIEWING': 2, 'REVIEWED': 2, 'INTERVIEW': 3, 'OFFER': 4, 'HIRED': 4, 'REJECTED': 0 } %}
+                    {% set currentStep = progressSteps[application.status] ?? 1 %}
+                    {% set isRejected = application.status == 'REJECTED' %}
+
+                    <article class="card card-anim" style="animation-delay:{{ (i * 0.06) }}s;">
+                        <div style="padding:22px 24px;">
+                            <div style="display:flex; align-items:flex-start; gap:16px;">
+
+                                {# Icon #}
+                                <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#4f46e5); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+
+                                {# Info #}
+                                <div style="flex:1; min-width:0;">
+                                    <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                                        <h2 style="font-size:16px; font-weight:700; color:#1a1d23; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:480px;">
+                                            {{ application.jobOffer.title }}
+                                        </h2>
+
+                                        {# Status Badge #}
+                                        {% set statusStyles = {
+                                            'PENDING':   { bg: '#fffbeb', color: '#92400e', dot: '#f59e0b' },
+                                            'REVIEWING': { bg: '#eff6ff', color: '#1e40af', dot: '#3b82f6' },
+                                            'REVIEWED':  { bg: '#eff6ff', color: '#1e40af', dot: '#3b82f6' },
+                                            'INTERVIEW': { bg: '#f5f3ff', color: '#4c1d95', dot: '#8b5cf6' },
+                                            'OFFER':     { bg: '#f0fdf4', color: '#14532d', dot: '#16a34a' },
+                                            'HIRED':     { bg: '#f0fdf4', color: '#14532d', dot: '#16a34a' },
+                                            'REJECTED':  { bg: '#fef2f2', color: '#7f1d1d', dot: '#ef4444' }
+                                        } %}
+                                        {% set st = statusStyles[application.status] ?? { bg: '#f1f5f9', color: '#475569', dot: '#94a3b8' } %}
+                                        <span class="chip" style="background:{{ st.bg }}; color:{{ st.color }}; flex-shrink:0;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:{{ st.dot }};"></span>
+                                            {{ application.statusLabel }}
+                                        </span>
+                                    </div>
+
+                                    {# Meta #}
+                                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:12px; color:#6b7280; margin-bottom:16px;">
+                                        {% if application.jobOffer.department %}
+                                            <span style="display:flex; align-items:center; gap:4px;">
+                                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
+                                                {{ application.jobOffer.department }}
+                                            </span>
+                                        {% endif %}
+                                        {% if application.jobOffer.location %}
+                                            <span style="display:flex; align-items:center; gap:4px;">
+                                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                                {{ application.jobOffer.location }}
+                                            </span>
+                                        {% endif %}
+                                        <span style="display:flex; align-items:center; gap:4px;">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            Postulé le {{ application.appliedAt|date('d M Y') }}
+                                        </span>
+                                    </div>
+
+                                    {# Progress Stepper or Rejected #}
+                                    {% if not isRejected %}
+                                        <div style="padding-top:16px; border-top:1px solid #f1f3f5;">
+                                            <div style="display:flex; align-items:center;">
+                                                {% set steps = [
+                                                    { label: 'Soumise', step: 1 },
+                                                    { label: 'En revue', step: 2 },
+                                                    { label: 'Entretien', step: 3 },
+                                                    { label: 'Offre', step: 4 }
+                                                ] %}
+                                                {% for j, s in steps %}
+                                                    {% set done   = currentStep >= s.step %}
+                                                    {% set active = currentStep == s.step %}
+                                                    <div style="display:flex; align-items:center; {{ j < 3 ? 'flex:1;' : '' }}">
+                                                        <div style="display:flex; flex-direction:column; align-items:center;">
+                                                            <div class="step-dot {{ done ? (active ? 'active' : 'done') : 'idle' }}">
+                                                                {% if done %}
+                                                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                                {% else %}
+                                                                    {{ j + 1 }}
+                                                                {% endif %}
+                                                            </div>
+                                                            <span style="font-size:10px; font-weight:600; margin-top:5px; white-space:nowrap; color:{{ done ? '#15803d' : '#9ca3af' }};">{{ s.label }}</span>
+                                                        </div>
+                                                        {% if j < 3 %}
+                                                            <div class="step-line" style="background:{{ currentStep > s.step ? '#86efac' : '#f1f3f5' }};"></div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                {# Status Badge #}
-                                <div class="shrink-0">
-                                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-{{ application.statusColor }}-50 text-{{ application.statusColor }}-700 border border-{{ application.statusColor }}-200">
-                                        <span class="w-2 h-2 rounded-full bg-{{ application.statusColor }}-500"></span>
-                                        {{ application.statusLabel }}
-                                    </span>
-                                </div>
-
-                                {# Date Applied #}
-                                <div class="shrink-0 text-right">
-                                    <p class="text-sm font-medium text-slate-900">Postule le</p>
-                                    <p class="text-sm text-slate-500">{{ application.appliedAt|date('d M Y') }}</p>
-                                </div>
-                            </div>
-
-                            {# Status Progress Bar #}
-                            <div class="mt-6 pt-6 border-t border-slate-100">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Progression</span>
-                                    <span class="text-xs text-slate-400">{{ application.statusLabel }}</span>
-                                </div>
-                                <div class="relative">
-                                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        {% set progress = {
-                                            'PENDING': 20,
-                                            'REVIEWING': 40,
-                                            'INTERVIEW': 60,
-                                            'OFFER': 80,
-                                            'HIRED': 100,
-                                            'REJECTED': 0
-                                        } %}
-                                        <div class="h-full bg-gradient-to-r from-{{ application.statusColor }}-500 to-{{ application.statusColor }}-400 rounded-full transition-all duration-500" style="width: {{ progress[application.status] ?? 20 }}%"></div>
-                                    </div>
-                                    <div class="flex justify-between mt-2">
-                                        <div class="flex items-center gap-1 text-xs {{ application.status in ['PENDING', 'REVIEWING', 'INTERVIEW', 'OFFER', 'HIRED'] ? 'text-emerald-600 font-medium' : 'text-slate-400' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Soumise
+                                    {% else %}
+                                        <div style="padding-top:14px; border-top:1px solid #f1f3f5;">
+                                            <span style="display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; font-size:12px; font-weight:600; color:#991b1b;">
+                                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                Candidature non retenue
+                                            </span>
                                         </div>
-                                        <div class="flex items-center gap-1 text-xs {{ application.status in ['REVIEWING', 'INTERVIEW', 'OFFER', 'HIRED'] ? 'text-emerald-600 font-medium' : 'text-slate-400' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            En revue
-                                        </div>
-                                        <div class="flex items-center gap-1 text-xs {{ application.status in ['INTERVIEW', 'OFFER', 'HIRED'] ? 'text-emerald-600 font-medium' : 'text-slate-400' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            Entretien
-                                        </div>
-                                        <div class="flex items-center gap-1 text-xs {{ application.status in ['OFFER', 'HIRED'] ? 'text-emerald-600 font-medium' : 'text-slate-400' }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Offre
-                                        </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     </article>
                 {% endfor %}
             </div>
+
         {% else %}
-            {# Empty State #}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-                <div class="w-24 h-24 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
+            <div class="empty-state card-anim">
+                <div style="width:64px; height:64px; border-radius:16px; background:#f1f3f5; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+                    <svg width="28" height="28" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-3">Aucune candidature</h3>
-                <p class="text-slate-600 mb-6 max-w-md mx-auto">Vous n'avez pas encore postule a une offre. Decouvrez nos opportunites et faites le premier pas vers votre nouveau poste.</p>
-                <a href="{{ path('app_candidate_job_offers') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <h3 style="font-size:18px; font-weight:700; color:#1a1d23; margin:0 0 8px;">Aucune candidature</h3>
+                <p style="font-size:14px; color:#6b7280; margin:0 0 24px; max-width:320px; line-height:1.6;">Vous n'avez pas encore postulé à une offre. Parcourez nos opportunités et lancez-vous !</p>
+                <a href="{{ path('app_candidate_job_offers') }}" class="btn-primary">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     Voir les offres disponibles
                 </a>
             </div>

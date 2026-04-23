@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if isValid %}Certificat vérifié{% else %}Certificat invalide{% endif %}</title>
+    <style>
+        :root {
+            --primary-dark: #022E69;
+            --primary-blue: #145EB7;
+            --accent-blue: #3FA9F5;
+            --border-gray: #D0D0D0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f8ff 0%, #eef5ff 100%);
+            color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: min(680px, 100%);
+            background: #ffffff;
+            border: 1px solid var(--border-gray);
+            border-radius: 18px;
+            box-shadow: 0 24px 55px -30px rgba(2, 46, 105, .35);
+            overflow: hidden;
+        }
+        .head {
+            background: {% if isValid %}linear-gradient(135deg, var(--primary-dark), var(--primary-blue)){% else %}linear-gradient(135deg, #7f1d1d, #b91c1c){% endif %};
+            color: #ffffff;
+            padding: 20px 24px;
+        }
+        .head h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+        }
+        .head p {
+            margin: 6px 0 0;
+            font-size: 14px;
+            opacity: .92;
+        }
+        .content {
+            padding: 24px;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 7px 12px;
+            margin-bottom: 16px;
+            {% if isValid %}
+            background: rgba(63, 169, 245, .16);
+            color: var(--primary-dark);
+            border: 1px solid rgba(20, 94, 183, .25);
+            {% else %}
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            {% endif %}
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .row {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fafcff;
+        }
+        .label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        .value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            font-size: 12px;
+            color: #475569;
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <section class="card" role="status" aria-live="polite">
+        <header class="head">
+            <h1>{% if isValid %}Certificat authentique{% else %}Vérification impossible{% endif %}</h1>
+            <p>{% if isValid %}Ce certificat a été vérifié avec succès.{% else %}Le certificat scanné est invalide ou n'existe plus.{% endif %}</p>
+        </header>
+
+        <div class="content">
+            {% if isValid %}
+                <div class="badge">Vérification confirmée</div>
+                <div class="grid">
+                    <div class="row">
+                        <span class="label">Participant</span>
+                        <span class="value">{{ employeeName }}</span>
+                    </div>
+                    <div class="row">
+                        <span class="label">Formation</span>
+                        <span class="value">{{ formationTitle }}</span>
+                    </div>
+                    <div class="row">
+                        <span class="label">Période</span>
+                        <span class="value">{{ dateDebut ? dateDebut|date('d/m/Y') : '-' }} - {{ dateFin ? dateFin|date('d/m/Y') : '-' }}</span>
+                    </div>
+                    <div class="row">
+                        <span class="label">Organisme</span>
+                        <span class="value">{{ organisme }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="badge">Certificat non valide</div>
+                <p style="margin: 0; font-size: 14px; color: #334155;">Merci de contacter le service RH si vous pensez qu'il s'agit d'une erreur.</p>
+            {% endif %}
+        </div>
+
+        <footer class="footer">
+            Vérification effectuée le {{ (verifiedAt|default(date()))|date('d/m/Y H:i') }}
+        </footer>
+    </section>
+</body>
+</html>

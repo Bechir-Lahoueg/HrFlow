@@ -120,12 +120,16 @@
                             <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Priorité</label>
                             <div class="grid grid-cols-3 gap-2">
                                 {% set selectedPriority = requestOld.priority ?? 'medium' %}
-                                {% for p in [['low','🟢','Faible'],['medium','🟡','Moyenne'],['high','🔴','Haute']] %}
+                                {% for p in [
+                                    ['low','Faible','bg-emerald-500'],
+                                    ['medium','Moyenne','bg-amber-500'],
+                                    ['high','Haute','bg-red-500']
+                                ] %}
                                 <label class="cursor-pointer radio-card">
                                     <input type="radio" name="priority" value="{{ p[0] }}" class="sr-only peer" {{ p[0] == selectedPriority ? 'checked' : '' }}>
                                     <div class="radio-card__body text-center px-3 py-2 rounded-lg border-2 border-zinc-200 text-[12px] font-bold text-zinc-500
                                                 peer-checked:border-cyan-500 peer-checked:bg-cyan-50 peer-checked:text-cyan-700 transition-all">
-                                        {{ p[1] }} {{ p[2] }}
+                                        <span class="inline-block w-2 h-2 rounded-full {{ p[2] }} mr-1" aria-hidden="true"></span>{{ p[1] }}
                                     </div>
                                 </label>
                                 {% endfor %}
@@ -152,7 +156,7 @@
                             {% endif %}
                         </div>
                         <div class="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-                            <p class="text-[11px] font-bold text-zinc-500 mb-2">📎 Pièce jointe (optionnel)</p>
+                            <p class="text-[11px] font-bold text-zinc-500 mb-2">Piece jointe (optionnel)</p>
                             <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png"
                                    class="text-sm text-zinc-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:px-3 file:py-1.5 file:text-[11px] file:font-semibold cursor-pointer">
                             {% if requestErrors.attachment is defined %}
@@ -232,22 +236,22 @@
                                     <div class="flex gap-1.5 flex-wrap">
                                         {% if req.attachment_url %}
                                         <a href="{{ req.attachment_url }}" target="_blank"
-                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100">📎</a>
+                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100">Fichier</a>
                                         {% endif %}
                                         <button onclick="loadReqDetails({{ req.id }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Voir</button>
                                         {% if req.status == 'pending' %}
                                         <button onclick="openEditReq({{ req|json_encode|e('html_attr') }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">Modifier</button>
                                         <form action="{{ path('employee_relation_request_cancel', {id: req.id}) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Annuler cette demande ?')">
                                             <input type="hidden" name="_token" value="{{ csrf_token('req-cancel-' ~ req.id) }}">
-                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100">🚫</button>
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100">Annuler</button>
                                         </form>
                                         <form action="{{ path('employee_relation_request_delete', {id: req.id}) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Supprimer définitivement ?')">
                                             <input type="hidden" name="_token" value="{{ csrf_token('req-del-' ~ req.id) }}">
-                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">Supprimer</button>
                                         </form>
                                         {% endif %}
                                     </div>
@@ -272,7 +276,7 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">📋 Détails de la demande</h5>
+                <h5 class="text-white font-bold text-[15px]">Details de la demande</h5>
                 <button onclick="closeModal('modalReqDetails')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -291,7 +295,7 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">✏️ Modifier la demande</h5>
+                <h5 class="text-white font-bold text-[15px]">Modifier la demande</h5>
                 <button onclick="closeModal('modalEditReq')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -346,7 +350,7 @@ function loadReqDetails(id) {
             let html = row('Type', req.type_name) + row('Priorité', req.priority) + row('Statut', req.status) + row('Soumis le', req.submitted_date?.substring(0,10));
             if (req.description) html += `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Description</p><p>${req.description}</p></div>`;
             if (req.review_comment) html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire RH</p><p>${req.review_comment}</p></div>`;
-            if (req.attachment_url) html += `<div class="mt-2"><a href="${req.attachment_url}" target="_blank" class="text-cyan-600 hover:underline text-[12px] font-semibold">📎 Pièce jointe</a></div>`;
+            if (req.attachment_url) html += `<div class="mt-2"><a href="${req.attachment_url}" target="_blank" class="text-cyan-600 hover:underline text-[12px] font-semibold">Piece jointe</a></div>`;
             document.getElementById('reqDetailsBody').innerHTML = html;
             openModal('modalReqDetails');
         });

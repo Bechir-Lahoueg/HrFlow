@@ -1,181 +1,247 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Entretiens | Espace Candidat{% endblock %}
+{% block title %}Mes Entretiens | HrFlow{% endblock %}
 
 {% block stylesheets %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #f5f6f8; color: #1a1d23; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-anim { animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) both; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e8eaed;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card.today  { border-color: #c4b5fd; box-shadow: 0 0 0 3px #ede9fe; }
+        .card.future { border-color: #bbf7d0; }
+        .card.past   { border-color: #e8eaed; opacity: .85; }
+
+        .chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 99px;
+            font-size: 11px; font-weight: 700;
+        }
+
+        .detail-row {
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .detail-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        .tip-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 12px; color: #15803d; line-height: 1.5;
+        }
+
+        .btn-join {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 16px; border-radius: 9px;
+            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            text-decoration: none; transition: background .15s;
+        }
+        .btn-join:hover { background: #15803d; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 20px; border-radius: 10px;
+            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            border: none; cursor: pointer; text-decoration: none;
+            transition: background .15s, box-shadow .15s, transform .12s;
+        }
+        .btn-primary:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,.25); }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; padding: 72px 24px;
+            background: #fff; border: 1px solid #e8eaed; border-radius: 16px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
-    {# Navigation #}
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-16">
-                {# Logo #}
-                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[2.5] origin-left">
-                </a>
+<div style="min-height:100vh; background:#f5f6f8;">
+    {% include 'Candidate/components/_header.html.twig' %}
 
-                {# Nav Links #}
-                <div class="hidden md:flex items-center gap-1">
-                    <a href="{{ path('app_candidate_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Tableau de bord
-                    </a>
-                    <a href="{{ path('app_candidate_applications') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mes candidatures
-                    </a>
-                    <a href="{{ path('app_candidate_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Offres d'emploi
-                    </a>
-                    <a href="{{ path('app_candidate_interviews') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50">
-                        Mes entretiens
-                    </a>
-                    <a href="{{ path('app_candidate_profile') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mon profil
-                    </a>
-                </div>
+    <main style="max-width:1000px; margin:0 auto; padding:28px 20px 60px;">
 
-                {# User Menu #}
-                <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-600 hidden sm:block">{{ app.user.username }}</span>
-                    <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        Deconnexion
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    {# Main Content #}
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        {# Page Header #}
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">Mes entretiens</h1>
-            <p class="text-slate-600">Suivez vos entretiens et preparez-vous pour chaque etape du processus de recrutement.</p>
+        {# Header #}
+        <div style="margin-bottom:24px;" class="card-anim">
+            <h1 style="font-size:22px; font-weight:700; color:#1a1d23; margin:0 0 4px;">Mes entretiens</h1>
+            <p style="font-size:14px; color:#6b7280; margin:0;">Préparez-vous et suivez l'avancement de votre processus de recrutement.</p>
         </div>
 
         {% if interviews|length > 0 %}
-            {# Interviews Timeline #}
-            <div class="space-y-6">
-                {% for interview in interviews %}
-                    {% set isPast = interview.interviewDate < date() %}
-                    {% set isToday = interview.interviewDate|date('Y-m-d') == 'now'|date('Y-m-d') %}
-                    
-                    <article class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden {{ isToday ? 'ring-2 ring-purple-500 ring-offset-2' : '' }}">
-                        {# Header with Date Badge #}
-                        <div class="p-6 border-b border-slate-100 {{ isToday ? 'bg-purple-50' : (isPast ? 'bg-slate-50' : 'bg-white') }}">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-16 h-16 rounded-2xl {{ isToday ? 'bg-purple-500' : (isPast ? 'bg-slate-400' : 'bg-emerald-500') }} flex flex-col items-center justify-center text-white shrink-0">
-                                        <span class="text-xs font-semibold uppercase">{{ interview.interviewDate|date('M') }}</span>
-                                        <span class="text-2xl font-bold">{{ interview.interviewDate|date('d') }}</span>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                {% for i, interview in interviews %}
+                    {% set isPast   = interview.interviewDate < date() %}
+                    {% set isToday  = interview.interviewDate|date('Y-m-d') == 'now'|date('Y-m-d') %}
+                    {% set cardClass = isToday ? 'today' : (isPast ? 'past' : 'future') %}
+
+                    <article class="card {{ cardClass }} card-anim" style="animation-delay:{{ (i * 0.07) }}s;">
+
+                        {# Card Header Strip #}
+                        <div style="padding:18px 22px; border-bottom:1px solid #f1f3f5;
+                            background:{{ isToday ? '#faf5ff' : (isPast ? '#fafbfc' : '#f0fdf4') }};">
+                            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
+
+                                <div style="display:flex; align-items:center; gap:14px;">
+                                    {# Date Badge #}
+                                    <div style="width:56px; height:56px; border-radius:12px; flex-shrink:0;
+                                        display:flex; flex-direction:column; align-items:center; justify-content:center;
+                                        background:{{ isToday ? 'linear-gradient(135deg,#8b5cf6,#6d28d9)' : (isPast ? '#94a3b8' : 'linear-gradient(135deg,#16a34a,#0d9488)') }};
+                                        color:#fff;">
+                                        <span style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.85;">
+                                            {{ interview.interviewDate|date('M') }}
+                                        </span>
+                                        <span style="font-size:22px; font-weight:700; line-height:1.1;">
+                                            {{ interview.interviewDate|date('d') }}
+                                        </span>
                                     </div>
+
                                     <div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <h2 class="text-xl font-bold text-slate-900">{{ interview.application.jobOffer.title }}</h2>
+                                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:4px;">
+                                            <h2 style="font-size:16px; font-weight:700; color:#1a1d23; margin:0;">
+                                                {{ interview.application.jobOffer.title }}
+                                            </h2>
                                             {% if isToday %}
-                                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-500 text-white">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                <span class="chip" style="background:#7c3aed; color:#fff;">
+                                                    <span style="width:5px;height:5px;border-radius:50%;background:#fff;"></span>
                                                     Aujourd'hui
                                                 </span>
                                             {% elseif isPast %}
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-600">Passe</span>
+                                                <span class="chip" style="background:#f1f5f9; color:#64748b;">Passé</span>
                                             {% else %}
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">A venir</span>
+                                                <span class="chip" style="background:#dcfce7; color:#15803d;">
+                                                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    À venir
+                                                </span>
                                             {% endif %}
                                         </div>
-                                        <p class="text-slate-600 flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            {{ interview.interviewDate|date('H:i') }}
-                                            {% if not isToday %}
-                                                <span class="text-slate-400">• {{ interview.interviewDate|date('l') }}</span>
-                                            {% endif %}
-                                        </p>
+                                        <span style="font-size:13px; color:#6b7280; display:flex; align-items:center; gap:5px;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <strong style="color:#374151;">{{ interview.interviewDate|date('H:i') }}</strong>
+                                            &nbsp;·&nbsp;
+                                            {{ interview.interviewDate|date('d M Y') }}
+                                        </span>
                                     </div>
                                 </div>
-                                
-                                {# Result Badge if past #}
-                                {% if isPast %}
-                                    <span class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold 
-                                        {{ interview.result == 'PASSED' ? 'bg-emerald-100 text-emerald-700' : 
-                                           interview.result == 'FAILED' ? 'bg-red-100 text-red-700' : 
-                                           interview.result == 'NO_SHOW' ? 'bg-slate-200 text-slate-600' : 
-                                           'bg-amber-100 text-amber-700' }}">
-                                        {{ interview.result == 'PASSED' ? '✅ Retenu' : 
-                                           interview.result == 'FAILED' ? '❌ Non retenu' : 
-                                           interview.result == 'NO_SHOW' ? '⛔ Absent' : 
-                                           '📋 En attente de resultat' }}
-                                    </span>
+
+                                {# Result badge for past #}
+                                {% if isPast and interview.result is defined %}
+                                    {% if interview.result == 'PASSED' %}
+                                        <span class="chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:7px 14px;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            Retenu
+                                        </span>
+                                    {% elseif interview.result == 'FAILED' %}
+                                        <span class="chip" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; padding:7px 14px;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            Non retenu
+                                        </span>
+                                    {% else %}
+                                        <span class="chip" style="background:#fffbeb; color:#92400e; border:1px solid #fef3c7; padding:7px 14px;">
+                                            En attente
+                                        </span>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
-                        
-                        {# Interview Details #}
-                        <div class="p-6">
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div class="space-y-4">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
-                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+
+                        {# Card Body #}
+                        <div style="padding:20px 22px;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+                                {# Details Column #}
+                                <div style="display:flex; flex-direction:column; gap:14px;">
+                                    <div class="detail-row">
+                                        <div class="detail-icon" style="background:{{ isToday ? '#f5f3ff' : '#f8f9fa' }};">
+                                            <svg width="15" height="15" fill="none" stroke="{{ isToday ? '#7c3aed' : '#6b7280' }}" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                            </svg>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-semibold text-slate-900">Type d'entretien</p>
-                                            <p class="text-sm text-slate-600">{{ interview.type }}</p>
+                                            <p style="font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; margin:0 0 2px;">Type d'entretien</p>
+                                            <p style="font-size:14px; font-weight:600; color:#1a1d23; margin:0;">{{ interview.type }}</p>
                                         </div>
                                     </div>
-                                    
+
                                     {% if interview.location %}
-                                        <div class="flex items-start gap-3">
-                                            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                        <div class="detail-row">
+                                            <div class="detail-icon" style="background:#eff6ff;">
+                                                <svg width="15" height="15" fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                                                </svg>
                                             </div>
                                             <div>
-                                                <p class="text-sm font-semibold text-slate-900">Lieu</p>
-                                                <p class="text-sm text-slate-600">{{ interview.location }}</p>
+                                                <p style="font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; margin:0 0 2px;">Lieu</p>
+                                                <p style="font-size:14px; font-weight:600; color:#1a1d23; margin:0;">{{ interview.location }}</p>
                                             </div>
                                         </div>
                                     {% endif %}
-                                    
+
                                     {% if interview.meetingLink %}
-                                        <div class="flex items-start gap-3">
-                                            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        <div class="detail-row">
+                                            <div class="detail-icon" style="background:#f0fdf4;">
+                                                <svg width="15" height="15" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                </svg>
                                             </div>
                                             <div>
-                                                <p class="text-sm font-semibold text-slate-900">Lien de reunion</p>
-                                                <a href="{{ interview.meetingLink }}" target="_blank" class="text-sm text-emerald-600 hover:underline inline-flex items-center gap-1">
+                                                <p style="font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; margin:0 0 6px;">Lien de réunion</p>
+                                                <a href="{{ interview.meetingLink }}" target="_blank" class="btn-join">
+                                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                                     Rejoindre l'appel
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                                 </a>
                                             </div>
                                         </div>
                                     {% endif %}
                                 </div>
-                                
-                                {% if interview.feedback and isPast %}
-                                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                        <p class="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+
+                                {# Right: Tips or Feedback #}
+                                {% if isPast and interview.feedback is defined and interview.feedback %}
+                                    <div style="background:#f8f9fa; border:1px solid #f1f3f5; border-radius:12px; padding:16px;">
+                                        <p style="font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; margin:0 0 10px; display:flex; align-items:center; gap:5px;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                                             Retour du recruteur
                                         </p>
-                                        <p class="text-sm text-slate-600">{{ interview.feedback }}</p>
+                                        <p style="font-size:13px; color:#374151; line-height:1.6; margin:0;">{{ interview.feedback }}</p>
                                     </div>
                                 {% elseif not isPast %}
-                                    <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                                        <p class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Conseils de preparation
+                                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:16px;">
+                                        <p style="font-size:10px; font-weight:700; color:#15803d; text-transform:uppercase; letter-spacing:.06em; margin:0 0 12px; display:flex; align-items:center; gap:5px;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                            Conseils de préparation
                                         </p>
-                                        <ul class="text-sm text-emerald-700 space-y-1">
-                                            <li>• Recherchez l'entreprise et le poste</li>
-                                            <li>• Preparez des questions pertinentes</li>
-                                            <li>• Soyez ponctuel (connectez-vous 5min avant)</li>
-                                            <li>• Ayez votre CV sous la main</li>
-                                        </ul>
+                                        <div style="display:flex; flex-direction:column; gap:8px;">
+                                            {% for tip in [
+                                                'Recherchez l\'entreprise et le poste en détail',
+                                                'Préparez des questions pertinentes à poser',
+                                                'Connectez-vous 5 min avant (entretien en ligne)',
+                                                'Ayez votre CV et portfolio à portée de main'
+                                            ] %}
+                                                <div class="tip-item">
+                                                    <svg width="13" height="13" fill="none" stroke="#16a34a" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    {{ tip }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div style="display:flex; align-items:center; justify-content:center; background:#fafbfc; border:1.5px dashed #e5e7eb; border-radius:12px; padding:20px;">
+                                        <p style="font-size:13px; color:#9ca3af; text-align:center; margin:0;">Aucun retour disponible pour le moment.</p>
                                     </div>
                                 {% endif %}
                             </div>
@@ -183,18 +249,16 @@
                     </article>
                 {% endfor %}
             </div>
+
         {% else %}
-            {# Empty State #}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-                <div class="w-24 h-24 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
+            <div class="empty-state card-anim">
+                <div style="width:64px; height:64px; border-radius:16px; background:#f1f3f5; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+                    <svg width="28" height="28" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-3">Aucun entretien programme</h3>
-                <p class="text-slate-600 mb-6 max-w-md mx-auto">Vous n'avez pas encore d'entretien programme. Postulez aux offres qui vous interessent pour etre contacte par nos recruteurs.</p>
-                <a href="{{ path('app_candidate_job_offers') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <h3 style="font-size:18px; font-weight:700; color:#1a1d23; margin:0 0 8px;">Aucun entretien programmé</h3>
+                <p style="font-size:14px; color:#6b7280; margin:0 0 24px; max-width:320px; line-height:1.6;">Postulez aux offres qui vous intéressent pour être invité à des entretiens.</p>
+                <a href="{{ path('app_candidate_job_offers') }}" class="btn-primary">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     Parcourir les offres
                 </a>
             </div>

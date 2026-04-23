@@ -34,7 +34,7 @@
         {% endfor %}
 
 
-        <div class= "flex justify-center">
+        <div class="flex justify-center px-6 pt-2 pb-4">
             {% include 'Recrutement/_recruitment_nav.html.twig' %}
         </div>
 
@@ -48,6 +48,10 @@
                 <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
+                            <a href="{{ path('app_rh_interviews_calendar') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-bold hover:bg-indigo-500/30 transition-all border border-indigo-400/20 shadow-lg">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                                Voir le calendrier
+                            </a>
                             <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
                             <span class="text-[11px] font-bold text-indigo-200 uppercase tracking-wider">Interview Tracker</span>
                         </div>
@@ -71,7 +75,7 @@
                             <p class="text-[10px] uppercase tracking-[0.15em] text-indigo-200/70 font-bold">Score moyen</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">
                                 {% if stats.averageScore %}
-                                    {{ stats.averageScore|round(1) }}/10
+                                    {{ stats.averageScore|round(1) }}/100
                                 {% else %}
                                     —
                                 {% endif %}
@@ -213,16 +217,16 @@
                                             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Score</span>
                                             <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                                 <div class="h-full rounded-full score-bar
-                                                    {% if interview.score >= 8 %}bg-gradient-to-r from-emerald-400 to-teal-500
-                                                    {% elseif interview.score >= 5 %}bg-gradient-to-r from-amber-400 to-orange-400
+                                                    {% if interview.score >= 60 %}bg-gradient-to-r from-emerald-400 to-teal-500
+                                                    {% elseif interview.score >= 40 %}bg-gradient-to-r from-amber-400 to-orange-400
                                                     {% else %}bg-gradient-to-r from-red-400 to-rose-500{% endif %}"
-                                                     style="width: {{ (interview.score / 10 * 100)|round }}%"></div>
+                                                     style="width: {{ interview.score }}%"></div>
                                             </div>
                                             <span class="text-[13px] font-extrabold
-                                                {% if interview.score >= 8 %}text-emerald-600
-                                                {% elseif interview.score >= 5 %}text-amber-600
+                                                {% if interview.score >= 60 %}text-emerald-600
+                                                {% elseif interview.score >= 40 %}text-amber-600
                                                 {% else %}text-red-500{% endif %}">
-                                                {{ interview.score }}/10
+                                                {{ interview.score }}/100
                                             </span>
                                         </div>
                                     {% endif %}
@@ -263,8 +267,8 @@
                                                 </select>
                                             </div>
                                             <div>
-                                                <label class="text-[10px] font-bold text-slate-400 uppercase">Score /10</label>
-                                                <input type="number" name="score" min="0" max="10" value="{{ interview.score }}" class="w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-300" />
+                                                <label class="text-[10px] font-bold text-slate-400 uppercase">Score /100</label>
+                                                <input type="number" name="score" min="0" max="100" value="{{ interview.score }}" class="w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-300" />
                                             </div>
                                             <div>
                                                 <label class="text-[10px] font-bold text-slate-400 uppercase">Feedback</label>

@@ -1,89 +1,153 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Offres d'emploi | Espace Candidat{% endblock %}
+{% block title %}Offres d'emploi | HrFlow{% endblock %}
 
 {% block stylesheets %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #f5f6f8; color: #1a1d23; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-anim { animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) both; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e8eaed;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: box-shadow .2s, border-color .2s, transform .2s;
+        }
+        .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.08); border-color: #bbf7d0; transform: translateY(-2px); }
+        .card:hover .job-icon { transform: rotate(-5deg) scale(1.07); }
+        .job-icon { transition: transform .25s cubic-bezier(.22,1,.36,1); }
+
+        /* Search / filter panel */
+        .filter-panel {
+            background: #fff; border: 1px solid #e8eaed; border-radius: 16px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%; padding: 11px 14px 11px 40px;
+            border: 1px solid #e5e7eb; border-radius: 10px;
+            background: #fafafa; font-family: 'DM Sans', sans-serif;
+            font-size: 14px; color: #1a1d23; outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .search-input:focus { border-color: #16a34a; background: #fff; box-shadow: 0 0 0 3px #dcfce7; }
+        .search-wrap { position: relative; margin-bottom: 14px; }
+        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+        select {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid #e5e7eb; border-radius: 10px;
+            background: #fff; font-family: 'DM Sans', sans-serif;
+            font-size: 13px; color: #374151; outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px #dcfce7; }
+
+        .field-label { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 5px; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 20px; border-radius: 10px;
+            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            border: none; cursor: pointer; text-decoration: none;
+            transition: background .15s, box-shadow .15s, transform .12s;
+        }
+        .btn-primary:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,.25); }
+
+        .btn-ghost {
+            display: inline-flex; align-items: center;
+            padding: 10px 16px; border-radius: 10px;
+            background: #fff; color: #374151; font-weight: 500; font-size: 13px;
+            border: 1px solid #e5e7eb; text-decoration: none;
+            transition: background .15s;
+        }
+        .btn-ghost:hover { background: #f9fafb; }
+
+        .btn-apply {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 20px; border-radius: 10px;
+            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            text-decoration: none; white-space: nowrap;
+            transition: background .15s, box-shadow .15s;
+        }
+        .btn-apply:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,.25); }
+
+        .btn-applied {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 18px; border-radius: 10px;
+            background: #f1f3f5; color: #6b7280; font-weight: 600; font-size: 13px;
+            cursor: default; white-space: nowrap;
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 9px; border-radius: 99px;
+            font-size: 11px; font-weight: 700;
+        }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; padding: 72px 24px;
+            background: #fff; border: 1px solid #e8eaed; border-radius: 16px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
-    {# Navigation #}
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-16">
-                {# Logo #}
-                <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[2.5] origin-left">
-                </a>
+<div style="min-height:100vh; background:#f5f6f8;">
+    {% include 'Candidate/components/_header.html.twig' %}
 
-                {# Nav Links #}
-                <div class="hidden md:flex items-center gap-1">
-                    <a href="{{ path('app_candidate_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Tableau de bord
-                    </a>
-                    <a href="{{ path('app_candidate_applications') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mes candidatures
-                    </a>
-                    <a href="{{ path('app_candidate_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50">
-                        Offres d'emploi
-                    </a>
-                    <a href="{{ path('app_candidate_interviews') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mes entretiens
-                    </a>
-                    <a href="{{ path('app_candidate_profile') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                        Mon profil
-                    </a>
-                </div>
+    <main style="max-width:1100px; margin:0 auto; padding:28px 20px 60px;">
 
-                {# User Menu #}
-                <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-600 hidden sm:block">{{ app.user.username }}</span>
-                    <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        Deconnexion
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    {# Main Content #}
-    <main class="max-w-7xl mx-auto px-6 py-8">
         {# Page Header #}
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900 mb-2">Offres d'emploi</h1>
-            <p class="text-slate-600">Decouvrez nos opportunites et postulez en quelques clics.</p>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:24px;" class="card-anim">
+            <div>
+                <h1 style="font-size:22px; font-weight:700; color:#1a1d23; margin:0 0 4px;">Offres d'emploi</h1>
+                <p style="font-size:14px; color:#6b7280; margin:0;">Découvrez nos opportunités et postulez en quelques clics.</p>
+            </div>
+            <span style="display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:10px; background:#f0fdf4; border:1px solid #bbf7d0; font-size:13px; font-weight:600; color:#15803d;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                {{ jobOffers|length }} offre{{ jobOffers|length != 1 ? 's' : '' }} disponible{{ jobOffers|length != 1 ? 's' : '' }}
+            </span>
         </div>
 
-        {# Search & Filters Section #}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
-            <form method="get" action="{{ path('app_candidate_job_offers') }}" class="space-y-4">
-                {# Search Bar #}
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </div>
-                    <input type="text" name="search" value="{{ filters.search }}" placeholder="Rechercher par titre, mots-cles..." 
-                        class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+        {# Search & Filters #}
+        <div class="filter-panel card-anim">
+            <form method="get" action="{{ path('app_candidate_job_offers') }}">
+                <div class="search-wrap">
+                    <span class="search-icon">
+                        <svg width="15" height="15" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input type="text" name="search" value="{{ filters.search }}"
+                           placeholder="Rechercher par titre, compétences, département..."
+                           class="search-input">
                 </div>
 
-                {# Filter Dropdowns #}
-                <div class="grid md:grid-cols-3 gap-4">
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px;">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Departement</label>
-                        <select name="department" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
-                            <option value="">Tous les departements</option>
+                        <label class="field-label">Département</label>
+                        <select name="department">
+                            <option value="">Tous les départements</option>
                             {% for dept in departments %}
                                 <option value="{{ dept }}" {{ filters.department == dept ? 'selected' : '' }}>{{ dept }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Localisation</label>
-                        <select name="location" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                        <label class="field-label">Localisation</label>
+                        <select name="location">
                             <option value="">Toutes les localisations</option>
                             {% for loc in locations %}
                                 <option value="{{ loc }}" {{ filters.location == loc ? 'selected' : '' }}>{{ loc }}</option>
@@ -91,8 +155,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Type de contrat</label>
-                        <select name="employmentType" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                        <label class="field-label">Type de contrat</label>
+                        <select name="employmentType">
                             <option value="">Tous les types</option>
                             {% for type in employmentTypes %}
                                 <option value="{{ type }}" {{ filters.employmentType == type ? 'selected' : '' }}>{{ type|upper }}</option>
@@ -101,121 +165,119 @@
                     </div>
                 </div>
 
-                {# Filter Actions #}
-                <div class="flex items-center justify-between pt-2">
-                    <span class="text-sm text-slate-500">{{ jobOffers|length }} offre(s) trouvee(s)</span>
-                    <div class="flex gap-3">
-                        <a href="{{ path('app_candidate_job_offers') }}" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
-                            Reinitialiser
-                        </a>
-                        <button type="submit" class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors">
-                            Filtrer
-                        </button>
-                    </div>
+                <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+                    <a href="{{ path('app_candidate_job_offers') }}" class="btn-ghost">Réinitialiser</a>
+                    <button type="submit" class="btn-primary">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        Filtrer
+                    </button>
                 </div>
             </form>
         </div>
 
-        {# Job Offers List - Vertical Layout #}
+        {# Job Offers #}
         {% if jobOffers|length > 0 %}
-            <div class="space-y-4">
-                {% for offer in jobOffers %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for i, offer in jobOffers %}
                     {% set isApplied = offer.id in appliedJobIds %}
-                    <article class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all duration-300 overflow-hidden">
-                        <div class="p-6">
-                            <div class="flex flex-col lg:flex-row lg:items-start gap-6">
-                                {# Left: Job Info #}
-                                <div class="flex-1">
-                                    <div class="flex items-start gap-4 mb-4">
-                                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-                                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="flex flex-wrap items-center gap-2 mb-2">
-                                                <h2 class="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+
+                    <article class="card card-anim" style="animation-delay:{{ (i * 0.05) }}s;">
+                        <div style="padding:22px 24px;">
+                            <div style="display:flex; align-items:flex-start; gap:16px;">
+
+                                {# Icon #}
+                                <div class="job-icon" style="width:52px; height:52px; border-radius:13px; background:linear-gradient(135deg,#16a34a,#0d9488); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(22,163,74,.2);">
+                                    <svg width="23" height="23" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                </div>
+
+                                {# Content #}
+                                <div style="flex:1; min-width:0;">
+                                    <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px;">
+
+                                        <div style="min-width:0;">
+                                            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:5px;">
+                                                <h2 style="font-size:16px; font-weight:700; color:#1a1d23; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:440px; transition:color .15s;">
                                                     {{ offer.title }}
                                                 </h2>
                                                 {% if isApplied %}
-                                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                        Postule
+                                                    <span class="badge" style="background:#dcfce7; color:#15803d;">
+                                                        <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                        Postulé
                                                     </span>
                                                 {% endif %}
                                             </div>
-                                            <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+
+                                            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:12px; color:#6b7280; margin-bottom:12px;">
                                                 {% if offer.department %}
-                                                    <span class="inline-flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+                                                    <span style="display:flex; align-items:center; gap:4px;">
+                                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
                                                         {{ offer.department }}
                                                     </span>
                                                 {% endif %}
                                                 {% if offer.location %}
-                                                    <span class="inline-flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                                    <span style="display:flex; align-items:center; gap:4px;">
+                                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                                         {{ offer.location }}
                                                     </span>
                                                 {% endif %}
-                                                <span class="inline-flex items-center gap-1">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                    Publie {{ offer.createdAt ? offer.createdAt|date('d M Y') : '' }}
-                                                </span>
+                                                {% if offer.createdAt %}
+                                                    <span style="display:flex; align-items:center; gap:4px;">
+                                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                        Publié le {{ offer.createdAt|date('d M Y') }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+
+                                            {% if offer.description %}
+                                                <p style="font-size:13px; color:#6b7280; line-height:1.6; margin:0 0 12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                                                    {{ offer.description|striptags|slice(0, 200) }}...
+                                                </p>
+                                            {% endif %}
+
+                                            {# Tags #}
+                                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                                {% if offer.employmentType %}
+                                                    <span class="badge" style="background:#dbeafe; color:#1e40af;">{{ offer.employmentType|upper }}</span>
+                                                {% endif %}
+                                                {% if offer.salaryMin > 0 or offer.salaryMax > 0 %}
+                                                    <span class="badge" style="background:#dcfce7; color:#14532d;">
+                                                        <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                        {{ offer.salaryMin|number_format(0, '.', ' ') }} – {{ offer.salaryMax|number_format(0, '.', ' ') }} TND
+                                                    </span>
+                                                {% endif %}
                                             </div>
                                         </div>
+
+                                        {# CTA #}
+                                        <div style="flex-shrink:0; align-self:center;">
+                                            {% if isApplied %}
+                                                <span class="btn-applied">
+                                                    <svg width="14" height="14" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                    Déjà postulé
+                                                </span>
+                                            {% else %}
+                                                <a href="{{ path('app_candidate_apply', {id: offer.id}) }}" class="btn-apply">
+                                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    Postuler
+                                                </a>
+                                            {% endif %}
+                                        </div>
                                     </div>
-
-                                    <p class="text-slate-600 mb-4 line-clamp-2">
-                                        {{ offer.description|striptags|slice(0, 200) }}...
-                                    </p>
-
-                                    {# Tags #}
-                                    <div class="flex flex-wrap gap-2">
-                                        {% if offer.employmentType %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-                                                {{ offer.employmentType|upper }}
-                                            </span>
-                                        {% endif %}
-                                        {% if offer.salaryMin > 0 or offer.salaryMax > 0 %}
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                {{ offer.salaryMin|number_format(0, '.', ' ') }} - {{ offer.salaryMax|number_format(0, '.', ' ') }} TND
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                {# Right: Action Button #}
-                                <div class="lg:self-center shrink-0">
-                                    {% if isApplied %}
-                                        <button disabled class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 text-slate-500 font-semibold cursor-not-allowed">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                            Deja postule
-                                        </button>
-                                    {% else %}
-                                        <a href="{{ path('app_candidate_apply', {id: offer.id}) }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-all hover:shadow-lg hover:shadow-emerald-500/30">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            Postuler
-                                        </a>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     </article>
                 {% endfor %}
             </div>
+
         {% else %}
-            {# Empty State #}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-                <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0v-2.25c0-1.094-.787-2.036-1.872-2.18-2.087-.277-4.216-.42-6.378-.42s-4.291.143-6.378.42c-1.085.144-1.872 1.086-1.872 2.18v2.25m16.5 0a2.25 2.25 0 012.25 2.25v4.5m-2.25-2.25h-15"/>
-                    </svg>
+            <div class="empty-state card-anim">
+                <div style="width:64px; height:64px; border-radius:16px; background:#f1f3f5; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+                    <svg width="28" height="28" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0v-2.25c0-1.094-.787-2.036-1.872-2.18-2.087-.277-4.216-.42-6.378-.42s-4.291.143-6.378.42c-1.085.144-1.872 1.086-1.872 2.18v2.25"/></svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">Aucune offre disponible</h3>
-                <p class="text-slate-600 mb-6">Aucune offre ne correspond a vos criteres de recherche.</p>
-                <a href="{{ path('app_candidate_job_offers') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    Voir toutes les offres
-                </a>
+                <h3 style="font-size:18px; font-weight:700; color:#1a1d23; margin:0 0 8px;">Aucune offre trouvée</h3>
+                <p style="font-size:14px; color:#6b7280; margin:0 0 24px; max-width:320px; line-height:1.6;">Aucune offre ne correspond à vos critères. Essayez de modifier vos filtres.</p>
+                <a href="{{ path('app_candidate_job_offers') }}" class="btn-primary">Voir toutes les offres</a>
             </div>
         {% endif %}
     </main>

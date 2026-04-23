@@ -71,13 +71,13 @@
 
         {% for message in app.flashes('success') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
@@ -92,7 +92,7 @@
                     {# Breadcrumb #}
                     <div class="flex items-center gap-2 mb-4">
                         <a href="{{ path('employee_project_index') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-cyan-200/70 hover:text-cyan-200 transition-colors" style="text-decoration:none;">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
                             Mes Projets
                         </a>
                         <span class="text-cyan-200/30">/</span>
@@ -102,24 +102,18 @@
 
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                         <div>
-                            <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">
-                                {% if project.status == 'in_progress' %}🟢
-                                {% elseif project.status == 'completed' %}✅
-                                {% elseif project.status == 'on_hold' %}🟡
-                                {% else %}📋{% endif %}
-                                {{ project.name }}
-                            </h2>
+                            <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">{{ project.name }}</h2>
                             <div class="flex flex-wrap gap-2 mt-3">
                                 {% if myCollaboration %}
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    👤 {{ myCollaboration.role ?? 'Membre' }}
+                                    <i class="bi bi-person-fill" aria-hidden="true"></i> {{ myCollaboration.role ?? 'Membre' }}
                                 </span>
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    ⏱️ {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}
+                                    <i class="bi bi-clock-fill" aria-hidden="true"></i> {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}
                                 </span>
                                 {% endif %}
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    ✅ {{ doneMyTasks }}/{{ totalMyTasks }} tâches
+                                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i> {{ doneMyTasks }}/{{ totalMyTasks }} taches
                                 </span>
                             </div>
                         </div>
@@ -139,19 +133,19 @@
                 <div class="flex items-center justify-between gap-3 mb-5 flex-wrap">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                            <i class="bi bi-kanban-fill text-violet-600" aria-hidden="true"></i>
                         </div>
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Tâches — Kanban Board</h3>
                     </div>
-                    <span class="text-[11px] font-medium text-zinc-400">💡 Glissez-déposez ou utilisez les boutons</span>
+                    <span class="text-[11px] font-medium text-zinc-400"><i class="bi bi-lightbulb-fill me-1" aria-hidden="true"></i>Glissez-deposez ou utilisez les boutons</span>
                 </div>
 
                 <div class="kanban-board">
                     {% set columns = {
-                        'todo':        {label: '📋 À FAIRE',  class: 'col-todo'},
-                        'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
-                        'review':      {label: '👁️ REVIEW',   class: 'col-review'},
-                        'done':        {label: '✅ TERMINÉ',  class: 'col-done'}
+                        'todo':        {label: 'A FAIRE',  class: 'col-todo'},
+                        'in_progress': {label: 'EN COURS', class: 'col-in_progress'},
+                        'review':      {label: 'REVIEW',   class: 'col-review'},
+                        'done':        {label: 'TERMINE',  class: 'col-done'}
                     } %}
 
                     {% for statusKey, col in columns %}
@@ -179,25 +173,25 @@
                             <div class="task-priority-bar"></div>
                             <div class="task-title-text">{{ task.title }}</div>
                             {% if task.estimated_hours %}
-                            <div class="task-meta">⏱️ {{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
+                            <div class="task-meta"><i class="bi bi-clock-fill me-1" aria-hidden="true"></i>{{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
                             {% endif %}
                             {% if task.due_date %}
                             <div class="task-due {% if isOverdue %}overdue{% elseif isSoon %}soon{% endif %}">
-                                📅 {{ task.due_date|date('d/m/Y') }}
-                                {% if isOverdue %}⚠️{% elseif isSoon %}🔥{% endif %}
+                                <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ task.due_date|date('d/m/Y') }}
+                                {% if isOverdue %}<i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>{% elseif isSoon %}<i class="bi bi-alarm-fill" aria-hidden="true"></i>{% endif %}
                             </div>
                             {% endif %}
 
                             <div class="task-actions">
                                 {% if task.status == 'todo' %}
-                                <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start" style="background:#fef3c7;color:#92400e;">▶ Démarrer</button>
+                                <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start" style="background:#fef3c7;color:#92400e;"><i class="bi bi-play-fill" aria-hidden="true"></i> Demarrer</button>
                                 {% elseif task.status == 'in_progress' %}
-                                <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review" style="background:#ede9fe;color:#7c3aed;">👁 Review</button>
+                                <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review" style="background:#ede9fe;color:#7c3aed;"><i class="bi bi-eye" aria-hidden="true"></i> Review</button>
                                 {% elseif task.status == 'review' %}
-                                <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done" style="background:#d1fae5;color:#065f46;">✅ Terminer</button>
+                                <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done" style="background:#d1fae5;color:#065f46;"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Terminer</button>
                                 {% endif %}
-                                <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours" style="background:#e0f2fe;color:#0369a1;">⏱️ Heures</button>
-                                <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info" style="background:#f1f5f9;color:#6b7280;">ℹ️</button>
+                                <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours" style="background:#e0f2fe;color:#0369a1;"><i class="bi bi-clock-fill" aria-hidden="true"></i> Heures</button>
+                                <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info" style="background:#f1f5f9;color:#6b7280;"><i class="bi bi-info-circle" aria-hidden="true"></i></button>
                             </div>
                         </div>
                         {% endfor %}
@@ -210,7 +204,7 @@
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-2">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <i class="bi bi-clock-history text-cyan-600" aria-hidden="true"></i>
                     </div>
                     <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Activités du Projet</h3>
                 </div>
@@ -218,16 +212,16 @@
                 {% for update in updates %}
                 <div class="activity-item">
                     <div class="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 text-sm">
-                        {% if update.update_type == 'comment' %}💬
-                        {% elseif update.update_type == 'task' %}✅
-                        {% elseif update.update_type == 'milestone' %}🎯
-                        {% elseif update.update_type == 'status_change' %}🔄
-                        {% else %}📌{% endif %}
+                        {% if update.update_type in ['comment', 'rh_comment'] %}<i class="bi bi-chat-text-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['task', 'rh_task'] %}<i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['milestone', 'rh_milestone'] %}<i class="bi bi-flag-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['status_change', 'rh_status_change'] %}<i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                        {% else %}<i class="bi bi-pin-angle-fill" aria-hidden="true"></i>{% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-[13px] font-semibold text-zinc-700">{{ update.title }}</p>
                         <p class="text-[12px] text-zinc-400 mt-0.5">{{ update.content }}</p>
-                        <p class="text-[11px] text-zinc-300 mt-0.5">👤 {{ update.username }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
+                        <p class="text-[11px] text-zinc-300 mt-0.5"><i class="bi bi-person-fill me-1" aria-hidden="true"></i>{{ update.author_name ?? 'Systeme' }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
                 {% else %}
@@ -238,7 +232,7 @@
                 <div class="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
                     <div class="flex items-center gap-2 mb-3">
                         <div class="w-6 h-6 rounded-md bg-cyan-50 flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            <i class="bi bi-plus-lg text-cyan-600" aria-hidden="true"></i>
                         </div>
                         <p class="text-[13px] font-bold text-zinc-700">Ajouter un commentaire</p>
                     </div>
@@ -254,6 +248,39 @@
                         </div>
                     </form>
                 </div>
+
+                <div class="mt-5 rounded-xl border border-zinc-200 bg-white p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center"><i class="bi bi-chat-dots-fill text-emerald-600" aria-hidden="true"></i></div>
+                        <p class="text-[13px] font-bold text-zinc-700">Chat d'equipe (Matrix)</p>
+                    </div>
+
+                    <div id="employeeProjectChatAlert" class="hidden text-[12px] px-3 py-2 rounded-lg mb-2"></div>
+                    <div id="employeeProjectChatMessages" class="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm" style="height:240px; overflow-y:auto;"></div>
+
+                    <form id="employeeProjectChatForm" class="mt-2 flex gap-2">
+                        <input id="employeeProjectChatFile" type="file" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
+                        <input id="employeeProjectChatInput" type="text" maxlength="1200"
+                               placeholder="Ecrire un message..."
+                               class="flex-1 rounded-lg border border-zinc-200 bg-white text-sm px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all">
+                        <button id="employeeProjectChatAttachBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Fichier
+                        </button>
+                        <button id="employeeProjectChatVoiceBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Vocal
+                        </button>
+                        <button id="employeeProjectChatVideoBtn" type="button"
+                                class="px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all">
+                            Video
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-[12px] hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-sm active:scale-[0.98]">
+                            Envoyer
+                        </button>
+                    </form>
+                </div>
             </div>
 
         </main>
@@ -266,9 +293,9 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">⏱️ Logger des heures</h5>
+                    <h5 class="text-white font-bold text-[15px]">Logger des heures</h5>
                 <button onclick="closeModal('modalLogHours')" class="text-white/60 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <form id="logHoursForm" method="POST">
@@ -309,7 +336,7 @@
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
                 <h5 id="infoTaskTitle" class="text-white font-bold text-[15px]">Détails de la tâche</h5>
                 <button onclick="closeModal('modalTaskInfo')" class="text-white/60 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div id="infoTaskBody" class="p-5 space-y-2 text-sm text-zinc-600 leading-relaxed"></div>
@@ -389,5 +416,431 @@ function showTaskInfo(task) {
     document.getElementById('infoTaskBody').innerHTML = html;
     openModal('modalTaskInfo');
 }
+
+const employeeProjectChatState = {
+    pollHandle: null,
+    bootstrapped: false,
+    isLoading: false,
+    hasLoadedOnce: false,
+    requestSeq: 0,
+    activeRequestSeq: 0,
+    mediaRecorder: null,
+    mediaChunks: [],
+    recording: false,
+};
+
+function initEmployeeProjectChat() {
+    const form = document.getElementById('employeeProjectChatForm');
+    if (!form) {
+        return;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        sendEmployeeProjectChatMessage();
+    });
+
+    const attachBtn = document.getElementById('employeeProjectChatAttachBtn');
+    const fileInput = document.getElementById('employeeProjectChatFile');
+    const voiceBtn = document.getElementById('employeeProjectChatVoiceBtn');
+    const videoBtn = document.getElementById('employeeProjectChatVideoBtn');
+
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function () {
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files[0]) {
+                uploadEmployeeProjectChatFile(fileInput.files[0]);
+            }
+            fileInput.value = '';
+        });
+    }
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', toggleEmployeeVoiceRecording);
+    }
+
+    if (videoBtn) {
+        videoBtn.addEventListener('click', startEmployeeVideoCall);
+    }
+
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (container) {
+        container.innerHTML = '<div class="text-zinc-400 text-sm">Chargement du chat...</div>';
+    }
+
+    bootstrapEmployeeProjectChat();
+}
+
+function bootstrapEmployeeProjectChat() {
+    fetch('/api/projects/{{ project.id }}/chat/bootstrap', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Chat Matrix indisponible.');
+            return;
+        }
+
+        employeeProjectChatState.bootstrapped = true;
+        loadEmployeeProjectChatMessages();
+
+        if (employeeProjectChatState.pollHandle) {
+            clearInterval(employeeProjectChatState.pollHandle);
+        }
+
+        employeeProjectChatState.pollHandle = setInterval(loadEmployeeProjectChatMessages, 3000);
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Impossible d\'initialiser le chat Matrix.');
+    });
+}
+
+function loadEmployeeProjectChatMessages() {
+    if (!employeeProjectChatState.bootstrapped || employeeProjectChatState.isLoading) {
+        return;
+    }
+
+    employeeProjectChatState.isLoading = true;
+    employeeProjectChatState.requestSeq += 1;
+    const requestId = employeeProjectChatState.requestSeq;
+    employeeProjectChatState.activeRequestSeq = requestId;
+
+    fetch('/api/projects/{{ project.id }}/chat/messages?limit=40', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (requestId !== employeeProjectChatState.activeRequestSeq) {
+            return;
+        }
+
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible de charger les messages.');
+            if (!employeeProjectChatState.hasLoadedOnce) {
+                renderEmployeeProjectChatStatus('Chat indisponible pour le moment.');
+            }
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        employeeProjectChatState.hasLoadedOnce = true;
+        renderEmployeeProjectChatMessages(Array.isArray(data.messages) ? data.messages : []);
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant le chargement du chat.');
+        if (!employeeProjectChatState.hasLoadedOnce) {
+            renderEmployeeProjectChatStatus('Connexion au chat en cours...');
+        }
+    })
+    .finally(() => {
+        if (requestId === employeeProjectChatState.activeRequestSeq) {
+            employeeProjectChatState.isLoading = false;
+        }
+    });
+}
+
+function renderEmployeeProjectChatStatus(text) {
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '<div class="text-zinc-400 text-sm">' + escapeHtml(text) + '</div>';
+}
+
+function renderEmployeeProjectChatMessages(messages) {
+    const container = document.getElementById('employeeProjectChatMessages');
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = '';
+    if (!messages.length) {
+        container.innerHTML = '<div class="text-zinc-400 text-sm">Aucun message pour le moment.</div>';
+        return;
+    }
+
+    messages.forEach((msg) => {
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+
+        const date = msg.origin_server_ts ? new Date(msg.origin_server_ts).toLocaleString() : '';
+        let bodyHtml = '';
+        const msgType = String(msg.msgtype || 'm.text');
+        const body = String(msg.body || '');
+        const downloadUrl = String(msg.download_url || '');
+
+        if (msgType === 'm.image' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><img src="' + escapeHtml(downloadUrl) + '" alt="image" class="max-h-40 rounded border border-zinc-200"></div>';
+        } else if (msgType === 'm.video' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><video controls class="max-h-48 rounded border border-zinc-200" src="' + escapeHtml(downloadUrl) + '"></video></div>';
+        } else if (msgType === 'm.audio' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><audio controls src="' + escapeHtml(downloadUrl) + '" class="w-full"></audio></div>';
+        } else if (msgType === 'm.file' && downloadUrl !== '') {
+            bodyHtml = '<div class="mt-1"><a class="text-emerald-600 hover:underline" target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '"><i class="bi bi-paperclip"></i> ' + escapeHtml(body || 'Fichier') + '</a></div>';
+        } else {
+            bodyHtml = '<div class="text-sm text-zinc-700" style="white-space:pre-wrap">' + escapeHtml(body) + '</div>';
+        }
+
+        row.innerHTML = '<div class="text-zinc-400 text-[11px]">' + escapeHtml(date) + '</div>' + bodyHtml;
+
+        const eventId = String(msg.event_id || '');
+        if (eventId !== '') {
+            const reactions = (msg.reactions && typeof msg.reactions === 'object') ? msg.reactions : {};
+            const reactionBar = document.createElement('div');
+            reactionBar.className = 'mt-1 flex flex-wrap items-center gap-1';
+
+            Object.keys(reactions).forEach((key) => {
+                reactionBar.insertAdjacentHTML('beforeend', '<span class="px-2 py-0.5 rounded-full bg-zinc-200 text-[11px]">' + escapeHtml(key) + ' ' + String(reactions[key]) + '</span>');
+            });
+
+            ['+1', 'heart', 'lol'].forEach((emoji) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-1.5 py-0.5 rounded border border-zinc-200 bg-white text-[11px]';
+                btn.textContent = emoji;
+                btn.addEventListener('click', function () {
+                    sendEmployeeReaction(eventId, emoji);
+                });
+                reactionBar.appendChild(btn);
+            });
+
+            row.appendChild(reactionBar);
+        }
+
+        container.appendChild(row);
+    });
+
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendEmployeeReaction(eventId, reaction) {
+    const payload = new URLSearchParams();
+    payload.set('eventId', eventId);
+    payload.set('reaction', reaction);
+
+    fetch('/api/projects/{{ project.id }}/chat/react', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer la reaction.');
+            return;
+        }
+
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'envoi de la reaction.');
+    });
+}
+
+function uploadEmployeeProjectChatFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/projects/{{ project.id }}/chat/upload', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData,
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer le fichier.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'upload du fichier.');
+    });
+}
+
+function toggleEmployeeVoiceRecording() {
+    if (employeeProjectChatState.recording) {
+        if (employeeProjectChatState.mediaRecorder) {
+            employeeProjectChatState.mediaRecorder.stop();
+        }
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showEmployeeChatAlert('danger', 'Enregistrement vocal non supporte sur ce navigateur.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+            const recorder = new MediaRecorder(stream);
+            employeeProjectChatState.mediaChunks = [];
+            employeeProjectChatState.mediaRecorder = recorder;
+            employeeProjectChatState.recording = true;
+            updateEmployeeVoiceButton();
+
+            recorder.ondataavailable = function (event) {
+                if (event.data && event.data.size > 0) {
+                    employeeProjectChatState.mediaChunks.push(event.data);
+                }
+            };
+
+            recorder.onstop = function () {
+                stream.getTracks().forEach((track) => track.stop());
+                employeeProjectChatState.recording = false;
+                updateEmployeeVoiceButton();
+
+                if (!employeeProjectChatState.mediaChunks.length) {
+                    return;
+                }
+
+                const blob = new Blob(employeeProjectChatState.mediaChunks, { type: 'audio/webm' });
+                const file = new File([blob], 'vocal-' + Date.now() + '.webm', { type: 'audio/webm' });
+                uploadEmployeeProjectChatFile(file);
+                employeeProjectChatState.mediaChunks = [];
+                employeeProjectChatState.mediaRecorder = null;
+            };
+
+            recorder.start();
+        })
+        .catch(() => {
+            showEmployeeChatAlert('danger', 'Acces micro refuse ou indisponible.');
+        });
+}
+
+function updateEmployeeVoiceButton() {
+    const button = document.getElementById('employeeProjectChatVoiceBtn');
+    if (!button) {
+        return;
+    }
+
+    button.textContent = employeeProjectChatState.recording ? 'Stop' : 'Vocal';
+    button.className = employeeProjectChatState.recording
+        ? 'px-3 py-2 rounded-lg border border-red-300 bg-red-50 text-red-600 text-[12px] font-bold transition-all'
+        : 'px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-bold hover:bg-zinc-100 transition-all';
+}
+
+function startEmployeeVideoCall() {
+    fetch('/api/projects/{{ project.id }}/chat/video-call', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible de lancer l\'appel video.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        if (data.url) {
+            window.open(String(data.url), '_blank', 'noopener');
+        }
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant le lancement de l\'appel video.');
+    });
+}
+
+function sendEmployeeProjectChatMessage() {
+    const input = document.getElementById('employeeProjectChatInput');
+    if (!input) {
+        return;
+    }
+
+    const message = String(input.value || '').trim();
+    if (message === '') {
+        return;
+    }
+
+    const payload = new URLSearchParams();
+    payload.set('message', message);
+
+    fetch('/api/projects/{{ project.id }}/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: payload.toString(),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+            showEmployeeChatAlert('danger', data.message || 'Impossible d\'envoyer le message.');
+            return;
+        }
+
+        hideEmployeeChatAlert();
+        input.value = '';
+        loadEmployeeProjectChatMessages();
+    })
+    .catch(() => {
+        showEmployeeChatAlert('danger', 'Erreur reseau pendant l\'envoi du message.');
+    });
+}
+
+function showEmployeeChatAlert(type, message) {
+    const alert = document.getElementById('employeeProjectChatAlert');
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert alert-' + type + ' py-2';
+    alert.textContent = message;
+}
+
+function hideEmployeeChatAlert() {
+    const alert = document.getElementById('employeeProjectChatAlert');
+    if (!alert) {
+        return;
+    }
+
+    alert.className = 'alert d-none py-2';
+    alert.textContent = '';
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initEmployeeProjectChat();
+});
 </script>
 {% endblock %}

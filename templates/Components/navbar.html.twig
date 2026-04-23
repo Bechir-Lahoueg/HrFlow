@@ -1,4 +1,6 @@
-<header id="siteHeader" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+{% set isHomeRoute = app.request.attributes.get('_route') == 'app_home' %}
+
+<header id="siteHeader" data-home="{{ isHomeRoute ? '1' : '0' }}" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {# Brand #}
         <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
@@ -6,14 +8,14 @@
         </a>
 
         {# Desktop nav #}
-        <nav class="hidden md:flex items-center gap-1">
-            <a href="{{ path('app_home') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Accueil</a>
-            <a href="{{ path('app_about') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">A propos</a>
-            <a href="{{ path('app_job_offers') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Offres d'emploi</a>
+        <nav class="hidden md:flex items-center gap-1 rounded-full bg-white/75 backdrop-blur-md border border-white/80 shadow-sm px-2 py-1">
+            <a href="{{ path('app_home') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Accueil</a>
+            <a href="{{ path('app_about') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">A propos</a>
+            <a href="{{ path('app_job_offers') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Offres d'emploi</a>
             {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-                <a href="{{ path('app_subscriptions') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Tarification</a>
+                <a href="{{ path('app_subscriptions') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Tarification</a>
             {% endif %}
-            <a href="{{ path('app_contact') }}" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Contact</a>
+            <a href="{{ path('app_contact') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Contact</a>
         </nav>
 
         {# Desktop CTA #}
@@ -37,31 +39,31 @@
                     </a>
                 {% endif %}
             {% else %}
-                <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors">
+                <a href="{{ path('app_login') }}" class="px-5 py-2.5 text-sm font-semibold text-slate-900 bg-white/80 hover:bg-white rounded-full border border-white/80 backdrop-blur-md transition-colors">
                     Vous avez deja une solution HrFlow ?
                 </a>
             {% endif %}
         </div>
 
         {# Mobile hamburger #}
-        <button id="navToggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors" aria-label="Toggle menu">
-            <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="navToggle" class="md:hidden p-2 rounded-full bg-white/80 border border-white/80 backdrop-blur-md hover:bg-white transition-colors" aria-label="Toggle menu">
+            <svg id="hamburgerSvg" class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path id="hamburgerIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
     </div>
 
     {# Mobile menu #}
-    <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-slate-100 shadow-xl">
+    <div id="mobileMenu" class="md:hidden hidden bg-white/90 backdrop-blur-xl border-t border-white/80 shadow-xl">
         <div class="px-6 py-4 space-y-1">
-            <a href="{{ path('app_home') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Accueil</a>
-            <a href="{{ path('app_about') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">A propos</a>
-            <a href="{{ path('app_job_offers') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Offres d'emploi</a>
+            <a href="{{ path('app_home') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Accueil</a>
+            <a href="{{ path('app_about') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">A propos</a>
+            <a href="{{ path('app_job_offers') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Offres d'emploi</a>
             {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-                <a href="{{ path('app_subscriptions') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Tarification</a>
+                <a href="{{ path('app_subscriptions') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Tarification</a>
             {% endif %}
-            <a href="{{ path('app_contact') }}" class="block px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors" onclick="closeMobileMenu()">Contact</a>
-            <div class="pt-3 mt-3 border-t border-slate-100 space-y-2">
+            <a href="{{ path('app_contact') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Contact</a>
+            <div class="pt-3 mt-3 border-t border-slate-200/60 space-y-2">
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     {% if is_granted('ROLE_CANDIDATE') %}
                         <a href="{{ path('app_candidate_dashboard') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
@@ -73,7 +75,7 @@
                         <a href="{{ path('app_welcome') }}" class="block px-4 py-3 text-sm font-bold text-white text-center bg-slate-900 rounded-full">Tableau de bord</a>
                     {% endif %}
                 {% else %}
-                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Vous avez deja une solution HrFlow ?</a>
+                    <a href="{{ path('app_login') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-white rounded-full transition-colors">Vous avez deja une solution HrFlow ?</a>
                 {% endif %}
             </div>
         </div>
@@ -85,6 +87,7 @@
     const toggle = document.getElementById('navToggle');
     const menu = document.getElementById('mobileMenu');
     const header = document.getElementById('siteHeader');
+    const isHome = header.dataset.home === '1';
     let open = false;
 
     toggle.addEventListener('click', function() {
@@ -99,12 +102,26 @@
         document.body.style.overflow = '';
     };
 
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 40) {
-            header.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-sm', 'border-b', 'border-slate-200/60');
-        } else {
-            header.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-sm', 'border-b', 'border-slate-200/60');
+    function setHomeTopState() {
+        header.classList.remove('bg-white/80', 'backdrop-blur-xl', 'shadow-sm', 'border-b', 'border-slate-200/60');
+        header.classList.add('bg-transparent');
+    }
+
+    function setDefaultState() {
+        header.classList.remove('bg-transparent');
+        header.classList.add('bg-white/80', 'backdrop-blur-xl', 'shadow-sm', 'border-b', 'border-slate-200/60');
+
+    }
+
+    function syncHeaderState() {
+        if (isHome && window.scrollY <= 40 && !open) {
+            setHomeTopState();
+            return;
         }
-    });
+        setDefaultState();
+    }
+
+    window.addEventListener('scroll', syncHeaderState);
+    syncHeaderState();
 })();
 </script>

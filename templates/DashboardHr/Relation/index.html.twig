@@ -73,17 +73,26 @@
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-sm">
                 <div class="flex border-b border-zinc-100 dark:border-zinc-800">
                     {% set tabs = [
-                        {key: 'requests',  icon: '📋', label: 'Demandes',      badge: requestStats.pending},
-                        {key: 'config',    icon: '🗂️',  label: 'Config Types',  badge: null},
-                        {key: 'feedbacks', icon: '💬', label: 'Feedbacks',     badge: totalFeedbacks},
-                        {key: 'ff',        icon: '🎓', label: 'Formations',    badge: ffList|length},
+                        {key: 'requests',  label: 'Demandes',      badge: requestStats.pending},
+                        {key: 'config',    label: 'Config Types',  badge: null},
+                        {key: 'feedbacks', label: 'Feedbacks',     badge: totalFeedbacks},
+                        {key: 'ff',        label: 'Formations',    badge: ffList|length},
                     ] %}
                     {% for t in tabs %}
                     <button onclick="switchTab('{{ t.key }}')"
                             id="tab-btn-{{ t.key }}"
                             class="tab-btn flex items-center gap-2 px-6 py-4 text-[13px] font-bold border-b-2 transition-all
                                    {{ tab == t.key ? 'border-cyan-500 text-cyan-600' : 'border-transparent text-zinc-400 hover:text-zinc-700' }}">
-                        {{ t.icon }} {{ t.label }}
+                        {% if t.key == 'requests' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        {% elseif t.key == 'config' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9m-9 6h9m-9 6h9M4.5 6h.008v.008H4.5V6zm0 6h.008v.008H4.5V12zm0 6h.008v.008H4.5V18z"/></svg>
+                        {% elseif t.key == 'feedbacks' %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75h6.75m-6.75 3h4.5m-6.75 6.375h7.5A2.625 2.625 0 0016.5 16.5V6.75A2.625 2.625 0 0013.875 4.125h-7.5A2.625 2.625 0 003.75 6.75v9.75a2.625 2.625 0 002.625 2.625z"/></svg>
+                        {% else %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.5 5 5.5.8-4 3.9.9 5.4-4.9-2.6-4.9 2.6.9-5.4-4-3.9 5.5-.8L12 3z"/></svg>
+                        {% endif %}
+                        {{ t.label }}
                         {% if t.badge is not null and t.badge > 0 %}
                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ tab == t.key ? 'bg-cyan-100 text-cyan-700' : 'bg-zinc-100 text-zinc-500' }}">{{ t.badge }}</span>
                         {% endif %}
@@ -111,7 +120,7 @@
                     {# Filtres #}
                     <form method="GET" class="flex flex-wrap gap-3 items-end">
                         <input type="hidden" name="tab" value="requests">
-                        <input type="text" name="search_req" value="{{ searchReq }}" placeholder="🔍 Rechercher..."
+                        <input type="text" name="search_req" value="{{ searchReq }}" placeholder="Rechercher..."
                                class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:outline-none transition-all w-56">
                         <select name="status" class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:outline-none">
                             <option value="">Tous les statuts</option>
@@ -148,6 +157,7 @@
                                         {{ req.priority == 'high' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
                                         {{ req.priority == 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
                                         {{ req.priority == 'low' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
+                                        <span class="inline-block w-2 h-2 rounded-full mr-1 {{ req.priority == 'high' ? 'bg-red-500' : (req.priority == 'medium' ? 'bg-amber-500' : 'bg-emerald-500') }}" aria-hidden="true"></span>
                                         {{ req.priority|upper }}
                                     </span>
                                 </td>
@@ -170,20 +180,20 @@
                                     <div class="flex gap-1.5 flex-wrap">
                                         {% if req.attachment_url %}
                                         <a href="{{ req.attachment_url }}" target="_blank"
-                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-colors">📎</a>
+                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-colors">Fichier</a>
                                         {% endif %}
                                         <button onclick="loadRequestDetails({{ req.id }})"
                                                 class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors">
-                                            👁️ Détails
+                                            Details
                                         </button>
                                         {% if req.status == 'pending' %}
                                         <button onclick="openApproveModal({{ req.id }}, '{{ req.title|e('js') }}')"
                                                 class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors">
-                                            ✅ Approuver
+                                            Approuver
                                         </button>
                                         <button onclick="openRejectModal({{ req.id }}, '{{ req.title|e('js') }}')"
                                                 class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
-                                            ❌ Rejeter
+                                            Rejeter
                                         </button>
                                         {% endif %}
                                     </div>
@@ -203,7 +213,7 @@
                         <h3 class="text-[15px] font-bold text-zinc-800">Types de demandes</h3>
                         <button onclick="openModal('modalNewType')"
                                 class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] hover:from-slate-800 transition-all shadow-sm">
-                            ＋ Nouveau type
+                            Nouveau type
                         </button>
                     </div>
                     <div class="overflow-x-auto rounded-xl border border-zinc-100">
@@ -224,18 +234,18 @@
                                 <td class="py-3 px-4 text-zinc-500 max-w-[250px] truncate">{{ rt.description ?? '-' }}</td>
                                 <td class="py-3 px-4">
                                     <span class="text-[11px] font-bold px-2 py-0.5 rounded-full {{ rt.requires_approval ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-500' }}">
-                                        {{ rt.requires_approval ? '✅ Requise' : 'Non requise' }}
+                                        {{ rt.requires_approval ? 'Requise' : 'Non requise' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-[12px] text-zinc-400">{{ rt.created_at|date('d/m/Y') }}</td>
                                 <td class="py-3 px-4">
                                     <div class="flex gap-1.5">
                                         <button onclick="openEditType({{ rt|json_encode|e('html_attr') }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">Modifier</button>
                                         <form action="{{ path('rh_relation_request_type_delete', {id: rt.id}) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Supprimer ce type ?')">
                                             <input type="hidden" name="_token" value="{{ csrf_token('rt-delete-' ~ rt.id) }}">
-                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">Supprimer</button>
                                         </form>
                                     </div>
                                 </td>
@@ -263,7 +273,7 @@
 
                     <form method="GET" class="flex flex-wrap gap-3 items-end">
                         <input type="hidden" name="tab" value="feedbacks">
-                        <input type="text" name="search_fb" value="{{ searchFb }}" placeholder="🔍 Rechercher..."
+                        <input type="text" name="search_fb" value="{{ searchFb }}" placeholder="Rechercher..."
                                class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:outline-none w-48">
                         <select name="feedback_type" class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:outline-none">
                             <option value="">Tous les types</option>
@@ -282,6 +292,8 @@
                                     <th class="py-3 px-4 text-left">À</th>
                                     <th class="py-3 px-4 text-left">Type</th>
                                     <th class="py-3 px-4 text-left">Note</th>
+
+                                    <th class="py-3 px-4 text-left">Emotion</th>
                                     <th class="py-3 px-4 text-left">Statut</th>
                                     <th class="py-3 px-4 text-left">Date</th>
                                     <th class="py-3 px-4 text-left">Action</th>
@@ -291,15 +303,31 @@
                             {% for fb in feedbacks %}
                             <tr class="table-row-hover border-t border-zinc-50">
                                 <td class="py-3 px-4 font-medium text-zinc-600">
-                                    {{ fb.is_anonymous ? '👤 Anonyme' : (fb.from_username ?? '-') }}
+                                    {{ fb.is_anonymous ? 'Anonyme' : (fb.from_username ?? '-') }}
                                 </td>
                                 <td class="py-3 px-4 font-medium text-zinc-600">{{ fb.to_username ?? '-' }}</td>
                                 <td class="py-3 px-4"><span class="bg-violet-50 text-violet-700 text-[11px] px-2 py-0.5 rounded-md font-medium">{{ fb.feedback_type }}</span></td>
                                 <td class="py-3 px-4">
-                                    <span class="text-amber-500 font-mono text-[13px]">
-                                        {% for i in 1..5 %}{{ i <= fb.rating ? '★' : '☆' }}{% endfor %}
+                                    <span class="inline-flex items-center gap-0.5 text-amber-500">
+                                        {% for i in 1..5 %}
+                                            <svg class="w-3.5 h-3.5 {{ i <= fb.rating ? 'opacity-100' : 'opacity-30' }}" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.12 3.447a1 1 0 00.95.69h3.624c.969 0 1.371 1.24.588 1.81l-2.932 2.13a1 1 0 00-.364 1.118l1.12 3.447c.3.922-.755 1.688-1.54 1.118l-2.932-2.13a1 1 0 00-1.176 0l-2.932 2.13c-.784.57-1.838-.196-1.539-1.118l1.12-3.447a1 1 0 00-.364-1.118L2.78 8.874c-.783-.57-.38-1.81.588-1.81h3.623a1 1 0 00.951-.69l1.12-3.447z"/></svg>
+                                        {% endfor %}
                                     </span>
                                     <span class="text-[11px] text-zinc-400 ml-1">{{ fb.rating }}/5</span>
+                                </td>
+                                {% set emotionLabel = (fb.emotion_label ?? 'unknown')|lower %}
+                                {% set emotionScore = ((fb.emotion_score ?? 0) * 100)|round %}
+                                <td class="py-3 px-4">
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded-full
+                                        {{ emotionLabel == 'anger' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                        {{ emotionLabel == 'joy' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                        {{ emotionLabel == 'sadness' ? 'bg-blue-50 text-blue-700 border border-blue-200' : '' }}
+                                        {{ emotionLabel == 'fear' ? 'bg-amber-50 text-amber-700 border border-amber-200' : '' }}
+                                        {{ emotionLabel == 'love' ? 'bg-pink-50 text-pink-700 border border-pink-200' : '' }}
+                                        {{ emotionLabel == 'surprise' ? 'bg-violet-50 text-violet-700 border border-violet-200' : '' }}
+                                        {{ emotionLabel not in ['anger','joy','sadness','fear','love','surprise'] ? 'bg-zinc-100 text-zinc-500 border border-zinc-200' : '' }}">
+                                        {{ emotionLabel|capitalize }} {{ emotionScore }}%
+                                    </span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="text-[11px] font-bold px-2 py-0.5 rounded-full
@@ -311,7 +339,7 @@
                                 <td class="py-3 px-4">
                                     <div class="flex gap-1.5">
                                         <button onclick="loadFeedbackDetails({{ fb.id }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Voir</button>
                                         {% if fb.status == 'submitted' %}
                                         <form action="{{ path('rh_relation_feedback_acknowledge', {id: fb.id}) }}" method="POST" class="inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('fb-ack-' ~ fb.id) }}">
@@ -322,7 +350,7 @@
                                 </td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="7" class="py-12 text-center text-zinc-400 text-sm">Aucun feedback.</td></tr>
+                            <tr><td colspan="8" class="py-12 text-center text-zinc-400 text-sm">Aucun feedback.</td></tr>
                             {% endfor %}
                             </tbody>
                         </table>
@@ -377,18 +405,18 @@
                                 <td class="py-3 px-4 font-medium text-zinc-600 max-w-[160px] truncate">{{ ff.formation_name ?? '-' }}</td>
                                 <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[140px] truncate">{{ ff.session_name ?? '-' }}</td>
                                 <td class="py-3 px-4">
-                                    <span class="text-amber-500 font-mono text-[13px]">{% for i in 1..5 %}{{ i <= ff.rating ? '★' : '☆' }}{% endfor %}</span>
+                                    <span class="inline-flex items-center gap-0.5 text-amber-500">{% for i in 1..5 %}<svg class="w-3.5 h-3.5 {{ i <= ff.rating ? 'opacity-100' : 'opacity-30' }}" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.12 3.447a1 1 0 00.95.69h3.624c.969 0 1.371 1.24.588 1.81l-2.932 2.13a1 1 0 00-.364 1.118l1.12 3.447c.3.922-.755 1.688-1.54 1.118l-2.932-2.13a1 1 0 00-1.176 0l-2.932 2.13c-.784.57-1.838-.196-1.539-1.118l1.12-3.447a1 1 0 00-.364-1.118L2.78 8.874c-.783-.57-.38-1.81.588-1.81h3.623a1 1 0 00.951-.69l1.12-3.447z"/></svg>{% endfor %}</span>
                                     <span class="text-[11px] text-zinc-400 ml-1">{{ ff.rating }}/5</span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="text-[11px] font-bold {{ ff.recommande ? 'text-emerald-600' : 'text-red-500' }}">
-                                        {{ ff.recommande ? '✅ Oui' : '❌ Non' }}
+                                        {{ ff.recommande ? 'Oui' : 'Non' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-[12px] text-zinc-400">{{ ff.created_at|date('d/m/Y') }}</td>
                                 <td class="py-3 px-4">
                                     <button onclick="loadFfDetails({{ ff.id }})"
-                                            class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️ Voir</button>
+                                            class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Voir</button>
                                 </td>
                             </tr>
                             {% else %}
@@ -429,7 +457,7 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">➕ Nouveau type de demande</h5>
+                <h5 class="text-white font-bold text-[15px]">Nouveau type de demande</h5>
                 <button onclick="closeModal('modalNewType')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -465,7 +493,7 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">✏️ Modifier le type</h5>
+                <h5 class="text-white font-bold text-[15px]">Modifier le type</h5>
                 <button onclick="closeModal('modalEditType')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -538,7 +566,7 @@ function loadRequestDetails(id) {
     fetch('/rh/relations/requests/' + id + '/details')
         .then(r => r.json())
         .then(req => {
-            document.getElementById('detailsTitle').textContent = '📋 Demande #' + req.id;
+            document.getElementById('detailsTitle').textContent = 'Demande #' + req.id;
             const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-32 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
             document.getElementById('detailsBody').innerHTML =
                 row('Employé', req.employee_name) +
@@ -548,7 +576,7 @@ function loadRequestDetails(id) {
                 row('Soumis le', req.submitted_date?.substring(0,10)) +
                 (req.description ? `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Description</p><p class="text-zinc-600">${req.description}</p></div>` : '') +
                 (req.review_comment ? `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire RH</p><p class="text-zinc-600">${req.review_comment}</p></div>` : '') +
-                (req.attachment_url ? `<div class="mt-2"><a href="${req.attachment_url}" target="_blank" class="text-cyan-600 hover:underline text-[12px] font-semibold">📎 Voir la pièce jointe</a></div>` : '');
+                (req.attachment_url ? `<div class="mt-2"><a href="${req.attachment_url}" target="_blank" class="text-cyan-600 hover:underline text-[12px] font-semibold">Voir la piece jointe</a></div>` : '');
             openModal('modalDetails');
         });
 }
@@ -557,13 +585,14 @@ function loadFeedbackDetails(id) {
     fetch('/rh/relations/feedbacks/' + id + '/details')
         .then(r => r.json())
         .then(fb => {
-            document.getElementById('detailsTitle').textContent = '💬 Feedback #' + fb.id;
+            document.getElementById('detailsTitle').textContent = 'Feedback #' + fb.id;
             const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-32 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
             document.getElementById('detailsBody').innerHTML =
                 row('De', fb.from_username) +
                 row('À', fb.to_username) +
                 row('Type', fb.feedback_type) +
                 row('Note', fb.rating_stars + ' (' + fb.rating + '/5)') +
+                row('Emotion', (fb.emotion_label ? String(fb.emotion_label).toUpperCase() : 'UNKNOWN') + ' (' + Math.round((Number(fb.emotion_score) || 0) * 100) + '%)') +
                 row('Date', fb.created_at?.substring(0,10)) +
                 (fb.comment ? `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Commentaire</p><p class="text-zinc-600">${fb.comment}</p></div>` : '');
             openModal('modalDetails');
@@ -574,14 +603,14 @@ function loadFfDetails(id) {
     fetch('/rh/relations/ff/' + id + '/details')
         .then(r => r.json())
         .then(ff => {
-            document.getElementById('detailsTitle').textContent = '🎓 Feedback Formation #' + ff.id;
+            document.getElementById('detailsTitle').textContent = 'Feedback Formation #' + ff.id;
             const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-32 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
             document.getElementById('detailsBody').innerHTML =
                 row('Employé', ff.employee_name) +
                 row('Formation', ff.formation_name) +
                 row('Session', ff.session_name) +
                 row('Note', ff.rating_stars + ' (' + ff.rating + '/5)') +
-                row('Recommandé', ff.recommande ? '✅ Oui' : '❌ Non') +
+                row('Recommande', ff.recommande ? 'Oui' : 'Non') +
                 row('Date', ff.created_at?.substring(0,10)) +
                 (ff.contenu_comment ? `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Contenu</p><p class="text-zinc-600">${ff.contenu_comment}</p></div>` : '') +
                 (ff.formateur_comment ? `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Formateur</p><p class="text-zinc-600">${ff.formateur_comment}</p></div>` : '') +

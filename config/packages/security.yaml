@@ -33,7 +33,9 @@ security:
     access_control:
         - { path: ^/(?:_wdt|_profiler|css|images|js|build|assets)/, roles: PUBLIC_ACCESS }
         - { path: ^/.*\.(?:css|js|png|jpg|jpeg|gif|svg|webp|ico)$, roles: PUBLIC_ACCESS }
+        - { path: ^/employee/formation/verify/, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/2fa-status, roles: PUBLIC_ACCESS }
         - { path: ^/candidat/inscription, roles: PUBLIC_ACCESS }
         - { path: ^/candidat/connexion, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }

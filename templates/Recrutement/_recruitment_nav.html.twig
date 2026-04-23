@@ -33,5 +33,15 @@
             </svg>
             Entretiens
         </a>
+        <a href="{{ path('app_rh_interviews_calendar') }}"
+           class="px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 flex items-center gap-2
+                  {{ currentRoute == 'app_rh_interviews_calendar' 
+                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-md' 
+                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Calendrier
+        </a>
     </nav>
 </div>
