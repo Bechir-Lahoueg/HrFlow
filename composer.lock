@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0d068069ce76197b7b08c5d453ec9f9",
+    "content-hash": "bf3b8993591ed9fbfe7fe2ef0b8adcab",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1594,6 +1594,75 @@
                 }
             ],
             "time": "2026-02-05T07:01:58+00:00"
+        },
+        {
+            "name": "endroid/qr-code-bundle",
+            "version": "7.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/endroid/qr-code-bundle.git",
+                "reference": "6e4c1a8a44f0e3ebfbf50d3eb543b3192ec8e353"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/endroid/qr-code-bundle/zipball/6e4c1a8a44f0e3ebfbf50d3eb543b3192ec8e353",
+                "reference": "6e4c1a8a44f0e3ebfbf50d3eb543b3192ec8e353",
+                "shasum": ""
+            },
+            "require": {
+                "endroid/qr-code": "^6.1.0",
+                "php": "^8.4",
+                "symfony/framework-bundle": "^6.4||^7.4||^8.0",
+                "symfony/twig-bundle": "^6.4||^7.4||^8.0"
+            },
+            "require-dev": {
+                "endroid/quality": "dev-main"
+            },
+            "suggest": {
+                "roave/security-advisories": "Avoids installation of package versions with vulnerabilities"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "7.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Endroid\\QrCodeBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jeroen van den Enden",
+                    "email": "info@endroid.nl"
+                }
+            ],
+            "description": "Endroid QR Code Bundle",
+            "homepage": "https://github.com/endroid/qr-code-bundle",
+            "keywords": [
+                "bundle",
+                "code",
+                "endroid",
+                "php",
+                "qr",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/endroid/qr-code-bundle/issues",
+                "source": "https://github.com/endroid/qr-code-bundle/tree/7.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/endroid",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-04-22T18:13:09+00:00"
         },
         {
             "name": "knplabs/knp-components",
@@ -10885,5 +10954,5 @@
         "ext-iconv": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
