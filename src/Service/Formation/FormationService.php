@@ -51,6 +51,44 @@ final class FormationService
         }
     }
 
+    /**
+     * @return array{
+     *   total_formations:int,
+     *   total_participations:int,
+     *   accepted_participations:int,
+     *   participation_rate:float,
+     *   formations_by_month:array<string,int>,
+     *   formations_by_category:array<string,int>,
+     *   participation_status_counts:array<string,int>
+     * }
+     */
+    public function getRhDashboardMetrics(int $rhId, int $months = 6): array
+    {
+        try {
+            return $this->formationRepository->getRhDashboardMetrics($rhId, $months);
+        } catch (\Throwable) {
+            $fallbackMonths = [];
+            $startMonth = (new \DateTimeImmutable('first day of this month'))->modify('-' . (max(3, min(12, $months)) - 1) . ' months');
+            for ($i = 0; $i < max(3, min(12, $months)); $i++) {
+                $fallbackMonths[$startMonth->modify('+' . $i . ' months')->format('M Y')] = 0;
+            }
+
+            return [
+                'total_formations' => 0,
+                'total_participations' => 0,
+                'accepted_participations' => 0,
+                'participation_rate' => 0.0,
+                'formations_by_month' => $fallbackMonths,
+                'formations_by_category' => [],
+                'participation_status_counts' => [
+                    'accepted' => 0,
+                    'refused' => 0,
+                    'pending' => 0,
+                ],
+            ];
+        }
+    }
+
     /** @return array{topFormations: array<int, array<string, mixed>>, topFormateurs: array<int, array<string, mixed>>} */
     public function getTopInsightsByRhId(int $rhId): array
     {

@@ -108,6 +108,146 @@ class FormationRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * @return array{
+     *   total_formations:int,
+     *   total_participations:int,
+     *   accepted_participations:int,
+     *   participation_rate:float,
+     *   formations_by_month:array<string,int>,
+     *   formations_by_category:array<string,int>,
+     *   participation_status_counts:array<string,int>
+     * }
+     */
+    public function getRhDashboardMetrics(int $rhId, int $months = 6): array
+    {
+        $months = max(3, min(12, $months));
+        $startMonth = (new \DateTimeImmutable('first day of this month'))->modify('-' . ($months - 1) . ' months');
+
+        $totalFormations = (int) $this->createQueryBuilder('f')
+            ->select('COUNT(f.id)')
+            ->where('f.rhId = :rhId')
+            ->setParameter('rhId', $rhId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $totalParticipations = (int) $this->getEntityManager()->createQuery(
+            'SELECT COUNT(p.id)
+             FROM App\Entity\Formation\ParticipationFormation p
+             JOIN p.session s
+             JOIN s.formation f
+             WHERE f.rhId = :rhId'
+        )
+        ->setParameter('rhId', $rhId)
+        ->getSingleScalarResult();
+
+        $acceptedParticipations = (int) $this->getEntityManager()->createQuery(
+            'SELECT COUNT(p.id)
+             FROM App\Entity\Formation\ParticipationFormation p
+             JOIN p.session s
+             JOIN s.formation f
+             WHERE f.rhId = :rhId AND p.statutParticipation IN (:acceptedStatuses)'
+        )
+        ->setParameter('rhId', $rhId)
+        ->setParameter('acceptedStatuses', ['Accepte', 'Certificat obtenu'])
+        ->getSingleScalarResult();
+
+        $participationRate = $totalParticipations > 0
+            ? round(($acceptedParticipations / $totalParticipations) * 100, 1)
+            : 0.0;
+
+        $categoryRows = $this->createQueryBuilder('f')
+            ->select('f.type AS category, COUNT(f.id) AS total')
+            ->where('f.rhId = :rhId')
+            ->setParameter('rhId', $rhId)
+            ->groupBy('f.type')
+            ->getQuery()
+            ->getArrayResult();
+
+        $categoryMap = [];
+        foreach ($categoryRows as $row) {
+            $category = trim((string) ($row['category'] ?? 'Autre'));
+            if ($category === '') {
+                $category = 'Autre';
+            }
+            $categoryMap[$category] = (int) ($row['total'] ?? 0);
+        }
+
+        $statusRows = $this->getEntityManager()->createQuery(
+            'SELECT p.statutParticipation AS status, COUNT(p.id) AS total
+             FROM App\Entity\Formation\ParticipationFormation p
+             JOIN p.session s
+             JOIN s.formation f
+             WHERE f.rhId = :rhId
+             GROUP BY p.statutParticipation'
+        )
+        ->setParameter('rhId', $rhId)
+        ->getArrayResult();
+
+        $statusBuckets = [
+            'accepted' => 0,
+            'refused' => 0,
+            'pending' => 0,
+        ];
+
+        foreach ($statusRows as $row) {
+            $status = mb_strtolower(trim((string) ($row['status'] ?? '')));
+            $count = (int) ($row['total'] ?? 0);
+
+            if (in_array($status, ['accepte', 'certificat obtenu'], true)) {
+                $statusBuckets['accepted'] += $count;
+                continue;
+            }
+
+            if ($status === 'refuse') {
+                $statusBuckets['refused'] += $count;
+                continue;
+            }
+
+            if (in_array($status, ['inscrit', 'en attente'], true)) {
+                $statusBuckets['pending'] += $count;
+            }
+        }
+
+        $monthMap = [];
+        for ($i = 0; $i < $months; $i++) {
+            $current = $startMonth->modify('+' . $i . ' months');
+            $monthMap[$current->format('M Y')] = 0;
+        }
+
+        $formationRows = $this->createQueryBuilder('f')
+            ->select('f.createdAt AS createdAt')
+            ->where('f.rhId = :rhId')
+            ->andWhere('f.createdAt >= :startMonth')
+            ->setParameter('rhId', $rhId)
+            ->setParameter('startMonth', $startMonth)
+            ->orderBy('f.createdAt', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        foreach ($formationRows as $row) {
+            $createdAt = $row['createdAt'] ?? null;
+            if (!$createdAt instanceof \DateTimeInterface) {
+                continue;
+            }
+
+            $label = $createdAt->format('M Y');
+            if (array_key_exists($label, $monthMap)) {
+                $monthMap[$label]++;
+            }
+        }
+
+        return [
+            'total_formations' => $totalFormations,
+            'total_participations' => $totalParticipations,
+            'accepted_participations' => $acceptedParticipations,
+            'participation_rate' => $participationRate,
+            'formations_by_month' => $monthMap,
+            'formations_by_category' => $categoryMap,
+            'participation_status_counts' => $statusBuckets,
+        ];
+    }
+
     /** @return array<int, array<string, mixed>> */
     public function findTopFormationsByRh(int $rhId, int $limit = 5): array
     {

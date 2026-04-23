@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\Rh\EmployeeRepository;
+use App\Service\Formation\FormationService;
 use App\Service\Formation\ParticipationService;
 use App\Service\Rh\LeaveBalanceService;
 use App\Service\Rh\LeaveRequestService;
@@ -10,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 
 final class WelcomeController extends AbstractController
@@ -44,7 +47,12 @@ final class WelcomeController extends AbstractController
 
     #[Route('/welcome/rh', name: 'app_welcome_rh')]
     #[IsGranted('ROLE_RH')]
-    public function rh(EmployeeRepository $employeeRepository, LeaveRequestService $leaveRequestService): Response
+    public function rh(
+        EmployeeRepository $employeeRepository,
+        LeaveRequestService $leaveRequestService,
+        FormationService $formationService,
+        ChartBuilderInterface $chartBuilder
+    ): Response
     {
         $rhId = (int) $this->getUser()?->getId();
 
@@ -57,10 +65,158 @@ final class WelcomeController extends AbstractController
         } catch (\Throwable) {
         }
 
+        $metrics = $formationService->getRhDashboardMetrics($rhId, 6);
+
+        $categoryColorMap = [
+            'Technique' => [
+                'background' => '#dbeafe',
+                'border' => '#93c5fd'
+            ],
+            'Soft Skills' => [
+                'background' => '#fce7f3',
+                'border' => '#f9a8d4'
+            ],
+            'Management' => [
+                'background' => '#ede9fe',
+                'border' => '#c4b5fd'
+            ],
+            'Leadership' => [
+                'background' => '#cffafe',
+                'border' => '#67e8f9'
+            ],
+            'Langues' => [
+                'background' => '#ffedd5',
+                'border' => '#fdba74'
+            ],
+            'Qualité' => [
+                'background' => '#fef9c3',
+                'border' => '#fde047'
+            ],
+            'Sécurité' => [
+                'background' => '#fee2e2',
+                'border' => '#fca5a5'
+            ],
+            'Conformité' => [
+                'background' => '#e0e7ff',
+                'border' => '#a5b4fc'
+            ],
+            'Bureautique' => [
+                'background' => '#f3e8ff',
+                'border' => '#d8b4fe'
+            ],
+            'Finance' => [
+                'background' => '#dcfce7',
+                'border' => '#86efac'
+            ],
+            'RH' => [
+                'background' => '#e0f2fe',
+                'border' => '#7dd3fc'
+            ],
+            'Digital' => [
+                'background' => '#ccfbf1',
+                'border' => '#5eead4'
+            ],
+            'Autre' => [
+                'background' => '#f3f4f6',
+                'border' => '#d1d5db'
+            ],
+        ];
+
+        $categoryCounts = $metrics['formations_by_category'] ?? [];
+        $categoryLabels = array_keys($categoryCounts);
+        $categoryValues = array_values($categoryCounts);
+        $backgroundColors = [];
+        $borderColors = [];
+
+        foreach ($categoryLabels as $label) {
+            $backgroundColors[] = $categoryColorMap[$label]['background'] ?? '#145EB7';
+            $borderColors[] = $categoryColorMap[$label]['border'] ?? '#145EB7';
+        }
+        if ($categoryLabels === []) {
+            $categoryLabels = ['Aucune categorie'];
+            $categoryValues = [0];
+            $categoryColors = ['#D0D0D0'];
+        }
+
+        $formationCountChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $formationCountChart->setData([
+            'labels' => $categoryLabels,
+            'datasets' => [[
+                'label' => 'Formations par categorie',
+                'data' => $categoryValues,
+                'backgroundColor' => $backgroundColors,
+                'borderColor' => $borderColors,
+                'borderWidth' => 2,
+            ]],
+        ]);
+        $formationCountChart->setOptions([
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                ],
+            ],
+            'cutout' => '64%',
+        ]);
+
+        $statusCounts = $metrics['participation_status_counts'] ?? [];
+        $accepted = (int) ($statusCounts['accepted'] ?? 0);
+        $refused = (int) ($statusCounts['refused'] ?? 0);
+        $pending = (int) ($statusCounts['pending'] ?? 0);
+
+        $participationRateChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $participationRateChart->setData([
+            'labels' => ['Acceptees', 'Refusees', 'En attente'],
+            'datasets' => [[
+                'label' => 'Statut des participations',
+                'data' => [$accepted, $refused, $pending],
+                'backgroundColor' => ['#145EB7', '#dc2626', '#f59e0b'],
+                'borderWidth' => 0,
+            ]],
+        ]);
+        $participationRateChart->setOptions([
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                ],
+            ],
+            'cutout' => '68%',
+        ]);
+
+        $formationsByMonth = $metrics['formations_by_month'] ?? [];
+        $formationByMonthChart = $chartBuilder->createChart(Chart::TYPE_LINE);
+        $formationByMonthChart->setData([
+            'labels' => array_keys($formationsByMonth),
+            'datasets' => [[
+                'label' => 'Formations creees',
+                'data' => array_values($formationsByMonth),
+                'borderColor' => '#3FA9F5',
+                'backgroundColor' => 'rgba(63, 169, 245, 0.18)',
+                'fill' => true,
+                'tension' => 0.35,
+                'pointRadius' => 4,
+                'pointBackgroundColor' => '#145EB7',
+            ]],
+        ]);
+        $formationByMonthChart->setOptions([
+            'plugins' => [
+                'legend' => ['display' => false],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                ],
+            ],
+        ]);
+
         return $this->render('DashboardHr/welcome_rh.html.twig', [
             'user' => $this->getUser(),
             'employeeCount' => $employeeCount,
             'pendingLeaveCount' => $pendingLeaveCount,
+            'formationMetrics' => $metrics,
+            'formationCountChart' => $formationCountChart,
+            'participationRateChart' => $participationRateChart,
+            'formationByMonthChart' => $formationByMonthChart,
         ]);
     }
 
