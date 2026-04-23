@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Offre d'emploi - {{ jobOffer.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .document-title {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .job-title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .meta-info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .meta-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .meta-label {
+            font-weight: bold;
+            width: 150px;
+            color: #4b5563;
+        }
+        .meta-value {
+            flex: 1;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #4f46e5;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .content {
+            text-align: justify;
+        }
+        .salary-box {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .salary-label {
+            font-size: 10pt;
+            color: #059669;
+            text-transform: uppercase;
+        }
+        .salary-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #047857;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+        .status-draft { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">HrFlow</div>
+        <div class="document-title">Fiche Offre d'Emploi</div>
+    </div>
+
+    <div class="job-title">{{ jobOffer.title }}</div>
+    
+    <div style="margin-bottom: 20px;">
+        <span class="status-badge status-{{ jobOffer.status|lower }}">
+            {{ jobOffer.status == 'ACTIVE' ? 'Active' : (jobOffer.status == 'CLOSED' ? 'Fermée' : 'Brouillon') }}
+        </span>
+    </div>
+
+    <div class="meta-info">
+        <div class="meta-row">
+            <span class="meta-label">Département:</span>
+            <span class="meta-value">{{ jobOffer.department ?: 'Non spécifié' }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Localisation:</span>
+            <span class="meta-value">{{ jobOffer.location ?: 'Non spécifiée' }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Type d'emploi:</span>
+            <span class="meta-value">{{ jobOffer.employmentType ?: 'Non spécifié' }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Date de création:</span>
+            <span class="meta-value">{{ jobOffer.createdAt|date('d/m/Y') }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Référence:</span>
+            <span class="meta-value">#{{ jobOffer.id }}</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Description du poste</div>
+        <div class="content">
+            {{ jobOffer.description|nl2br }}
+        </div>
+    </div>
+
+    {% if jobOffer.salaryMin > 0 or jobOffer.salaryMax > 0 %}
+    <div class="salary-box">
+        <div class="salary-label">Fourchette de rémunération</div>
+        <div class="salary-value">
+            {% if jobOffer.salaryMin > 0 and jobOffer.salaryMax > 0 %}
+                {{ jobOffer.salaryMin|number_format(0, ',', ' ') }} - {{ jobOffer.salaryMax|number_format(0, ',', ' ') }} TND
+            {% elseif jobOffer.salaryMin > 0 %}
+                À partir de {{ jobOffer.salaryMin|number_format(0, ',', ' ') }} TND
+            {% else %}
+                Jusqu'à {{ jobOffer.salaryMax|number_format(0, ',', ' ') }} TND
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        Document généré le {{ generatedAt|date('d/m/Y à H:i') }} | HrFlow Recruitment System
+    </div>
+</body>
+</html>

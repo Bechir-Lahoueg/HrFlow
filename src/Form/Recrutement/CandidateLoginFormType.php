@@ -34,6 +34,19 @@ class CandidateLoginFormType extends AbstractType
                     'class' => 'block text-sm font-bold text-slate-700 mb-2',
                 ],
             ])
+            ->add('totp_code', TextType::class, [
+                'required' => false,
+                'label' => 'Code Google Authenticator (optionnel)',
+                'attr' => [
+                    'placeholder' => '123456',
+                    'inputmode' => 'numeric',
+                    'autocomplete' => 'one-time-code',
+                    'class' => 'w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20',
+                ],
+                'label_attr' => [
+                    'class' => 'block text-sm font-bold text-slate-700 mb-2',
+                ],
+            ])
             ->add('_csrf_token', HiddenType::class, [
                 'mapped' => false,
             ]);

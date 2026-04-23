@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Entretien - {{ interview.application.candidateName }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .document-title {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .interview-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .interview-type {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .candidate-name {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .interview-datetime {
+            font-size: 14pt;
+            opacity: 0.95;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #4f46e5;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #4b5563;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        .info-value {
+            margin-top: 3px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .result-pending { background: #fef3c7; color: #92400e; }
+        .result-passed { background: #d1fae5; color: #065f46; }
+        .result-failed { background: #fee2e2; color: #991b1b; }
+        .result-no-show { background: #f3f4f6; color: #4b5563; }
+        .score-box {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 60px;
+            font-size: 20pt;
+            font-weight: bold;
+            color: white;
+            margin-right: 10px;
+        }
+        .score-high { background: #10b981; }
+        .score-medium { background: #f59e0b; }
+        .score-low { background: #ef4444; }
+        .feedback-box {
+            background: #f3f4f6;
+            border-left: 4px solid #4f46e5;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .job-info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .job-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+        .meeting-info {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .meeting-label {
+            font-size: 10pt;
+            color: #15803d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            page-break-inside: avoid;
+        }
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-top: 30px;
+        }
+        .signature-box {
+            border-top: 1px solid #333;
+            padding-top: 10px;
+            margin-top: 50px;
+        }
+        .signature-label {
+            font-size: 9pt;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">HrFlow</div>
+        <div class="document-title">Fiche d'Entretien</div>
+    </div>
+
+    <div class="interview-header">
+        <div class="interview-type">{{ interview.type }}</div>
+        <div class="candidate-name">{{ interview.application.candidateName }}</div>
+        <div class="interview-datetime">
+            {{ interview.interviewDate|date('l d F Y à H:i') }}
+        </div>
+    </div>
+
+    <div class="job-info">
+        <div class="job-title">{{ jobOffer.title }}</div>
+        <div style="color: #6b7280;">
+            {{ jobOffer.department ?: '' }} {{ jobOffer.location ? '• ' ~ jobOffer.location : '' }}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Détails de l'entretien</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Date et heure</div>
+                <div class="info-value">{{ interview.interviewDate|date('d/m/Y H:i') }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Type d'entretien</div>
+                <div class="info-value">{{ interview.type }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Interviewer</div>
+                <div class="info-value">{{ interviewer ? interviewer.username : 'Non assigné' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Résultat</div>
+                <div class="info-value">
+                    <span class="status-badge result-{{ interview.result|lower }}">
+                        {{ interview.result == 'PENDING' ? 'En attente' : 
+                           (interview.result == 'PASSED' ? 'Réussi' : 
+                           (interview.result == 'FAILED' ? 'Échoué' : 'Absent')) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {% if interview.location %}
+        <div class="meeting-info">
+            <div class="meeting-label">Lieu / Mode</div>
+            <div style="font-size: 12pt; color: #166534; font-weight: 500;">
+                {{ interview.location }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if interview.meetingLink %}
+        <div class="meeting-info" style="background: #eff6ff; border-color: #3b82f6;">
+            <div class="meeting-label" style="color: #1d4ed8;">Lien de visioconférence</div>
+            <div style="font-size: 10pt; color: #1e40af; word-break: break-all;">
+                {{ interview.meetingLink }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if interview.score > 0 %}
+    <div class="section">
+        <div class="section-title">Évaluation</div>
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <div class="score-box {{ interview.score >= 8 ? 'score-high' : (interview.score >= 5 ? 'score-medium' : 'score-low') }}">
+                {{ interview.score }}
+            </div>
+            <div>
+                <div style="font-size: 14pt; font-weight: bold; color: #1f2937;">Score: {{ interview.score }}/100</div>
+                <div style="font-size: 10pt; color: #6b7280;">
+                    {{ interview.score >= 8 ? 'Excellent' : (interview.score >= 5 ? 'Moyen' : 'Insuffisant') }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if interview.feedback %}
+    <div class="section">
+        <div class="section-title">Commentaires & Feedback</div>
+        <div class="feedback-box">
+            {{ interview.feedback|nl2br }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <div class="section-title">Informations du candidat</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Nom</div>
+                <div class="info-value">{{ interview.application.candidateName }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ interview.application.emailAddress ?: 'Non renseigné' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Candidature #</div>
+                <div class="info-value">{{ interview.application.id }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Entretien #</div>
+                <div class="info-value">{{ interview.id }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="signature-section">
+        <div class="section-title">Signatures</div>
+        <div class="signature-grid">
+            <div>
+                <div class="signature-box">
+                    <div class="signature-label">Interviewer</div>
+                </div>
+            </div>
+            <div>
+                <div class="signature-box">
+                    <div class="signature-label">RH / Recruteur</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Document généré le {{ generatedAt|date('d/m/Y à H:i') }} | HrFlow Recruitment System<br>
+        Confidentiel - Usage interne uniquement
+    </div>
+</body>
+</html>
