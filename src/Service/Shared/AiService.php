@@ -14,8 +14,11 @@ final class AiService
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        #[Autowire('%env(default::GROQ_API_KEY)%')]
-        private readonly ?string $groqApiKey = null
+public function __construct(
+    private readonly HttpClientInterface $httpClient,
+    #[Autowire('%env(default::GROQ_API_KEY)%')]
+    private readonly ?string $groqApiKey = null
+) {}
     ) {}
 
     /**

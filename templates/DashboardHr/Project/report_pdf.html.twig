@@ -56,13 +56,6 @@
                 </td>
                 <td class="meta" style="width: 220px;">
                     <div><strong>Date:</strong> {{ generatedAt|date('d/m/Y H:i') }}</div>
-                    <div><strong>RH ID:</strong> {{ rhId }}</div>
-                    <div class="filters">
-                        <strong>Filtres:</strong><br>
-                        Statut: {{ filters.status ?: 'Tous' }}<br>
-                        Priorite: {{ filters.priority ?: 'Toutes' }}<br>
-                        Recherche: {{ filters.search ?: 'Aucune' }}
-                    </div>
                 </td>
             </tr>
         </table>

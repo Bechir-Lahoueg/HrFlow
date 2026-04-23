@@ -25,13 +25,13 @@
 
         {% for message in app.flashes('success') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
@@ -45,6 +45,7 @@
                 <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
+                            <img src="{{ asset('logo.png') }}" alt="HRFlow" class="w-6 h-6 rounded-md object-cover border border-white/20">
                             <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
                             <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Project Studio</span>
                         </div>
@@ -71,7 +72,7 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-1">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+                            <i class="bi bi-kanban-fill text-cyan-600" aria-hidden="true"></i>
                         </div>
                         <span class="text-[11px] font-bold text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-md">Projets</span>
                     </div>
@@ -83,7 +84,7 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <i class="bi bi-check-circle-fill text-emerald-600" aria-hidden="true"></i>
                         </div>
                     </div>
                     <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ taskStats.completed_tasks }}</p>
@@ -94,7 +95,7 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-3">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <i class="bi bi-hourglass-split text-orange-600" aria-hidden="true"></i>
                         </div>
                     </div>
                     <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ taskStats.in_progress_tasks }}</p>
@@ -105,7 +106,7 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-4">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <i class="bi bi-clock-fill text-indigo-600" aria-hidden="true"></i>
                         </div>
                     </div>
                     <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ totalHours }}h</p>
@@ -122,7 +123,7 @@
                     <div class="flex items-center justify-between gap-3 mb-5">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+                                <i class="bi bi-kanban-fill text-cyan-600" aria-hidden="true"></i>
                             </div>
                             <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Projets Actifs</h3>
                         </div>
@@ -132,7 +133,7 @@
                     {% if projects is empty %}
                     <div class="flex flex-col items-center justify-center py-12 text-center">
                         <div class="w-14 h-14 rounded-2xl bg-zinc-50 flex items-center justify-center mb-3">
-                            <svg class="w-7 h-7 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75"/></svg>
+                            <i class="bi bi-kanban text-zinc-300 text-2xl" aria-hidden="true"></i>
                         </div>
                         <p class="text-sm font-semibold text-zinc-400">Aucun projet assigné</p>
                         <p class="text-xs text-zinc-300 mt-1">Vous n'êtes membre d'aucun projet pour le moment.</p>
@@ -163,7 +164,7 @@
                                 <p class="text-[10px] text-zinc-400 font-semibold">{{ project.completion_rate ?? 0 }}%</p>
                             </div>
                             <div class="shrink-0 w-6 h-6 rounded-lg bg-zinc-100 group-hover:bg-cyan-600 flex items-center justify-center transition-colors">
-                                <svg class="w-3 h-3 text-zinc-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                                <i class="bi bi-chevron-right text-zinc-400 group-hover:text-white" aria-hidden="true"></i>
                             </div>
                         </a>
                         {% endfor %}
@@ -176,7 +177,7 @@
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-5">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <i class="bi bi-list-check text-violet-600" aria-hidden="true"></i>
                             </div>
                             <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Tâches</h3>
                         </div>
@@ -190,29 +191,29 @@
                             <a href="{{ path('employee_project_index', {status: 'todo'}) }}"
                                class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
                                       {{ statusFilter == 'todo' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
-                                📋 À faire
+                                <i class="bi bi-list-check me-1" aria-hidden="true"></i>A faire
                             </a>
                             <a href="{{ path('employee_project_index', {status: 'in_progress'}) }}"
                                class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
                                       {{ statusFilter == 'in_progress' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
-                                ⏳ En cours
+                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>En cours
                             </a>
                             <a href="{{ path('employee_project_index', {status: 'review'}) }}"
                                class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
                                       {{ statusFilter == 'review' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
-                                👁️ Review
+                                <i class="bi bi-eye me-1" aria-hidden="true"></i>Review
                             </a>
                             <a href="{{ path('employee_project_index', {status: 'done'}) }}"
                                class="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all
                                       {{ statusFilter == 'done' ? 'bg-slate-900 text-white shadow-sm' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' }}">
-                                ✅ Terminées
+                                <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Terminees
                             </a>
                         </div>
                     </div>
 
                     {% if taskStats.overdue_tasks > 0 %}
                     <div class="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                         Vous avez <strong class="mx-1">{{ taskStats.overdue_tasks }}</strong> tâche{{ taskStats.overdue_tasks > 1 ? 's' : '' }} en retard !
                     </div>
                     {% endif %}
@@ -283,7 +284,7 @@
                                         {{ isSoon and not isOverdue ? 'text-amber-600 font-bold' : '' }}
                                         {{ not isOverdue and not isSoon ? 'text-zinc-500'         : '' }}">
                                         {{ task.due_date|date('d M Y') }}
-                                        {% if isOverdue %} ⚠️{% elseif isSoon %} 🔥{% endif %}
+                                        {% if isOverdue %} <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>{% elseif isSoon %} <i class="bi bi-alarm-fill" aria-hidden="true"></i>{% endif %}
                                     </span>
                                     {% else %}
                                     <span class="text-zinc-300 text-[12px]">-</span>

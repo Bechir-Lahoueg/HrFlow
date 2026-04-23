@@ -143,7 +143,7 @@ class RhRelationController extends AbstractController
     {
         $fb = $this->feedbackService->getById($id);
         if (!$fb) return new JsonResponse(['error' => 'Not found'], 404);
-        if ($fb['is_anonymous']) $fb['from_username'] = '👤 Anonyme';
+        if ($fb['is_anonymous']) $fb['from_username'] = 'Anonyme';
         $fb['rating_stars'] = $this->feedbackService->getRatingStars((int)$fb['rating']);
         return new JsonResponse($fb);
     }
