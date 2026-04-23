@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if isValid %}Certificat verifie{% else %}Certificat invalide{% endif %}</title>
+    <title>{% if isValid %}Certificat vérifié{% else %}Certificat invalide{% endif %}</title>
     <style>
         :root {
             --primary-dark: #022E69;
@@ -105,13 +105,13 @@
 <body>
     <section class="card" role="status" aria-live="polite">
         <header class="head">
-            <h1>{% if isValid %}Certificat authentique{% else %}Verification impossible{% endif %}</h1>
-            <p>{% if isValid %}Ce certificat a ete verifie avec succes.{% else %}Le certificat scanne est invalide ou n'existe plus.{% endif %}</p>
+            <h1>{% if isValid %}Certificat authentique{% else %}Vérification impossible{% endif %}</h1>
+            <p>{% if isValid %}Ce certificat a été vérifié avec succès.{% else %}Le certificat scanné est invalide ou n'existe plus.{% endif %}</p>
         </header>
 
         <div class="content">
             {% if isValid %}
-                <div class="badge">Verification confirmee</div>
+                <div class="badge">Vérification confirmée</div>
                 <div class="grid">
                     <div class="row">
                         <span class="label">Participant</span>
@@ -122,7 +122,7 @@
                         <span class="value">{{ formationTitle }}</span>
                     </div>
                     <div class="row">
-                        <span class="label">Periode</span>
+                        <span class="label">Période</span>
                         <span class="value">{{ dateDebut ? dateDebut|date('d/m/Y') : '-' }} - {{ dateFin ? dateFin|date('d/m/Y') : '-' }}</span>
                     </div>
                     <div class="row">
@@ -137,7 +137,7 @@
         </div>
 
         <footer class="footer">
-            Verification effectuee le {{ (verifiedAt|default(date()))|date('d/m/Y H:i') }}
+            Vérification effectuée le {{ (verifiedAt|default(date()))|date('d/m/Y H:i') }}
         </footer>
     </section>
 </body>
