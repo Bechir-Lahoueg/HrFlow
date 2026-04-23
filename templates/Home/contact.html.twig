@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HrFlow | Contact{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    <section class="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24">
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-100 via-white to-[#fafafa]"></div>
+        <div class="absolute -top-16 left-1/4 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
+        <div class="absolute top-12 right-1/4 h-80 w-80 rounded-full bg-teal-300/20 blur-3xl"></div>
+
+        <div class="relative max-w-7xl mx-auto px-6">
+            <div class="max-w-3xl">
+                <span class="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-emerald-700">
+                    Contactez-nous
+                </span>
+                <h1 class="mt-6 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                    Parlons de votre projet RH
+                </h1>
+                <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+                    Vous avez une question sur HrFlow, une demande de demo ou un besoin specifique ?
+                    Notre equipe vous repond rapidement.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="pb-20 lg:pb-28">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:col-span-2 lg:p-10">
+                    <h2 class="text-2xl font-extrabold text-slate-900">Envoyer un email</h2>
+                    <p class="mt-3 text-base leading-relaxed text-slate-600">
+                        Cliquez sur le bouton ci-dessous pour ouvrir votre client email avec l'adresse HrFlow pre-remplie.
+                    </p>
+
+                    <div class="mt-8 flex flex-wrap items-center gap-4">
+                        <a href="mailto:hr.flow@gmail.com?subject=Contact%20HrFlow"
+                           class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-lg">
+                            Ecrire a hr.flow@gmail.com
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8m-2 10H5a2 2 0 01-2-2V8a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2z"/></svg>
+                        </a>
+                        <span class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
+                            Reponse en general sous 24h
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Adresse email</h3>
+                        <a href="mailto:hr.flow@gmail.com" class="mt-2 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800">
+                            hr.flow@gmail.com
+                        </a>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Horaires</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-600">Lundi - Vendredi</p>
+                        <p class="text-sm leading-relaxed text-slate-600">09:00 - 18:00</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h3 class="text-base font-bold text-slate-900">Besoin d'une presentation ?</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-600">Nous pouvons organiser une demo personnalisee de la plateforme.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'Components/footer.html.twig' %}
+</div>
+{% endblock %}
