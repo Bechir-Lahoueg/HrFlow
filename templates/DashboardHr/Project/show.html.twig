@@ -213,6 +213,17 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 .risk-critical { background: #fff1f2; border-color: #fecdd3; }
 .risk-low { background: #f0fdf4; border-color: #bbf7d0; }
 
+.analytics-card-fixed {
+    height: 430px;
+    display: flex;
+    flex-direction: column;
+}
+
+.analytics-card-scroll {
+    flex: 1;
+    overflow: auto;
+}
+
 .modal-custom .modal-content { border-radius: var(--radius); border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
 .modal-custom .modal-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius) var(--radius) 0 0; }
 .form-label { font-weight: 600; font-size: .825rem; color: var(--text); margin-bottom: .35rem; }
@@ -448,78 +459,84 @@ body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
         <div class="row g-3">
             {# Santé #}
             <div class="col-md-4">
-                <div class="card-panel text-center">
+                <div class="card-panel text-center analytics-card-fixed">
                     <div class="section-title justify-content-center">Sante du Projet</div>
-                    <div class="health-score-circle health-{{ analytics.health_status }}">
-                        {{ analytics.health_score }}
-                        <div style="font-size:.6rem; font-weight:500">/ 100</div>
+                    <div class="analytics-card-scroll">
+                        <div class="health-score-circle health-{{ analytics.health_status }}">
+                            {{ analytics.health_score }}
+                            <div style="font-size:.6rem; font-weight:500">/ 100</div>
+                        </div>
+                        {% if analytics.criticals is not empty %}
+                        {% for c in analytics.criticals %}
+                        <div class="alert alert-danger py-1 px-2 text-start" style="font-size:.8rem">{{ c }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        {% if analytics.warnings is not empty %}
+                        {% for w in analytics.warnings %}
+                        <div class="alert alert-warning py-1 px-2 text-start" style="font-size:.8rem">{{ w }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        {% if analytics.criticals is empty and analytics.warnings is empty %}
+                        <div class="alert alert-success py-2">Aucune alerte - projet en bonne sante</div>
+                        {% endif %}
                     </div>
-                    {% if analytics.criticals is not empty %}
-                    {% for c in analytics.criticals %}
-                    <div class="alert alert-danger py-1 px-2 text-start" style="font-size:.8rem">{{ c }}</div>
-                    {% endfor %}
-                    {% endif %}
-                    {% if analytics.warnings is not empty %}
-                    {% for w in analytics.warnings %}
-                    <div class="alert alert-warning py-1 px-2 text-start" style="font-size:.8rem">{{ w }}</div>
-                    {% endfor %}
-                    {% endif %}
-                    {% if analytics.criticals is empty and analytics.warnings is empty %}
-                    <div class="alert alert-success py-2">Aucune alerte - projet en bonne sante</div>
-                    {% endif %}
                 </div>
             </div>
             {# Prédiction #}
             <div class="col-md-4">
-                <div class="card-panel">
+                <div class="card-panel analytics-card-fixed">
                     <div class="section-title">Prediction de Fin</div>
-                    {% if analytics.prediction %}
-                    {% set pred = analytics.prediction %}
-                    <div class="mb-2">
-                        <span class="badge bg-{{ pred.status == 'on_track' ? 'success' : (pred.status == 'early' ? 'info' : 'danger') }} text-white">
-                            {{ pred.status == 'on_track' ? 'Dans les temps' : (pred.status == 'early' ? 'En avance' : 'En retard') }}
-                        </span>
+                    <div class="analytics-card-scroll">
+                        {% if analytics.prediction %}
+                        {% set pred = analytics.prediction %}
+                        <div class="mb-2">
+                            <span class="badge bg-{{ pred.status == 'on_track' ? 'success' : (pred.status == 'early' ? 'info' : 'danger') }} text-white">
+                                {{ pred.status == 'on_track' ? 'Dans les temps' : (pred.status == 'early' ? 'En avance' : 'En retard') }}
+                            </span>
+                        </div>
+                        <table class="table table-sm" style="font-size:.83rem">
+                            <tr><td class="text-muted">Vélocité</td><td class="fw-semibold">{{ pred.velocity }} tâches/jour</td></tr>
+                            <tr><td class="text-muted">Tâches restantes</td><td class="fw-semibold">{{ pred.remaining_tasks }}</td></tr>
+                            <tr><td class="text-muted">Jours nécessaires</td><td class="fw-semibold">{{ pred.days_needed }}</td></tr>
+                            <tr><td class="text-muted">Date prédite</td><td class="fw-semibold">{{ pred.predicted_date|date('d/m/Y') }}</td></tr>
+                            <tr><td class="text-muted">Date planifiée</td><td class="fw-semibold">{{ project.end_date|date('d/m/Y') }}</td></tr>
+                            <tr>
+                                <td class="text-muted">Écart</td>
+                                <td class="fw-semibold {{ pred.days_diff >= 0 ? 'text-success' : 'text-danger' }}">
+                                    {{ pred.days_diff >= 0 ? '+' : '' }}{{ pred.days_diff }} jours
+                                </td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <div class="text-muted text-center py-3">
+                            <div style="font-size:2rem">-</div>
+                            <p style="font-size:.85rem">Pas assez de données.<br>Terminez quelques tâches pour activer les prédictions.</p>
+                        </div>
+                        {% endif %}
                     </div>
-                    <table class="table table-sm" style="font-size:.83rem">
-                        <tr><td class="text-muted">Vélocité</td><td class="fw-semibold">{{ pred.velocity }} tâches/jour</td></tr>
-                        <tr><td class="text-muted">Tâches restantes</td><td class="fw-semibold">{{ pred.remaining_tasks }}</td></tr>
-                        <tr><td class="text-muted">Jours nécessaires</td><td class="fw-semibold">{{ pred.days_needed }}</td></tr>
-                        <tr><td class="text-muted">Date prédite</td><td class="fw-semibold">{{ pred.predicted_date|date('d/m/Y') }}</td></tr>
-                        <tr><td class="text-muted">Date planifiée</td><td class="fw-semibold">{{ project.end_date|date('d/m/Y') }}</td></tr>
-                        <tr>
-                            <td class="text-muted">Écart</td>
-                            <td class="fw-semibold {{ pred.days_diff >= 0 ? 'text-success' : 'text-danger' }}">
-                                {{ pred.days_diff >= 0 ? '+' : '' }}{{ pred.days_diff }} jours
-                            </td>
-                        </tr>
-                    </table>
-                    {% else %}
-                    <div class="text-muted text-center py-3">
-                        <div style="font-size:2rem">-</div>
-                        <p style="font-size:.85rem">Pas assez de données.<br>Terminez quelques tâches pour activer les prédictions.</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
             {# Risques #}
             <div class="col-md-4">
-                <div class="card-panel">
+                <div class="card-panel analytics-card-fixed">
                     <div class="section-title">Risques identifies</div>
-                    {% if analytics.risks is empty %}
-                    <div class="text-center py-3">
-                        <div style="font-size:2rem">-</div>
-                        <p class="text-success fw-semibold">Aucun risque détecté</p>
-                    </div>
-                    {% endif %}
-                    {% for risk in analytics.risks %}
-                    <div class="risk-card risk-{{ risk.severity }}">
-                        <div class="fw-bold" style="font-size:.875rem">
-                            {{ risk.title }}
+                    <div class="analytics-card-scroll">
+                        {% if analytics.risks is empty %}
+                        <div class="text-center py-3">
+                            <div style="font-size:2rem">-</div>
+                            <p class="text-success fw-semibold">Aucun risque détecté</p>
                         </div>
-                        <div style="font-size:.8rem; margin:.3rem 0">{{ risk.description }}</div>
-                        <div style="font-size:.77rem; color:#059669; font-style:italic">{{ risk.recommendation }}</div>
+                        {% endif %}
+                        {% for risk in analytics.risks %}
+                        <div class="risk-card risk-{{ risk.severity }}">
+                            <div class="fw-bold" style="font-size:.875rem">
+                                {{ risk.title }}
+                            </div>
+                            <div style="font-size:.8rem; margin:.3rem 0">{{ risk.description }}</div>
+                            <div style="font-size:.77rem; color:#059669; font-style:italic">{{ risk.recommendation }}</div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
             {# Stats tâches #}
