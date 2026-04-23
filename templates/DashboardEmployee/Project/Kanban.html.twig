@@ -71,13 +71,13 @@
 
         {% for message in app.flashes('success') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
             <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                 {{ message }}
             </div>
         {% endfor %}
@@ -92,7 +92,7 @@
                     {# Breadcrumb #}
                     <div class="flex items-center gap-2 mb-4">
                         <a href="{{ path('employee_project_index') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-cyan-200/70 hover:text-cyan-200 transition-colors" style="text-decoration:none;">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
                             Mes Projets
                         </a>
                         <span class="text-cyan-200/30">/</span>
@@ -102,24 +102,18 @@
 
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                         <div>
-                            <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">
-                                {% if project.status == 'in_progress' %}🟢
-                                {% elseif project.status == 'completed' %}✅
-                                {% elseif project.status == 'on_hold' %}🟡
-                                {% else %}📋{% endif %}
-                                {{ project.name }}
-                            </h2>
+                            <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">{{ project.name }}</h2>
                             <div class="flex flex-wrap gap-2 mt-3">
                                 {% if myCollaboration %}
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    👤 {{ myCollaboration.role ?? 'Membre' }}
+                                    <i class="bi bi-person-fill" aria-hidden="true"></i> {{ myCollaboration.role ?? 'Membre' }}
                                 </span>
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    ⏱️ {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}
+                                    <i class="bi bi-clock-fill" aria-hidden="true"></i> {{ myCollaboration.worked_hours ?? 0 }}h / {{ myCollaboration.assigned_hours ? (myCollaboration.assigned_hours ~ 'h') : '∞' }}
                                 </span>
                                 {% endif %}
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 backdrop-blur-sm px-3 py-1 text-[12px] font-semibold text-white/90">
-                                    ✅ {{ doneMyTasks }}/{{ totalMyTasks }} tâches
+                                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i> {{ doneMyTasks }}/{{ totalMyTasks }} taches
                                 </span>
                             </div>
                         </div>
@@ -139,19 +133,19 @@
                 <div class="flex items-center justify-between gap-3 mb-5 flex-wrap">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                            <i class="bi bi-kanban-fill text-violet-600" aria-hidden="true"></i>
                         </div>
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Tâches — Kanban Board</h3>
                     </div>
-                    <span class="text-[11px] font-medium text-zinc-400">💡 Glissez-déposez ou utilisez les boutons</span>
+                    <span class="text-[11px] font-medium text-zinc-400"><i class="bi bi-lightbulb-fill me-1" aria-hidden="true"></i>Glissez-deposez ou utilisez les boutons</span>
                 </div>
 
                 <div class="kanban-board">
                     {% set columns = {
-                        'todo':        {label: '📋 À FAIRE',  class: 'col-todo'},
-                        'in_progress': {label: '⏳ EN COURS', class: 'col-in_progress'},
-                        'review':      {label: '👁️ REVIEW',   class: 'col-review'},
-                        'done':        {label: '✅ TERMINÉ',  class: 'col-done'}
+                        'todo':        {label: 'A FAIRE',  class: 'col-todo'},
+                        'in_progress': {label: 'EN COURS', class: 'col-in_progress'},
+                        'review':      {label: 'REVIEW',   class: 'col-review'},
+                        'done':        {label: 'TERMINE',  class: 'col-done'}
                     } %}
 
                     {% for statusKey, col in columns %}
@@ -179,25 +173,25 @@
                             <div class="task-priority-bar"></div>
                             <div class="task-title-text">{{ task.title }}</div>
                             {% if task.estimated_hours %}
-                            <div class="task-meta">⏱️ {{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
+                            <div class="task-meta"><i class="bi bi-clock-fill me-1" aria-hidden="true"></i>{{ task.actual_hours ?? 0 }}h / {{ task.estimated_hours }}h</div>
                             {% endif %}
                             {% if task.due_date %}
                             <div class="task-due {% if isOverdue %}overdue{% elseif isSoon %}soon{% endif %}">
-                                📅 {{ task.due_date|date('d/m/Y') }}
-                                {% if isOverdue %}⚠️{% elseif isSoon %}🔥{% endif %}
+                                <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ task.due_date|date('d/m/Y') }}
+                                {% if isOverdue %}<i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>{% elseif isSoon %}<i class="bi bi-alarm-fill" aria-hidden="true"></i>{% endif %}
                             </div>
                             {% endif %}
 
                             <div class="task-actions">
                                 {% if task.status == 'todo' %}
-                                <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start" style="background:#fef3c7;color:#92400e;">▶ Démarrer</button>
+                                <button onclick="quickMove({{ task.id }}, 'in_progress')" class="btn-task-action btn-start" style="background:#fef3c7;color:#92400e;"><i class="bi bi-play-fill" aria-hidden="true"></i> Demarrer</button>
                                 {% elseif task.status == 'in_progress' %}
-                                <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review" style="background:#ede9fe;color:#7c3aed;">👁 Review</button>
+                                <button onclick="quickMove({{ task.id }}, 'review')" class="btn-task-action btn-review" style="background:#ede9fe;color:#7c3aed;"><i class="bi bi-eye" aria-hidden="true"></i> Review</button>
                                 {% elseif task.status == 'review' %}
-                                <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done" style="background:#d1fae5;color:#065f46;">✅ Terminer</button>
+                                <button onclick="quickMove({{ task.id }}, 'done')" class="btn-task-action btn-done" style="background:#d1fae5;color:#065f46;"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Terminer</button>
                                 {% endif %}
-                                <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours" style="background:#e0f2fe;color:#0369a1;">⏱️ Heures</button>
-                                <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info" style="background:#f1f5f9;color:#6b7280;">ℹ️</button>
+                                <button onclick="openLogHours({{ task.id }}, '{{ task.title|e('js') }}')" class="btn-task-action btn-hours" style="background:#e0f2fe;color:#0369a1;"><i class="bi bi-clock-fill" aria-hidden="true"></i> Heures</button>
+                                <button onclick="showTaskInfo({{ task|json_encode|e('html_attr') }})" class="btn-task-action btn-info" style="background:#f1f5f9;color:#6b7280;"><i class="bi bi-info-circle" aria-hidden="true"></i></button>
                             </div>
                         </div>
                         {% endfor %}
@@ -210,7 +204,7 @@
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-2">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <i class="bi bi-clock-history text-cyan-600" aria-hidden="true"></i>
                     </div>
                     <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Activités du Projet</h3>
                 </div>
@@ -218,16 +212,16 @@
                 {% for update in updates %}
                 <div class="activity-item">
                     <div class="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 text-sm">
-                        {% if update.update_type in ['comment', 'rh_comment'] %}💬
-                        {% elseif update.update_type in ['task', 'rh_task'] %}✅
-                        {% elseif update.update_type in ['milestone', 'rh_milestone'] %}🎯
-                        {% elseif update.update_type in ['status_change', 'rh_status_change'] %}🔄
-                        {% else %}📌{% endif %}
+                        {% if update.update_type in ['comment', 'rh_comment'] %}<i class="bi bi-chat-text-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['task', 'rh_task'] %}<i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['milestone', 'rh_milestone'] %}<i class="bi bi-flag-fill" aria-hidden="true"></i>
+                        {% elseif update.update_type in ['status_change', 'rh_status_change'] %}<i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                        {% else %}<i class="bi bi-pin-angle-fill" aria-hidden="true"></i>{% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-[13px] font-semibold text-zinc-700">{{ update.title }}</p>
                         <p class="text-[12px] text-zinc-400 mt-0.5">{{ update.content }}</p>
-                        <p class="text-[11px] text-zinc-300 mt-0.5">👤 {{ update.author_name ?? 'Systeme' }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
+                        <p class="text-[11px] text-zinc-300 mt-0.5"><i class="bi bi-person-fill me-1" aria-hidden="true"></i>{{ update.author_name ?? 'Systeme' }} · {{ update.created_at|date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
                 {% else %}
@@ -238,7 +232,7 @@
                 <div class="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
                     <div class="flex items-center gap-2 mb-3">
                         <div class="w-6 h-6 rounded-md bg-cyan-50 flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            <i class="bi bi-plus-lg text-cyan-600" aria-hidden="true"></i>
                         </div>
                         <p class="text-[13px] font-bold text-zinc-700">Ajouter un commentaire</p>
                     </div>
@@ -257,7 +251,7 @@
 
                 <div class="mt-5 rounded-xl border border-zinc-200 bg-white p-4">
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center">💬</div>
+                        <div class="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center"><i class="bi bi-chat-dots-fill text-emerald-600" aria-hidden="true"></i></div>
                         <p class="text-[13px] font-bold text-zinc-700">Chat d'equipe (Matrix)</p>
                     </div>
 
@@ -299,9 +293,9 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">⏱️ Logger des heures</h5>
+                    <h5 class="text-white font-bold text-[15px]">Logger des heures</h5>
                 <button onclick="closeModal('modalLogHours')" class="text-white/60 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <form id="logHoursForm" method="POST">
@@ -342,7 +336,7 @@
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
                 <h5 id="infoTaskTitle" class="text-white font-bold text-[15px]">Détails de la tâche</h5>
                 <button onclick="closeModal('modalTaskInfo')" class="text-white/60 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div id="infoTaskBody" class="p-5 space-y-2 text-sm text-zinc-600 leading-relaxed"></div>
@@ -597,7 +591,7 @@ function renderEmployeeProjectChatMessages(messages) {
         } else if (msgType === 'm.audio' && downloadUrl !== '') {
             bodyHtml = '<div class="mt-1"><audio controls src="' + escapeHtml(downloadUrl) + '" class="w-full"></audio></div>';
         } else if (msgType === 'm.file' && downloadUrl !== '') {
-            bodyHtml = '<div class="mt-1"><a class="text-emerald-600 hover:underline" target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '">📎 ' + escapeHtml(body || 'Fichier') + '</a></div>';
+            bodyHtml = '<div class="mt-1"><a class="text-emerald-600 hover:underline" target="_blank" rel="noopener" href="' + escapeHtml(downloadUrl) + '"><i class="bi bi-paperclip"></i> ' + escapeHtml(body || 'Fichier') + '</a></div>';
         } else {
             bodyHtml = '<div class="text-sm text-zinc-700" style="white-space:pre-wrap">' + escapeHtml(body) + '</div>';
         }
@@ -614,7 +608,7 @@ function renderEmployeeProjectChatMessages(messages) {
                 reactionBar.insertAdjacentHTML('beforeend', '<span class="px-2 py-0.5 rounded-full bg-zinc-200 text-[11px]">' + escapeHtml(key) + ' ' + String(reactions[key]) + '</span>');
             });
 
-            ['👍', '❤️', '😂'].forEach((emoji) => {
+            ['+1', 'heart', 'lol'].forEach((emoji) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'px-1.5 py-0.5 rounded border border-zinc-200 bg-white text-[11px]';
