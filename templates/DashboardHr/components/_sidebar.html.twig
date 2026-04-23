@@ -167,6 +167,20 @@
             </div>
             Parametres
         </a>
+
+        {% set isTwoFactor = app.request.get('_route') == 'app_2fa_setup' %}
+        <a href="{{ path('app_2fa_setup') }}"
+           class="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200
+                  {{ isTwoFactor
+                      ? 'bg-white/10 text-white shadow-lg shadow-teal-500/5'
+                      : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200' }}">
+            <div class="w-7 h-7 rounded-md {{ isTwoFactor ? 'bg-teal-500/25 text-teal-300' : 'bg-white/5 text-zinc-500 group-hover:text-zinc-300 group-hover:bg-white/10' }} flex items-center justify-center transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-1.5 0h12a1.5 1.5 0 011.5 1.5v6A1.5 1.5 0 0118 19.5H6A1.5 1.5 0 014.5 18v-6a1.5 1.5 0 011.5-1.5z"/>
+                </svg>
+            </div>
+            Google Authenticator
+        </a>
     </nav>
 
     {# ── Logout ── #}

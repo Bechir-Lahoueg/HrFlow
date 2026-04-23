@@ -174,6 +174,20 @@ class JobOfferRepository extends ServiceEntityRepository
     }
 
     /**
+     * Count public OPEN job offers (not deleted).
+     */
+    public function countPublicOpenOffers(): int
+    {
+        return (int) $this->createQueryBuilder('jo')
+            ->select('COUNT(jo.id)')
+            ->where('jo.status = :status')
+            ->andWhere('jo.isDeleted = false')
+            ->setParameter('status', 'OPEN')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Search and filter job offers for candidates
      * @return JobOffer[]
      */
