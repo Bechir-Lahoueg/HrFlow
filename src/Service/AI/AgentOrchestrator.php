@@ -453,56 +453,25 @@ PROMPT;
     {
         $trimmed = trim($message);
 
-        // Only replace if the ENTIRE message is just JSON (starts with { or [ and ends with } or ])
-        // and contains no natural language
-        $isJsonOnly = (
-            (str_starts_with($trimmed, '{') && str_ends_with($trimmed, '}')) ||
-            (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']'))
-        ) && !preg_match('/[a-zA-Z]{3,}/', $trimmed); // No words of 3+ letters
+        // Check if message is just JSON (starts with { or [ and ends with } or ])
+        $looksLikeJson = (str_starts_with($trimmed, '{') && str_ends_with($trimmed, '}')) ||
+                         (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']'));
 
-        if ($isJsonOnly) {
-            return "J'ai traité votre demande. Vous pouvez voir les détails et les actions disponibles ci-dessous. Comment puis-je vous aider d'autre ?";
+        if ($looksLikeJson) {
+            // Try to decode it
+            $decoded = json_decode($trimmed, true);
+            if ($decoded !== null) {
+                // It's valid JSON - replace with generic message
+                return "J'ai trouvé les informations demandées. Les détails sont affichés ci-dessous. Comment puis-je vous aider d'autre ?";
+            }
         }
 
         return $trimmed;
     }
 
     /**
-     * Detects if user input requires a tool call (data retrieval or actions)
-     */
-    private function requiresTool(string $input): bool
-    {
-        $toolKeywords = [
-            // Candidates
-            'candidat', 'candidates', 'candidats', 'liste candidat', 'show candidate',
-            // Job offers
-            'offre', 'job', 'emploi', 'poste', 'offres', 'jobs',
-            // Applications
-            'candidature', 'application', 'candidatures', 'applications',
-            // Interviews
-            'entretien', 'interview', 'entretiens', 'interviews',
-            // Reports/PDF
-            'pdf', 'rapport', 'report', 'export', 'génère', 'generate', 'exporte',
-            // Stats
-            'stats', 'statistique', 'pipeline', 'funnel', 'stat',
-            // Actions
-            'schedule', 'planifie', 'déplace', 'move', 'recrute', 'hire',
-            // Rank/Score
-            'rank', 'classe', 'score', 'meilleur', 'top',
-        ];
-
-        foreach ($toolKeywords as $keyword) {
-            if (str_contains($input, $keyword)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Truncate large tool results to prevent token limit issues.
-     * Returns a summary for the LLM while full data goes to UI via extractUiData.
+     * Returns a NATURAL LANGUAGE summary for the LLM while full data goes to UI via extractUiData.
      */
     private function truncateToolResult(mixed $result): string
     {
@@ -510,56 +479,55 @@ PROMPT;
             return is_string($result) ? $result : json_encode($result);
         }
 
-        // For list results, only send count + sample to LLM
+        // Build natural language summary instead of JSON
+        // This helps the LLM understand what to say without echoing JSON back
+
+        // For candidates list
         if (isset($result['candidates']) && is_array($result['candidates'])) {
             $count = count($result['candidates']);
-            $sample = array_slice($result['candidates'], 0, 3);
-            return json_encode([
-                'count' => $count,
-                'sample' => $sample,
-                'note' => 'Full data available in UI'
-            ]);
+            $names = array_slice(array_column($result['candidates'], 'full_name'), 0, 5);
+            return "Tool result: Found {$count} candidates. " .
+                   "Names: " . implode(', ', $names) . ". " .
+                   "The full candidate list with all details is displayed in the UI table below.";
         }
 
+        // For interviews list
         if (isset($result['interviews']) && is_array($result['interviews'])) {
             $count = count($result['interviews']);
-            $sample = array_slice($result['interviews'], 0, 3);
-            return json_encode([
-                'count' => $count,
-                'sample' => $sample,
-                'note' => 'Full data available in UI'
-            ]);
+            return "Tool result: Found {$count} interviews scheduled. " .
+                   "The full interview schedule is displayed in the UI table below.";
         }
 
+        // For applications list
         if (isset($result['applications']) && is_array($result['applications'])) {
             $count = count($result['applications']);
-            $sample = array_slice($result['applications'], 0, 3);
-            return json_encode([
-                'count' => $count,
-                'sample' => $sample,
-                'note' => 'Full data available in UI'
-            ]);
+            return "Tool result: Found {$count} applications. " .
+                   "The full application list is displayed in the UI table below.";
         }
 
-        // For job offers (direct array), truncate to first 5 items
+        // For job offers (direct array)
         if (is_array($result) && isset($result[0]) && isset($result[0]['title'])) {
             $count = count($result);
-            $sample = array_slice($result, 0, 5);
-            return json_encode([
-                'count' => $count,
-                'sample' => $sample,
-                'note' => 'Full data available in UI'
-            ]);
+            $titles = array_slice(array_column($result, 'title'), 0, 5);
+            return "Tool result: Found {$count} job offers. " .
+                   "Titles: " . implode(', ', $titles) . ". " .
+                   "The full job list is displayed in the UI table below.";
         }
 
-        // Default: return full result if small enough
+        // For PDF generation
+        if (isset($result['download_url'])) {
+            return "Tool result: PDF generated successfully. Download URL available.";
+        }
+
+        // For chart generation
+        if (isset($result['chart_data'])) {
+            return "Tool result: Chart generated successfully with data visualization.";
+        }
+
+        // Default: return natural language description
         $encoded = json_encode($result);
         if (strlen($encoded) > 2000) {
-            return json_encode([
-                'truncated' => true,
-                'original_length' => strlen($encoded),
-                'note' => 'Data too large for LLM context, available in UI'
-            ]);
+            return "Tool result: Data retrieved successfully. The complete results are displayed in the UI below.";
         }
 
         return $encoded;

@@ -959,16 +959,28 @@
             <thead><tr>
                 <th>Nom</th>
                 <th>Email</th>
-                <th>Téléphone</th>
-                <th>Créé le</th>
+                <th>Poste</th>
+                <th>Statut</th>
             </tr></thead>
             <tbody>`;
         cands.forEach(c => {
+            // Status badge colors
+            const statusColors = {
+                'PENDING': '#f59e0b',
+                'REVIEWING': '#3b82f6',
+                'INTERVIEW': '#8b5cf6',
+                'OFFER': '#10b981',
+                'HIRED': '#059669',
+                'REJECTED': '#ef4444'
+            };
+            const statusColor = statusColors[c.status] || '#64748b';
+            const statusLabel = c.status_label || c.status || '—';
+
             html += `<tr>
                 <td><strong>${escHtml(c.full_name || c.username || '')}</strong></td>
                 <td>${escHtml(c.email || '—')}</td>
-                <td>${escHtml(c.phone || '—')}</td>
-                <td>${escHtml(c.created_at || '—')}</td>
+                <td>${escHtml(c.job_title || '—')}</td>
+                <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;color:#fff;background:${statusColor}">${escHtml(statusLabel)}</span></td>
             </tr>`;
         });
         html += '</tbody></table>';
