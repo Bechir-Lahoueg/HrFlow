@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #1e293b; line-height: 1.6; background: #f8fafc; margin: 0; padding: 0; }
+        
+        /* Card-based header */
+        .header-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 0 0 24px 24px;
+            margin: -20px -20px 30px -20px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+        .title { font-size: 26px; font-weight: 700; margin-top: 12px; letter-spacing: -0.5px; }
+        .subtitle { font-size: 14px; opacity: 0.9; margin-top: 6px; }
+        .meta { font-size: 11px; opacity: 0.75; margin-top: 16px; }
+        
+        /* Main content container */
+        .content-wrapper { padding: 0 20px 20px; }
+        
+        /* Card sections */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Stats grid */
+        .stats-grid { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card.teal { border-top: 3px solid #14b8a6; }
+        .stat-card.purple { border-top: 3px solid #7c3aed; }
+        .stat-card.orange { border-top: 3px solid #f59e0b; }
+        .stat-card.red { border-top: 3px solid #ef4444; }
+        .stat-card.blue { border-top: 3px solid #3b82f6; }
+        .stat-val { font-size: 28px; font-weight: 800; color: #1e293b; }
+        .stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 12px; }
+        th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        th:first-child { border-radius: 8px 0 0 8px; }
+        th:last-child { border-radius: 0 8px 8px 0; }
+        td {
+            padding: 14px 16px;
+            font-size: 12px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tr:hover td { background: #f8fafc; }
+        
+        /* Highlight box */
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 13px;
+            color: #92400e;
+        }
+        
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        
+        /* Lists */
+        ul { margin: 0; padding-left: 20px; }
+        li { margin-bottom: 8px; font-size: 13px; color: #475569; }
+        
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        /* Custom content styling */
+        .custom-content p { margin: 0 0 12px; font-size: 13px; color: #475569; }
+        .custom-content strong { color: #1e293b; }
+    </style>
+</head>
+<body>
+    <div class="header-card">
+        <div class="logo">HrFlow AI</div>
+        <div class="title">{{ title }}</div>
+        {% if subtitle %}<div class="subtitle">{{ subtitle }}</div>{% endif %}
+        {% if include_date %}
+        <div class="meta">Généré le {{ "now"|date("d/m/Y H:i") }} · Par {{ user_name }}</div>
+        {% endif %}
+    </div>
+
+    <div class="content-wrapper">
+        {# Stats Grid #}
+        {% if stats is defined and stats|length > 0 %}
+        <div class="stats-grid">
+            {% for stat in stats %}
+            <div class="stat-card {{ stat.color|default('teal') }}">
+                <div class="stat-val">{{ stat.value }}</div>
+                <div class="stat-lbl">{{ stat.label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Main Content Card #}
+        <div class="card">
+            <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Contenu
+            </div>
+            <div class="custom-content">
+                {{ custom_content|raw }}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        {{ footer_text|default('HrFlow Recruitment System') }} · Document Confidentiel · © {{ "now"|date("Y") }}
+    </div>
+</body>
+</html>

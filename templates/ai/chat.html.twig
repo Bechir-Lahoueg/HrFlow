@@ -1,0 +1,1292 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}AI Recruiter | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* ── Google Font ── */
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        /* ── CSS Variables ── */
+        :root {
+            --chat-bg:       #f8f9fb;
+            --sidebar-w:     272px;
+            --surface:       #ffffff;
+            --border:        rgba(15,23,42,.07);
+            --accent:        #14b8a6;
+            --accent-dark:   #0f9689;
+            --accent-soft:   #f0fdfa;
+            --violet:        #7c3aed;
+            --violet-soft:   #f5f3ff;
+            --ink:           #0f172a;
+            --muted:         #64748b;
+            --muted-light:   #94a3b8;
+            --user-bubble:   linear-gradient(135deg,#1e293b 0%,#0f172a 100%);
+            --bot-bubble:    #ffffff;
+            --radius-xl:     1.25rem;
+            --radius-lg:     .875rem;
+            --shadow-card:   0 1px 3px rgba(15,23,42,.06),0 4px 16px rgba(15,23,42,.06);
+            --shadow-float:  0 8px 32px rgba(15,23,42,.12);
+        }
+        .dark {
+            --chat-bg:       #09090b;
+            --surface:       #18181b;
+            --border:        rgba(255,255,255,.06);
+            --accent-soft:   #0d2d29;
+            --violet-soft:   #1e1b4b;
+            --ink:           #f1f5f9;
+            --muted:         #94a3b8;
+            --bot-bubble:    #1e1e24;
+            --shadow-card:   0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+        }
+
+        /* ── Layout ── */
+        * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+        code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .chat-shell {
+            position: fixed;
+            inset: 0;
+            left: var(--sidebar-w);
+            top: 0;
+            bottom: 0;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            grid-template-rows: 64px 1fr;
+            background: var(--chat-bg);
+            overflow: hidden;
+            transition: left .3s;
+        }
+        @media (max-width: 1024px) { .chat-shell { left: 0; grid-template-columns: 1fr; } }
+        @media (max-width: 768px)  { .chat-shell { grid-template-columns: 1fr; } .context-panel { display: none; } }
+
+        /* ── Top Bar ── */
+        .chat-topbar {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            gap: 1rem;
+        }
+        .topbar-brand { display: flex; align-items: center; gap: .75rem; }
+        .ai-badge {
+            display: inline-flex; align-items: center; gap: .375rem;
+            background: linear-gradient(135deg,#14b8a6,#7c3aed);
+            color: #fff; font-size: .65rem; font-weight: 700;
+            letter-spacing: .08em; text-transform: uppercase;
+            padding: .2rem .6rem; border-radius: 99px;
+        }
+        .status-live {
+            display: inline-flex; align-items: center; gap: .375rem;
+            font-size: .78rem; color: var(--muted); font-weight: 500;
+        }
+        .status-live::before {
+            content: ''; width: 7px; height: 7px; border-radius: 50%;
+            background: #10b981; box-shadow: 0 0 0 2px #d1fae5;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100% { box-shadow: 0 0 0 2px #d1fae5; }
+            50%      { box-shadow: 0 0 0 4px #a7f3d0; }
+        }
+        .topbar-actions { display: flex; align-items: center; gap: .5rem; }
+        .icon-btn {
+            width: 36px; height: 36px; border-radius: .625rem;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); background: transparent; border: none; cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+        .icon-btn:hover { background: rgba(15,23,42,.05); color: var(--ink); }
+        .dark .icon-btn:hover { background: rgba(255,255,255,.07); }
+
+        /* ── Main Chat Area ── */
+        .chat-main {
+            display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+        }
+
+        /* ── Messages ── */
+        .messages-scroll {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 1.5rem 1.5rem 0;
+            scroll-behavior: smooth;
+        }
+        .messages-scroll::-webkit-scrollbar { width: 4px; }
+        .messages-scroll::-webkit-scrollbar-track { background: transparent; }
+        .messages-scroll::-webkit-scrollbar-thumb { background: rgba(15,23,42,.1); border-radius: 4px; }
+
+        /* Day divider */
+        .day-sep {
+            display: flex; align-items: center; gap: .75rem;
+            color: var(--muted-light); font-size: .72rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .07em; margin: 1.5rem 0;
+        }
+        .day-sep::before, .day-sep::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg,transparent,var(--border),transparent);
+        }
+
+        /* Message row */
+        .msg-row {
+            display: flex; gap: .75rem; margin-bottom: 1rem;
+            animation: msg-in .25s cubic-bezier(.34,1.56,.64,1);
+        }
+        .msg-row.user { flex-direction: row-reverse; }
+        @keyframes msg-in {
+            from { opacity: 0; transform: translateY(8px) scale(.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Avatar */
+        .msg-avatar {
+            width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .72rem; font-weight: 700; align-self: flex-end;
+        }
+        .msg-avatar.bot {
+            background: linear-gradient(135deg,#14b8a6,#7c3aed);
+            color: #fff; box-shadow: 0 2px 8px rgba(20,184,166,.35);
+        }
+        .msg-avatar.user {
+            background: var(--ink); color: #fff;
+        }
+
+        /* Bubble */
+        .msg-bubble {
+            max-width: min(480px, 78%);
+            padding: .75rem 1rem;
+            border-radius: var(--radius-xl);
+            font-size: .875rem; line-height: 1.6;
+            position: relative;
+        }
+        .msg-bubble.bot {
+            background: var(--bot-bubble);
+            color: var(--ink);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-card);
+            border-bottom-left-radius: .375rem;
+        }
+        .msg-bubble.user {
+            background: var(--user-bubble);
+            color: #e2e8f0;
+            border-bottom-right-radius: .375rem;
+        }
+        .msg-bubble.bot p { margin: 0 0 .5em; }
+        .msg-bubble.bot p:last-child { margin-bottom: 0; }
+
+        /* Timestamp */
+        .msg-ts { font-size: .68rem; color: var(--muted-light); margin-top: .25rem; }
+        .msg-row.user .msg-ts { text-align: right; }
+
+        /* ── Tool Execution Card (inside bot bubble) ── */
+        .tool-card {
+            margin: .5rem 0; background: var(--accent-soft);
+            border: 1px solid rgba(20,184,166,.18);
+            border-radius: var(--radius-lg); overflow: hidden;
+        }
+        .dark .tool-card { background: var(--accent-dark)/10; border-color: rgba(20,184,166,.2); }
+        .tool-header {
+            display: flex; align-items: center; gap: .5rem;
+            padding: .5rem .75rem; cursor: pointer;
+            font-size: .78rem; font-weight: 600; color: var(--accent-dark);
+        }
+        .tool-header svg { flex-shrink: 0; }
+        .tool-header .tool-label { flex: 1; }
+        .tool-header .tool-status {
+            font-size: .68rem; font-weight: 700; letter-spacing: .05em;
+            text-transform: uppercase; padding: .15rem .5rem;
+            border-radius: 99px;
+        }
+        .tool-status.done { background: #d1fae5; color: #065f46; }
+        .tool-status.running { background: #fef3c7; color: #92400e; animation: blink .8s infinite; }
+        .tool-status.error { background: #fee2e2; color: #991b1b; }
+        @keyframes blink { 0%,100%{ opacity:1 } 50%{ opacity:.5 } }
+        .tool-body {
+            display: none; padding: .625rem .75rem;
+            border-top: 1px solid rgba(20,184,166,.12);
+            font-size: .775rem; color: var(--muted);
+            background: rgba(255,255,255,.5);
+        }
+        .dark .tool-body { background: rgba(0,0,0,.2); }
+        .tool-card.open .tool-body { display: block; }
+        .tool-card.open .chevron { transform: rotate(180deg); }
+        .chevron { transition: transform .2s; }
+
+        /* ── Candidate Card (rich result inside bot bubble) ── */
+        .cand-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: .5rem; margin-top: .625rem; }
+        .cand-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: .75rem;
+            box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: .25rem;
+        }
+        .cand-rank {
+            font-size: .65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .08em; color: var(--accent);
+        }
+        .cand-name { font-size: .85rem; font-weight: 700; color: var(--ink); }
+        .cand-role { font-size: .75rem; color: var(--muted); }
+        .score-bar { height: 4px; background: rgba(15,23,42,.08); border-radius: 99px; margin-top: .375rem; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#14b8a6,#10b981); }
+
+        /* ── Typing Indicator ── */
+        .typing-row { display: flex; gap: .75rem; margin-bottom: 1rem; }
+        .typing-bubble {
+            padding: .75rem 1rem; background: var(--bot-bubble);
+            border: 1px solid var(--border); border-radius: var(--radius-xl);
+            border-bottom-left-radius: .375rem;
+            display: flex; align-items: center; gap: .35rem;
+            box-shadow: var(--shadow-card);
+        }
+        .typing-bubble span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--muted-light); animation: bounce .9s infinite;
+        }
+        .typing-bubble span:nth-child(2) { animation-delay: .15s; }
+        .typing-bubble span:nth-child(3) { animation-delay: .3s; }
+        @keyframes bounce { 0%,80%,100%{ transform:translateY(0) } 40%{ transform:translateY(-5px) } }
+
+        /* ── Step Planner (shown above first tool card) ── */
+        .plan-strip {
+            display: flex; align-items: center; gap: .5rem;
+            padding: .5rem .75rem; margin-bottom: .5rem;
+            background: var(--violet-soft); border: 1px solid rgba(124,58,237,.12);
+            border-radius: var(--radius-lg); font-size: .78rem; color: #5b21b6; font-weight: 500;
+            overflow-x: auto; white-space: nowrap;
+        }
+        .plan-step {
+            display: inline-flex; align-items: center; gap: .3rem;
+            padding: .2rem .55rem; border-radius: 99px;
+            font-size: .7rem; font-weight: 600;
+        }
+        .plan-step.done { background: #d1fae5; color: #065f46; }
+        .plan-step.active { background: #fef3c7; color: #92400e; }
+        .plan-step.pending { background: rgba(15,23,42,.06); color: var(--muted); }
+        .plan-arrow { color: var(--muted-light); font-size: .7rem; }
+
+        /* ── Composer ── */
+        .composer-wrap {
+            padding: 1rem 1.5rem 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .composer-box {
+            display: flex; align-items: flex-end; gap: .625rem;
+            background: var(--chat-bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-xl); padding: .5rem .5rem .5rem .875rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .composer-box:focus-within {
+            border-color: rgba(20,184,166,.5);
+            box-shadow: 0 0 0 3px rgba(20,184,166,.1);
+        }
+        .composer-input {
+            flex: 1; border: none; background: transparent; outline: none;
+            resize: none; font-size: .875rem; color: var(--ink);
+            line-height: 1.55; max-height: 160px; overflow-y: auto;
+            padding: .3rem 0; min-height: 1.55em;
+        }
+        .composer-input::placeholder { color: var(--muted-light); }
+        .composer-actions { display: flex; gap: .25rem; align-items: flex-end; flex-shrink: 0; }
+        .attach-btn {
+            width: 34px; height: 34px; border-radius: .625rem;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); transition: background .15s, color .15s;
+        }
+        .attach-btn:hover { background: rgba(15,23,42,.05); color: var(--accent); }
+        .send-btn {
+            width: 34px; height: 34px; border-radius: .625rem;
+            border: none; background: linear-gradient(135deg,#14b8a6,#0d9488);
+            color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+            box-shadow: 0 2px 8px rgba(20,184,166,.4);
+        }
+        .send-btn:hover { transform: scale(1.07); box-shadow: 0 4px 16px rgba(20,184,166,.5); }
+        .send-btn:active { transform: scale(.96); }
+        .send-btn:disabled { opacity: .4; pointer-events: none; }
+
+        /* Quick suggestions */
+        .quick-wrap { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .625rem; }
+        .quick-chip {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .3rem .7rem; border-radius: 99px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--muted); font-size: .775rem;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .quick-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        /* ── Context Panel (right side) ── */
+        .context-panel {
+            border-left: 1px solid var(--border);
+            background: var(--surface); overflow-y: auto; display: flex; flex-direction: column; gap: 0;
+        }
+        .panel-section { padding: 1.25rem 1.25rem; border-bottom: 1px solid var(--border); }
+        .panel-title {
+            font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+            color: var(--muted); margin-bottom: .875rem;
+        }
+
+        /* Active Job */
+        .active-job-card {
+            background: linear-gradient(135deg,rgba(20,184,166,.08),rgba(124,58,237,.05));
+            border: 1px solid rgba(20,184,166,.2);
+            border-radius: var(--radius-lg); padding: .875rem;
+        }
+        .job-title-text { font-size: .875rem; font-weight: 700; color: var(--ink); }
+        .job-meta { font-size: .75rem; color: var(--muted); margin-top: .2rem; }
+        .pill {
+            display: inline-flex; align-items: center; gap: .25rem;
+            font-size: .68rem; font-weight: 600; padding: .2rem .55rem;
+            border-radius: 99px;
+        }
+        .pill-green { background: #d1fae5; color: #065f46; }
+        .pill-violet { background: #ede9fe; color: #5b21b6; }
+
+        /* Memory items */
+        .mem-item {
+            display: flex; align-items: flex-start; gap: .625rem;
+            padding: .5rem; border-radius: .625rem; margin-bottom: .375rem;
+            transition: background .15s;
+        }
+        .mem-item:hover { background: rgba(15,23,42,.03); cursor: pointer; }
+        .mem-icon {
+            width: 28px; height: 28px; border-radius: .5rem; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: .78rem;
+        }
+        .mem-icon.teal { background: var(--accent-soft); color: var(--accent); }
+        .mem-icon.violet { background: var(--violet-soft); color: var(--violet); }
+        .mem-icon.amber { background: #fffbeb; color: #d97706; }
+        .mem-text { font-size: .78rem; color: var(--muted); line-height: 1.45; }
+        .mem-text strong { color: var(--ink); font-weight: 600; }
+
+        /* Stat row */
+        .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+        .stat-item {
+            background: rgba(15,23,42,.03); border-radius: .625rem;
+            padding: .625rem; text-align: center;
+        }
+        .dark .stat-item { background: rgba(255,255,255,.04); }
+        .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--ink); }
+        .stat-lbl { font-size: .68rem; color: var(--muted); margin-top: .1rem; }
+
+        /* Suggested actions */
+        .action-btn {
+            width: 100%; display: flex; align-items: center; gap: .625rem;
+            padding: .625rem .75rem; border-radius: .75rem; border: 1px solid var(--border);
+            background: transparent; cursor: pointer; text-align: left;
+            font-size: .8rem; font-weight: 500; color: var(--muted);
+            transition: all .15s; margin-bottom: .375rem;
+        }
+        .action-btn:hover {
+            background: var(--accent-soft); border-color: rgba(20,184,166,.25);
+            color: var(--accent-dark);
+        }
+        .action-btn-icon {
+            width: 26px; height: 26px; border-radius: .5rem; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── Welcome / Empty State ── */
+        .welcome-state {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 1.25rem; padding: 2rem; text-align: center;
+        }
+        .welcome-orb {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg,#14b8a6,#7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 12px rgba(20,184,166,.1), 0 0 0 24px rgba(20,184,166,.05);
+            animation: orb-pulse 3s ease-in-out infinite;
+        }
+        @keyframes orb-pulse {
+            0%,100% { box-shadow: 0 0 0 12px rgba(20,184,166,.1),0 0 0 24px rgba(20,184,166,.05); }
+            50%      { box-shadow: 0 0 0 16px rgba(20,184,166,.12),0 0 0 32px rgba(20,184,166,.06); }
+        }
+        .welcome-title { font-size: 1.5rem; font-weight: 800; color: var(--ink); }
+        .welcome-sub { font-size: .9rem; color: var(--muted); max-width: 380px; line-height: 1.55; }
+        .welcome-chips { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; max-width: 480px; }
+        .welcome-chip {
+            padding: .45rem .9rem; border-radius: 99px;
+            border: 1px solid var(--border); background: var(--surface);
+            font-size: .815rem; color: var(--muted); cursor: pointer;
+            transition: all .15s;
+        }
+        .welcome-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        /* ── Validation Error Chip ── */
+        .validation-chip {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .5rem .875rem; border-radius: var(--radius-lg);
+            background: #fff1f2; border: 1px solid #fecdd3;
+            color: #be123c; font-size: .8rem; font-weight: 600;
+            margin-top: .375rem;
+        }
+
+        /* ── Slide animations ── */
+        @keyframes slide-up {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .animate-slide-up { animation: slide-up .3s ease both; }
+
+        /* ── Code block ── */
+        .code-block {
+            background: #0f172a; color: #94a3b8;
+            border-radius: .625rem; padding: .75rem 1rem;
+            font-size: .775rem; overflow-x: auto; margin: .5rem 0;
+        }
+        .code-block .key { color: #7dd3fc; }
+        .code-block .val { color: #86efac; }
+        .code-block .str { color: #fca5a5; }
+
+        /* ── Data Table ── */
+        .data-table-wrap {
+            margin: .625rem 0; overflow-x: auto;
+        }
+        .data-table {
+            width: 100%; border-collapse: collapse;
+            font-size: .75rem; background: var(--surface);
+            border-radius: .5rem; overflow: hidden;
+        }
+        .data-table th {
+            background: rgba(15,23,42,.04); padding: .5rem .625rem;
+            text-align: left; font-weight: 600; color: var(--muted);
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+        }
+        .dark .data-table th { background: rgba(255,255,255,.04); }
+        .data-table td {
+            padding: .5rem .625rem; border-bottom: 1px solid var(--border);
+            color: var(--ink);
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: rgba(15,23,42,.02); }
+        .dark .data-table tr:hover td { background: rgba(255,255,255,.02); }
+        .status-badge {
+            display: inline-block; padding: .15rem .5rem; border-radius: 99px;
+            font-size: .65rem; font-weight: 600;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-reviewing { background: #dbeafe; color: #1e40af; }
+        .status-interview { background: #ede9fe; color: #5b21b6; }
+        .status-offer { background: #d1fae5; color: #065f46; }
+        .status-hired { background: #ccfbf1; color: #0f766e; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-passed { background: #d1fae5; color: #065f46; }
+        .status-failed { background: #fee2e2; color: #991b1b; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950">
+    {% include 'DashboardHr/components/_sidebar.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════ CHAT SHELL ═══ #}
+    <div class="chat-shell" id="chatShell">
+
+        {# ─── Top Bar ─── #}
+        <header class="chat-topbar">
+            <div class="topbar-brand">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-violet-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-[15px]" style="color:var(--ink)">HrFlow AI</span>
+                        <span class="ai-badge">Agentic</span>
+                    </div>
+                    <div class="status-live">Recruitment Intelligence · Session active</div>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                {# Model info #}
+                <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[.75rem] font-medium" style="background:var(--violet-soft);color:#5b21b6">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"/></svg>
+                    Llama 3.1 8B (Groq)
+                </div>
+
+                {# Memory toggle #}
+                <button class="icon-btn" title="Session memory" id="memBtn">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
+                </button>
+
+                {# Export #}
+                <button class="icon-btn" title="Export conversation" id="exportBtn">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                </button>
+
+                {# Clear #}
+                <button class="icon-btn" title="Nouvelle conversation" id="clearBtn">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                </button>
+            </div>
+        </header>
+
+        {# ─── Main Chat Area ─── #}
+        <main class="chat-main" id="chatMain">
+
+            {# Messages scroll container #}
+            <div class="messages-scroll" id="messagesScroll">
+
+                {# ══ Welcome State (visible when no messages) ══ #}
+                <div class="welcome-state" id="welcomeState">
+                    <div class="welcome-orb">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="welcome-title">Bonjour, {{ app.user.firstName|default('Responsable RH') }} 👋</div>
+                        <div class="welcome-sub mt-1">Je suis votre assistant recrutement intelligent. Posez-moi une question ou choisissez une action rapide.</div>
+                    </div>
+                    <div class="welcome-chips" id="welcomeChips">
+                        <button class="welcome-chip" data-prompt="Classe les meilleurs candidats pour mon offre active">🏆 Classer les candidats</button>
+                        <button class="welcome-chip" data-prompt="Donne-moi les stats du pipeline de recrutement">📊 Stats du pipeline</button>
+                        <button class="welcome-chip" data-prompt="Planifie des entretiens pour la semaine prochaine">📅 Planifier des entretiens</button>
+                        <button class="welcome-chip" data-prompt="Génère un rapport d'insights pour mes offres">💡 Générer un rapport</button>
+                        <button class="welcome-chip" data-prompt="Quels candidats sont en attente de décision ?">⏳ Candidats en attente</button>
+                        <button class="welcome-chip" data-prompt="Exporte le résumé des candidatures en CSV">📤 Exporter en CSV</button>
+                    </div>
+                </div>
+
+                {# ══ Messages Container ══ #}
+                <div id="messagesList" class="pb-4" style="display:none">
+                    {# Messages injected by JS #}
+                </div>
+
+                {# ══ Typing Indicator ══ #}
+                <div class="typing-row" id="typingIndicator" style="display:none">
+                    <div class="msg-avatar bot">AI</div>
+                    <div class="typing-bubble">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+
+            </div>{# /messages-scroll #}
+
+            {# ─── Composer ─── #}
+            <div class="composer-wrap">
+                {# Quick suggestion chips #}
+                <div class="quick-wrap" id="quickChips">
+                    <button class="quick-chip" data-prompt="Montre-moi les interviews de cette semaine">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5"/></svg>
+                        Interviews cette semaine
+                    </button>
+                    <button class="quick-chip" data-prompt="Top 5 candidats par score">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.43 9.71 2.25 12 2.25c2.291 0 4.545.18 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0"/></svg>
+                        Top 5 candidats
+                    </button>
+                    <button class="quick-chip" data-prompt="Exporte le rapport PDF du dernier pipeline">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        Export PDF
+                    </button>
+                </div>
+
+                <div class="composer-box">
+                    <textarea
+                        id="composerInput"
+                        class="composer-input"
+                        placeholder="Ex : Planifie des entretiens pour mes 3 meilleurs candidats du Job #42…"
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <div class="composer-actions">
+                        <button class="attach-btn" title="Joindre un fichier">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/></svg>
+                        </button>
+                        <button class="send-btn" id="sendBtn" disabled title="Envoyer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.269 20.876L5.999 12zm0 0h7.5"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mt-1.5 px-1">
+                    <span class="text-[.7rem]" style="color:var(--muted-light)">Shift+Enter pour nouvelle ligne · Enter pour envoyer</span>
+                    <span class="text-[.7rem]" style="color:var(--muted-light)" id="charCount">0 / 2000</span>
+                </div>
+            </div>
+
+        </main>{# /chat-main #}
+
+        {# ─── Context Panel ─── #}
+        <aside class="context-panel" id="contextPanel">
+
+            {# Active Job #}
+            <div class="panel-section">
+                <div class="panel-title">Offre active</div>
+                <div class="active-job-card" id="activeJobCard">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="job-title-text" id="activeJobTitle">Aucune offre sélectionnée</div>
+                            <div class="job-meta" id="activeJobMeta">Mentionnez un Job ID dans le chat</div>
+                        </div>
+                        <span class="pill pill-green" id="activeJobBadge" style="display:none">Actif</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-2.5 flex-wrap" id="activeJobTags"></div>
+                </div>
+            </div>
+
+            {# Session Stats #}
+            <div class="panel-section">
+                <div class="panel-title">Session</div>
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <div class="stat-val" id="statTools">0</div>
+                        <div class="stat-lbl">Outils exécutés</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statMsgs">0</div>
+                        <div class="stat-lbl">Échanges</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statCands">—</div>
+                        <div class="stat-lbl">Candidats analysés</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statPlanned">0</div>
+                        <div class="stat-lbl">Entretiens planifiés</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Memory recall #}
+            <div class="panel-section">
+                <div class="panel-title">Mémoire contextuelle</div>
+                <div id="memoryList">
+                    <div class="mem-item">
+                        <div class="mem-icon teal">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.354a15.055 15.055 0 01-4.5 0M4.5 9.75a7.5 7.5 0 1115 0c0 4.97-3.375 9-7.5 9s-7.5-4.03-7.5-9z"/></svg>
+                        </div>
+                        <div class="mem-text">La mémoire de session s'affichera ici au fil des échanges.</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Suggested actions #}
+            <div class="panel-section">
+                <div class="panel-title">Actions rapides</div>
+                <button class="action-btn" data-prompt="Rank candidates for active job">
+                    <div class="action-btn-icon" style="background:var(--accent-soft);color:var(--accent)">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25"/></svg>
+                    </div>
+                    Classer les candidats
+                </button>
+                <button class="action-btn" data-prompt="Get pipeline stats for all my jobs">
+                    <div class="action-btn-icon" style="background:var(--violet-soft);color:var(--violet)">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                    </div>
+                    Stats du pipeline
+                </button>
+                <button class="action-btn" data-prompt="Get available slots for interviews next week">
+                    <div class="action-btn-icon" style="background:#fffbeb;color:#d97706">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                    </div>
+                    Créneaux disponibles
+                </button>
+                <button class="action-btn" data-prompt="Generate insights report and export as PDF">
+                    <div class="action-btn-icon" style="background:#f0fdf4;color:#15803d">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/></svg>
+                    </div>
+                    Générer insights
+                </button>
+            </div>
+
+        </aside>{# /context-panel #}
+
+    </div>{# /chat-shell #}
+</div>
+
+{# ════════════════════════════════════════════════ JAVASCRIPT ═══ #}
+<script>
+(function () {
+    'use strict';
+
+    /* ── State ── */
+    const state = {
+        messages: [],
+        toolCount: 0,
+        msgCount: 0,
+        candsAnalyzed: 0,
+        planned: 0,
+        activeJob: null,
+        memory: [],
+        isThinking: false,
+    };
+
+    /* ── DOM refs ── */
+    const $input    = document.getElementById('composerInput');
+    const $sendBtn  = document.getElementById('sendBtn');
+    const $scroll   = document.getElementById('messagesScroll');
+    const $list     = document.getElementById('messagesList');
+    const $typing   = document.getElementById('typingIndicator');
+    const $welcome  = document.getElementById('welcomeState');
+    const $charCnt  = document.getElementById('charCount');
+
+    /* ── Helpers ── */
+    const scrollBottom = () => {
+        requestAnimationFrame(() => { $scroll.scrollTop = $scroll.scrollHeight; });
+    };
+
+    const updateStats = () => {
+        document.getElementById('statTools').textContent = state.toolCount;
+        document.getElementById('statMsgs').textContent  = state.msgCount;
+        document.getElementById('statCands').textContent = state.candsAnalyzed || '—';
+        document.getElementById('statPlanned').textContent = state.planned;
+    };
+
+    const now = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    /* ── Composer auto-resize ── */
+    $input.addEventListener('input', () => {
+        $input.style.height = 'auto';
+        $input.style.height = Math.min($input.scrollHeight, 160) + 'px';
+        $sendBtn.disabled = !$input.value.trim();
+        $charCnt.textContent = `${$input.value.length} / 2000`;
+    });
+
+    $input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!$sendBtn.disabled && !state.isThinking) sendMessage();
+        }
+    });
+
+    $sendBtn.addEventListener('click', () => {
+        if (!state.isThinking) sendMessage();
+    });
+
+    /* ── Welcome chips & quick chips ── */
+    document.querySelectorAll('[data-prompt]').forEach(el => {
+        el.addEventListener('click', () => {
+            $input.value = el.dataset.prompt;
+            $input.dispatchEvent(new Event('input'));
+            sendMessage();
+        });
+    });
+
+    /* ── Show/hide welcome ── */
+    function showWelcome(show) {
+        $welcome.style.display = show ? 'flex' : 'none';
+        $list.style.display    = show ? 'none' : 'block';
+    }
+
+    /* ── Append message ── */
+    function appendMsg(role, content, toolCards = null, planSteps = null) {
+        showWelcome(false);
+        state.msgCount++;
+        updateStats();
+
+        const row = document.createElement('div');
+        row.className = `msg-row ${role}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = `msg-avatar ${role}`;
+        avatar.textContent = role === 'bot' ? 'AI' : (('{{ app.user.firstName|default("R") }}'.charAt(0).toUpperCase() || 'R'));
+
+        const col = document.createElement('div');
+
+        /* Plan strip */
+        if (planSteps && planSteps.length) {
+            const strip = document.createElement('div');
+            strip.className = 'plan-strip';
+            strip.innerHTML = `<svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+            <span style="font-weight:700;margin-right:.25rem;">Plan :</span>`;
+            planSteps.forEach((step, i) => {
+                if (i > 0) strip.innerHTML += `<span class="plan-arrow">→</span>`;
+                strip.innerHTML += `<span class="plan-step ${step.status}">${step.label}</span>`;
+            });
+            col.appendChild(strip);
+        }
+
+        /* Text content */
+        if (content || (toolCards && toolCards.length)) {
+            const bubble = document.createElement('div');
+            bubble.className = `msg-bubble ${role}`;
+
+            if (toolCards && toolCards.length) {
+                toolCards.forEach(tc => {
+                    const card = buildToolCard(tc);
+                    bubble.appendChild(card);
+                });
+            }
+
+            if (content) {
+                const p = document.createElement('div');
+                p.innerHTML = marked.parse(content);
+                bubble.appendChild(p);
+            }
+
+            /* Download Link */
+            if (toolCards) {
+                toolCards.forEach(tc => {
+                    if (tc.status === 'done' && tc.download_url) {
+                        bubble.appendChild(buildDownloadLink(tc.download_url, tc.name));
+                    }
+                    if (tc.status === 'done' && tc.chart_data) {
+                        bubble.appendChild(buildChartBubble(tc.chart_data));
+                    }
+                });
+            }
+
+            col.appendChild(bubble);
+        }
+
+        const ts = document.createElement('div');
+        ts.className = 'msg-ts';
+        ts.textContent = now();
+
+        col.appendChild(ts);
+
+        row.appendChild(avatar);
+        row.appendChild(col);
+        $list.appendChild(row);
+        scrollBottom();
+    }
+
+    /* ── Build Tool Card ── */
+    function buildToolCard(tc) {
+        state.toolCount++;
+        updateStats();
+        const card = document.createElement('div');
+        card.className = `tool-card ${tc.open ? 'open' : ''}`;
+        const statusClass = { done: 'done', running: 'running', error: 'error' }[tc.status] || 'done';
+        const statusLabel = { done: 'Terminé', running: 'En cours…', error: 'Erreur' }[tc.status] || 'Terminé';
+
+        card.innerHTML = `
+            <div class="tool-header" onclick="this.closest('.tool-card').classList.toggle('open')">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+                </svg>
+                <span class="tool-label">${tc.name}</span>
+                <span class="tool-status ${statusClass}">${statusLabel}</span>
+                <svg class="w-3.5 h-3.5 chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+            </div>
+            <div class="tool-body">
+                ${tc.body || '<span style="color:var(--muted-light);font-style:italic">Aucun détail disponible.</span>'}
+            </div>`;
+        return card;
+    }
+
+    /* ── Build Candidate Grid ── */
+    function buildCandGrid(candidates) {
+        const wrap = document.createElement('div');
+        wrap.className = 'cand-grid';
+        candidates.forEach((c, i) => {
+            wrap.innerHTML += `
+                <div class="cand-card">
+                    <div class="cand-rank">#${i+1} · Score ${c.score}%</div>
+                    <div class="cand-name">${c.name}</div>
+                    <div class="cand-role">${c.role || '—'}</div>
+                    <div class="score-bar"><div class="score-fill" style="width:${c.score}%"></div></div>
+                </div>`;
+        });
+        return wrap;
+    }
+
+    /* ── Build Data Table for Applications ── */
+    function buildApplicationsTable(apps) {
+        const wrap = document.createElement('div');
+        wrap.className = 'data-table-wrap';
+        let html = `<table class="data-table">
+            <thead><tr>
+                <th>Candidat</th>
+                <th>Email</th>
+                <th>Offre</th>
+                <th>Statut</th>
+                <th>Date</th>
+            </tr></thead>
+            <tbody>`;
+        apps.forEach(a => {
+            const statusClass = 'status-' + (a.status || '').toLowerCase();
+            html += `<tr>
+                <td><strong>${escHtml(a.candidate_name || '')}</strong></td>
+                <td>${escHtml(a.email || '—')}</td>
+                <td>${escHtml(a.job_title || '—')}</td>
+                <td><span class="status-badge ${statusClass}">${escHtml(a.status_label || a.status || '')}</span></td>
+                <td>${escHtml(a.applied_at || '—')}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+        return wrap;
+    }
+
+    /* ── Build Data Table for Interviews ── */
+    function buildInterviewsTable(intvs) {
+        const wrap = document.createElement('div');
+        wrap.className = 'data-table-wrap';
+        let html = `<table class="data-table">
+            <thead><tr>
+                <th>Candidat</th>
+                <th>Offre</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Résultat</th>
+                <th>Score</th>
+            </tr></thead>
+            <tbody>`;
+        intvs.forEach(i => {
+            const resultClass = i.result ? 'status-' + i.result.toLowerCase() : '';
+            html += `<tr>
+                <td><strong>${escHtml(i.candidate_name || '')}</strong></td>
+                <td>${escHtml(i.job_title || '—')}</td>
+                <td>${escHtml(i.type || '—')}</td>
+                <td>${escHtml(i.interview_date || '—')}</td>
+                <td><span class="status-badge ${resultClass}">${escHtml(i.result || '—')}</span></td>
+                <td>${i.score !== null ? i.score + '/100' : '—'}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+        return wrap;
+    }
+
+    /* ── Build Data Table for Candidates ── */
+    function buildCandidatesTable(cands) {
+        const wrap = document.createElement('div');
+        wrap.className = 'data-table-wrap';
+        let html = `<table class="data-table">
+            <thead><tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Créé le</th>
+            </tr></thead>
+            <tbody>`;
+        cands.forEach(c => {
+            html += `<tr>
+                <td><strong>${escHtml(c.full_name || c.username || '')}</strong></td>
+                <td>${escHtml(c.email || '—')}</td>
+                <td>${escHtml(c.phone || '—')}</td>
+                <td>${escHtml(c.created_at || '—')}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+        return wrap;
+    }
+
+    /* ── Build Chart Bubble ── */
+    function buildChartBubble(chartData) {
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-container animate-slide-up';
+        wrap.style = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-top:.75rem;';
+
+        // Add chart title if present
+        if (chartData.title) {
+            const title = document.createElement('div');
+            title.className = 'chart-title';
+            title.style = 'font-size:.875rem;font-weight:600;color:var(--ink);margin-bottom:.75rem;text-align:center;';
+            title.textContent = chartData.title;
+            wrap.appendChild(title);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.style.maxHeight = (chartData.height || 240) + 'px';
+        wrap.appendChild(canvas);
+
+        // Merge default options with provided options
+        const defaultOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { family: 'DM Sans', size: 11 } }
+                }
+            }
+        };
+
+        const chartOptions = chartData.options ? Object.assign({}, defaultOptions, chartData.options) : defaultOptions;
+
+        // Ensure legend position is respected
+        if (chartData.options && chartData.options.plugins && chartData.options.plugins.legend) {
+            chartOptions.plugins.legend = Object.assign({}, defaultOptions.plugins.legend, chartData.options.plugins.legend);
+        }
+
+        setTimeout(() => {
+            new Chart(canvas, {
+                type: chartData.type || 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets
+                },
+                options: chartOptions
+            });
+        }, 100);
+
+        return wrap;
+    }
+
+    /* ── Build Download Link ── */
+    function buildDownloadLink(url, label) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.className = 'download-chip animate-slide-up';
+        a.style = 'display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .875rem;background:var(--violet-soft);color:var(--violet);border:1px solid rgba(124,58,237,.2);border-radius:var(--radius-lg);font-size:.8rem;font-weight:600;margin-top:.75rem;text-decoration:none;transition:all .15s;';
+        a.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            Télécharger ${label} (PDF)
+        `;
+        a.onmouseover = () => a.style.background = 'rgba(124,58,237,.15)';
+        a.onmouseout  = () => a.style.background = 'var(--violet-soft)';
+        return a;
+    }
+
+    /* ── Show/hide typing ── */
+    function showTyping(show) {
+        $typing.style.display = show ? 'flex' : 'none';
+        if (show) scrollBottom();
+    }
+
+    /* ── Update memory panel ── */
+    function pushMemory(icon, color, text) {
+        state.memory.unshift({ icon, color, text });
+        if (state.memory.length > 5) state.memory.pop();
+        const $mem = document.getElementById('memoryList');
+        $mem.innerHTML = '';
+        state.memory.forEach(m => {
+            $mem.innerHTML += `
+                <div class="mem-item">
+                    <div class="mem-icon ${m.color}">${m.icon}</div>
+                    <div class="mem-text">${m.text}</div>
+                </div>`;
+        });
+    }
+
+    /* ── Send message + simulate agentic flow ── */
+    async function sendMessage() {
+        const text = $input.value.trim();
+        if (!text || state.isThinking) return;
+
+        console.log('[AI Chat] Sending message:', text);
+        state.isThinking = true;
+        $sendBtn.disabled = true;
+        appendMsg('user', text);
+        $input.value = '';
+        $input.style.height = 'auto';
+        $charCnt.textContent = '0 / 2000';
+
+        showTyping(true);
+
+        try {
+            /* ── POST to Symfony AI chat endpoint ── */
+            const payload = {
+                message: text,
+                session_id: getOrCreateSession(),
+            };
+            console.log('[AI Chat] Request payload:', payload);
+
+            const res = await fetch('{{ path("app_rh_ai_chat") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const reqId = res.headers.get('X-Request-Id');
+            console.log('[AI Chat] Response status:', res.status, 'request_id=', reqId);
+
+            const raw = await res.text();
+            let data = null;
+            try { data = JSON.parse(raw); } catch (e) { /* ignore */ }
+            console.log('[AI Chat] Response data:', data ?? raw);
+            if (!res.ok) {
+                console.error('[AI Chat] Server error', { status: res.status, request_id: reqId, body: data ?? raw });
+            }
+            showTyping(false);
+
+            /* Build tool cards from planner steps */
+            const toolCards = (data.tool_calls || []).map(t => ({
+                name: t.tool_name,
+                status: t.status || 'done',
+                open: false,
+                body: t.details ? formatToolBody(t.details) : null,
+                download_url: t.details?.download_url || null,
+                chart_data: t.details?.chart_data || null,
+            }));
+
+            /* Plan steps */
+            const planSteps = (data.plan || []).map((step, i) => ({
+                label: step,
+                status: i < (data.completed_steps || 999) ? 'done' : (i === (data.completed_steps || 999) ? 'active' : 'pending'),
+            }));
+
+            /* Update active job if returned */
+            if (data.active_job) {
+                state.activeJob = data.active_job;
+                document.getElementById('activeJobTitle').textContent = data.active_job.title;
+                document.getElementById('activeJobMeta').textContent  = data.active_job.location || '';
+                document.getElementById('activeJobBadge').style.display = '';
+                document.getElementById('activeJobTags').innerHTML =
+                    `<span class="pill pill-violet">${data.active_job.applications || 0} candidatures</span>`;
+            }
+
+            /* Update counters */
+            if (data.candidates_analyzed) {
+                state.candsAnalyzed = data.candidates_analyzed;
+                pushMemory('👤', 'teal', `<strong>${data.candidates_analyzed} candidats</strong> analysés pour cette session.`);
+            }
+            if (data.interviews_planned) {
+                state.planned += data.interviews_planned;
+                pushMemory('📅', 'amber', `<strong>${data.interviews_planned} entretien(s)</strong> planifié(s).`);
+            }
+            if (data.report_generated) {
+                pushMemory('📊', 'violet', `Rapport <strong>${data.report_type || 'Insights'}</strong> généré.`);
+            }
+
+            updateStats();
+
+            /* Build HTML content */
+            let htmlContent = data.message || '';
+
+            /* Validation error */
+            if (data.validation_error) {
+                htmlContent += `<div class="validation-chip">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                    ${data.validation_error}
+                </div>`;
+            }
+
+            /* Candidates grid */
+            if (data.candidates && data.candidates.length) {
+                appendMsg('bot', htmlContent, toolCards, planSteps);
+                const lastBubble = $list.lastElementChild.querySelector('.msg-bubble');
+                lastBubble.appendChild(buildCandGrid(data.candidates));
+            } else if (data.applications && data.applications.length) {
+                appendMsg('bot', htmlContent, toolCards, planSteps);
+                const lastBubble = $list.lastElementChild.querySelector('.msg-bubble');
+                lastBubble.appendChild(buildApplicationsTable(data.applications));
+            } else if (data.interviews && data.interviews.length) {
+                appendMsg('bot', htmlContent, toolCards, planSteps);
+                const lastBubble = $list.lastElementChild.querySelector('.msg-bubble');
+                lastBubble.appendChild(buildInterviewsTable(data.interviews));
+            } else if (data.candidates_list && data.candidates_list.length) {
+                appendMsg('bot', htmlContent, toolCards, planSteps);
+                const lastBubble = $list.lastElementChild.querySelector('.msg-bubble');
+                lastBubble.appendChild(buildCandidatesTable(data.candidates_list));
+            } else {
+                appendMsg('bot', htmlContent, toolCards, planSteps);
+            }
+
+        } catch (err) {
+            showTyping(false);
+            console.error('[AI Chat] Network/client error:', err);
+            appendMsg('bot', `<span style="color:#be123c">⚠️ Erreur de connexion. Veuillez réessayer.</span>`);
+        }
+
+        state.isThinking = false;
+        $sendBtn.disabled = !$input.value.trim();
+    }
+
+    /* ── Format tool body as code block ── */
+    function formatToolBody(details) {
+        if (typeof details === 'string') return `<div class="code-block">${escHtml(details)}</div>`;
+        const lines = Object.entries(details).map(([k, v]) =>
+            `<span class="key">"${escHtml(k)}"</span>: <span class="val">${escHtml(JSON.stringify(v))}</span>`
+        ).join(',\n');
+        return `<div class="code-block">{\n${lines}\n}</div>`;
+    }
+
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Session ID ── */
+    function getOrCreateSession() {
+        let id = sessionStorage.getItem('hrflow_ai_session');
+        if (!id) {
+            id = 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+            sessionStorage.setItem('hrflow_ai_session', id);
+        }
+        return id;
+    }
+
+    /* ── Clear conversation ── */
+    document.getElementById('clearBtn').addEventListener('click', async () => {
+        if (!confirm('Effacer cette conversation ?')) return;
+
+        // Clear server-side session memory
+        const sessionId = sessionStorage.getItem('hrflow_ai_session');
+        if (sessionId) {
+            try {
+                await fetch('{{ path("app_rh_ai_chat_clear") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ session_id: sessionId }),
+                });
+            } catch (e) {
+                console.log('[AI Chat] Server clear failed, continuing with local clear');
+            }
+        }
+
+        $list.innerHTML = '';
+        showWelcome(true);
+        state.messages = [];
+        state.toolCount = state.msgCount = state.candsAnalyzed = state.planned = 0;
+        state.activeJob = null;
+        state.memory = [];
+        updateStats();
+        document.getElementById('memoryList').innerHTML = `
+            <div class="mem-item">
+                <div class="mem-icon teal">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.354a15.055 15.055 0 01-4.5 0M4.5 9.75a7.5 7.5 0 1115 0c0 4.97-3.375 9-7.5 9s-7.5-4.03-7.5-9z"/></svg>
+                </div>
+                <div class="mem-text">La mémoire de session s'affichera ici au fil des échanges.</div>
+            </div>`;
+        document.getElementById('activeJobTitle').textContent = 'Aucune offre sélectionnée';
+        document.getElementById('activeJobMeta').textContent  = 'Mentionnez un Job ID dans le chat';
+        document.getElementById('activeJobBadge').style.display = 'none';
+        document.getElementById('activeJobTags').innerHTML = '';
+        sessionStorage.removeItem('hrflow_ai_session');
+    });
+
+    /* ── Export ── */
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const lines = Array.from($list.querySelectorAll('.msg-row')).map(row => {
+            const role = row.classList.contains('user') ? 'RH' : 'AI';
+            const text = row.querySelector('.msg-bubble')?.innerText || '';
+            return `[${role}] ${text}`;
+        });
+        const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `hrflow-ai-${Date.now()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    /* ── Action buttons in context panel ── */
+    document.querySelectorAll('.action-btn[data-prompt]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            $input.value = btn.dataset.prompt;
+            $input.dispatchEvent(new Event('input'));
+            $input.focus();
+        });
+    });
+
+    /* ── Init ── */
+    showWelcome(true);
+    updateStats();
+
+})();
+</script>
+{% endblock %}
