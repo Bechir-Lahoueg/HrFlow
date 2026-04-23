@@ -301,4 +301,26 @@ class ApplicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Global response rate: non-pending applications / total applications.
+     */
+    public function getGlobalResponseRate(): int
+    {
+        $result = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id) AS total')
+            ->addSelect("SUM(CASE WHEN a.status <> 'PENDING' THEN 1 ELSE 0 END) AS responded")
+            ->where('a.isDeleted = false')
+            ->getQuery()
+            ->getSingleResult();
+
+        $total = (int) ($result['total'] ?? 0);
+        $responded = (int) ($result['responded'] ?? 0);
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        return (int) round(($responded / $total) * 100);
+    }
 }
