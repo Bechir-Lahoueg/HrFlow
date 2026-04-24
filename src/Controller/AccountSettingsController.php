@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\Form\Shared\AccountSettingsType;
 use App\Security\DbUser;
+use App\Service\Shared\AdminThemeService;
 use App\Service\Shared\HrFlowMailer;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,6 +20,7 @@ final class AccountSettingsController extends AbstractController
     public function __construct(
         private readonly Connection $connection,
         private readonly HrFlowMailer $mailer,
+        private readonly AdminThemeService $adminThemeService,
     ) {
     }
 
@@ -30,7 +33,32 @@ final class AccountSettingsController extends AbstractController
             'headerTemplate' => 'DashboardAdmin/components/_header.html.twig',
             'dashboardLabel' => 'Admin',
             'accentColor' => 'violet',
+            'showThemePicker' => true,
         ]);
+    }
+
+    #[Route('/admin/settings/theme', name: 'app_admin_settings_theme', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function saveAdminTheme(Request $request): RedirectResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$this->isCsrfTokenValid('admin_theme', (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_admin_settings');
+        }
+
+        $themeKey = trim((string) $request->request->get('theme', ''));
+        if (!$this->adminThemeService->save($user->getId(), $themeKey)) {
+            $this->addFlash('error', 'Theme invalide.');
+            return $this->redirectToRoute('app_admin_settings');
+        }
+
+        $this->addFlash('success', 'Theme du tableau de bord mis a jour.');
+        return $this->redirectToRoute('app_admin_settings');
     }
 
     #[Route('/rh/settings', name: 'app_rh_settings', methods: ['GET', 'POST'])]
@@ -159,6 +187,7 @@ final class AccountSettingsController extends AbstractController
             'headerTemplate' => $config['headerTemplate'],
             'dashboardLabel' => $config['dashboardLabel'],
             'accentColor' => $config['accentColor'],
+            'showThemePicker' => $config['showThemePicker'] ?? false,
         ]);
     }
 
