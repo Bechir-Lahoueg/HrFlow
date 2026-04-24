@@ -229,6 +229,8 @@
                                             data-admin-decision-at="{{ leave.adminDecisionAt ? leave.adminDecisionAt|date('d/m/Y H:i') : '-' }}"
                                             data-expected-return-date="{{ leave.expectedReturnDate ? leave.expectedReturnDate|date('d/m/Y') : '-' }}"
                                             data-attachment-path="{{ leave.attachmentPath|default('')|e('html_attr') }}"
+                                            data-attachment-ocr-text="{{ leave.attachmentOcrText|default('-')|e('html_attr') }}"
+                                            data-attachment-ocr-summary="{{ leave.attachmentOcrSummary|default('-')|e('html_attr') }}"
                                             data-audit-log="{{ leave.auditLog|default('-')|e('html_attr') }}"
                                         >
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"/></svg>
@@ -242,7 +244,10 @@
                                                  data-approve-token="{{ csrf_token('admin_leave_exception_approve_' ~ leave.id) }}"
                                                  data-approve-label="Approbation finale"
                                                  data-reject-url="{{ path('app_admin_leave_exception_reject', {id: leave.id}) }}"
-                                                 data-reject-token="{{ csrf_token('admin_leave_exception_reject_' ~ leave.id) }}">
+                                                    data-reject-token="{{ csrf_token('admin_leave_exception_reject_' ~ leave.id) }}"
+                                                    data-ai-url="{{ path('app_admin_leave_exception_ai_comment') }}"
+                                                    data-ai-token="{{ csrf_token('admin_leave_exception_ai_comment') }}"
+                                                    data-ai-leave-id="{{ leave.id }}">
                                                 {# Etape 0 : bouton Decider #}
                                                 <div class="dec-s0">
                                                     <button type="button" onclick="decS1(this.closest('.inline-dec'))" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all shadow-sm">
@@ -268,6 +273,10 @@
                                                 <form class="dec-s2a hidden space-y-1.5" method="post" action="">
                                                     <input type="hidden" name="_token">
                                                     <input type="text" name="admin_comment" placeholder="Commentaire (optionnel)" class="w-full rounded-lg border border-emerald-200 dark:border-emerald-800/50 text-[11px] bg-white dark:bg-zinc-800 py-1.5 px-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-400 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-700 dark:text-zinc-300 min-w-[160px]">
+                                                    <button type="button" onclick="decAi(this.closest('.inline-dec'),'approve')" class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-cyan-200 dark:border-cyan-800/50 text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 hover:bg-cyan-100 dark:hover:bg-cyan-950/40 transition-colors">
+                                                        Rediger avec IA
+                                                    </button>
+                                                    <p class="dec-ai-notice hidden text-[10px] text-zinc-400">Texte suggere par IA, a verifier avant envoi.</p>
                                                     <div class="flex gap-1.5">
                                                         <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-[0.97] flex-1 justify-center">
                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -280,6 +289,10 @@
                                                 <form class="dec-s2r hidden space-y-1.5" method="post" action="" novalidate>
                                                     <input type="hidden" name="_token">
                                                     <input type="text" name="admin_comment" placeholder="Motif de refus (obligatoire)" class="w-full rounded-lg border border-rose-200 dark:border-rose-800/50 text-[11px] bg-white dark:bg-zinc-800 py-1.5 px-2.5 focus:outline-none focus:ring-1 focus:ring-rose-400 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 text-zinc-700 dark:text-zinc-300 min-w-[160px]">
+                                                    <button type="button" onclick="decAi(this.closest('.inline-dec'),'reject')" class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-cyan-200 dark:border-cyan-800/50 text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/20 hover:bg-cyan-100 dark:hover:bg-cyan-950/40 transition-colors">
+                                                        Rediger avec IA
+                                                    </button>
+                                                    <p class="dec-ai-notice hidden text-[10px] text-zinc-400">Texte suggere par IA, a verifier avant envoi.</p>
                                                     <div class="flex gap-1.5">
                                                         <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all active:scale-[0.97] flex-1 justify-center">
                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -435,6 +448,16 @@
                             </div>
 
                             <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Texte extrait (OCR)</p>
+                                <p id="ld-ocr-text" class="text-[12px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">-</p>
+                            </div>
+
+                            <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
+                                <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Resume OCR (RH/Admin)</p>
+                                <p id="ld-ocr-summary" class="text-[12px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">-</p>
+                            </div>
+
+                            <div class="lg:col-span-2 rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
                                 <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Audit Log</p>
                                 <pre id="ld-audit" class="text-[12px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">-</pre>
                     </div>
@@ -476,7 +499,9 @@
         adminAt: document.getElementById('ld-admin-at'),
         audit: document.getElementById('ld-audit'),
         attachmentLink: document.getElementById('ld-attachment-link'),
-        attachmentEmpty: document.getElementById('ld-attachment-empty')
+        attachmentEmpty: document.getElementById('ld-attachment-empty'),
+        ocrText: document.getElementById('ld-ocr-text'),
+        ocrSummary: document.getElementById('ld-ocr-summary')
     };
 
     function read(value, fallback) {
@@ -504,6 +529,8 @@
         fields.adminComment.textContent = read(button.dataset.adminComment, '-');
         fields.adminBy.textContent = read(button.dataset.adminDecisionBy, '-');
         fields.adminAt.textContent = read(button.dataset.adminDecisionAt, '-');
+        fields.ocrText.textContent = read(button.dataset.attachmentOcrText, '-');
+        fields.ocrSummary.textContent = read(button.dataset.attachmentOcrSummary, '-');
         fields.audit.textContent = read(button.dataset.auditLog, '-');
 
         var attachment = read(button.dataset.attachmentPath, '');
@@ -546,5 +573,49 @@
 function decS1(el){el.querySelector('.dec-s0').classList.add('hidden');el.querySelector('.dec-s1').classList.remove('hidden');}
 function decS2(el,a){el.querySelector('.dec-s1').classList.add('hidden');var f,label=el.dataset.approveLabel;if(a==='approve'){f=el.querySelector('.dec-s2a');f.action=el.dataset.approveUrl;f.querySelector('[name="_token"]').value=el.dataset.approveToken;f.querySelector('.dec-approve-label').textContent=label;f.classList.remove('hidden');}else{f=el.querySelector('.dec-s2r');f.action=el.dataset.rejectUrl;f.querySelector('[name="_token"]').value=el.dataset.rejectToken;f.classList.remove('hidden');}}
 function decReset(el){el.querySelector('.dec-s0').classList.remove('hidden');['dec-s1','dec-s2a','dec-s2r'].forEach(function(c){var n=el.querySelector('.'+c);if(n)n.classList.add('hidden');});}
+async function decAi(el,action){
+    if(!el){return;}
+    var formSelector = action === 'approve' ? '.dec-s2a' : '.dec-s2r';
+    var form = el.querySelector(formSelector);
+    if(!form){return;}
+    var input = form.querySelector('input[name="admin_comment"]');
+    var btn = form.querySelector('button[onclick*="decAi"]');
+    var notice = form.querySelector('.dec-ai-notice');
+    if(!input || !btn){return;}
+
+    var initialLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generation...';
+
+    try {
+        var response = await fetch(el.dataset.aiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _token: el.dataset.aiToken,
+                leave_id: parseInt(el.dataset.aiLeaveId || '0', 10),
+                action: action === 'reject' ? 'REJECT' : 'APPROVE'
+            })
+        });
+        var data = await response.json();
+        if(!response.ok || !data.success){
+            throw new Error((data && data.message) ? data.message : 'Generation IA indisponible.');
+        }
+
+        input.value = data.suggestion || '';
+        if(notice){
+            notice.textContent = data.notice || 'Texte suggere par IA, a verifier avant envoi.';
+            notice.classList.remove('hidden');
+        }
+    } catch (error) {
+        alert(error.message || 'Generation IA indisponible.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = initialLabel;
+    }
+}
 </script>
 {% endblock %}

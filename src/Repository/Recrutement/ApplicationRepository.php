@@ -219,18 +219,22 @@ class ApplicationRepository extends ServiceEntityRepository
      * Get application statistics by status
      * @return array<string, int>
      */
-    public function getStatusStats(DbUser $rh): array
+    public function getStatusStats(DbUser $rh, ?JobOffer $job = null): array
     {
-        $results = $this->getEntityManager()->createQuery(
-            'SELECT a.status, COUNT(a.id) as count
-             FROM App\Entity\Recrutement\Application a
-             JOIN a.jobOffer jo
-             WHERE jo.createdBy = :rhId
-             AND a.isDeleted = false
-             GROUP BY a.status'
-        )
-        ->setParameter('rhId', $rh->getId())
-        ->getResult();
+        $qb = $this->createQueryBuilder('a')
+            ->select('a.status, COUNT(a.id) as count')
+            ->join('a.jobOffer', 'jo')
+            ->where('jo.createdBy = :rhId')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('rhId', $rh->getId())
+            ->groupBy('a.status');
+
+        if ($job) {
+            $qb->andWhere('a.jobOffer = :job')
+               ->setParameter('job', $job);
+        }
+
+        $results = $qb->getQuery()->getResult();
 
         $stats = ['PENDING' => 0, 'REVIEWING' => 0, 'INTERVIEW' => 0, 'OFFER' => 0, 'HIRED' => 0, 'REJECTED' => 0];
         foreach ($results as $row) {

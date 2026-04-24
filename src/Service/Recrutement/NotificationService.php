@@ -4,6 +4,7 @@ namespace App\Service\Recrutement;
 
 use App\Entity\Recrutement\Application;
 use App\Entity\Recrutement\Interview;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
@@ -13,7 +14,9 @@ class NotificationService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly Environment $twig,
-        private readonly string $senderAddress
+        private readonly string $senderAddress,
+        private readonly bool $emailsEnabled,
+        private readonly ?LoggerInterface $logger
     ) {
     }
 
@@ -22,7 +25,15 @@ class NotificationService
      */
     public function sendStatusUpdateEmail(Application $application): void
     {
-        if (!$application->getEmailAddress()) {
+        $emailAddress = $application->getEmailAddress();
+        if (!$emailAddress) {
+            $this->log('warning', 'No email address for application ID {id}', ['id' => $application->getId()]);
+            return;
+        }
+
+        $jobOffer = $application->getJobOffer();
+        if (!$jobOffer) {
+            $this->log('error', 'No job offer for application ID {id}', ['id' => $application->getId()]);
             return;
         }
 
@@ -39,14 +50,19 @@ class NotificationService
 
         $email = (new Email())
             ->from($this->senderAddress)
-            ->to($application->getEmailAddress())
-            ->subject('Mise à jour de votre candidature - ' . $application->getJobOffer()->getTitle())
+            ->to($emailAddress)
+            ->subject('Mise à jour de votre candidature - ' . $jobOffer->getTitle())
             ->html($this->twig->render('emails/application_status_update.html.twig', [
                 'application' => $application,
                 'statusLabel' => $statusLabel,
             ]));
 
+        if (!$this->emailsEnabled) {
+            $this->log('info', 'Recruitment email skipped (disabled): Status update for application {id}', ['id' => $application->getId()]);
+            return;
+        }
         $this->mailer->send($email);
+        $this->log('info', 'Status update email sent to {email} for application {id}', ['email' => $emailAddress, 'id' => $application->getId()]);
     }
 
     /**
@@ -55,20 +71,38 @@ class NotificationService
     public function sendInterviewScheduledEmail(Interview $interview): void
     {
         $application = $interview->getApplication();
-        if (!$application || !$application->getEmailAddress()) {
+        if (!$application) {
+            $this->log('error', 'No application for interview ID {id}', ['id' => $interview->getId()]);
+            return;
+        }
+
+        $emailAddress = $application->getEmailAddress();
+        if (!$emailAddress) {
+            $this->log('warning', 'No email address for application ID {id}', ['id' => $application->getId()]);
+            return;
+        }
+
+        $jobOffer = $application->getJobOffer();
+        if (!$jobOffer) {
+            $this->log('error', 'No job offer for application ID {id}', ['id' => $application->getId()]);
             return;
         }
 
         $email = (new Email())
             ->from($this->senderAddress)
-            ->to($application->getEmailAddress())
-            ->subject('Entretien planifié - ' . $application->getJobOffer()->getTitle())
+            ->to($emailAddress)
+            ->subject('Entretien planifié - ' . $jobOffer->getTitle())
             ->html($this->twig->render('emails/interview_scheduled.html.twig', [
                 'interview' => $interview,
                 'application' => $application,
             ]));
 
+        if (!$this->emailsEnabled) {
+            $this->log('info', 'Recruitment email skipped (disabled): Interview scheduled for interview {id}', ['id' => $interview->getId()]);
+            return;
+        }
         $this->mailer->send($email);
+        $this->log('info', 'Interview scheduled email sent to {email} for interview {id}', ['email' => $emailAddress, 'id' => $interview->getId()]);
     }
 
     /**
@@ -77,7 +111,20 @@ class NotificationService
     public function sendInterviewResultEmail(Interview $interview): void
     {
         $application = $interview->getApplication();
-        if (!$application || !$application->getEmailAddress()) {
+        if (!$application) {
+            $this->log('error', 'No application for interview ID {id}', ['id' => $interview->getId()]);
+            return;
+        }
+
+        $emailAddress = $application->getEmailAddress();
+        if (!$emailAddress) {
+            $this->log('warning', 'No email address for application ID {id}', ['id' => $application->getId()]);
+            return;
+        }
+
+        $jobOffer = $application->getJobOffer();
+        if (!$jobOffer) {
+            $this->log('error', 'No job offer for application ID {id}', ['id' => $application->getId()]);
             return;
         }
 
@@ -92,14 +139,26 @@ class NotificationService
 
         $email = (new Email())
             ->from($this->senderAddress)
-            ->to($application->getEmailAddress())
-            ->subject('Résultat de votre entretien - ' . $application->getJobOffer()->getTitle())
+            ->to($emailAddress)
+            ->subject('Résultat de votre entretien - ' . $jobOffer->getTitle())
             ->html($this->twig->render('emails/interview_result.html.twig', [
                 'interview' => $interview,
                 'application' => $application,
                 'resultLabel' => $resultLabel,
             ]));
 
+        if (!$this->emailsEnabled) {
+            $this->log('info', 'Recruitment email skipped (disabled): Interview result for interview {id}', ['id' => $interview->getId()]);
+            return;
+        }
         $this->mailer->send($email);
+        $this->log('info', 'Interview result email sent to {email} for interview {id}', ['email' => $emailAddress, 'id' => $interview->getId()]);
+    }
+
+    private function log(string $level, string $message, array $context = []): void
+    {
+        if ($this->logger) {
+            $this->logger->$level($message, $context);
+        }
     }
 }

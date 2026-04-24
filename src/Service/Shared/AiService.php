@@ -2,15 +2,20 @@
 
 namespace App\Service\Shared;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class AiService
 {
     private const URL = "https://api.groq.com/openai/v1/chat/completions";
+    private const MODEL = 'llama-3.1-8b-instant';
+    private const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+    private const LEAVE_FALLBACK = 'Suggestion IA indisponible pour le moment. Redigez votre commentaire manuellement.';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        private readonly string $groqApiKey
+        #[Autowire('%env(default::GROQ_API_KEY)%')]
+        private readonly ?string $groqApiKey = null,
     ) {}
 
     /**
@@ -18,6 +23,10 @@ final class AiService
      */
     public function generateObjectives(array $context): string
     {
+        if (!$this->isConfigured()) {
+            return 'Service IA non configure (GROQ_API_KEY manquante).';
+        }
+
         try {
             $titre = trim((string) ($context['titre'] ?? ''));
             $type = trim((string) ($context['type'] ?? ''));
@@ -42,7 +51,7 @@ final class AiService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.1-8b-instant',
+                    'model' => self::MODEL,
                     'messages' => [
                         [
                             'role' => 'user',
@@ -89,6 +98,23 @@ final class AiService
             return 'Professional corporate training banner, modern office scene, clean composition, realistic lighting, 16:9.';
         }
 
+        if (!$this->isConfigured()) {
+            if ($detectedTech !== []) {
+                return sprintf(
+                    'Professional corporate training banner for "%s" focused on %s, modern workstation scene, include recognizable official logos/icons of %s, realistic lighting, clean composition, 16:9, no text overlay.',
+                    $titre,
+                    $type !== '' ? $type : 'software engineering',
+                    implode(', ', $detectedTech)
+                );
+            }
+
+            return sprintf(
+                'Professional corporate training banner for "%s" (%s), modern office context, realistic style, clean composition, soft blue palette, 16:9, no logo, no text overlay.',
+                $titre,
+                $type !== '' ? $type : 'professional training'
+            );
+        }
+
         try {
             $prompt = "Create one single-line image generation prompt in English for a professional training banner.\n"
                 . "Context:\n"
@@ -109,7 +135,7 @@ final class AiService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.1-8b-instant',
+                    'model' => self::MODEL,
                     'messages' => [
                         ['role' => 'user', 'content' => $prompt],
                     ],
@@ -156,6 +182,10 @@ final class AiService
             return [];
         }
 
+        if (!$this->isConfigured()) {
+            return [];
+        }
+
         try {
             $taskTitle = trim((string) ($task['title'] ?? ''));
             $taskDescription = trim((string) ($task['description'] ?? ''));
@@ -194,7 +224,7 @@ final class AiService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.1-8b-instant',
+                    'model' => self::MODEL,
                     'messages' => [
                         ['role' => 'user', 'content' => $prompt],
                     ],
@@ -261,6 +291,258 @@ final class AiService
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    /**
+     * @param array{leave_type?:string,start_date?:string,end_date?:string,urgency_level?:string,reason?:string} $context
+     */
+    public function generateEmployeeLeaveJustification(array $context): string
+    {
+        if (!$this->isConfigured()) {
+            return self::LEAVE_FALLBACK;
+        }
+
+        $leaveType = trim((string) ($context['leave_type'] ?? 'Conge exceptionnel'));
+        $startDate = trim((string) ($context['start_date'] ?? 'N/A'));
+        $endDate = trim((string) ($context['end_date'] ?? 'N/A'));
+        $urgency = trim((string) ($context['urgency_level'] ?? 'N/A'));
+        $reason = trim((string) ($context['reason'] ?? ''));
+
+        $prompt = "Redige une justification employee pour une demande de conge exceptionnel.\n"
+            . "Contexte:\n"
+            . "- Type de conge: " . ($leaveType !== '' ? $leaveType : 'Conge exceptionnel') . "\n"
+            . "- Date debut: " . ($startDate !== '' ? $startDate : 'N/A') . "\n"
+            . "- Date fin: " . ($endDate !== '' ? $endDate : 'N/A') . "\n"
+            . "- Urgence: " . ($urgency !== '' ? $urgency : 'N/A') . "\n"
+            . "- Motif initial: " . ($reason !== '' ? $reason : 'N/A') . "\n\n"
+            . "Contraintes de sortie:\n"
+            . "- Francais uniquement, ton neutre professionnel.\n"
+            . "- Texte brut uniquement, sans puces, sans markdown, sans guillemets.\n"
+            . "- Entre 40 et 90 mots.\n"
+            . "- Aucune formule de politesse finale.";
+
+        return $this->generateStrictText($prompt, self::LEAVE_FALLBACK);
+    }
+
+    /**
+     * @param array{employee_name?:string,leave_type?:string,start_date?:string,end_date?:string,days_count?:int|string,urgency_level?:string,reason?:string,action?:string} $context
+     */
+    public function generateRhLeaveDecisionComment(array $context): string
+    {
+        if (!$this->isConfigured()) {
+            return self::LEAVE_FALLBACK;
+        }
+
+        $action = strtoupper(trim((string) ($context['action'] ?? 'APPROVE')));
+        $employee = trim((string) ($context['employee_name'] ?? 'Employe'));
+        $leaveType = trim((string) ($context['leave_type'] ?? 'Conge exceptionnel'));
+        $startDate = trim((string) ($context['start_date'] ?? 'N/A'));
+        $endDate = trim((string) ($context['end_date'] ?? 'N/A'));
+        $daysCount = trim((string) ($context['days_count'] ?? 'N/A'));
+        $urgency = trim((string) ($context['urgency_level'] ?? 'N/A'));
+        $reason = trim((string) ($context['reason'] ?? 'N/A'));
+
+        $decisionLabel = $action === 'REJECT' ? 'REFUS' : 'PRE-APPROBATION RH';
+        $prompt = "Redige un commentaire RH de decision pour une demande de conge exceptionnel.\n"
+            . "Decision visee: " . $decisionLabel . "\n"
+            . "Contexte:\n"
+            . "- Employe: " . ($employee !== '' ? $employee : 'Employe') . "\n"
+            . "- Type de conge: " . ($leaveType !== '' ? $leaveType : 'Conge exceptionnel') . "\n"
+            . "- Date debut: " . $startDate . "\n"
+            . "- Date fin: " . $endDate . "\n"
+            . "- Nombre de jours: " . $daysCount . "\n"
+            . "- Urgence: " . $urgency . "\n"
+            . "- Motif: " . $reason . "\n\n"
+            . "Contraintes de sortie:\n"
+            . "- Francais uniquement, ton neutre professionnel.\n"
+            . "- Texte brut uniquement, sans puces, sans markdown, sans guillemets.\n"
+            . "- Entre 25 et 70 mots.\n"
+            . "- Doit mentionner un motif RH explicite et factuel.";
+
+        return $this->generateStrictText($prompt, self::LEAVE_FALLBACK);
+    }
+
+    /**
+     * @param array{employee_name?:string,leave_type?:string,start_date?:string,end_date?:string,days_count?:int|string,urgency_level?:string,reason?:string,rh_comment?:string,action?:string} $context
+     */
+    public function generateAdminLeaveDecisionComment(array $context): string
+    {
+        if (!$this->isConfigured()) {
+            return self::LEAVE_FALLBACK;
+        }
+
+        $action = strtoupper(trim((string) ($context['action'] ?? 'APPROVE')));
+        $employee = trim((string) ($context['employee_name'] ?? 'Employe'));
+        $leaveType = trim((string) ($context['leave_type'] ?? 'Conge exceptionnel'));
+        $startDate = trim((string) ($context['start_date'] ?? 'N/A'));
+        $endDate = trim((string) ($context['end_date'] ?? 'N/A'));
+        $daysCount = trim((string) ($context['days_count'] ?? 'N/A'));
+        $urgency = trim((string) ($context['urgency_level'] ?? 'N/A'));
+        $reason = trim((string) ($context['reason'] ?? 'N/A'));
+        $rhComment = trim((string) ($context['rh_comment'] ?? 'N/A'));
+
+        $decisionLabel = $action === 'REJECT' ? 'REFUS DEFINITIF ADMIN' : 'APPROBATION FINALE ADMIN';
+        $prompt = "Redige un commentaire Admin pour decision finale sur une demande de conge exceptionnel.\n"
+            . "Decision visee: " . $decisionLabel . "\n"
+            . "Contexte:\n"
+            . "- Employe: " . ($employee !== '' ? $employee : 'Employe') . "\n"
+            . "- Type de conge: " . ($leaveType !== '' ? $leaveType : 'Conge exceptionnel') . "\n"
+            . "- Date debut: " . $startDate . "\n"
+            . "- Date fin: " . $endDate . "\n"
+            . "- Nombre de jours: " . $daysCount . "\n"
+            . "- Urgence: " . $urgency . "\n"
+            . "- Motif employe: " . $reason . "\n"
+            . "- Commentaire RH: " . $rhComment . "\n\n"
+            . "Contraintes de sortie:\n"
+            . "- Francais uniquement, ton neutre professionnel.\n"
+            . "- Texte brut uniquement, sans puces, sans markdown, sans guillemets.\n"
+            . "- Entre 25 et 80 mots.\n"
+            . "- Doit justifier clairement la decision finale Admin.";
+
+        return $this->generateStrictText($prompt, self::LEAVE_FALLBACK);
+    }
+
+    public function extractMedicalCertificateTextFromImage(string $absolutePath, string $mimeType): string
+    {
+        if (!$this->isConfigured()) {
+            return '';
+        }
+
+        if (!is_file($absolutePath) || !is_readable($absolutePath)) {
+            return '';
+        }
+
+        $mimeType = strtolower(trim($mimeType));
+        if (!in_array($mimeType, ['image/jpeg', 'image/png'], true)) {
+            return '';
+        }
+
+        $raw = file_get_contents($absolutePath);
+        if ($raw === false || $raw === '') {
+            return '';
+        }
+
+        $imageDataUrl = 'data:' . $mimeType . ';base64,' . base64_encode($raw);
+        $prompt = "Lis ce certificat medical et extrait uniquement le texte utile de facon fidele.\n"
+            . "Contraintes:\n"
+            . "- Reponds en texte brut uniquement, sans markdown.\n"
+            . "- Conserve les informations medicales importantes, dates, nom du medecin, duree de repos.\n"
+            . "- Si un element est illisible, note [illisible].";
+
+        try {
+            $response = $this->httpClient->request('POST', self::URL, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => self::VISION_MODEL,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => [
+                                ['type' => 'text', 'text' => $prompt],
+                                ['type' => 'image_url', 'image_url' => ['url' => $imageDataUrl]],
+                            ],
+                        ],
+                    ],
+                    'temperature' => 0,
+                ],
+                'timeout' => 30,
+                'verify_peer' => false,
+                'verify_host' => false,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                return '';
+            }
+
+            $content = $response->toArray(false);
+            $text = trim((string) ($content['choices'][0]['message']['content'] ?? ''));
+            if ($text === '') {
+                return '';
+            }
+
+            $text = preg_replace('/\s+/', ' ', $text) ?? $text;
+            return trim($text, " \t\n\r\0\x0B\"'");
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
+    public function summarizeMedicalCertificateContext(string $ocrText): string
+    {
+        $ocrText = trim($ocrText);
+        if ($ocrText === '' || !$this->isConfigured()) {
+            return '';
+        }
+
+        $prompt = "Tu es assistant RH. Resume ce certificat medical pour decision de conge exceptionnel.\n"
+            . "Texte extrait:\n"
+            . mb_substr($ocrText, 0, 5000)
+            . "\n\nContraintes:\n"
+            . "- Francais uniquement, ton neutre professionnel.\n"
+            . "- 40 a 90 mots maximum.\n"
+            . "- Inclure: periode probable d'arret, presence/absence de signature/cachet, niveau de lisibilite.\n"
+            . "- Texte brut uniquement, sans markdown.";
+
+        return $this->generateStrictText($prompt, 'Resume OCR indisponible pour le moment.');
+    }
+
+    private function generateStrictText(string $prompt, string $fallback): string
+    {
+        $content = $this->requestCompletionText($prompt, 0.4);
+        if ($content === null) {
+            return $fallback;
+        }
+
+        return $content !== '' ? $content : $fallback;
+    }
+
+    private function requestCompletionText(string $prompt, float $temperature = 0.7): ?string
+    {
+        if (!$this->isConfigured()) {
+            return null;
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', self::URL, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => self::MODEL,
+                    'messages' => [
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                    'temperature' => $temperature,
+                ],
+                'timeout' => 20,
+                'verify_peer' => false,
+                'verify_host' => false,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                return null;
+            }
+
+            $content = $response->toArray(false);
+            $text = trim((string) ($content['choices'][0]['message']['content'] ?? ''));
+            if ($text === '') {
+                return null;
+            }
+
+            $text = preg_replace('/\s+/', ' ', $text) ?? $text;
+            return trim($text, " \t\n\r\0\x0B\"'");
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function isConfigured(): bool
+    {
+        return trim((string) $this->groqApiKey) !== '';
     }
 
     private function extractJsonBlock(string $value): ?string
