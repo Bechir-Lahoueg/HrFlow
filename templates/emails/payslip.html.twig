@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche de paie</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.5;">
+    <h2 style="margin-bottom: 8px;">Bonjour {{ employeeName }},</h2>
+    <p>Votre fiche de paie pour la periode <strong>{{ "%02d"|format(mois) }}/{{ annee }}</strong> est jointe a cet email.</p>
+    <p>Salaire net: <strong>{{ salaireNet }} DT</strong></p>
+    <p style="margin-top: 20px;">Cordialement,<br>L'equipe RH</p>
+</body>
+</html>
