@@ -73,80 +73,89 @@
                 </div>
             </section>
 
-            {# ══════════ Top 3 ══════════ #}
-            <section class="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-slide-up">
-                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
-                            Top 3 Formations
-                        </h3>
-                        <span class="text-[11px] font-semibold text-zinc-500">Basé sur les notes</span>
-                    </div>
-                    <div class="space-y-3">
-                        {% for row in topFormations|default([])|slice(0, 3) %}
-                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
-                            <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: row.formation.id}) }}'" class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 hover:border-indigo-300 hover:ring-2 hover:ring-indigo-500/10 transition cursor-pointer bg-zinc-50/40 dark:bg-zinc-800/20">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="flex items-start gap-3 min-w-0">
-                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
-                                        <div class="min-w-0">
-                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ row.formation.titre }}</p>
-                                            <p class="text-xs text-zinc-500 truncate">{{ row.formation.organisme ?: 'Organisme non renseigné' }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right shrink-0">
-                                        <div class="flex items-center justify-end gap-0.5">
-                                            {% for i in 1..5 %}
-                                                <span class="text-sm {{ row.average >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
-                                            {% endfor %}
-                                        </div>
-                                        <p class="text-[11px] text-zinc-500 mt-0.5">{{ row.count }} avis</p>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
-                        {% endfor %}
-                    </div>
-                </article>
+{# ══════════ Top 3 ══════════ #}
 
-                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
-                            Top 3 Formateurs
-                        </h3>
-                        <span class="text-[11px] font-semibold text-zinc-500">Par organisme</span>
-                    </div>
-                    <div class="space-y-3">
-                        {% for formateur in topFormateurs|default([])|slice(0, 3) %}
-                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
-                            <div class="block rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 bg-zinc-50/40 dark:bg-zinc-800/20">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="flex items-start gap-3 min-w-0">
-                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
-                                        <div class="min-w-0">
-                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ formateur.organisme }}</p>
-                                            <p class="text-xs text-zinc-500">{{ formateur.formationsCount }} formation(s)</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right shrink-0">
-                                        <div class="flex items-center justify-end gap-0.5">
-                                            {% for i in 1..5 %}
-                                                <span class="text-sm {{ formateur.averageRating >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
-                                            {% endfor %}
-                                        </div>
-                                        <p class="text-[11px] text-zinc-500 mt-0.5">{{ formateur.feedbackCount }} avis</p>
-                                    </div>
-                                </div>
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-slide-up">
+
+    {# ── Top 3 Formations ── #}
+    <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
+                Top 3 Formations
+            </h3>
+            <span class="text-[11px] font-semibold text-zinc-500">Basé sur les notes</span>
+        </div>
+
+        <div class="space-y-3">
+            {% for row in topFormations|default([])|slice(0, 3) %}
+                {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                <div onclick="window.location.href='{{ path('employee_formation_sessions', {id: row.formation.id}) }}'"
+                     class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 hover:border-indigo-300 hover:ring-2 hover:ring-indigo-500/10 transition cursor-pointer bg-zinc-50/40 dark:bg-zinc-800/20">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ row.formation.titre }}</p>
+                                <p class="text-xs text-zinc-500 truncate">{{ row.formation.organisme ?: 'Organisme non renseigné' }}</p>
                             </div>
-                        {% else %}
-                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
-                        {% endfor %}
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="flex items-center justify-end gap-0.5">
+                                {% for i in 1..5 %}
+                                    <span class="text-sm {{ row.average >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                {% endfor %}
+                            </div>
+                            <p class="text-[11px] text-zinc-500 mt-0.5">{{ row.count }} avis</p>
+                        </div>
                     </div>
-                </article>
-            </section>
+                </div>
+            {% else %}
+                <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
+            {% endfor %}
+        </div>
+    </article>
+
+    {# ── Top 3 Formateurs ── #}
+    <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
+                Top 3 Formateurs
+            </h3>
+            <span class="text-[11px] font-semibold text-zinc-500">Par organisme</span>
+        </div>
+
+        <div class="space-y-3">
+            {% for formateur in topFormateurs|default([])|slice(0, 3) %}
+                {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                <div class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 bg-zinc-50/40 dark:bg-zinc-800/20">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ formateur.organisme }}</p>
+                                <p class="text-xs text-zinc-500">{{ formateur.formationsCount }} formation(s)</p>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="flex items-center justify-end gap-0.5">
+                                {% for i in 1..5 %}
+                                    <span class="text-sm {{ formateur.averageRating >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                {% endfor %}
+                            </div>
+                            <p class="text-[11px] text-zinc-500 mt-0.5">{{ formateur.feedbackCount }} avis</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
+            {% endfor %}
+        </div>
+    </article>
+
+</section>
+
 
             {# ══════════ Formation Table ══════════ #}
             <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
