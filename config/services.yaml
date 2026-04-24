@@ -51,5 +51,13 @@ services:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
 
+    App\Service\Paie\ChurnPredictionService:
+        arguments:
+            $apiUrl: '%env(CHURN_API_URL)%'
+
+    App\Service\Paie\PayslipMailerService:
+        arguments:
+            $senderAddress: '%env(MAILER_FROM)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

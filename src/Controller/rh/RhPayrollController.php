@@ -5,6 +5,7 @@ namespace App\Controller\rh;
 use App\DTO\Payroll\FichePaieRequestDTO;
 use App\DTO\Payroll\PrimeRequestDTO;
 use App\DTO\Payroll\DeductionRequestDTO;
+use App\Enum\DeductionType;
 use App\Exception\Payroll\DuplicateFichePaieException;
 use App\Exception\Payroll\InvalidPeriodException;
 use App\Exception\Payroll\InvalidSalaryException;
@@ -12,9 +13,12 @@ use App\Exception\Payroll\EmployeeNotFoundException;
 use App\Repository\Rh\EmployeeRepository;
 use App\Security\DbUser;
 use App\Service\Paie\FichePaieService;
+use App\Service\Paie\ChurnPredictionService;
+use App\Service\Paie\PayslipMailerService;
 use App\Service\Paie\PrimeService;
 use App\Service\Paie\DeductionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -383,6 +387,65 @@ final class RhPayrollController extends AbstractController
         ]);
     }
 
+    #[Route('/fiches-paie/{id}/send-email', name: 'app_rh_payroll_fiche_send_email', methods: ['POST'])]
+    #[IsGranted('ROLE_RH')]
+    public function sendPayslipEmail(
+        int $id,
+        Request $request,
+        FichePaieService $fichePaieService,
+        PrimeService $primeService,
+        DeductionService $deductionService,
+        EmployeeRepository $employeeRepository,
+        PayslipMailerService $payslipMailerService,
+    ): JsonResponse {
+        $rhId = $this->getCurrentRhId();
+
+        try {
+            $fiche = $fichePaieService->getFichePaieById($id);
+            $employee = $employeeRepository->find($fiche->employeeId);
+            if (!$employee || $employee->getRhId() !== $rhId) {
+                return $this->json(['success' => false, 'message' => 'Acces refuse.'], 403);
+            }
+
+            $token = (string) $request->headers->get('X-CSRF-TOKEN', '');
+            if (!$this->isCsrfTokenValid('send_fiche_email_' . $id, $token)) {
+                return $this->json(['success' => false, 'message' => 'Token CSRF invalide.'], 400);
+            }
+
+            $primes = $primeService->getPrimesByEmployeeAndPeriod($fiche->employeeId, $fiche->mois, $fiche->annee);
+            $deductions = $deductionService->getDeductionsByEmployeeAndPeriod($fiche->employeeId, $fiche->mois, $fiche->annee);
+
+            $payslipMailerService->sendPayslip($fiche, $primes, $deductions);
+
+            return $this->json(['success' => true, 'message' => 'Fiche envoyee par email.']);
+        } catch (\Throwable $e) {
+            return $this->json(['success' => false, 'message' => 'Echec envoi email: ' . $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/employees/{employeeId}/churn', name: 'app_rh_payroll_employee_churn', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function getEmployeeChurn(
+        int $employeeId,
+        EmployeeRepository $employeeRepository,
+        ChurnPredictionService $churnPredictionService,
+    ): JsonResponse {
+        $employee = $employeeRepository->find($employeeId);
+        if (!$employee || $employee->getRhId() !== $this->getCurrentRhId()) {
+            return $this->json(['success' => false, 'message' => 'Employe introuvable.'], 404);
+        }
+
+        $result = $churnPredictionService->predictForEmployee($employeeId);
+
+        return $this->json([
+            'success' => true,
+            'score' => $result['score'],
+            'label' => $result['label'],
+            'source' => $result['source'],
+            'indicator' => $result['indicator'],
+        ]);
+    }
+
     // ==================== PRIMES ====================
 
     #[Route('/primes', name: 'app_rh_payroll_primes', methods: ['GET'])]
@@ -612,6 +675,45 @@ final class RhPayrollController extends AbstractController
         ]);
     }
 
+    #[Route('/avances-salaire', name: 'app_rh_payroll_salary_advance_index', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function salaryAdvanceList(
+        Request $request,
+        DeductionService $deductionService,
+    ): Response {
+        $rhId = $this->getCurrentRhId();
+        $employeeSearch = trim((string) $request->query->get('employee', ''));
+        $sortQuery = (string) $request->query->get('sort', 'dateDeduction-DESC');
+        $typeSearch = DeductionType::AVANCE_SALAIRE->value;
+
+        $deductions = $deductionService->searchDeductions($rhId, $employeeSearch, $typeSearch, $sortQuery);
+
+        return $this->render('DashboardHr/remuneration/deductions_index.html.twig', [
+            'user' => $this->getUser(),
+            'deductions' => $deductions,
+            'filters' => [
+                'employee' => $employeeSearch,
+                'type' => $typeSearch,
+                'sort' => $sortQuery,
+            ],
+        ]);
+    }
+
+    #[Route('/avances-salaire/create', name: 'app_rh_payroll_salary_advance_create', methods: ['GET'])]
+    #[IsGranted('ROLE_RH')]
+    public function salaryAdvanceCreateRedirect(Request $request): RedirectResponse
+    {
+        $params = [
+            'type_deduction' => DeductionType::AVANCE_SALAIRE->value,
+        ];
+
+        if ($request->query->has('employee_id')) {
+            $params['employee_id'] = (int) $request->query->get('employee_id');
+        }
+
+        return $this->redirectToRoute('app_rh_payroll_deduction_create', $params);
+    }
+
     #[Route('/deductions/create', name: 'app_rh_payroll_deduction_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
     public function deductionCreate(
@@ -630,6 +732,11 @@ final class RhPayrollController extends AbstractController
         $preSelectedEmployeeId = null;
         if ($request->query->has('employee_id')) {
             $preSelectedEmployeeId = (int) $request->query->get('employee_id');
+        }
+
+        $preSelectedType = null;
+        if ($request->query->has('type_deduction')) {
+            $preSelectedType = trim((string) $request->query->get('type_deduction'));
         }
 
         if ($request->isMethod('POST')) {
@@ -668,6 +775,7 @@ final class RhPayrollController extends AbstractController
             'employees' => $employees,
             'typeChoices' => DeductionService::getDeductionTypeChoices(),
             'preSelectedEmployeeId' => $preSelectedEmployeeId,
+            'preSelectedType' => $preSelectedType,
             'isEditing' => false,
         ]);
     }
