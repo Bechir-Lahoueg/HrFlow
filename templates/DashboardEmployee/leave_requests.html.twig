@@ -471,12 +471,53 @@
                                             <p id="employee-ai-justify-notice" class="mt-1 text-[10px] text-zinc-400 hidden">Texte suggere par IA, a verifier avant envoi.</p>
                                         </div>
                                         <div id="justificatif-file-wrap">
-                                            <label for="justificatif" class="block text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 mb-1.5">Piece jointe</label>
-                                            <div class="relative rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-cyan-400 dark:hover:border-cyan-600 transition-colors p-4 text-center cursor-pointer bg-zinc-50/50 dark:bg-zinc-800/30">
-                                                <input id="justificatif" name="justificatif" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                            <label for="justificatif" class="block text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 mb-1.5">Piece jointe (certificat medical)</label>
+
+                                            {# Dropzone (visible quand aucun fichier selectionne) #}
+                                            <div id="justificatif-dropzone"
+                                                 class="relative rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-cyan-400 dark:hover:border-cyan-600 transition-colors p-4 text-center cursor-pointer bg-zinc-50/50 dark:bg-zinc-800/30">
+                                                <input id="justificatif" name="justificatif" type="file"
+                                                       accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                                 <svg class="w-5 h-5 text-zinc-300 dark:text-zinc-600 mx-auto mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                                                 <p class="text-[11px] text-zinc-400"><span class="text-cyan-600 dark:text-cyan-400 font-medium">Cliquez</span> ou deposez un fichier</p>
                                                 <p class="text-[10px] text-zinc-300 dark:text-zinc-600 mt-0.5">PDF, JPG, PNG - Max 3 Mo</p>
+                                            </div>
+
+                                            {# Carte de confirmation (visible des qu'un fichier est choisi) #}
+                                            <div id="justificatif-preview"
+                                                 class="hidden rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/60 dark:bg-emerald-950/20 p-3">
+                                                <div class="flex items-start gap-3">
+                                                    <div class="w-9 h-9 rounded-lg bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center shrink-0">
+                                                        <svg id="justificatif-icon" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                                                Fichier pret
+                                                            </span>
+                                                        </div>
+                                                        <p id="justificatif-name" class="mt-1 text-[12px] font-semibold text-zinc-800 dark:text-zinc-200 truncate" title=""></p>
+                                                        <p id="justificatif-meta" class="text-[10px] text-zinc-500 dark:text-zinc-400"></p>
+                                                        <p class="mt-1 text-[10px] text-cyan-700 dark:text-cyan-300">Le certificat sera analyse automatiquement (OCR + resume) apres envoi.</p>
+                                                    </div>
+                                                    <div class="flex flex-col gap-1 shrink-0">
+                                                        <button type="button" id="justificatif-replace"
+                                                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-cyan-200 dark:border-cyan-800/50 text-cyan-700 dark:text-cyan-300 bg-white dark:bg-zinc-900 hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition-colors">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                                                            Remplacer
+                                                        </button>
+                                                        <button type="button" id="justificatif-remove"
+                                                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166M18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79"/></svg>
+                                                            Supprimer
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p id="justificatif-error" class="hidden mt-2 text-[11px] font-semibold text-rose-600 dark:text-rose-400"></p>
                                             </div>
                                         </div>
                                     </div>
@@ -582,18 +623,31 @@
                                         {% endif %}
                                     </td>
                                     <td class="py-3.5 px-4">
-                                        {% if leave.rhComment %}
-                                            <p class="text-[12px] text-zinc-500 dark:text-zinc-400 max-w-[180px] truncate" title="{{ leave.rhComment }}">{{ leave.rhComment }}</p>
-                                            {% if leave.requestCategory == 'EXCEPTION' and leave.attachmentOcrText %}
-                                                <p class="text-[10px] text-slate-500 dark:text-slate-400 max-w-[220px] truncate" title="{{ leave.attachmentOcrText }}">Texte extrait: {{ leave.attachmentOcrText }}</p>
+                                        <div class="space-y-1.5 max-w-[240px]">
+                                            {% if leave.rhComment %}
+                                                <p class="text-[12px] text-zinc-500 dark:text-zinc-400 truncate" title="{{ leave.rhComment }}">{{ leave.rhComment }}</p>
                                             {% endif %}
-                                        {% else %}
-                                            {% if leave.requestCategory == 'EXCEPTION' and leave.attachmentOcrText %}
-                                                <p class="text-[10px] text-slate-500 dark:text-slate-400 max-w-[220px] truncate" title="{{ leave.attachmentOcrText }}">Texte extrait: {{ leave.attachmentOcrText }}</p>
-                                            {% else %}
-                                            <span class="text-zinc-300 dark:text-zinc-600">-</span>
+                                            {% if leave.requestCategory == 'EXCEPTION' %}
+                                                {% if leave.attachmentPath %}
+                                                    <a href="{{ leave.attachmentPath }}" target="_blank" rel="noopener"
+                                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/50 hover:bg-sky-100 dark:hover:bg-sky-950/50 transition-colors">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32"/></svg>
+                                                        Voir mon justificatif
+                                                    </a>
+                                                {% endif %}
+                                                {% if leave.attachmentOcrSummary %}
+                                                    <div class="mt-1 rounded-md border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/40 p-2">
+                                                        <p class="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Resume OCR (RH/Admin)</p>
+                                                        <p class="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-3" title="{{ leave.attachmentOcrSummary }}">{{ leave.attachmentOcrSummary }}</p>
+                                                    </div>
+                                                {% elseif leave.attachmentPath %}
+                                                    <p class="text-[10px] italic text-slate-400">OCR en cours / non disponible.</p>
+                                                {% endif %}
                                             {% endif %}
-                                        {% endif %}
+                                            {% if not leave.rhComment and leave.requestCategory != 'EXCEPTION' %}
+                                                <span class="text-zinc-300 dark:text-zinc-600">-</span>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                     <td class="py-3.5 px-4 text-center">
                                         {% if leave.status == 'ATTENTE' and leave.workflowStatus != 'FROZEN_UNPROCESSED' %}
@@ -756,6 +810,105 @@
         justificationModeInput.addEventListener('change', syncJustificationMode);
         syncJustificationMode();
     }
+
+    // ══════════════ Justificatif : feedback fichier (OCR certificat medical) ══════════════
+    (function () {
+        var input = document.getElementById('justificatif');
+        var dropzone = document.getElementById('justificatif-dropzone');
+        var preview = document.getElementById('justificatif-preview');
+        var nameEl = document.getElementById('justificatif-name');
+        var metaEl = document.getElementById('justificatif-meta');
+        var errorEl = document.getElementById('justificatif-error');
+        var replaceBtn = document.getElementById('justificatif-replace');
+        var removeBtn = document.getElementById('justificatif-remove');
+        if (!input || !dropzone || !preview) return;
+
+        var MAX_BYTES = 3 * 1024 * 1024;
+        var ALLOWED = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+
+        function formatSize(bytes) {
+            if (!bytes && bytes !== 0) return '';
+            if (bytes < 1024) return bytes + ' o';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' Mo';
+        }
+
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorEl.textContent = '';
+            errorEl.classList.add('hidden');
+        }
+
+        function clearFile() {
+            try { input.value = ''; } catch (e) { /* IE fallback */ input.type = 'text'; input.type = 'file'; }
+            preview.classList.add('hidden');
+            dropzone.classList.remove('hidden');
+            hideError();
+        }
+
+        function showPreview(file) {
+            nameEl.textContent = file.name;
+            nameEl.title = file.name;
+            var ext = (file.name.split('.').pop() || '').toUpperCase();
+            metaEl.textContent = ext + ' • ' + formatSize(file.size);
+            preview.classList.remove('hidden');
+            dropzone.classList.add('hidden');
+            hideError();
+        }
+
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            if (!file) { clearFile(); return; }
+
+            var mime = (file.type || '').toLowerCase();
+            var ext = (file.name.split('.').pop() || '').toLowerCase();
+            var extOk = ['pdf', 'jpg', 'jpeg', 'png'].indexOf(ext) !== -1;
+            var mimeOk = ALLOWED.indexOf(mime) !== -1 || mime === '';
+
+            if (!extOk || !mimeOk) {
+                clearFile();
+                showPreview({ name: file.name, size: file.size });
+                showError('Format non autorise. Utilisez PDF, JPG ou PNG.');
+                // Garder l'affichage mais vider l'input pour empecher l'envoi
+                try { input.value = ''; } catch (e) {}
+                return;
+            }
+            if (file.size > MAX_BYTES) {
+                showPreview({ name: file.name, size: file.size });
+                showError('Fichier trop volumineux (' + formatSize(file.size) + '). Maximum 3 Mo.');
+                try { input.value = ''; } catch (e) {}
+                return;
+            }
+            showPreview(file);
+        });
+
+        if (removeBtn) removeBtn.addEventListener('click', clearFile);
+        if (replaceBtn) replaceBtn.addEventListener('click', function () { input.click(); });
+
+        // Drag & drop : permettre de deposer sur la zone sans passer par le click
+        ['dragover', 'dragenter'].forEach(function (ev) {
+            dropzone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                dropzone.classList.add('border-cyan-500');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+            dropzone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                dropzone.classList.remove('border-cyan-500');
+            });
+        });
+        dropzone.addEventListener('drop', function (e) {
+            var dt = e.dataTransfer;
+            if (!dt || !dt.files || !dt.files.length) return;
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        });
+    })();
 
     function isWeekend(d) { var day = d.getDay(); return day === 0 || day === 6; }
     function fmtIso(d) {
