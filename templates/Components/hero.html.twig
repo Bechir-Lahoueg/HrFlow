@@ -1,11 +1,53 @@
 {# ===== HERO SECTION ===== #}
-<section class="relative min-h-screen overflow-hidden">
-    {# Video background #}
-    <div class="absolute inset-0 -z-20">
-        <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+<section class="relative min-h-screen overflow-hidden bg-slate-950">
+    {# Video background (dark fallback behind it so text stays readable before/if the video loads) #}
+    <div class="absolute inset-0 -z-20 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950">
+        <video id="hero-bg-video"
+               class="h-full w-full object-cover opacity-0 transition-opacity duration-700"
+               autoplay muted loop playsinline webkit-playsinline
+               preload="auto"
+               disablepictureinpicture
+               aria-hidden="true">
             <source src="{{ asset('7640702-hd_1920_1080_25fps.mp4') }}" type="video/mp4">
         </video>
     </div>
+
+    <script>
+        (function () {
+            var v = document.getElementById('hero-bg-video');
+            if (!v) return;
+            v.muted = true;
+            v.defaultMuted = true;
+            v.setAttribute('muted', '');
+            var reveal = function () { v.classList.remove('opacity-0'); };
+            v.addEventListener('playing', reveal);
+            v.addEventListener('loadeddata', reveal);
+            v.addEventListener('error', function () {
+                console.warn('[hero-bg-video] failed to load', v.error);
+            });
+            var tryPlay = function () {
+                var p = v.play();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(function () {
+                        var resume = function () {
+                            v.play().catch(function () {});
+                            ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+                                document.removeEventListener(ev, resume);
+                            });
+                        };
+                        ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+                            document.addEventListener(ev, resume, { once: true, passive: true });
+                        });
+                    });
+                }
+            };
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                tryPlay();
+            } else {
+                document.addEventListener('DOMContentLoaded', tryPlay);
+            }
+        })();
+    </script>
 
     {# Lighter cinematic veil so the video remains vibrant across dark frames #}
     <div class="absolute inset-0 -z-10 bg-gradient-to-b from-slate-900/45 via-slate-900/35 to-slate-950/50"></div>
