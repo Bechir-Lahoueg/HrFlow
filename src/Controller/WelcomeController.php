@@ -77,7 +77,7 @@ final class WelcomeController extends AbstractController
 
         // FIX: missing variables
         $employeeCount = $employeeRepository->count([]);
-        $pendingLeaveCount = $leaveRequestService->countPendingRequests();
+        $pendingLeaveCount = $rhId !== null ? $leaveRequestService->getRhPendingCount($rhId) : 0;
 
         // Charts
         $categoryCounts = $metrics['formations_by_category'] ?? [];
