@@ -92,15 +92,12 @@ PROMPT;
             $iteration++;
 
             try {
-                // Only send tools on first iteration to save tokens
-                // After first call, we either have tool results to process or we're done
-                $toolsForThisCall = ($iteration === 1) ? $tools : [];
-
+                // Always provide tools so agent can make multi-step decisions
                 $response = $this->llmClient->generateContent(
                     $messages,
-                    $toolsForThisCall,
+                    $tools,
                     [
-                        'model' => 'llama-3.1-8b-instant',
+                        'model' => 'openai/gpt-oss-120b',
                         'temperature' => 0.1,
                         'max_tokens' => 1500,
                     ],
@@ -531,5 +528,14 @@ PROMPT;
         }
 
         return $encoded;
+    }
+
+    private function requiresTool(string $input): bool
+    {
+        $keywords = ['candidat', 'job', 'offre', 'entretien', 'pdf', 'rapport', 'chart', 'show', 'list'];
+        foreach ($keywords as $kw) {
+            if (str_contains($input, $kw)) return true;
+        }
+        return false;
     }
 }

@@ -68,7 +68,7 @@ class GetCandidatesTool implements ToolInterface
         $seenCandidateIds = [];
 
         foreach ($applications as $app) {
-            $candidate = $app->getCandidateUser();
+            $candidate = $app->getCandidate();
             if (!$candidate) continue;
 
             $candidateId = $candidate->getId();
