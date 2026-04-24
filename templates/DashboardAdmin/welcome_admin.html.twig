@@ -22,12 +22,13 @@
 
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
-            {# ═══════════════ Welcome Banner ═══════════════ #}
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-indigo-800 p-8 sm:p-10 text-white animate-slide-up">
+            {# ═══════════════ Welcome Banner (themed) ═══════════════ #}
+            <div class="relative overflow-hidden rounded-2xl p-8 sm:p-10 text-white animate-slide-up"
+                 style="background: {{ admin_theme.banner_gradient|default('linear-gradient(135deg, #7c3aed 0%, #6366f1 55%, #3730a3 100%)') }};">
 
                 <div class="absolute inset-0 overflow-hidden">
                     <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-3xl mesh-blob"></div>
-                    <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-fuchsia-500/20 blur-3xl mesh-blob-alt"></div>
+                    <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-white/15 blur-3xl mesh-blob-alt"></div>
                 </div>
 
                 <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
