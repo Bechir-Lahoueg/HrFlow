@@ -3,14 +3,14 @@
 namespace App\Service\Paie;
 
 use App\DTO\Payroll\FichePaieResponseDTO;
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Nucleos\DompdfBundle\Factory\DompdfFactoryInterface;
 use Twig\Environment;
 
 class FichePaiePdfService
 {
     public function __construct(
         private readonly Environment $twig,
+        private readonly DompdfFactoryInterface $dompdfFactory,
     ) {
     }
 
@@ -24,11 +24,10 @@ class FichePaiePdfService
         array $primes,
         array $deductions,
     ): array {
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $options->set('isRemoteEnabled', false);
-
-        $dompdf = new Dompdf($options);
+        $dompdf = $this->dompdfFactory->create([
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => false,
+        ]);
 
         $html = $this->twig->render('DashboardEmployee/payroll/fiche_paie_pdf.html.twig', [
             'fiche'      => $fiche,
