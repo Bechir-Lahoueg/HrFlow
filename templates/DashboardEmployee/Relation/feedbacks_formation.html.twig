@@ -71,7 +71,7 @@
 
                     {% if formations is empty %}
                     <div class="py-8 text-center text-zinc-400">
-                        <div style="font-size:2rem">🎓</div>
+                        <div style="font-size:2rem">-</div>
                         <p class="text-sm mt-2">Aucune formation approuvée disponible pour évaluation.</p>
                     </div>
                     {% else %}
@@ -101,16 +101,16 @@
                         </div>
                         {% set ffRating = ffOld.rating ?? 3 %}
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Note globale * <span id="ffRatingDisplay" class="text-amber-500 ml-1">⭐ {{ ffRating }} / 5</span></label>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Note globale * <span id="ffRatingDisplay" class="text-amber-500 ml-1">{{ ffRating }} / 5</span></label>
                             <input type="range" min="1" max="5" value="{{ ffRating }}" step="1" name="rating"
-                                   oninput="document.getElementById('ffRatingDisplay').textContent = '⭐ ' + this.value + ' / 5';"
+                                   oninput="document.getElementById('ffRatingDisplay').textContent = this.value + ' / 5';"
                                    class="w-full h-2 bg-zinc-200 rounded-lg cursor-pointer accent-amber-500">
                             {% if ffErrors.rating %}
                                 <p class="text-[11px] text-red-600 mt-1">{{ ffErrors.rating }}</p>
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">📚 Contenu</label>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Contenu</label>
                             <textarea name="contenu_comment" rows="2" placeholder="Votre avis sur le contenu..."
                                       class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all resize-none">{{ ffOld.contenu_comment ?? '' }}</textarea>
                             {% if ffErrors.contenu_comment %}
@@ -118,7 +118,7 @@
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">👨‍🏫 Formateur</label>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Formateur</label>
                             <textarea name="formateur_comment" rows="2" placeholder="Votre avis sur le formateur..."
                                       class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all resize-none">{{ ffOld.formateur_comment ?? '' }}</textarea>
                             {% if ffErrors.formateur_comment %}
@@ -126,7 +126,7 @@
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">🗂️ Organisation</label>
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1.5">Organisation</label>
                             <textarea name="organisation_comment" rows="2" placeholder="Votre avis sur l'organisation..."
                                       class="w-full rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2.5 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:bg-white transition-all resize-none">{{ ffOld.organisation_comment ?? '' }}</textarea>
                             {% if ffErrors.organisation_comment %}
@@ -135,7 +135,7 @@
                         </div>
                         <label class="flex items-center gap-2 text-sm font-semibold text-zinc-700 cursor-pointer rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
                             <input type="checkbox" name="recommande" checked class="rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500" {{ ffOld.recommande is defined and ffOld.recommande ? 'checked' : '' }}>
-                            ✅ Je recommande cette formation
+                            Je recommande cette formation
                         </label>
                         <button type="submit"
                                 class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-sm tracking-wide hover:from-slate-800 hover:to-slate-600 transition-all shadow-lg shadow-slate-900/20 active:scale-[0.98]">
@@ -185,25 +185,25 @@
                                 <td class="py-3 px-4 font-medium text-zinc-700 max-w-[160px] truncate">{{ ff.formation_name ?? '-' }}</td>
                                 <td class="py-3 px-4 text-[12px] text-zinc-400 max-w-[130px] truncate">{{ ff.session_name ?? '-' }}</td>
                                 <td class="py-3 px-4">
-                                    <span class="text-amber-500 font-mono text-[13px]">{% for i in 1..5 %}{{ i <= ff.rating ? '★' : '☆' }}{% endfor %}</span>
+                                    <span class="inline-flex items-center gap-0.5 text-amber-500">{% for i in 1..5 %}<svg class="w-3.5 h-3.5 {{ i <= ff.rating ? 'opacity-100' : 'opacity-30' }}" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.12 3.447a1 1 0 00.95.69h3.624c.969 0 1.371 1.24.588 1.81l-2.932 2.13a1 1 0 00-.364 1.118l1.12 3.447c.3.922-.755 1.688-1.54 1.118l-2.932-2.13a1 1 0 00-1.176 0l-2.932 2.13c-.784.57-1.838-.196-1.539-1.118l1.12-3.447a1 1 0 00-.364-1.118L2.78 8.874c-.783-.57-.38-1.81.588-1.81h3.623a1 1 0 00.951-.69l1.12-3.447z"/></svg>{% endfor %}</span>
                                     <span class="text-[11px] text-zinc-400 ml-1">{{ ff.rating }}/5</span>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="text-[11px] font-bold {{ ff.recommande ? 'text-emerald-600' : 'text-red-500' }}">
-                                        {{ ff.recommande ? '✅ Oui' : '❌ Non' }}
+                                        {{ ff.recommande ? 'Oui' : 'Non' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-[12px] text-zinc-400">{{ ff.created_at|date('d/m/Y') }}</td>
                                 <td class="py-3 px-4">
                                     <div class="flex gap-1.5">
                                         <button onclick="loadFfDetails({{ ff.id }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">👁️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200">Voir</button>
                                         <button onclick="openEditFf({{ ff|json_encode|e('html_attr') }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">✏️</button>
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">Modifier</button>
                                         <form action="{{ path('employee_relation_ff_delete', {id: ff.id}) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Supprimer cette évaluation ?')">
                                             <input type="hidden" name="_token" value="{{ csrf_token('ff-del-' ~ ff.id) }}">
-                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">🗑️</button>
+                                            <button class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">Supprimer</button>
                                         </form>
                                     </div>
                                 </td>
@@ -227,7 +227,7 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between">
-                <h5 class="text-white font-bold text-[15px]">🎓 Détails de l'évaluation</h5>
+                <h5 class="text-white font-bold text-[15px]">Details de l'evaluation</h5>
                 <button onclick="closeModal('modalFfDetails')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -246,22 +246,22 @@
     <div class="relative flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-slide-up" style="max-height:90vh;overflow-y:auto">
             <div class="bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
-                <h5 class="text-white font-bold text-[15px]">✏️ Modifier l'évaluation</h5>
+                <h5 class="text-white font-bold text-[15px]">Modifier l'evaluation</h5>
                 <button onclick="closeModal('modalEditFf')" class="text-white/60 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <form id="editFfForm" method="POST">
                 <div class="p-5 space-y-3">
-                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Note <span id="editFfRatingDisplay" class="text-amber-500 ml-1">⭐ 3</span></label>
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Note <span id="editFfRatingDisplay" class="text-amber-500 ml-1">3</span></label>
                         <input type="range" min="1" max="5" value="3" step="1" id="editFfRatingRange" name="rating"
-                               oninput="document.getElementById('editFfRatingDisplay').textContent = '⭐ ' + this.value;"
+                               oninput="document.getElementById('editFfRatingDisplay').textContent = this.value;"
                                class="w-full h-2 bg-zinc-200 rounded-lg cursor-pointer accent-amber-500"></div>
-                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">📚 Contenu</label>
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Contenu</label>
                         <textarea name="contenu_comment" id="editFfContenu" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none"></textarea></div>
-                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">👨‍🏫 Formateur</label>
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Formateur</label>
                         <textarea name="formateur_comment" id="editFfFormateur" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none"></textarea></div>
-                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">🗂️ Organisation</label>
+                    <div><label class="block text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-400 mb-1">Organisation</label>
                         <textarea name="organisation_comment" id="editFfOrganisation" rows="2" class="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 resize-none"></textarea></div>
                     <label class="flex items-center gap-2 text-sm font-semibold text-zinc-700 cursor-pointer">
                         <input type="checkbox" name="recommande" id="editFfRec" class="rounded border-zinc-300 text-cyan-600"> Je recommande cette formation
@@ -306,8 +306,7 @@ function loadFfDetails(id) {
         .then(r => r.json())
         .then(ff => {
             const row = (l, v) => `<div class="flex gap-3"><span class="text-zinc-400 font-semibold w-32 shrink-0">${l}</span><span class="text-zinc-700">${v ?? '-'}</span></div>`;
-            const stars = Array(5).fill(0).map((_, i) => i < ff.rating ? '★' : '☆').join('');
-            let html = row('Formation', ff.formation_name) + row('Session', ff.session_name) + row('Note', `<span class="text-amber-500">${stars}</span> (${ff.rating}/5)`) + row('Recommandé', ff.recommande ? '✅ Oui' : '❌ Non') + row('Date', ff.created_at?.substring(0,10));
+            let html = row('Formation', ff.formation_name) + row('Session', ff.session_name) + row('Note', `${ff.rating}/5`) + row('Recommande', ff.recommande ? 'Oui' : 'Non') + row('Date', ff.created_at?.substring(0,10));
             if (ff.contenu_comment) html += `<div class="mt-3 pt-3 border-t border-zinc-100"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Contenu</p><p>${ff.contenu_comment}</p></div>`;
             if (ff.formateur_comment) html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Formateur</p><p>${ff.formateur_comment}</p></div>`;
             if (ff.organisation_comment) html += `<div class="mt-2"><p class="text-zinc-400 font-semibold text-[11px] uppercase mb-1">Organisation</p><p>${ff.organisation_comment}</p></div>`;
@@ -318,7 +317,7 @@ function loadFfDetails(id) {
 
 function openEditFf(ff) {
     document.getElementById('editFfRatingRange').value = ff.rating || 3;
-    document.getElementById('editFfRatingDisplay').textContent = '⭐ ' + (ff.rating || 3);
+    document.getElementById('editFfRatingDisplay').textContent = String(ff.rating || 3);
     document.getElementById('editFfContenu').value      = ff.contenu_comment || '';
     document.getElementById('editFfFormateur').value    = ff.formateur_comment || '';
     document.getElementById('editFfOrganisation').value = ff.organisation_comment || '';

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: 'Helvetica', sans-serif; 
+            color: #374151; 
+            line-height: 1.7; 
+            max-width: 700px; 
+            margin: 60px auto;
+            padding: 0 40px;
+        }
+        
+        /* Clean header */
+        .header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 24px;
+            margin-bottom: 40px;
+        }
+        .title { 
+            font-size: 24px; 
+            font-weight: 300; 
+            color: #111827;
+            letter-spacing: -0.5px;
+            margin: 0 0 8px;
+        }
+        .meta { 
+            font-size: 12px; 
+            color: #9ca3af;
+        }
+        
+        /* Simple stats row */
+        .stats-row {
+            display: flex;
+            gap: 32px;
+            margin: 32px 0;
+            padding: 20px 0;
+            border-top: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .stat-item { text-align: left; }
+        .stat-val { 
+            font-size: 20px; 
+            font-weight: 600; 
+            color: #111827;
+        }
+        .stat-lbl { 
+            font-size: 11px; 
+            color: #9ca3af; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        
+        /* Content */
+        .content {
+            font-size: 14px;
+            color: #4b5563;
+        }
+        .content p { margin: 0 0 16px; }
+        .content strong { color: #111827; font-weight: 600; }
+        
+        /* Simple tables */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 24px 0;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 12px 0;
+            font-weight: 600;
+            color: #9ca3af;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        td {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+        tr:last-child td { border-bottom: none; }
+        
+        /* Lists */
+        ul { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        
+        /* Minimal footer */
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #f3f4f6;
+            font-size: 11px;
+            color: #d1d5db;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">{{ title }}</h1>
+        {% if include_date %}
+        <div class="meta">{{ "now"|date("d F Y") }} · {{ user_name }}</div>
+        {% endif %}
+    </div>
+
+    {% if stats is defined and stats|length > 0 %}
+    <div class="stats-row">
+        {% for stat in stats %}
+        <div class="stat-item">
+            <div class="stat-val">{{ stat.value }}</div>
+            <div class="stat-lbl">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="content">
+        {{ custom_content|raw }}
+    </div>
+
+    <div class="footer">
+        {{ footer_text|default('HrFlow Recruitment System') }}
+    </div>
+</body>
+</html>

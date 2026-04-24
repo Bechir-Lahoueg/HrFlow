@@ -63,6 +63,12 @@ class LeaveRequest
     #[ORM\Column(name: 'attachment_path', length: 255, nullable: true)]
     private ?string $attachmentPath = null;
 
+    #[ORM\Column(name: 'attachment_ocr_text', type: Types::TEXT, nullable: true)]
+    private ?string $attachmentOcrText = null;
+
+    #[ORM\Column(name: 'attachment_ocr_summary', type: Types::TEXT, nullable: true)]
+    private ?string $attachmentOcrSummary = null;
+
     #[ORM\Column(name: 'admin_comment', type: Types::TEXT, nullable: true)]
     private ?string $adminComment = null;
 
@@ -248,6 +254,28 @@ class LeaveRequest
     public function setAttachmentPath(?string $attachmentPath): static
     {
         $this->attachmentPath = $attachmentPath;
+        return $this;
+    }
+
+    public function getAttachmentOcrText(): ?string
+    {
+        return $this->attachmentOcrText;
+    }
+
+    public function setAttachmentOcrText(?string $attachmentOcrText): static
+    {
+        $this->attachmentOcrText = $attachmentOcrText;
+        return $this;
+    }
+
+    public function getAttachmentOcrSummary(): ?string
+    {
+        return $this->attachmentOcrSummary;
+    }
+
+    public function setAttachmentOcrSummary(?string $attachmentOcrSummary): static
+    {
+        $this->attachmentOcrSummary = $attachmentOcrSummary;
         return $this;
     }
 
