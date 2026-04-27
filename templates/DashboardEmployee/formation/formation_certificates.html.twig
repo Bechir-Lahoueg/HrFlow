@@ -5,26 +5,20 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .cert-trophy-badge {
-            animation: cert-trophy-float 2.2s ease-in-out infinite;
-            box-shadow: 0 10px 24px -14px rgba(250, 204, 21, 0.9);
-        }
+        .decision-table thead th{position:sticky;top:0;z-index:10}
+        .decision-row{transition:all .2s}
+        .decision-row:hover{background:#f8fafc;transform:scale(1.001)}
+        .filter-chip{transition:all .2s}
+        .filter-chip:hover{transform:translateY(-1px)}
+        .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+        .rank-badge{min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;font-size:11px;font-weight:800}
+        .rank-gold{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
+        .rank-silver{background:#e5e7eb;color:#374151;border:1px solid #9ca3af}
+        .rank-bronze{background:#ffedd5;color:#9a3412;border:1px solid #fb923c}
 
-        .cert-trophy-icon {
-            animation: cert-trophy-spark 1.8s ease-in-out infinite;
-            display: inline-block;
-        }
-
-        @keyframes cert-trophy-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-
-        @keyframes cert-trophy-spark {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            40% { transform: rotate(-6deg) scale(1.05); }
-            80% { transform: rotate(6deg) scale(1.07); }
-        }
+        .cert-download-btn:active { transform: scale(0.97); }
+        .card-hover { transition: all .2s; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgba(0,0,0,.12); }
     </style>
 {% endblock %}
 
@@ -35,79 +29,177 @@
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardEmployee/components/_header.html.twig' %}
 
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-teal-700 to-cyan-700 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl"></div>
-                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/20 blur-3xl"></div>
+
+            {# ══════════ Hero Banner ══════════ #}
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
                 <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-cyan-200 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-cyan-100 uppercase tracking-wider">Certificate Hub</span>
-                            <span class="cert-trophy-badge inline-flex items-center gap-1 rounded-full border border-amber-200/50 bg-amber-100/90 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-700">
-                                <span class="cert-trophy-icon">🏆</span>
-                                Bravo !
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Certificate Hub</span>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-100/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-200">
+                                🏆 Bravo !
                             </span>
                         </div>
-                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes certificats</h2>
-                        <p class="mt-3 text-[15px] text-cyan-50/90 max-w-xl leading-relaxed">Retrouvez vos formations terminees, verifiez votre eligibilite et telechargez vos certificats en un clic.</p>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Mes Certificats</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Retrouvez vos formations terminées, vérifiez votre éligibilité et téléchargez vos certificats en un clic.</p>
                     </div>
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-100/70 font-bold">Formations suivies</p>
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Formations</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ certificateRows|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">suivies</p>
                         </div>
-                        <div class="rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-100/70 font-bold">Certificats dispo</p>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Certificats</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ certificateRows|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">disponibles</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Mes Formations</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">
+                                <a href="{{ path('employee_formation_index') }}" class="hover:text-cyan-300 transition-colors">Voir</a>
+                            </p>
+                            <p class="text-xs text-cyan-100/60 mt-1">catalogue</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {# ══════════ Certificats Grid ══════════ #}
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Mes Certificats de Réussite</h3>
+                    </div>
+                </div>
+
+                {# ══════════ Filtres ══════════ #}
+                <div class="flex justify-end gap-4 mb-6 bg-zinc-50/50 dark:bg-zinc-800/20 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/50">
+                    <form method="get" action="{{ path('employee_formation_certificates') }}" class="flex items-center gap-2 w-full md:w-auto">
+                        <select name="sort" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
+                            <option value="date-DESC" {% if filters.sort == 'date-DESC' %}selected{% endif %}>Plus récent</option>
+                            <option value="date-ASC"  {% if filters.sort == 'date-ASC'  %}selected{% endif %}>Plus ancien</option>
+                            <option value="titre-ASC" {% if filters.sort == 'titre-ASC' %}selected{% endif %}>Titre (A-Z)</option>
+                            <option value="titre-DESC"{% if filters.sort == 'titre-DESC'%}selected{% endif %}>Titre (Z-A)</option>
+                        </select>
+
+                        <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center shadow-sm" title="Filtrer">
+                            Filtrer
+                        </button>
+
+                        {% if filters.sort is defined and filters.sort != 'date-DESC' %}
+                            <a href="{{ path('employee_formation_certificates') }}" class="text-zinc-400 hover:text-red-500 transition" title="Réinitialiser filtres">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+
+                {# ══════════ Cards ══════════ #}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {% for row in certificateRows %}
-                        {% set formation = row.formation %}
-                        {% set session = row.session %}
-                        {% set participation = row.participation %}
-                        {% set attendance = row.attendance %}
-                        {% set canDownload = true %}
+                        {% set formation    = row.formation %}
+                        {% set session      = row.session %}
+                        {% set participation= row.participation %}
+                        {% set attendance   = row.attendance %}
 
-                        <article class="rounded-2xl border border-zinc-100 dark:border-zinc-800/60 bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-950 dark:to-zinc-900 p-5">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-zinc-400">Formation</p>
-                                    <h3 class="mt-1 text-[15px] font-bold text-zinc-900 dark:text-zinc-100 line-clamp-2">{{ formation.titre }}</h3>
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between transition-all hover:ring-2 hover:ring-emerald-500/20">
+                            <div>
+                                {# Header card #}
+                                <div class="flex justify-between items-start mb-3 gap-2">
+                                    <div class="min-w-0 flex items-start gap-3">
+                                        {# Icône certificat #}
+                                        <div class="w-11 h-11 rounded-full border border-emerald-200 dark:border-emerald-700/40 bg-emerald-50 dark:bg-emerald-900/20 shrink-0 flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">Formation</p>
+                                            <h4 class="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap ml-2 shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                        Disponible
+                                    </span>
                                 </div>
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold
-                                    bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    Disponible
-                                </span>
+
+                                {# Infos bloc #}
+                                <div class="mb-4 rounded-xl bg-zinc-50/80 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800/60 p-3 space-y-1.5 text-[12px]">
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                                        <p><span class="font-semibold text-zinc-500">Organisme</span></p>
+                                        <p class="text-zinc-800 dark:text-zinc-200 font-medium truncate" title="{{ formation.organisme ?: 'HrFlow' }}">{{ formation.organisme ?: 'HrFlow' }}</p>
+
+                                        <p><span class="font-semibold text-zinc-500">Début</span></p>
+                                        <p class="text-zinc-800 dark:text-zinc-200">{{ session.dateDebut|date('d/m/Y') }}</p>
+
+                                        <p><span class="font-semibold text-zinc-500">Fin</span></p>
+                                        <p class="text-zinc-800 dark:text-zinc-200">{{ session.dateFin|date('d/m/Y') }}</p>
+
+                                        <p><span class="font-semibold text-zinc-500">Mode</span></p>
+                                        <p class="text-zinc-800 dark:text-zinc-200">{{ session.mode }}</p>
+                                    </div>
+                                </div>
+
+                                {# Présence bar #}
+                                <div class="mb-4">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Présence</span>
+                                        <span class="text-[12px] font-extrabold {{ attendance >= 80 ? 'text-emerald-600' : 'text-amber-600' }}">{{ attendance }}%</span>
+                                    </div>
+                                    <div class="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                        <div class="h-1.5 rounded-full {{ attendance >= 80 ? 'bg-emerald-500' : 'bg-amber-400' }} transition-all" style="width: {{ attendance }}%"></div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mt-4 rounded-xl bg-white/80 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800/60 p-3 space-y-1.5 text-[12px]">
-                                <p><span class="font-semibold text-zinc-500">Organisme:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ formation.organisme ?: 'HrFlow' }}</span></p>
-                                <p><span class="font-semibold text-zinc-500">Periode:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ session.dateDebut|date('d/m/Y') }} - {{ session.dateFin|date('d/m/Y') }}</span></p>
-                                <p><span class="font-semibold text-zinc-500">Mode:</span> <span class="text-zinc-800 dark:text-zinc-200">{{ session.mode }}</span></p>
-                                <p><span class="font-semibold text-zinc-500">Presence:</span> <span class="font-bold {{ attendance >= 80 ? 'text-emerald-600' : 'text-amber-600' }}">{{ attendance }}%</span></p>
-                            </div>
-
-                            <div class="mt-4 flex gap-2">
-                                <a href="{{ path('employee_formation_sessions', {id: formation.id}) }}" class="px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition">Voir details</a>
-                                <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="cert-download-btn px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition inline-flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/></svg>
-                                    Telecharger
+                            {# Actions #}
+                            <div class="flex gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
+                                <a href="{{ path('employee_formation_sessions', {id: formation.id}) }}"
+                                   class="flex-1 text-center px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition">
+                                    Voir détails
+                                </a>
+                                <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}"
+                                   class="cert-download-btn flex-1 text-center px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition inline-flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/>
+                                    </svg>
+                                    Télécharger
                                 </a>
                             </div>
-                        </article>
+                        </div>
+
                     {% else %}
-                        <div class="col-span-full py-14 text-center text-zinc-400 text-sm bg-zinc-50 border border-zinc-100 rounded-xl border-dashed">
+                        <div class="col-span-1 md:col-span-2 lg:col-span-3 py-14 text-center text-zinc-400 text-sm bg-zinc-50 border border-zinc-100 rounded-xl border-dashed">
                             Aucun certificat disponible pour le moment.
                         </div>
                     {% endfor %}
                 </div>
             </section>
+
         </main>
     </div>
 </div>
@@ -125,17 +217,9 @@
             }
 
             function ensureConfetti(ready) {
-                if (typeof confetti === 'function') {
-                    ready();
-                    return;
-                }
-
+                if (typeof confetti === 'function') { ready(); return; }
                 var existing = document.querySelector('script[data-cert-confetti="1"]');
-                if (existing) {
-                    existing.addEventListener('load', ready, { once: true });
-                    return;
-                }
-
+                if (existing) { existing.addEventListener('load', ready, { once: true }); return; }
                 var script = document.createElement('script');
                 script.src = CONFETTI_SRC;
                 script.async = true;
@@ -146,42 +230,27 @@
 
             function fireConfettiBurst() {
                 ensureConfetti(function () {
-                    if (typeof confetti !== 'function') {
-                        return;
-                    }
-
+                    if (typeof confetti !== 'function') return;
                     confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } });
                     setTimeout(function () {
-                        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } });
+                        confetti({ particleCount: 60, angle: 60,  spread: 55, origin: { x: 0 } });
                         confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } });
                     }, 180);
                 });
             }
 
             function bindCertificateConfetti() {
-                if (!isCertificatesView()) {
-                    return;
-                }
-
+                if (!isCertificatesView()) return;
                 fireConfettiBurst();
-
                 document.querySelectorAll('.cert-download-btn').forEach(function (btn) {
-                    if (btn.dataset.confettiBound === '1') {
-                        return;
-                    }
-
+                    if (btn.dataset.confettiBound === '1') return;
                     btn.dataset.confettiBound = '1';
-                    btn.addEventListener('click', function () {
-                        fireConfettiBurst();
-                    });
+                    btn.addEventListener('click', function () { fireConfettiBurst(); });
                 });
             }
 
             function initCertificatesConfetti() {
-                if (!isCertificatesView()) {
-                    return;
-                }
-
+                if (!isCertificatesView()) return;
                 bindCertificateConfetti();
             }
 
@@ -196,6 +265,3 @@
         })();
     </script>
 {% endblock %}
-
-
-

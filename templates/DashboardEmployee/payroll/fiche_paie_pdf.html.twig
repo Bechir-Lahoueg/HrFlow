@@ -175,6 +175,37 @@
         .notes-title { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 5px; }
         .notes-text  { font-style: italic; color: #475569; font-size: 10px; line-height: 1.5; }
 
+        /* ══ SIGNATURES ══ */
+        .signature-wrap {
+            margin-top: 18px;
+            margin-bottom: 18px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 12px;
+        }
+        .signature-table { width: 100%; border-collapse: collapse; }
+        .signature-table td {
+            width: 50%;
+            vertical-align: top;
+            border: none;
+            padding: 0 12px;
+        }
+        .signature-label {
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        .signature-line {
+            margin-top: 34px;
+            border-top: 1px solid #94a3b8;
+            padding-top: 6px;
+            font-size: 9px;
+            color: #475569;
+            text-align: center;
+        }
+
         /* â•â• FOOTER â•â• */
         .footer-wrap {
             background: #f8fafc;
@@ -364,6 +395,21 @@
         <div class="notes-text">{{ fiche.notes }}</div>
     </div>
     {% endif %}
+
+    <div class="signature-wrap">
+        <table class="signature-table">
+            <tr>
+                <td>
+                    <div class="signature-label">Signature Employe</div>
+                    <div class="signature-line">{{ fiche.employeeName }}</div>
+                </td>
+                <td>
+                    <div class="signature-label">Signature Responsable RH</div>
+                    <div class="signature-line">HrFlow RH</div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
 </div>
 

@@ -53,6 +53,15 @@
             "./config/packages/knp_snappy.yaml"
         ]
     },
+    "nucleos/dompdf-bundle": {
+        "version": "4.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "3.1",
+            "ref": "0a89461aec4873f9205f1fc04c96c607116abb2e"
+        }
+    },
     "phpunit/phpunit": {
         "version": "13.1",
         "recipe": {

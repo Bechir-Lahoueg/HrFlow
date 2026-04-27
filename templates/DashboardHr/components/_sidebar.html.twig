@@ -143,7 +143,7 @@
             Relations
         </a>
 
-        {% set isPayroll = app.request.get('_route') in ['app_rh_remuneration_index', 'app_rh_payroll_fiche_show', 'app_rh_payroll_fiche_create', 'app_rh_payroll_fiche_edit', 'app_rh_payroll_fiche_delete', 'app_rh_payroll_primes', 'app_rh_payroll_prime_create', 'app_rh_payroll_prime_edit', 'app_rh_payroll_prime_delete', 'app_rh_payroll_deductions', 'app_rh_payroll_deduction_create', 'app_rh_payroll_deduction_edit', 'app_rh_payroll_deduction_delete', 'app_rh_payroll_stats'] %}
+        {% set isPayroll = app.request.get('_route') in ['app_rh_remuneration_index', 'app_rh_payroll_fiche_show', 'app_rh_payroll_fiche_create', 'app_rh_payroll_fiche_edit', 'app_rh_payroll_fiche_delete', 'app_rh_payroll_primes', 'app_rh_payroll_prime_create', 'app_rh_payroll_prime_edit', 'app_rh_payroll_prime_delete', 'app_rh_payroll_deductions', 'app_rh_payroll_deduction_create', 'app_rh_payroll_deduction_edit', 'app_rh_payroll_deduction_delete', 'app_rh_payroll_salary_advance_index', 'app_rh_payroll_salary_advance_create', 'app_rh_payroll_stats'] %}
         <a href="{{ path('app_rh_remuneration_index') }}"
            class="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200
                   {{ isPayroll

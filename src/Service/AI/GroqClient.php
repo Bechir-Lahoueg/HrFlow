@@ -17,9 +17,9 @@ class GroqClient implements LlmClientInterface
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
         ParameterBagInterface $params,
-        string $model = 'openai/gpt-oss-120b'
+        string $model = 'llama-3.3-70b-versatile'
     ) {
-        $this->apiKey = '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';
+        $this->apiKey = (string) $params->get('groq_api_key');
         $this->model = $model;
     }
 

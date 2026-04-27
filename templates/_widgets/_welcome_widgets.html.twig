@@ -1,0 +1,363 @@
+{#
+    Macros réutilisables pour les widgets "Welcome" — alimentés par APIs externes.
+    Chaque macro prend un `accent` (violet|teal|amber|sky|emerald|rose) pour adapter les couleurs.
+#}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# WEATHER : Météo jour J à Tunis                               #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro weather(weather, accent, refreshUrl) %}
+    {% set mainLower = (weather.main|default('Clear'))|lower %}
+    {% set bgGradient = 'from-sky-400 via-sky-500 to-blue-600' %}
+    {% if mainLower in ['clouds'] %}
+        {% set bgGradient = 'from-slate-400 via-slate-500 to-slate-600' %}
+    {% elseif mainLower in ['rain', 'drizzle', 'thunderstorm'] %}
+        {% set bgGradient = 'from-indigo-500 via-indigo-600 to-slate-700' %}
+    {% elseif mainLower in ['snow'] %}
+        {% set bgGradient = 'from-sky-200 via-sky-300 to-indigo-400' %}
+    {% elseif mainLower in ['clear'] %}
+        {% set bgGradient = 'from-amber-400 via-orange-500 to-rose-500' %}
+    {% elseif mainLower in ['mist', 'fog', 'haze', 'smoke', 'dust', 'sand'] %}
+        {% set bgGradient = 'from-zinc-400 via-zinc-500 to-zinc-600' %}
+    {% endif %}
+
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br {{ bgGradient }} p-6 text-white shadow-lg h-full">
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/20 blur-3xl"></div>
+            <div class="absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-white/10 blur-3xl"></div>
+        </div>
+        <div class="relative z-10 flex flex-col h-full">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90">{{ weather.city|default('Tunis') }}, Tunisie</span>
+                    </div>
+                    <p class="text-[13px] opacity-90 font-medium">Météo en direct</p>
+                </div>
+                <a href="{{ refreshUrl }}" title="Rafraîchir" class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                </a>
+            </div>
+
+            <div class="mt-4 flex items-end gap-3">
+                <img src="https://openweathermap.org/img/wn/{{ weather.icon|default('01d') }}@4x.png" alt="{{ weather.description }}" class="w-24 h-24 -mb-2 drop-shadow-xl">
+                <div>
+                    <p class="text-5xl font-black leading-none">{{ weather.temp|default(0)|round }}<span class="text-2xl font-bold opacity-80">°C</span></p>
+                    <p class="text-[13px] opacity-95 mt-2 font-semibold">{{ weather.description|default('') }}</p>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-5 grid grid-cols-3 gap-2 text-[11px]">
+                <div class="bg-white/15 rounded-lg px-2.5 py-2 backdrop-blur">
+                    <p class="opacity-80 font-semibold uppercase tracking-wide">Ressenti</p>
+                    <p class="text-sm font-bold mt-0.5">{{ weather.feels_like|default(0)|round }}°C</p>
+                </div>
+                <div class="bg-white/15 rounded-lg px-2.5 py-2 backdrop-blur">
+                    <p class="opacity-80 font-semibold uppercase tracking-wide">Humidité</p>
+                    <p class="text-sm font-bold mt-0.5">{{ weather.humidity|default(0) }}%</p>
+                </div>
+                <div class="bg-white/15 rounded-lg px-2.5 py-2 backdrop-blur">
+                    <p class="opacity-80 font-semibold uppercase tracking-wide">Vent</p>
+                    <p class="text-sm font-bold mt-0.5">{{ weather.wind|default(0)|round(1) }} m/s</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# FORECAST 5 JOURS                                             #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro forecast(forecast, accent, refreshUrl) %}
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm h-full">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-{{ accent }}-50 dark:bg-{{ accent }}-500/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-{{ accent }}-600 dark:text-{{ accent }}-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Prévisions 5 jours</h3>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Tunis — données OpenWeatherMap</p>
+                </div>
+            </div>
+            <a href="{{ refreshUrl }}" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors" title="Rafraîchir">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            </a>
+        </div>
+        {% if forecast|length > 0 %}
+            <div class="grid grid-cols-5 gap-2">
+                {% for d in forecast %}
+                    <div class="text-center bg-gradient-to-b from-{{ accent }}-50/80 to-transparent dark:from-{{ accent }}-500/5 rounded-lg py-3 px-1 border border-{{ accent }}-100/50 dark:border-{{ accent }}-500/10">
+                        <p class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase">{{ d.day }}</p>
+                        <img src="https://openweathermap.org/img/wn/{{ d.icon }}@2x.png" alt="" class="w-10 h-10 mx-auto -my-1">
+                        <p class="text-[13px] font-bold text-zinc-800 dark:text-zinc-200">{{ d.temp_max|round }}°</p>
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">{{ d.temp_min|round }}°</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-8 text-zinc-300 dark:text-zinc-600">
+                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                <p class="text-[12px]">Prévisions indisponibles — clé OpenWeather requise</p>
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# JOURS FÉRIÉS TN                                              #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro holidays(holidays, accent, refreshUrl) %}
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm h-full">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Prochains jours fériés</h3>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500">République tunisienne</p>
+                </div>
+            </div>
+            <a href="{{ refreshUrl }}" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            </a>
+        </div>
+
+        {% if holidays|length > 0 %}
+            <div class="space-y-3">
+                {% for h in holidays %}
+                    <div class="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-rose-50/70 to-transparent dark:from-rose-500/5 dark:to-transparent border border-rose-100/50 dark:border-rose-500/10">
+                        <div class="shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-800 border border-rose-200 dark:border-rose-500/30 flex flex-col items-center justify-center shadow-sm">
+                            <span class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase">
+                                {% set moisShort = {1:'Jan',2:'Fév',3:'Mar',4:'Avr',5:'Mai',6:'Juin',7:'Juil',8:'Août',9:'Sep',10:'Oct',11:'Nov',12:'Déc'} %}
+                                {{ moisShort[h.date|slice(5, 2) + 0] }}
+                            </span>
+                            <span class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 leading-none">{{ h.date|slice(8, 2) }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[13px] font-bold text-zinc-800 dark:text-zinc-200 truncate">{{ h.name }}</p>
+                            <p class="text-[11px] text-zinc-400 dark:text-zinc-500">{{ h.formatted }}</p>
+                        </div>
+                        <div class="shrink-0 text-right">
+                            {% if h.days_until == 0 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wide">Aujourd'hui</span>
+                            {% elseif h.days_until == 1 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500 text-white uppercase tracking-wide">Demain</span>
+                            {% else %}
+                                <p class="text-lg font-black text-rose-600 dark:text-rose-400 leading-none">J-{{ h.days_until }}</p>
+                                <p class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">jours</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-[12px] text-zinc-400 dark:text-zinc-500 text-center py-6">Aucun jour férié à venir</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# TAUX DE CHANGE                                               #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro rates(rates, accent, refreshUrl) %}
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm h-full">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Taux de change</h3>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Base Dinar Tunisien (TND)</p>
+                </div>
+            </div>
+            <a href="{{ refreshUrl }}" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            </a>
+        </div>
+
+        {% if rates|length > 0 %}
+            <div class="space-y-2.5">
+                {% for r in rates %}
+                    <div class="flex items-center justify-between p-2.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors border border-zinc-100 dark:border-zinc-800/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-[13px] shadow-sm">
+                                {{ r.symbol }}
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-zinc-800 dark:text-zinc-200">1 {{ r.code }}</p>
+                                <p class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-semibold">{{ r.label|default(r.code) }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[14px] font-black text-zinc-900 dark:text-zinc-100 font-mono-num">{{ r.rate|number_format(3, ',', ' ') }}</p>
+                            <p class="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold">TND</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-[12px] text-zinc-400 dark:text-zinc-500 text-center py-6">Service indisponible</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# NEWS                                                         #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro news(news, accent, title, refreshUrl) %}
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm h-full">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-{{ accent }}-50 dark:bg-{{ accent }}-500/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-{{ accent }}-600 dark:text-{{ accent }}-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3V9H6V7.5z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">{{ title|default('Actualités') }}</h3>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Flux GNews — français</p>
+                </div>
+            </div>
+            <a href="{{ refreshUrl }}" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            </a>
+        </div>
+
+        {% if news|length > 0 and news[0].url != '#' %}
+            <div class="space-y-3">
+                {% for article in news|slice(0, 4) %}
+                    <a href="{{ article.url }}" target="_blank" rel="noopener" class="flex gap-3 p-2.5 rounded-lg hover:bg-{{ accent }}-50/40 dark:hover:bg-{{ accent }}-500/5 transition-colors group">
+                        {% if article.image %}
+                            <img src="{{ article.image }}" alt="" class="w-16 h-16 rounded-lg object-cover shrink-0 border border-zinc-100 dark:border-zinc-800" loading="lazy" onerror="this.style.display='none'">
+                        {% else %}
+                            <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-{{ accent }}-100 to-{{ accent }}-200 dark:from-{{ accent }}-500/20 dark:to-{{ accent }}-500/10 shrink-0 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-{{ accent }}-600 dark:text-{{ accent }}-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3V9H6V7.5z"/></svg>
+                            </div>
+                        {% endif %}
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[12px] font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-{{ accent }}-700 dark:group-hover:text-{{ accent }}-400 transition-colors line-clamp-2 leading-snug">{{ article.title }}</p>
+                            <div class="flex items-center gap-2 mt-1.5 text-[10px] text-zinc-400 dark:text-zinc-500">
+                                <span class="font-semibold uppercase tracking-wide truncate">{{ article.source }}</span>
+                                <span class="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600 shrink-0"></span>
+                                <span class="shrink-0">{{ article.formatted_date }}</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-8 text-zinc-300 dark:text-zinc-600">
+                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5"/></svg>
+                <p class="text-[12px]">Actualités indisponibles — clé GNews requise</p>
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# QUOTE                                                        #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro quote(quote, accent, refreshUrl) %}
+    <div class="relative overflow-hidden bg-gradient-to-br from-{{ accent }}-600 via-{{ accent }}-700 to-{{ accent }}-900 rounded-xl p-6 text-white shadow-lg h-full">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/20 blur-2xl"></div>
+            <div class="absolute -bottom-16 -left-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
+        </div>
+        <div class="relative z-10 h-full flex flex-col">
+            <div class="flex items-start justify-between mb-4">
+                <svg class="w-10 h-10 opacity-40" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+                <a href="{{ refreshUrl }}" class="w-8 h-8 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors backdrop-blur" title="Nouvelle citation">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                </a>
+            </div>
+            <p class="text-[15px] font-medium leading-relaxed italic flex-1">« {{ quote.content|default('Chargement…') }} »</p>
+            <div class="mt-4 pt-4 border-t border-white/20 flex items-center gap-2">
+                <div class="w-1 h-6 bg-white/60 rounded-full"></div>
+                <p class="text-[12px] font-bold uppercase tracking-wider">{{ quote.author|default('—') }}</p>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# ADVICE                                                       #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro advice(advice, accent, refreshUrl) %}
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border-2 border-dashed border-{{ accent }}-200 dark:border-{{ accent }}-500/20 p-5 shadow-sm h-full">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-{{ accent }}-400 to-{{ accent }}-600 flex items-center justify-center shadow-md">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.355a7.5 7.5 0 11-7.5 0c0-.847.167-1.657.477-2.42m6.546 2.42c.31-.762.477-1.572.477-2.419a7.5 7.5 0 00-7.5-7.5 7.5 7.5 0 007.5 7.5z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-[14px] font-bold text-zinc-800 dark:text-zinc-200">Conseil du jour</h3>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Pour bien démarrer</p>
+                </div>
+            </div>
+            <a href="{{ refreshUrl }}" class="w-7 h-7 rounded-lg hover:bg-{{ accent }}-50 dark:hover:bg-{{ accent }}-500/10 flex items-center justify-center transition-colors" title="Nouveau conseil">
+                <svg class="w-3.5 h-3.5 text-{{ accent }}-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            </a>
+        </div>
+        <p class="text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">{{ advice|default('Un petit effort chaque jour vaut mieux qu\'un grand effort occasionnel.') }}</p>
+    </div>
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# COUNTDOWN PROCHAIN JOUR FÉRIÉ                                #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro nextHoliday(holiday, accent) %}
+    {% if holiday %}
+        <div class="relative overflow-hidden bg-gradient-to-br from-rose-500 via-pink-600 to-fuchsia-700 rounded-xl p-6 text-white shadow-lg h-full">
+            <div class="absolute inset-0 opacity-25">
+                <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/30 blur-3xl"></div>
+                <div class="absolute -bottom-16 -left-12 w-52 h-52 rounded-full bg-amber-300/30 blur-3xl"></div>
+            </div>
+            <div class="relative z-10 h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-90">Prochain jour férié</span>
+                </div>
+                <p class="text-lg font-black leading-tight mb-2">{{ holiday.name }}</p>
+                <p class="text-[13px] opacity-90 mb-4 font-medium">{{ holiday.formatted }}</p>
+
+                <div class="mt-auto bg-white/15 backdrop-blur rounded-xl p-4">
+                    {% if holiday.days_until == 0 %}
+                        <p class="text-4xl font-black">Aujourd'hui !</p>
+                        <p class="text-[11px] opacity-90 mt-1 font-semibold uppercase tracking-wider">Profitez-en bien</p>
+                    {% elseif holiday.days_until == 1 %}
+                        <p class="text-4xl font-black">Demain</p>
+                        <p class="text-[11px] opacity-90 mt-1 font-semibold uppercase tracking-wider">Plus que quelques heures</p>
+                    {% else %}
+                        <div class="flex items-baseline gap-2">
+                            <p class="text-5xl font-black">{{ holiday.days_until }}</p>
+                            <p class="text-lg font-bold opacity-90">jours</p>
+                        </div>
+                        <p class="text-[11px] opacity-90 mt-1 font-semibold uppercase tracking-wider">restants</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# ──────────────────────────────────────────────────────────── #}
+{# SERVER CLOCK (horloge Tunis)                                 #}
+{# ──────────────────────────────────────────────────────────── #}
+{% macro clock(serverTime, accent) %}
+    {% set hours = ['zéro','une','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','midi','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf','vingt','vingt et une','vingt-deux','vingt-trois'] %}
+    {% set jours = {'Monday':'Lundi','Tuesday':'Mardi','Wednesday':'Mercredi','Thursday':'Jeudi','Friday':'Vendredi','Saturday':'Samedi','Sunday':'Dimanche'} %}
+    {% set mois = {'January':'janvier','February':'février','March':'mars','April':'avril','May':'mai','June':'juin','July':'juillet','August':'août','September':'septembre','October':'octobre','November':'novembre','December':'décembre'} %}
+
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm h-full flex flex-col justify-center">
+        <div class="flex items-center gap-2 mb-2">
+            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Heure serveur • Tunis</span>
+        </div>
+        <p class="text-4xl font-black text-zinc-900 dark:text-zinc-100 font-mono-num tabular-nums">{{ serverTime|date('H:i') }}</p>
+        <p class="text-[13px] text-zinc-500 dark:text-zinc-400 mt-1 font-semibold">
+            {{ jours[serverTime|date('l')]|default(serverTime|date('l')) }} {{ serverTime|date('j') }} {{ mois[serverTime|date('F')]|default(serverTime|date('F')) }}
+        </p>
+    </div>
+{% endmacro %}

@@ -1,11 +1,53 @@
 {# ===== HERO SECTION ===== #}
-<section class="relative min-h-screen overflow-hidden">
-    {# Video background #}
-    <div class="absolute inset-0 -z-20">
-        <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+<section class="relative min-h-screen overflow-hidden bg-slate-950">
+    {# Video background (dark fallback behind it so text stays readable before/if the video loads) #}
+    <div class="absolute inset-0 -z-20 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950">
+        <video id="hero-bg-video"
+               class="h-full w-full object-cover opacity-0 transition-opacity duration-700"
+               autoplay muted loop playsinline webkit-playsinline
+               preload="auto"
+               disablepictureinpicture
+               aria-hidden="true">
             <source src="{{ asset('7640702-hd_1920_1080_25fps.mp4') }}" type="video/mp4">
         </video>
     </div>
+
+    <script>
+        (function () {
+            var v = document.getElementById('hero-bg-video');
+            if (!v) return;
+            v.muted = true;
+            v.defaultMuted = true;
+            v.setAttribute('muted', '');
+            var reveal = function () { v.classList.remove('opacity-0'); };
+            v.addEventListener('playing', reveal);
+            v.addEventListener('loadeddata', reveal);
+            v.addEventListener('error', function () {
+                console.warn('[hero-bg-video] failed to load', v.error);
+            });
+            var tryPlay = function () {
+                var p = v.play();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(function () {
+                        var resume = function () {
+                            v.play().catch(function () {});
+                            ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+                                document.removeEventListener(ev, resume);
+                            });
+                        };
+                        ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+                            document.addEventListener(ev, resume, { once: true, passive: true });
+                        });
+                    });
+                }
+            };
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                tryPlay();
+            } else {
+                document.addEventListener('DOMContentLoaded', tryPlay);
+            }
+        })();
+    </script>
 
     {# Lighter cinematic veil so the video remains vibrant across dark frames #}
     <div class="absolute inset-0 -z-10 bg-gradient-to-b from-slate-900/45 via-slate-900/35 to-slate-950/50"></div>
@@ -42,9 +84,13 @@
             <a href="{{ path('app_login') }}"
                class="group px-8 py-4 text-base font-bold text-slate-900 bg-white hover:bg-slate-100 rounded-full transition-all hover:shadow-xl hover:shadow-slate-900/20 flex items-center gap-2">
                 Get Started
-                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
             </a>
-            <a href="#how-it-works" class="px-8 py-4 text-base font-bold text-white bg-white/15 border border-white/35 hover:bg-white/25 rounded-full transition-all hover:shadow-lg backdrop-blur">
+
+            <a href="#how-it-works"
+               class="px-8 py-4 text-base font-bold text-white bg-white/15 border border-white/35 hover:bg-white/25 rounded-full transition-all hover:shadow-lg backdrop-blur">
                 See how it works
             </a>
         </div>

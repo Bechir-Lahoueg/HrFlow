@@ -94,8 +94,8 @@ final class FormationService
     {
         try {
             return [
-                'topFormations' => $this->formationRepository->findTopFormationsByRh($rhId, 5),
-                'topFormateurs' => $this->formationRepository->findTopFormateursByRh($rhId, 5),
+                'topFormations' => $this->formationRepository->findTopFormationsByRh($rhId, 3),
+                'topFormateurs' => $this->formationRepository->findTopFormateursByRh($rhId, 3),
             ];
         } catch (\Throwable) {
             return [
