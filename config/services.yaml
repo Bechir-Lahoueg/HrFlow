@@ -73,7 +73,7 @@ services:
     # please note that last definitions always *replace* previous ones
     # Auto-tag all classes implementing ToolInterface
     _instanceof:
-        App\Service\AI\Tool\ToolInterface:
+        App\AI\Contract\ToolInterface:
             tags: ['app.ai_tool']
 
     # Use Groq as the LLM provider.
@@ -83,3 +83,23 @@ services:
     App\Service\QuickChartService:
         arguments:
             $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
+
+    # AI Module - Core services
+    App\AI\Contract\LlmClientInterface: '@App\AI\Core\GeminiClient'
+
+    App\AI\Core\GeminiClient:
+        arguments:
+            $httpClient: '@http_client'
+            $apiKey: '%gemini_api_key%'
+            $logger: '@logger'
+
+    # Tool Registry - gets all tagged tools
+    App\AI\Core\ToolRegistry:
+        class: App\AI\Core\ToolRegistry
+        arguments:
+            - !tagged_iterator app.ai_tool
+
+    # Conversation Memory
+    App\AI\Core\ConversationMemory:
+        arguments:
+            - '@cache.app'

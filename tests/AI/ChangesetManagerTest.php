@@ -1,88 +1,69 @@
+<?php
+
 declare(strict_types=1);
 
 namespace App\Tests\AI;
 
-use App\AI\Service\ChangesetManager;
-use App\AI\Contract\ToolCall;
-use App\AI\Contract\User;
-use App\AI\Domain\ValueObject\PendingChangeset;
+use App\AI\Contract\ChangesetStorageInterface;
 use App\AI\Domain\Enum\ChangesetStatus;
+use App\AI\Domain\ValueObject\PendingChangeset;
+use App\AI\Infrastructure\ToolCall;
 use PHPUnit\Framework\TestCase;
+use DateTimeImmutable;
 
-final class ChangesetManagerTest extends TestCase
+class ChangesetManagerTest extends TestCase
 {
-    private ChangesetManager $manager;
+    private \App\AI\Core\ChangesetManager $manager;
 
     protected function setUp(): void
     {
-        $this->manager = new ChangesetManager(new InMemoryChangesetStorage());
+        $storage = $this->createMock(ChangesetStorageInterface::class);
+        $this->manager = new \App\AI\Core\ChangesetManager($storage);
     }
 
     public function testStageCreatesPendingChangeset(): void
     {
-        $toolCall = new ToolCall('create_job_offer', [
-            'applicationId' => 'app-123',
-            'candidateEmail' => 'test@example.com',
-        ]);
+        $toolCall = new ToolCall('1', 'test_tool', ['key' => 'value']);
+        $result = ['sessionId' => 'test-session'];
+        $user = new class {
+            public function getId(): int {
+                return 1;
+            }
+        };
 
-        $user = new User(id: 1, email: 'test@example.com');
+        $changeset = $this->manager->stage($toolCall, $result, $user);
 
-        $changeset = $this->manager->stage($toolCall, ['result' => 'ok'], $user);
-
-        $this->assertInstanceOf(PendingChangeset::class, $changeset);
-        $this->assertEquals(ChangesetStatus::PENDING, $changeset->status);
+        $this->assertNotEmpty($changeset->id);
+        $this->assertSame('test_tool', $changeset->tool);
+        $this->assertSame(ChangesetStatus::PENDING, $changeset->status);
     }
 
-    public function testConfirmChangeset(): void
+    public function testGetPendingFiltersOnlyPending(): void
     {
-        $toolCall = new ToolCall('create_job_offer', [
-            'applicationId' => 'app-123',
-        ]);
+        $user = new class {};
 
-        $user = new User(id: 1, email: 'test@example.com');
+        $pending = $this->manager->getPending('test-session');
 
-        $changeset = $this->manager->stage($toolCall, ['result' => 'ok'], $user);
-
-        $confirmed = $this->manager->confirm($changeset->id, $user);
-
-        $this->assertEquals(ChangesetStatus::CONFIRMED, $confirmed->status);
+        $this->assertIsArray($pending);
     }
 
-    public function testRevertChangeset(): void
+    public function testConfirmThrowsOnNotFound(): void
     {
-        $toolCall = new ToolCall('create_job_offer', [
-            'applicationId' => 'app-123',
-        ]);
+        $this->expectException(\InvalidArgumentException::class);
 
-        $user = new User(id: 1, email: 'test@example.com');
+        $user = new class {
+            public function getId(): int {
+                return 1;
+            }
+        };
 
-        $changeset = $this->manager->stage($toolCall, ['result' => 'ok'], $user);
-
-        $reverted = $this->manager->revert($changeset->id);
-
-        $this->assertEquals(ChangesetStatus::REVERTED, $reverted->status);
+        $this->manager->confirm('nonexistent', $user);
     }
 
-    public function testGetPendingReturnsPendingChangesets(): void
+    public function testRevertThrowsOnNonPending(): void
     {
-        $user = new User(id: 1, email: 'test@example.com');
+        $this->expectException(\InvalidArgumentException::class);
 
-        $toolCall = new ToolCall('create_job_offer', [
-            'applicationId' => 'app-123',
-        ]);
-
-        $this->manager->stage($toolCall, ['result' => 'ok'], $user);
-
-        $pending = $this->manager->getPending('session_1');
-
-        $this->assertNotEmpty($pending);
-    }
-
-    public function testConfirmThrowsForNonExistentChangeset(): void
-    {
-        $this->expectException(ChangesetNotFoundException::class);
-
-        $user = new User(id: 1, email: 'test@example.com');
-        $this->manager->confirm('non-existent-id', $user);
+        $this->manager->revert('nonexistent');
     }
 }

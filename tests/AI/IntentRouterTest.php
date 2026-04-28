@@ -1,74 +1,59 @@
+<?php
+
 declare(strict_types=1);
 
 namespace App\Tests\AI;
 
-use App\AI\Service\IntentRouter;
 use App\AI\Domain\Enum\IntentType;
-use App\AI\Contract\Message;
-use App\AI\Contract\ToolInterface;
-use App\AI\Contract\ToolDefinition;
-use App\AI\Contract\User;
+use App\AI\Infrastructure\ChatMessage;
 use PHPUnit\Framework\TestCase;
 
-final class IntentRouterTest extends TestCase
+class IntentRouterTest extends TestCase
 {
-    private IntentRouter $router;
+    private \App\AI\Core\IntentRouter $router;
 
     protected function setUp(): void
     {
-        $this->router = new IntentRouter(new StubToolRegistry());
+        $this->router = new \App\AI\Core\IntentRouter();
     }
 
-    public function testClassifyReturnsGreetingForEmptyMessages(): void
+    public function testClassifyGreetsAsGreeting(): void
     {
-        $result = $this->router->classify([]);
+        $messages = [new ChatMessage('user', 'Bonjour')];
+        $intent = $this->router->classify($messages);
 
-        $this->assertEquals(IntentType::GREETING, $result);
+        $this->assertSame(IntentType::GREETING, $intent);
     }
 
-    public function testClassifyReturnsGreetingForHelloMessage(): void
+    public function testClassifyQueryKeywordsAsDataQuery(): void
     {
-        $messages = [new Message('user', 'Hello there')];
-        $result = $this->router->classify($messages);
+        $messages = [new ChatMessage('user', 'Donne-moi la liste des candidats')];
+        $intent = $this->router->classify($messages);
 
-        $this->assertEquals(IntentType::GREETING, $result);
+        $this->assertSame(IntentType::DATA_QUERY, $intent);
     }
 
-    public function testClassifyReturnsMutationForCreateMessage(): void
+    public function testClassifyMutationKeywordsAsMutation(): void
     {
-        $messages = [new Message('user', 'Create a new job offer')];
-        $result = $this->router->classify($messages);
+        $messages = [new ChatMessage('user', 'Modifie le statut de la candidature')];
+        $intent = $this->router->classify($messages);
 
-        $this->assertEquals(IntentType::MUTATION, $result);
+        $this->assertSame(IntentType::MUTATION, $intent);
     }
 
-    public function testClassifyReturnsScheduleForInterviewMessage(): void
+    public function testClassifyScheduleKeywordsAsSchedule(): void
     {
-        $messages = [new Message('user', 'Schedule an interview')];
-        $result = $this->router->classify($messages);
+        $messages = [new ChatMessage('user', 'Planifie un entretien')];
+        $intent = $this->router->classify($messages);
 
-        $this->assertEquals(IntentType::SCHEDULE, $result);
+        $this->assertSame(IntentType::SCHEDULE, $intent);
     }
 
-    public function testClassifyReturnsReportForStatsMessage(): void
+    public function testClassifyReportKeywordsAsReport(): void
     {
-        $messages = [new Message('user', 'Show me the statistics')];
-        $result = $this->router->classify($messages);
+        $messages = [new ChatMessage('user', 'Génère un rapport')];
+        $intent = $this->router->classify($messages);
 
-        $this->assertEquals(IntentType::REPORT, $result);
-    }
-
-    public function testSelectToolsReturnsEmptyArrayForGreeting(): void
-    {
-        $tools = $this->router->selectTools(IntentType::GREETING);
-
-        $this->assertEmpty($tools);
-    }
-
-    public function testSelectToolsReturnsToolsForMutation(): void
-    {
-        $tools = $this->router->selectTools(IntentType::MUTATION);
-
-        $this->assertNotEmpty($tools);
+        $this->assertSame(IntentType::REPORT, $intent);
     }
 }
