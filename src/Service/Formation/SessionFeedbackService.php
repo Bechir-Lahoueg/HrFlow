@@ -40,6 +40,12 @@ final class SessionFeedbackService
             return ['ok' => false, 'message' => 'Vous pouvez donner un feedback uniquement apres la fin de la session.'];
         }
 
+        $employee = $participation->getEmployee();
+        $formation = $session->getFormation();
+        if (!$employee || !$formation) {
+            return ['ok' => false, 'message' => 'Feedback impossible : donnees de participation incompletes.'];
+        }
+
         if ($this->feedbackRepository->hasFeedbackForSessionAndUser($sessionId, $employeeId)) {
             return ['ok' => false, 'message' => 'Vous avez deja donne un feedback pour cette session.'];
         }
@@ -51,8 +57,8 @@ final class SessionFeedbackService
         }
 
         $feedback = (new SessionFeedback())
-            ->setEmployee($participation->getEmployee())
-            ->setFormation($session->getFormation())
+            ->setEmployee($employee)
+            ->setFormation($formation)
             ->setSession($session)
             ->setRating($rating)
             ->setComment($comment)
@@ -65,15 +71,21 @@ final class SessionFeedbackService
         return ['ok' => true, 'message' => 'Merci, votre feedback a ete enregistre.'];
     }
 
+    /**
+     * @param int[] $formationIds
+     * @return array<int,float>
+     */
     public function getAverageRatingsByFormationIds(array $formationIds): array
     {
         return $this->feedbackRepository->getAverageMapByFormationIds($formationIds);
     }
 
+    /**
+     * @return SessionFeedback[]
+     */
     public function getFeedbacksByFormation(int $formationId): array
     {
         return $this->feedbackRepository->findByFormation($formationId);
     }
 }
-
 
