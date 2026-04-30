@@ -28,7 +28,7 @@ final class AiService
         }
 
         try {
-            $titre = trim((string) ($context['titre'] ?? ''));
+            $titre = trim((string) $context['titre']);
             $type = trim((string) ($context['type'] ?? ''));
             $duree = trim((string) ($context['duree'] ?? ''));
             $organisme = trim((string) ($context['organisme'] ?? ''));
@@ -88,7 +88,7 @@ final class AiService
      */
     public function generateFormationImagePromptEnglish(array $context): string
     {
-        $titre = trim((string) ($context['titre'] ?? ''));
+        $titre = trim((string) $context['titre']);
         $type = trim((string) ($context['type'] ?? ''));
         $description = trim((string) ($context['description'] ?? ''));
         $detectedTech = $this->detectFormationTechSignals($titre . ' ' . $type . ' ' . $description);
@@ -600,3 +600,4 @@ final class AiService
         return array_slice(array_values(array_unique($detected)), 0, 4);
     }
 }
+
