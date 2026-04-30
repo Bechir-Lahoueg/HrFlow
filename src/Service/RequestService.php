@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Relation\RequestRepository;
 
 final class RequestService
 {
@@ -10,7 +10,7 @@ final class RequestService
     private const MAX_TITLE_LENGTH = 255;
     private const MAX_DESCRIPTION_LENGTH = 2000;
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly RequestRepository $requestRepository) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CREATE
@@ -20,7 +20,7 @@ final class RequestService
     {
         try {
             $data = $this->normalizeRequestInput($data);
-            $this->connection->insert('requests', [
+            $this->requestRepository->insert([
                 'user_id'         => $data['user_id'],
                 'request_type_id' => $data['request_type_id'],
                 'title'           => $data['title'],
@@ -44,50 +44,18 @@ final class RequestService
 
     public function getByUserId(int $employeeId): array
     {
-        // Note : $employeeId doit être l'ID de la table 'employees'
-        $sql = "SELECT r.*, rt.name AS type_name,
-                CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-                u.username AS reviewer_name
-                FROM requests r
-                LEFT JOIN request_types rt ON r.request_type_id = rt.id
-                LEFT JOIN employees e ON r.user_id = e.id
-                LEFT JOIN users u ON r.reviewed_by = u.id
-                WHERE r.user_id = ?
-                ORDER BY r.submitted_date DESC";
-
-        return $this->connection->fetchAllAssociative($sql, [$employeeId]);
+        return $this->requestRepository->fetchByUserId($employeeId);
     }
 
-   public function getByRhId(int $rhId): array
-   {
-       $sql = "SELECT r.*, rt.name AS type_name,
-               CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-               u.username AS reviewer_name
-               FROM requests r
-               LEFT JOIN request_types rt ON r.request_type_id = rt.id
-               INNER JOIN employees e ON r.user_id = e.id
-               LEFT JOIN users u ON r.reviewed_by = u.id
-               WHERE e.rh_id = ?
-               ORDER BY r.submitted_date DESC";
-
-       return $this->connection->fetchAllAssociative($sql, [$rhId]);
-   }
+    public function getByRhId(int $rhId): array
+    {
+        return $this->requestRepository->fetchByRhId($rhId);
+    }
 
     public function getById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                "SELECT r.*,
-                    rt.name AS type_name,
-                    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-                    u.username AS reviewer_name
-                FROM requests r
-                LEFT JOIN request_types rt ON r.request_type_id = rt.id
-                LEFT JOIN employees      e  ON r.user_id         = e.id
-                LEFT JOIN users          u  ON r.reviewed_by     = u.id
-                WHERE r.id = ?",
-                [$id]
-            ) ?: null;
+            return $this->requestRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
@@ -101,12 +69,12 @@ final class RequestService
     {
         try {
             $data = $this->normalizeRequestInput($data);
-            $this->connection->update('requests', [
+            $this->requestRepository->updateRequest($id, [
                 'title'       => $data['title'],
                 'description' => $data['description'],
                 'priority'    => $data['priority'],
                 'updated_at'  => date('Y-m-d H:i:s'),
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -116,13 +84,13 @@ final class RequestService
     public function updateStatus(int $id, string $status, int $reviewerId, ?string $comment = null): bool
     {
         try {
-            $this->connection->update('requests', [
+            $this->requestRepository->updateStatus($id, [
                 'status'         => $status,
                 'reviewed_by'    => $reviewerId,
                 'reviewed_date'  => date('Y-m-d H:i:s'),
                 'review_comment' => $comment,
                 'updated_at'     => date('Y-m-d H:i:s'),
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -136,7 +104,7 @@ final class RequestService
     public function delete(int $id): bool
     {
         try {
-            $this->connection->delete('requests', ['id' => $id]);
+            $this->requestRepository->deleteRequest($id);
             return true;
         } catch (\Throwable) {
             return false;

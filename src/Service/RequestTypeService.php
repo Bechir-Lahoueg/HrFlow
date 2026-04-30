@@ -2,21 +2,19 @@
 
 namespace App\Service;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Relation\RequestTypeRepository;
 
 final class RequestTypeService
 {
     private const MAX_NAME_LENGTH = 255;
     private const MAX_DESCRIPTION_LENGTH = 1000;
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly RequestTypeRepository $requestTypeRepository) {}
 
     public function getAll(): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT * FROM request_types ORDER BY name'
-            );
+            return $this->requestTypeRepository->fetchAll();
         } catch (\Throwable) {
             return [];
         }
@@ -25,9 +23,7 @@ final class RequestTypeService
     public function getById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                'SELECT * FROM request_types WHERE id = ?', [$id]
-            ) ?: null;
+            return $this->requestTypeRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
@@ -37,7 +33,7 @@ final class RequestTypeService
     {
         try {
             $data = $this->normalizeRequestTypeInput($data);
-            $this->connection->insert('request_types', [
+            $this->requestTypeRepository->insert([
                 'name'              => $data['name'],
                 'description'       => $data['description'],
                 'requires_approval' => $data['requires_approval'] ? 1 : 0,
@@ -53,11 +49,11 @@ final class RequestTypeService
     {
         try {
             $data = $this->normalizeRequestTypeInput($data);
-            $this->connection->update('request_types', [
+            $this->requestTypeRepository->updateRequestType($id, [
                 'name'              => $data['name'],
                 'description'       => $data['description'],
                 'requires_approval' => $data['requires_approval'] ? 1 : 0,
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -67,7 +63,7 @@ final class RequestTypeService
     public function delete(int $id): bool
     {
         try {
-            $this->connection->delete('request_types', ['id' => $id]);
+            $this->requestTypeRepository->deleteRequestType($id);
             return true;
         } catch (\Throwable) {
             return false;
