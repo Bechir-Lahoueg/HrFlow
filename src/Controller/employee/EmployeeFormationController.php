@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+
 #[Route('/employee/formation')]
 final class EmployeeFormationController extends AbstractController
 {
@@ -254,46 +255,64 @@ final class EmployeeFormationController extends AbstractController
         ]);
     }
 
-    #[Route('/my-certificates', name: 'employee_formation_certificates', methods: ['GET'])]
-    public function myCertificates(): Response
-    {
-        $userId = $this->getUser()->getId();
-        $participations = $this->participationService->getEmployeeParticipations($userId);
+ #[Route('/my-certificates', name: 'employee_formation_certificates', methods: ['GET'])]
+ public function myCertificates(Request $request): Response // Ajoute l'argument Request
+ {
+     $userId = $this->getUser()->getId();
+     $participations = $this->participationService->getEmployeeParticipations($userId);
 
-        $certificateRows = [];
-        foreach ($participations as $participation) {
-            $session = $participation->getSession();
-            $formation = $session?->getFormation();
-            if (!$session || !$formation) {
-                continue;
-            }
+     // 1. Récupérer le paramètre de tri (par défaut 'date-DESC')
+     $sort = $request->query->get('sort', 'date-DESC');
 
-            $attendance = $this->participationService->getAttendancePercentage((int) $participation->getId());
-            $isEligible = $session->getStatut() === 'Terminee' && $attendance >= 80;
-            if (!$isEligible) {
-                continue;
-            }
+     $certificateRows = [];
+     foreach ($participations as $participation) {
+         $session = $participation->getSession();
+         $formation = $session?->getFormation();
+         if (!$session || !$formation) {
+             continue;
+         }
 
-            $certificateRows[] = [
-                'participation' => $participation,
-                'session' => $session,
-                'formation' => $formation,
-                'attendance' => $attendance,
-                'isEligible' => true,
-            ];
-        }
+         $attendance = $this->participationService->getAttendancePercentage((int) $participation->getId());
+         $isEligible = $session->getStatut() === 'Terminee' && $attendance >= 80;
+         if (!$isEligible) {
+             continue;
+         }
 
-        usort($certificateRows, static function (array $a, array $b): int {
-            $aDate = $a['session']->getDateFin();
-            $bDate = $b['session']->getDateFin();
+         $certificateRows[] = [
+             'participation' => $participation,
+             'session' => $session,
+             'formation' => $formation,
+             'attendance' => $attendance,
+             'isEligible' => true,
+         ];
+     }
 
-            return ($bDate?->getTimestamp() ?? 0) <=> ($aDate?->getTimestamp() ?? 0);
-        });
+     // 2. Appliquer le tri selon le paramètre
+     usort($certificateRows, static function (array $a, array $b) use ($sort): int {
+         if (str_starts_with($sort, 'date-')) {
+             $aDate = $a['session']->getDateFin();
+             $bDate = $b['session']->getDateFin();
+             $cmp = ($aDate?->getTimestamp() ?? 0) <=> ($bDate?->getTimestamp() ?? 0);
+             return str_ends_with($sort, 'DESC') ? -$cmp : $cmp;
+         }
 
-        return $this->render('DashboardEmployee/formation/formation_certificates.html.twig', [
-            'certificateRows' => $certificateRows,
-        ]);
-    }
+         if (str_starts_with($sort, 'titre-')) {
+             $cmp = strcmp($a['formation']->getTitre(), $b['formation']->getTitre());
+             return str_ends_with($sort, 'DESC') ? -$cmp : $cmp;
+         }
+
+         return 0;
+     });
+
+     return $this->render('DashboardEmployee/formation/formation_certificates.html.twig', [
+         'certificateRows' => $certificateRows,
+         // 3. ENVOYER LA VARIABLE FILTERS ICI :
+         'filters' => [
+             'sort' => $sort,
+         ],
+     ]);
+ }
+
 
     #[Route('/{id}/sessions', name: 'employee_formation_sessions')]
     public function sessions(string $id): Response

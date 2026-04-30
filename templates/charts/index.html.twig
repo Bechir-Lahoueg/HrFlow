@@ -1,0 +1,218 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Charts Gallery - HRFlow{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 dark:bg-slate-900">
+    {# Header #}
+    <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                        <span class="text-indigo-600 dark:text-indigo-400">QuickChart</span> Gallery
+                    </h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Beautiful charts powered by QuickChart.io
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{{ path('charts_dashboard') }}"
+                       class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+                        View Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Main Content #}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {# Pie Chart #}
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Employee Distribution</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">By Department</p>
+                </div>
+                <div class="p-4 flex justify-center">
+                    <img src="{{ charts.employee_department }}" alt="Employee Department Chart" class="max-w-full h-auto rounded-lg">
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 text-xs text-slate-500 dark:text-slate-400">
+                    <code class="font-mono">createPieChart()</code>
+                </div>
+            </div>
+
+            {# Line Chart #}
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Attendance Trend</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Monthly Comparison</p>
+                </div>
+                <div class="p-4 flex justify-center">
+                    <img src="{{ charts.monthly_attendance }}" alt="Monthly Attendance Chart" class="max-w-full h-auto rounded-lg">
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 text-xs text-slate-500 dark:text-slate-400">
+                    <code class="font-mono">createLineChart()</code> with tension smoothing
+                </div>
+            </div>
+
+            {# Doughnut Chart #}
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Leave Requests</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">By Type</p>
+                </div>
+                <div class="p-4 flex justify-center">
+                    <img src="{{ charts.leave_types }}" alt="Leave Types Chart" class="max-w-full h-auto rounded-lg">
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 text-xs text-slate-500 dark:text-slate-400">
+                    <code class="font-mono">createDoughnutChart()</code>
+                </div>
+            </div>
+
+            {# Bar Chart #}
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Performance Reviews</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Quarterly Distribution</p>
+                </div>
+                <div class="p-4 flex justify-center">
+                    <img src="{{ charts.performance_rating }}" alt="Performance Chart" class="max-w-full h-auto rounded-lg">
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 text-xs text-slate-500 dark:text-slate-400">
+                    <code class="font-mono">createBarChart()</code> with multiple datasets
+                </div>
+            </div>
+        </div>
+
+        {# Live Chart Generator #}
+        <div class="mt-8 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Live Chart Generator</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Test different chart configurations</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Chart Type</label>
+                            <select id="chartType" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100">
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Chart</option>
+                                <option value="pie">Pie Chart</option>
+                                <option value="doughnut">Doughnut Chart</option>
+                                <option value="radar">Radar Chart</option>
+                                <option value="polarArea">Polar Area</option>
+                                <option value="gauge">Gauge</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Title</label>
+                            <input type="text" id="chartTitle" value="Sample Chart" 
+                                   class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Labels (comma-separated)</label>
+                            <input type="text" id="chartLabels" value="A,B,C,D,E" 
+                                   class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Data (comma-separated)</label>
+                            <input type="text" id="chartData" value="10,25,15,30,20" 
+                                   class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100">
+                        </div>
+                        <button onclick="generateChart()" 
+                                class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors">
+                            Generate Chart
+                        </button>
+                    </div>
+                    <div class="md:col-span-2 flex items-center justify-center bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
+                        <div id="generatedChartContainer" class="text-center">
+                            <p class="text-slate-500 dark:text-slate-400">Click "Generate Chart" to see the result</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# API Examples #}
+        <div class="mt-8">
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Chart API Endpoints</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="{{ path('charts_api_employees_dept') }}" target="_blank"
+                   class="block p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+                    <code class="text-sm font-mono text-indigo-600 dark:text-indigo-400">GET /charts/api/employees-by-department</code>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Employee count by department</p>
+                </a>
+                <a href="{{ path('charts_api_attendance', {'months': 6}) }}" target="_blank"
+                   class="block p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+                    <code class="text-sm font-mono text-indigo-600 dark:text-indigo-400">GET /charts/api/attendance-trend</code>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Attendance trend over months</p>
+                </a>
+                <a href="{{ path('charts_api_salary') }}" target="_blank"
+                   class="block p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+                    <code class="text-sm font-mono text-indigo-600 dark:text-indigo-400">GET /charts/api/salary-range</code>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Salary distribution</p>
+                </a>
+                <a href="{{ path('charts_api_leave') }}" target="_blank"
+                   class="block p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+                    <code class="text-sm font-mono text-indigo-600 dark:text-indigo-400">GET /charts/api/leave-balance</code>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Leave balance by employee</p>
+                </a>
+                <a href="{{ path('charts_api_performance') }}" target="_blank"
+                   class="block p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+                    <code class="text-sm font-mono text-indigo-600 dark:text-indigo-400">GET /charts/api/performance-scores</code>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Performance vs Reviews</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function generateChart() {
+    const type = document.getElementById('chartType').value;
+    const title = document.getElementById('chartTitle').value;
+    const labels = document.getElementById('chartLabels').value.split(',').map(s => s.trim());
+    const data = document.getElementById('chartData').value.split(',').map(s => parseFloat(s.trim()));
+    
+    const payload = {
+        type: type,
+        options: { title: title, width: 500, height: 300 }
+    };
+    
+    if (type === 'gauge') {
+        payload.value = data[0] || 50;
+        payload.max = data[1] || 100;
+    } else if (['pie', 'doughnut', 'polarArea'].includes(type)) {
+        payload.labels = labels;
+        payload.data = data;
+    } else {
+        payload.labels = labels;
+        payload.datasets = [{ label: 'Data', data: data }];
+    }
+    
+    try {
+        const response = await fetch('{{ path('charts_generate') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.url) {
+            document.getElementById('generatedChartContainer').innerHTML = 
+                `<img src="${result.url}" alt="Generated Chart" class="max-w-full h-auto rounded-lg shadow-lg">`;
+        } else {
+            document.getElementById('generatedChartContainer').innerHTML = 
+                `<p class="text-red-500">Error: ${result.error}</p>`;
+        }
+    } catch (err) {
+        document.getElementById('generatedChartContainer').innerHTML = 
+            `<p class="text-red-500">Error generating chart</p>`;
+    }
+}
+</script>
+{% endblock %}

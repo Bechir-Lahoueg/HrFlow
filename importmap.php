@@ -31,4 +31,7 @@ return [
     '@kurkle/color' => [
         'version' => '0.3.4',
     ],
+    'marked' => [
+        'version' => '15.0.6',
+    ],
 ];

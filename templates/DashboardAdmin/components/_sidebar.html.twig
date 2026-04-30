@@ -1,7 +1,10 @@
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-[272px] bg-gradient-to-b from-violet-950 via-indigo-950 to-slate-950 transform transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full flex flex-col overflow-hidden">
+<aside id="sidebar"
+       class="fixed inset-y-0 left-0 z-30 w-[272px] transform transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full flex flex-col overflow-hidden"
+       style="background: {{ admin_theme.sidebar_gradient|default('linear-gradient(to bottom, #2e1065 0%, #1e1b4b 55%, #020617 100%)') }};">
 
-    {# Subtle accent glow #}
-    <div class="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-violet-500/10 to-transparent pointer-events-none"></div>
+    {# Subtle accent glow (themed) #}
+    <div class="absolute top-0 left-0 right-0 h-40 pointer-events-none"
+         style="background: linear-gradient(to bottom, {{ admin_theme.sidebar_glow_from|default('rgba(139, 92, 246, 0.20)') }}, transparent);"></div>
     <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
 
     {# ── Brand ── #}

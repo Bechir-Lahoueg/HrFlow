@@ -10,12 +10,21 @@ parameters:
     huggingface_api_token: '%env(string:HUGGINGFACE_API_TOKEN)%'
     huggingface_emotion_model: '%env(string:HUGGINGFACE_EMOTION_MODEL)%'
     upload_dir: '%env(UPLOAD_DIR)%'
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
+    groq_api_key: '%env(GROQ_API_KEY)%'
+
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $geminiApiKey: '%gemini_api_key%'
+            $groqApiKey: '%groq_api_key%'
+            $projectDir: '%kernel.project_dir%'
+
+
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -46,10 +55,31 @@ services:
     App\Service\Recrutement\NotificationService:
         arguments:
             $senderAddress: '%env(MAILER_FROM)%'
+            $emailsEnabled: '%env(bool:RECRUITMENT_EMAILS_ENABLED)%'
 
     App\Service\Shared\AiService:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
 
+    App\Service\Paie\ChurnPredictionService:
+        arguments:
+            $apiUrl: '%env(CHURN_API_URL)%'
+
+    App\Service\Paie\PayslipMailerService:
+        arguments:
+            $senderAddress: '%env(MAILER_FROM)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    # Auto-tag all classes implementing ToolInterface
+    _instanceof:
+        App\Service\AI\Tool\ToolInterface:
+            tags: ['app.ai_tool']
+
+    # Use Groq as the LLM provider.
+    App\Service\AI\LlmClientInterface: '@App\Service\AI\GroqClient'
+
+    # QuickChart Service
+    App\Service\QuickChartService:
+        arguments:
+            $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
