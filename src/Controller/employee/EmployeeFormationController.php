@@ -10,6 +10,7 @@ use App\Service\Formation\SessionService;
 use App\Service\Shared\HrFlowMailer;
 use App\Repository\Formation\EmployeeNotificationRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
+use App\Repository\Formation\PresenceFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;
 use App\Repository\Rh\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ final class EmployeeFormationController extends AbstractController
         private readonly ParticipationFormationRepository $participationRepository,
         private readonly SessionFeedbackService $sessionFeedbackService,
         private readonly SessionFeedbackRepository $sessionFeedbackRepository,
+        private readonly PresenceFormationRepository $presenceFormationRepository,
         private readonly UserRepository $userRepository,
         private readonly HrFlowMailer $hrFlowMailer,
         private readonly EntityManagerInterface $em,
@@ -150,10 +152,77 @@ final class EmployeeFormationController extends AbstractController
             }
         }
 
+        $weekStart = new \DateTimeImmutable('monday this week');
+        $weekEnd = $weekStart->modify('+6 days');
+        $weeklyRows = $this->presenceFormationRepository->countWeeklyAttendanceByEmployee(
+            (int) $this->getUser()->getId(),
+            $weekStart,
+            $weekEnd
+        );
+
+        $attendanceByDate = [];
+        foreach ($weeklyRows as $row) {
+            $presenceDate = $row['presenceDate'] ?? null;
+            if (!$presenceDate instanceof \DateTimeInterface) {
+                continue;
+            }
+
+            $attendanceByDate[$presenceDate->format('Y-m-d')] = (int) ($row['attendanceCount'] ?? 0);
+        }
+
+        $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $dayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        $fullDayLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        $weeklyDays = [];
+        $maxValue = 0;
+        $totalTrainingDays = 0;
+        $bestDayLabel = null;
+        $bestDayValue = 0;
+
+        for ($index = 0; $index < 7; $index++) {
+            $date = $weekStart->modify('+' . $index . ' days');
+            $dateKey = $date->format('Y-m-d');
+            $value = (int) ($attendanceByDate[$dateKey] ?? 0);
+            $isToday = $dateKey === $todayKey;
+
+            if ($value > 0) {
+                $totalTrainingDays++;
+            }
+
+            if ($value > $bestDayValue) {
+                $bestDayValue = $value;
+                $bestDayLabel = $fullDayLabels[$index];
+            }
+
+            $maxValue = max($maxValue, $value);
+
+            $weeklyDays[] = [
+                'label' => $dayLabels[$index],
+                'date' => $date,
+                'value' => $value,
+                'isToday' => $isToday,
+            ];
+        }
+
+        $maxValue = max(1, $maxValue);
+        foreach ($weeklyDays as &$day) {
+            $day['heightPercent'] = $day['value'] > 0 ? max(14, (int) round(($day['value'] / $maxValue) * 100)) : 8;
+        }
+        unset($day);
+
+        $weeklyTraining = [
+            'days' => $weeklyDays,
+            'totalTrainingDays' => $totalTrainingDays,
+            'bestDayLabel' => $bestDayLabel,
+            'bestDayValue' => $bestDayValue,
+            'weekRangeLabel' => sprintf('%s - %s', $weekStart->format('d/m'), $weekEnd->format('d/m')),
+        ];
+
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
             'ratingMap' => $ratingMap,
             'rhNames' => $rhNames,
+            'weeklyTraining' => $weeklyTraining,
             'topFormations' => array_slice($topFormationRows, 0, 3),
             'topFormateurs' => array_slice($topFormateurs, 0, 3),
             'filters' => [
