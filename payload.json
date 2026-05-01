@@ -1,0 +1,9 @@
+{
+  "model": "mistralai/mistral-medium-3.5-128b",
+  "reasoning_effort": "high",
+  "messages": [{"role":"user","content":"hi "}],
+  "max_tokens": 16384,
+  "temperature": 0.70,
+  "top_p": 1.00,
+  "stream": true
+}
