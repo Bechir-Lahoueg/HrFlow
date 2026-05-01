@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class SessionFormation
 {
+    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_session')]
