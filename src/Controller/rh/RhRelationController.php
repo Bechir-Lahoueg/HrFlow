@@ -46,8 +46,8 @@ class RhRelationController extends AbstractController
     public function approveRequest(int $id, Request $request): Response
     {
         $user = $this->getDbUser();
-        $comment = $request->request->get('comment', '');
-        $this->requestService->updateStatus($id, 'approved', $user->getId(), $comment);
+        $comment = trim((string) $request->request->get('comment', ''));
+        $this->requestService->updateStatus($id, 'approved', $user->getId(), $comment !== '' ? $comment : null);
         $this->addFlash('success', 'Demande approuvée avec succès.');
         return $this->redirectToRoute('rh_relation_index', ['tab' => 'requests']);
     }
@@ -56,8 +56,8 @@ class RhRelationController extends AbstractController
     public function rejectRequest(int $id, Request $request): Response
     {
         $user = $this->getDbUser();
-        $reason = $request->request->get('reason', '');
-        $this->requestService->updateStatus($id, 'rejected', $user->getId(), $reason);
+        $reason = trim((string) $request->request->get('reason', ''));
+        $this->requestService->updateStatus($id, 'rejected', $user->getId(), $reason !== '' ? $reason : null);
         $this->addFlash('success', 'Demande rejetée.');
         return $this->redirectToRoute('rh_relation_index', ['tab' => 'requests']);
     }
@@ -166,12 +166,12 @@ class RhRelationController extends AbstractController
         $requests     = $this->requestService->getByRhId($rhId);
         $requestTypes = $this->requestTypeService->getAll();
 
-        $statusFilter = $request->query->get('status', '');
-        $searchReq    = $request->query->get('search_req', '');
-        if ($statusFilter) {
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $searchReq    = trim((string) $request->query->get('search_req', ''));
+        if ($statusFilter !== '') {
             $requests = array_filter($requests, fn($r) => $r['status'] === $statusFilter);
         }
-        if ($searchReq) {
+        if ($searchReq !== '') {
             $requests = array_filter($requests, fn($r) =>
                 stripos($r['title'], $searchReq) !== false ||
                 stripos($r['employee_name'] ?? '', $searchReq) !== false
@@ -187,12 +187,12 @@ class RhRelationController extends AbstractController
         ];
 
         $feedbacks    = $this->feedbackService->getByRhId($rhId);
-        $typeFilter   = $request->query->get('feedback_type', '');
-        $searchFb     = $request->query->get('search_fb', '');
-        if ($typeFilter) {
+        $typeFilter   = trim((string) $request->query->get('feedback_type', ''));
+        $searchFb     = trim((string) $request->query->get('search_fb', ''));
+        if ($typeFilter !== '') {
             $feedbacks = array_filter($feedbacks, fn($f) => $f['feedback_type'] === $typeFilter);
         }
-        if ($searchFb) {
+        if ($searchFb !== '') {
             $feedbacks = array_filter($feedbacks, fn($f) =>
                 stripos($f['from_username'] ?? '', $searchFb) !== false ||
                 stripos($f['to_username'] ?? '', $searchFb) !== false

@@ -515,6 +515,9 @@ final class MatrixService
 
             $events = array_reverse($events);
 
+            /**
+             * @var array<int, array{kind:'message',event_id:string,sender:string,origin_server_ts:int,msgtype:string,body:string,url:string,download_url:string,info:array<string,mixed>}|array{kind:'reaction',event_id:string,sender:string,origin_server_ts:int,target_event_id:string,key:string}> $events
+             */
             $messages = [];
             $messageIndexById = [];
 
@@ -537,18 +540,21 @@ final class MatrixService
                     continue;
                 }
 
-                if ($event['kind'] !== 'reaction') {
+                $targetEventId = $event['target_event_id'];
+                $key = $event['key'];
+                if ($targetEventId === '' || $key === '') {
                     continue;
                 }
 
-                $targetEventId = $event['target_event_id'];
                 if (!isset($messageIndexById[$targetEventId])) {
                     continue;
                 }
 
                 $messageIndex = $messageIndexById[$targetEventId];
-                $reactions = $messages[$messageIndex]['reactions'];
-                $key = $event['key'];
+                $reactions = $messages[$messageIndex]['reactions'] ?? [];
+                if (!is_array($reactions)) {
+                    $reactions = [];
+                }
                 $reactions[$key] = ((int) ($reactions[$key] ?? 0)) + 1;
                 $messages[$messageIndex]['reactions'] = $reactions;
             }
@@ -568,7 +574,10 @@ final class MatrixService
         }
     }
 
-    /** @param array<string, mixed> $options */
+    /**
+     * @param array<string,mixed> $options
+     * @return array{status:int,body:array<string,mixed>}
+     */
     private function request(string $method, string $path, array $options = []): array
     {
         $requestOptions = array_merge($options, [

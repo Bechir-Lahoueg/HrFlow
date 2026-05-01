@@ -45,9 +45,9 @@ class RhProjectController extends AbstractController
         $stats = $this->projectService->getProjectStats($rhId);
 
         // Filtres
-        $statusFilter = $request->query->get('status', '');
-        $priorityFilter = $request->query->get('priority', '');
-        $search = $request->query->get('search', '');
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $priorityFilter = trim((string) $request->query->get('priority', ''));
+        $search = trim((string) $request->query->get('search', ''));
 
         $projects = $this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search);
 
@@ -350,10 +350,10 @@ class RhProjectController extends AbstractController
     public function moveTask(int $id, int $taskId, Request $request): JsonResponse
     {
         $user = $this->getDbUser();
-        $newStatus = $request->request->get('status');
+        $newStatus = trim((string) $request->request->get('status', ''));
         $task = $this->taskService->getTaskById($taskId);
 
-        if ($task && $newStatus) {
+        if ($task && $newStatus !== '') {
             $this->taskService->updateTaskStatus($taskId, $newStatus);
             if ($newStatus === 'done') {
                 $this->updateService->logTaskCompleted($id, $user->getId(), $task['title'], true);
@@ -626,7 +626,8 @@ class RhProjectController extends AbstractController
             $predictedEnd = (new \DateTime())->modify("+{$daysNeeded} days");
             $plannedEnd = new \DateTime($project['end_date']);
             $diff = $predictedEnd->diff($plannedEnd);
-            $daysDiff = $predictedEnd > $plannedEnd ? -$diff->days : $diff->days;
+            $diffDays = $diff->days === false ? 0 : $diff->days;
+            $daysDiff = $predictedEnd > $plannedEnd ? -$diffDays : $diffDays;
 
             $prediction = [
                 'predicted_date' => $predictedEnd->format('Y-m-d'),

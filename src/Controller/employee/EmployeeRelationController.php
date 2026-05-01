@@ -54,7 +54,7 @@ class EmployeeRelationController extends AbstractController
         if ($file instanceof UploadedFile) {
             $validation = $this->validateRequestAttachment($file);
             if (!$validation['success']) {
-                $errors['attachment'] = (string) $validation['message'];
+                $errors['attachment'] = (string) ($validation['message'] ?? 'La piece jointe est invalide.');
             }
         } else {
             $rawUploadError = $this->extractAttachmentUploadError();
@@ -74,11 +74,11 @@ class EmployeeRelationController extends AbstractController
             $upload = $this->storeRequestAttachment($file);
             if (!$upload['success']) {
                 $viewData = $this->buildRequestsViewData($request, $user->getId());
-                $viewData['requestErrors'] = ['attachment' => (string) $upload['message']];
+                $viewData['requestErrors'] = ['attachment' => (string) ($upload['message'] ?? 'Echec du televersement de la piece jointe.')];
                 $viewData['requestOld'] = $data;
                 return $this->render('DashboardEmployee/Relation/requests.html.twig', $viewData, new Response(null, 422));
             }
-            $data['attachment_url'] = (string) $upload['path'];
+            $data['attachment_url'] = (string) ($upload['path'] ?? '');
         }
 
         if (!$this->requestService->add($data)) {
@@ -346,14 +346,14 @@ class EmployeeRelationController extends AbstractController
         $allRequests  = $this->requestService->getByUserId($employeeId);
         $requestTypes = $this->requestTypeService->getAll();
 
-        $statusFilter = $request->query->get('status', '');
-        $search       = $request->query->get('search', '');
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $search       = trim((string) $request->query->get('search', ''));
         $filtered     = $allRequests;
 
-        if ($statusFilter) {
+        if ($statusFilter !== '') {
             $filtered = array_filter($filtered, fn($r) => $r['status'] === $statusFilter);
         }
-        if ($search) {
+        if ($search !== '') {
             $filtered = array_filter($filtered, fn($r) =>
                 stripos($r['title'], $search) !== false ||
                 stripos($r['type_name'] ?? '', $search) !== false
@@ -463,9 +463,14 @@ class EmployeeRelationController extends AbstractController
     private function storeRequestAttachment(UploadedFile $file): array
     {
         try {
-            $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/requests';
+            $projectDir = $this->getParameter('kernel.project_dir');
+            if (!is_string($projectDir) || $projectDir === '') {
+                return ['success' => false, 'message' => 'Chemin du projet introuvable.'];
+            }
+
+            $targetDir = $projectDir . '/public/uploads/requests';
             if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
-                return ['success' => false, 'message' => 'Impossible de créer le dossier des pièces jointes.'];
+                return ['success' => false, 'message' => 'Impossible de creer le dossier des pieces jointes.'];
             }
 
             $extension = $this->resolveAttachmentExtension($file);
@@ -477,7 +482,7 @@ class EmployeeRelationController extends AbstractController
 
             return ['success' => true, 'path' => '/uploads/requests/' . $fileName];
         } catch (\Throwable) {
-            return ['success' => false, 'message' => 'Échec du téléversement de la pièce jointe.'];
+            return ['success' => false, 'message' => 'Echec du televersement de la piece jointe.'];
         }
     }
 

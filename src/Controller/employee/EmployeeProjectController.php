@@ -38,8 +38,8 @@ class EmployeeProjectController extends AbstractController
         $myTasks = $this->taskService->getTasksByEmployee($employeeId);
 
         // Filtre statut tâches
-        $statusFilter = $request->query->get('status', '');
-        if ($statusFilter) {
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        if ($statusFilter !== '') {
             $myTasks = array_filter($myTasks, fn($t) => $t['status'] === $statusFilter);
         }
 
@@ -119,12 +119,16 @@ class EmployeeProjectController extends AbstractController
         $user = $this->getDbUser();
         $employeeId = $user->getId();
 
-        $newStatus = $request->request->get('status');
+        $newStatus = trim((string) $request->request->get('status', ''));
         $task = $this->taskService->getTaskById($taskId);
 
         // Sécurité: vérifier que la tâche appartient à cet employé
         if (!$task || (int)($task['assigned_to'] ?? 0) !== $employeeId) {
             return new JsonResponse(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+
+        if ($newStatus === '') {
+            return new JsonResponse(['success' => false, 'message' => 'Statut invalide'], 422);
         }
 
         $this->taskService->updateTaskStatus($taskId, $newStatus);

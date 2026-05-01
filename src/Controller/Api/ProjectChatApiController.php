@@ -430,7 +430,11 @@ final class ProjectChatApiController extends AbstractController
      */
     private function storeChatFileLocally(UploadedFile $file): ?array
     {
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir) || $projectDir === '') {
+            return null;
+        }
+
         $targetDir = $projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'chat';
 
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
