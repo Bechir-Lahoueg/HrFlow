@@ -14,11 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class Formation
 {
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_formation')]
-    private ?int $id = null; // @phpstan-ignore-line
+    private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre de la formation est obligatoire.")]
