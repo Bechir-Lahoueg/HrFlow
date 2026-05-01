@@ -198,8 +198,9 @@ final class RhFormationController extends AbstractController
             }
 
             if (empty($session->getDateFin())) {
-                $debutDate = \DateTimeImmutable::createFromInterface($dateDebut)
-                    ->modify('+' . max(0, (int) $formation->getDuree() - 1) . ' days');
+                $debutDate = clone $dateDebut;
+                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
+                $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
             }
 
@@ -209,9 +210,12 @@ final class RhFormationController extends AbstractController
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
             }
 
-            $now = new \DateTimeImmutable('today');
-            $debut = \DateTimeImmutable::createFromInterface($dateDebut)->setTime(0, 0, 0);
-            $fin = \DateTimeImmutable::createFromInterface($dateFin)->setTime(0, 0, 0);
+            $now = new \DateTime();
+            $now->setTime(0, 0, 0);
+            $debut = clone $dateDebut;
+            $debut->setTime(0, 0, 0);
+            $fin = clone $dateFin;
+            $fin->setTime(0, 0, 0);
 
             if ($now < $debut) { $session->setStatut('Planifiee'); }
             elseif ($now > $fin) { $session->setStatut('Terminee'); }
@@ -260,8 +264,9 @@ final class RhFormationController extends AbstractController
             }
 
             if (!$session->getDateFin()) {
-                $debutDate = \DateTimeImmutable::createFromInterface($dateDebut)
-                    ->modify('+' . max(0, (int) $formation->getDuree() - 1) . ' days');
+                $debutDate = clone $dateDebut;
+                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
+                $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
             }
 
