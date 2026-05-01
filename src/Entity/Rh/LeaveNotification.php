@@ -22,6 +22,7 @@ class LeaveNotification
     public const TYPE_EXCEPTION_APPROVED = 'exception_approved';
     public const TYPE_EXCEPTION_REJECTED = 'exception_rejected';
 
+    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
