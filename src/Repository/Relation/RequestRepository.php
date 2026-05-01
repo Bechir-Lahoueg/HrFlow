@@ -17,16 +17,19 @@ class RequestRepository extends ServiceEntityRepository
         parent::__construct($registry, Request::class);
     }
 
+    /** @param array<string, mixed> $data */
     public function insert(array $data): void
     {
         $this->getConnection()->insert('requests', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateRequest(int $id, array $data): void
     {
         $this->getConnection()->update('requests', $data, ['id' => $id]);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateStatus(int $id, array $data): void
     {
         $this->getConnection()->update('requests', $data, ['id' => $id]);
@@ -37,6 +40,7 @@ class RequestRepository extends ServiceEntityRepository
         $this->getConnection()->delete('requests', ['id' => $id]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByUserId(int $employeeId): array
     {
         $sql = "SELECT r.*, rt.name AS type_name,
@@ -52,6 +56,7 @@ class RequestRepository extends ServiceEntityRepository
         return $this->getConnection()->fetchAllAssociative($sql, [$employeeId]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByRhId(int $rhId): array
     {
         $sql = "SELECT r.*, rt.name AS type_name,
@@ -67,6 +72,7 @@ class RequestRepository extends ServiceEntityRepository
         return $this->getConnection()->fetchAllAssociative($sql, [$rhId]);
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $row = $this->getConnection()->fetchAssociative(

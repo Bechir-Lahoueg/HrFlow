@@ -17,6 +17,7 @@ class RequestTypeRepository extends ServiceEntityRepository
         parent::__construct($registry, RequestType::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchAll(): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -24,6 +25,7 @@ class RequestTypeRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $row = $this->getConnection()->fetchAssociative(
@@ -34,11 +36,13 @@ class RequestTypeRepository extends ServiceEntityRepository
         return $row ?: null;
     }
 
+    /** @param array<string, mixed> $data */
     public function insert(array $data): void
     {
         $this->getConnection()->insert('request_types', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateRequestType(int $id, array $data): void
     {
         $this->getConnection()->update('request_types', $data, ['id' => $id]);
@@ -54,4 +58,3 @@ class RequestTypeRepository extends ServiceEntityRepository
         return $this->getEntityManager()->getConnection();
     }
 }
-

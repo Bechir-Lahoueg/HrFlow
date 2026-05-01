@@ -33,7 +33,11 @@ final class ProjectReportPdfService
 
     private function resolveLogoDataUri(): ?string
     {
-        $projectDir = (string) $this->parameterBag->get('kernel.project_dir');
+        $projectDir = $this->parameterBag->get('kernel.project_dir');
+        if (!is_string($projectDir) || $projectDir === '') {
+            return null;
+        }
+
         $logoPath = $projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'logo.png';
 
         if (!is_file($logoPath) || !is_readable($logoPath)) {

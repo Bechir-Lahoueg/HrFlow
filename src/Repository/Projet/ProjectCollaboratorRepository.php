@@ -17,6 +17,7 @@ class ProjectCollaboratorRepository extends ServiceEntityRepository
         parent::__construct($registry, ProjectCollaborator::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByProject(int $projectId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -29,6 +30,7 @@ class ProjectCollaboratorRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchProjectsByEmployee(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -41,11 +43,13 @@ class ProjectCollaboratorRepository extends ServiceEntityRepository
         );
     }
 
+    /** @param array<string, mixed> $data */
     public function insertCollaborator(array $data): void
     {
         $this->getConnection()->insert('project_collaborators', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateCollaborator(int $id, array $data): void
     {
         $this->getConnection()->update('project_collaborators', $data, ['id' => $id]);
@@ -70,6 +74,7 @@ class ProjectCollaboratorRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchCollaboratorById(int $id): ?array
     {
         $row = $this->getConnection()->fetchAssociative(
@@ -102,6 +107,7 @@ class ProjectCollaboratorRepository extends ServiceEntityRepository
         return is_string($role) ? $role : null;
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getAvailableEmployees(int $projectId, int $rhId): array
     {
         return $this->getConnection()->fetchAllAssociative(
