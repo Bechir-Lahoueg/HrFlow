@@ -23,6 +23,9 @@ final class GetApplicationsTool extends ApplicationTool
         return 'Récupère la liste des candidatures avec filtres optionnels par statut et offre.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -32,6 +35,9 @@ final class GetApplicationsTool extends ApplicationTool
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $qb = $this->em->createQueryBuilder();

@@ -23,6 +23,9 @@ final class ScheduleInterviewTool extends InterviewTool
         return 'Planifie un entretien avec un candidat.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -34,11 +37,17 @@ final class ScheduleInterviewTool extends InterviewTool
         ];
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function getRequired(): array
     {
         return ['application_id', 'type', 'date'];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $application = $this->em->find(\App\Entity\Recrutement\Application::class, $args['application_id']);

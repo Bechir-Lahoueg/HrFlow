@@ -8,7 +8,7 @@ final class ChatRequest
 {
     /**
      * @param ChatMessage[] $messages
-     * @param array $tools
+     * @param array<int, array<string, mixed>> $tools
      */
     public function __construct(
         public readonly array $messages,

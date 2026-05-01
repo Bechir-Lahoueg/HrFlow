@@ -23,6 +23,9 @@ final class GetJobOffersTool extends JobOfferTool
         return 'Récupère la liste des offres d\'emploi.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -32,6 +35,9 @@ final class GetJobOffersTool extends JobOfferTool
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $qb = $this->em->createQueryBuilder();

@@ -16,6 +16,9 @@ final class ToolRegistry implements ToolRegistryInterface
         private readonly array $tools = [],
     ) {}
 
+    /**
+     * @param \Traversable<ToolInterface> $tools
+     */
     public static function createFromTaggedTools(\Traversable $tools): self
     {
         return new self(\iterator_to_array($tools));

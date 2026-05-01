@@ -23,6 +23,9 @@ final class RankCandidatesTool extends ApplicationTool
         return 'Classe les candidats par score de匹配 pour une offre d\'emploi.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -31,11 +34,17 @@ final class RankCandidatesTool extends ApplicationTool
         ];
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function getRequired(): array
     {
         return ['job_offer_id'];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $qb = $this->em->createQueryBuilder();

@@ -6,6 +6,10 @@ namespace App\AI\Infrastructure;
 
 final class ChatMessage
 {
+    /**
+     * @param array<string, mixed>|null $toolCallArgs
+     * @param array<string, mixed>|null $toolResponse
+     */
     public function __construct(
         public readonly string $role,
         public readonly string $content,

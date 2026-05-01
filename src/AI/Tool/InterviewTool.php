@@ -18,6 +18,9 @@ abstract class InterviewTool implements ToolInterface
         return $this->getToolName();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getDefinition(): array
     {
         return [
@@ -31,16 +34,25 @@ abstract class InterviewTool implements ToolInterface
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getParameters(): array
     {
         return [];
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function getRequired(): array
     {
         return [];
     }
 
+    /**
+     * @param array<string, mixed> $uiPayload
+     */
     protected function createOutput(string $summary, array $uiPayload = [], bool $pendingChange = false, ?object $changeset = null): ToolOutput
     {
         return new ToolOutput(

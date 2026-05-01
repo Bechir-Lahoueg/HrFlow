@@ -8,6 +8,9 @@ use App\AI\Domain\Enum\ChangesetStatus;
 
 final class ToolOutput
 {
+    /**
+     * @param array<string, mixed> $uiPayload
+     */
     public function __construct(
         public readonly string $llmSummary,
         public readonly array $uiPayload = [],

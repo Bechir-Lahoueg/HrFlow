@@ -9,6 +9,9 @@ use DateTimeImmutable;
 
 final class PendingChangeset
 {
+    /**
+     * @param array<string, mixed> $payload
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $sessionId,
@@ -20,6 +23,9 @@ final class PendingChangeset
         public readonly ?DateTimeImmutable $confirmedAt = null,
     ) {}
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     public static function create(
         string $id,
         string $sessionId,

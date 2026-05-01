@@ -23,6 +23,9 @@ final class MoveStageTool extends ApplicationTool
         return 'Déplace une candidature vers un nouveau statut (stage) dans le pipeline.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -31,11 +34,17 @@ final class MoveStageTool extends ApplicationTool
         ];
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function getRequired(): array
     {
         return ['application_id', 'new_status'];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $validStatuses = ['PENDING', 'REVIEWING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];

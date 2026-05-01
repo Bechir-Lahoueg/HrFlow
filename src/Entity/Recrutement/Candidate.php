@@ -21,7 +21,7 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(length: 100, unique: true)]
     #[Assert\NotBlank(message: 'Username is required')]
@@ -56,7 +56,7 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }

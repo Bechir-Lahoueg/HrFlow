@@ -23,6 +23,9 @@ final class GetInterviewsTool extends InterviewTool
         return 'Récupère la liste des entretiens planifiés avec filtres optionnels.';
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     protected function getParameters(): array
     {
         return [
@@ -34,6 +37,9 @@ final class GetInterviewsTool extends InterviewTool
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $qb = $this->em->createQueryBuilder();
