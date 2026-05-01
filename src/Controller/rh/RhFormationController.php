@@ -198,9 +198,8 @@ final class RhFormationController extends AbstractController
             }
 
             if (empty($session->getDateFin())) {
-                $debutDate = clone $dateDebut;
-                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
-                $debutDate->modify("+{$joursToAdd} days");
+                $debutDate = \DateTimeImmutable::createFromInterface($dateDebut)
+                    ->modify('+' . max(0, (int) $formation->getDuree() - 1) . ' days');
                 $session->setDateFin($debutDate);
             }
 
@@ -210,12 +209,9 @@ final class RhFormationController extends AbstractController
                 return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
             }
 
-            $now = new \DateTime();
-            $now->setTime(0, 0, 0);
-            $debut = clone $dateDebut;
-            $debut->setTime(0, 0, 0);
-            $fin = clone $dateFin;
-            $fin->setTime(0, 0, 0);
+            $now = new \DateTimeImmutable('today');
+            $debut = \DateTimeImmutable::createFromInterface($dateDebut)->setTime(0, 0, 0);
+            $fin = \DateTimeImmutable::createFromInterface($dateFin)->setTime(0, 0, 0);
 
             if ($now < $debut) { $session->setStatut('Planifiee'); }
             elseif ($now > $fin) { $session->setStatut('Terminee'); }
@@ -264,9 +260,8 @@ final class RhFormationController extends AbstractController
             }
 
             if (!$session->getDateFin()) {
-                $debutDate = clone $dateDebut;
-                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
-                $debutDate->modify("+{$joursToAdd} days");
+                $debutDate = \DateTimeImmutable::createFromInterface($dateDebut)
+                    ->modify('+' . max(0, (int) $formation->getDuree() - 1) . ' days');
                 $session->setDateFin($debutDate);
             }
 
@@ -298,7 +293,11 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
-        $formationId = $session->getFormation()->getId();
+        $formation = $session->getFormation();
+        if (!$formation instanceof Formation) {
+            throw $this->createNotFoundException('Formation non trouvée');
+        }
+        $formationId = $formation->getId();
 
         if (!$this->isCsrfTokenValid('delete-session-' . $idInt, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
@@ -458,7 +457,7 @@ final class RhFormationController extends AbstractController
 
         $dates = [];
         $interval = new \DateInterval('P1D');
-        $endDateForPeriod = (clone $maxDate)->modify('+1 day');
+        $endDateForPeriod = \DateTimeImmutable::createFromInterface($maxDate)->modify('+1 day');
         $period = new \DatePeriod($debut, $interval, $endDateForPeriod);
         foreach ($period as $dt) {
             $dates[] = $dt->format('Y-m-d');

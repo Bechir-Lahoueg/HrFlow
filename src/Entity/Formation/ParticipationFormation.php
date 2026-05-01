@@ -13,11 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'participation_formation')]
 class ParticipationFormation
 {
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_participation')]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\ManyToOne(targetEntity: Employee::class)]
     #[ORM\JoinColumn(name: 'id_utilisateur', nullable: false)]

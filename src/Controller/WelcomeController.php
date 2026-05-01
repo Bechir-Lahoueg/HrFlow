@@ -70,17 +70,17 @@ final class WelcomeController extends AbstractController
 
         // FIX: get RH ID safely
         $user = $this->getUser();
-        $rhId = method_exists($user, 'getId') ? $user->getId() : null;
+        $rhId = ($user !== null && method_exists($user, 'getId')) ? (int) $user->getId() : 0;
 
         // Metrics
         $metrics = $formationService->getRhDashboardMetrics($rhId, 6);
 
         // FIX: missing variables
         $employeeCount = $employeeRepository->count([]);
-        $pendingLeaveCount = $rhId !== null ? $leaveRequestService->getRhPendingCount($rhId) : 0;
+        $pendingLeaveCount = $rhId > 0 ? $leaveRequestService->getRhPendingCount($rhId) : 0;
 
         // Charts
-        $categoryCounts = $metrics['formations_by_category'] ?? [];
+        $categoryCounts = $metrics['formations_by_category'];
 
         $formationCountChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $formationCountChart->setData([
@@ -90,7 +90,7 @@ final class WelcomeController extends AbstractController
             ]],
         ]);
 
-        $statusCounts = $metrics['participation_status_counts'] ?? [];
+        $statusCounts = $metrics['participation_status_counts'];
 
         $participationRateChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $participationRateChart->setData([
@@ -104,7 +104,7 @@ final class WelcomeController extends AbstractController
             ]],
         ]);
 
-        $formationsByMonth = $metrics['formations_by_month'] ?? [];
+        $formationsByMonth = $metrics['formations_by_month'];
 
         $formationByMonthChart = $chartBuilder->createChart(Chart::TYPE_LINE);
         $formationByMonthChart->setData([

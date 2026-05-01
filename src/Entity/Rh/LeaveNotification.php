@@ -22,11 +22,10 @@ class LeaveNotification
     public const TYPE_EXCEPTION_APPROVED = 'exception_approved';
     public const TYPE_EXCEPTION_REJECTED = 'exception_rejected';
 
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\Column(name: 'recipient_type', length: 20)]
     private string $recipientType;
