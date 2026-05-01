@@ -38,6 +38,7 @@ class LeaveBalanceRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return array{available_sum: float, used_sum: float, accrued_sum: float, employees_count: int} */
     public function getCreditSummaryByRh(int $rhId): array
     {
         $result = $this->createQueryBuilder('lb')

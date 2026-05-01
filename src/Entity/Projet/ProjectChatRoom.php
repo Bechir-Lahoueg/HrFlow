@@ -82,3 +82,4 @@ class ProjectChatRoom
         $this->updatedAt = new \DateTime();
     }
 }
+

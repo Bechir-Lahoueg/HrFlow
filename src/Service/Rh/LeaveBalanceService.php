@@ -25,6 +25,7 @@ final class LeaveBalanceService
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /** @return array{available_days: float, total_accrued: float, total_used: float} */
     public function getEmployeeBalance(int $employeeId): array
     {
         try {
@@ -82,13 +83,18 @@ final class LeaveBalanceService
         }
     }
 
+    /** @return LeaveBalance[] */
     public function getBalancesByRh(int $rhId): array
     {
         try {
             $employees = $this->employeeRepository->findBy(['rhId' => $rhId]);
 
             foreach ($employees as $employee) {
-                $this->accrueIfNeeded($employee->getId());
+                $employeeId = $employee->getId();
+                if ($employeeId === null) {
+                    continue;
+                }
+                $this->accrueIfNeeded($employeeId);
             }
 
             return $this->leaveBalanceRepository->findByRh($rhId);
@@ -98,6 +104,7 @@ final class LeaveBalanceService
         }
     }
 
+    /** @return array{available_sum: float, used_sum: float, accrued_sum: float, employees_count: int} */
     public function getCreditSummaryByRh(int $rhId): array
     {
         try {
@@ -107,6 +114,7 @@ final class LeaveBalanceService
         }
     }
 
+    /** @return array{success: bool, message: string} */
     public function grantManualCreditByRh(int $rhId, int $employeeId, float $creditDays): array
     {
         if ($creditDays <= 0) {

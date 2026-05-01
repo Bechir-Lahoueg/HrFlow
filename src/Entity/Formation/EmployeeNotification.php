@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class EmployeeNotification
 {
+    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -144,6 +145,3 @@ class EmployeeNotification
         }
     }
 }
-
-
-
