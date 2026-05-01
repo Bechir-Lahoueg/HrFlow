@@ -9,7 +9,8 @@ use Psr\Cache\CacheItemPoolInterface;
 
 final class ConversationMemory
 {
-    private const MAX_MESSAGES = 20;
+    private const MAX_MESSAGES = 10;
+    private const MAX_CONTENT_LENGTH = 2000;
     private const CACHE_TTL = 3600;
 
     public function __construct(
@@ -35,7 +36,14 @@ final class ConversationMemory
             }
 
             return array_map(
-                fn(array $item) => new ChatMessage($item['role'], $item['content']),
+                fn(array $item) => new ChatMessage(
+                    $item['role'],
+                    $item['content'],
+                    $item['toolCallId'] ?? null,
+                    $item['toolCallName'] ?? null,
+                    $item['toolCallArgs'] ?? null,
+                    $item['toolResponse'] ?? null,
+                ),
                 $data,
             );
         } catch (\Exception) {
@@ -50,7 +58,14 @@ final class ConversationMemory
     {
         $trimmed = \array_slice($messages, -self::MAX_MESSAGES);
         $data = array_map(
-            fn(ChatMessage $msg) => ['role' => $msg->role, 'content' => $msg->content],
+            fn(ChatMessage $msg) => [
+                'role' => $msg->role,
+                'content' => $msg->content,
+                'toolCallId' => $msg->toolCallId,
+                'toolCallName' => $msg->toolCallName,
+                'toolCallArgs' => $msg->toolCallArgs,
+                'toolResponse' => $msg->toolResponse,
+            ],
             $trimmed,
         );
 

@@ -1,0 +1,101 @@
+{# ════════════════════════════════════════════════════════════════════════════
+   AI Chat Component: Collapsible Reasoning
+   ════════════════════════════════════════════════════════════════════════════ #}
+{%- macro reasoningBlock(planSteps, toolCards, initialOpen = false) -%}
+<div class="reasoning-wrap" data-reasoning>
+    <button class="reasoning-toggle" type="button" onclick="this.closest('[data-reasoning]').classList.toggle('open')" aria-expanded="{{ initialOpen ? 'true' : 'false' }}">
+        <svg class="reasoning-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+        </svg>
+        <span class="reasoning-label">
+            🧠 Raisonnement · {{ planSteps|length }} étape{{ planSteps|length > 1 ? 's' }} · {{ toolCards|length }} outil{{ toolCards|length > 1 ? 's' }}
+        </span>
+    </button>
+    <div class="reasoning-content" style="display:{{ initialOpen ? 'block' : 'none' }}">
+        {%- if planSteps is not empty -%}
+        <div class="reasoning-plan">
+            <div class="reasoning-plan-title">Plan d'exécution</div>
+            {% for step in planSteps %}
+            <div class="reasoning-step {{ loop.index <= (completed_steps ?? 0) ? 'done' : 'pending' }}">
+                <span class="reasoning-step-icon">{{ loop.index <= (completed_steps ?? 0) ? '✓' : '○' }}</span>
+                <span class="reasoning-step-label">{{ step }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {%- endif -%}
+        {%- if toolCards is not empty -%}
+        <div class="reasoning-tools">
+            <div class="reasoning-tools-title">Outils exécutés</div>
+            {% for tc in toolCards %}
+            <div class="reasoning-tool-item {{ tc.status }}">
+                <span class="reasoning-tool-name">{{ tc.name }}</span>
+                <span class="reasoning-tool-status">{{ tc.status == 'done' ? 'Terminé' : tc.status == 'error' ? 'Erreur' : 'En cours' }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {%- endif -%}
+    </div>
+</div>
+{%- endmacro -%}
+
+{# ════════════════════════════════════════════════════════════════════════════
+   AI Chat Component: Data Table (generic)
+   ════════════════════════════════════════════════════════════════════════════ #}
+{%- macro dataTable(columns, rows, title = null) -%}
+<div class="ai-data-table" data-table>
+    {%- if title -%}
+    <div class="ai-data-table-title">{{ title }}</div>
+    {%- endif -%}
+    <div class="ai-data-table-scroll">
+        <table class="ai-table">
+            <thead>
+                <tr>
+                    {%- for col in columns -%}
+                    <th>{{ col.label }}</th>
+                    {%- endfor -%}
+                </tr>
+            </thead>
+            <tbody>
+                {%- for row in rows -%}
+                <tr>
+                    {%- for col in columns -%}
+                    <td data-label="{{ col.label }}">{{ row[col.key] ?? '—' }}</td>
+                    {%- endfor -%}
+                </tr>
+                {%- endfor -%}
+            </tbody>
+        </table>
+    </div>
+    <div class="ai-data-table-footer">{{ rows|length }} résultat{{ rows|length > 1 ? 's' }}</div>
+</div>
+{%- endmacro -%}
+
+{# ════════════════════════════════════════════════════════════════════════════
+   AI Chat Component: Chart Container
+   ════════════════════════════════════════════════════════════════════════════ #}
+{%- macro chartContainer(chartId, title = null, height = 280) -%}
+<div class="ai-chart-container" data-chart="{{ chartId }}" style="height: {{ height }}px">
+    {%- if title -%}
+    <div class="ai-chart-title">{{ title }}</div>
+    {%- endif -%}
+    <canvas id="{{ chartId }}"></canvas>
+</div>
+{%- endmacro -%}
+
+{# ════════════════════════════════════════════════════════════════════════════
+   AI Chat Component: PDF Download Chip
+   ════════════════════════════════════════════════════════════════════════════ #}
+{%- macro pdfDownload(fileUrl, fileName, title = null) -%}
+<a href="{{ fileUrl }}" target="_blank" class="ai-pdf-chip" download>
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <polyline points="9,15 12,18 15,15"/>
+    </svg>
+    <span>
+        <span class="ai-pdf-chip-title">{{ title ?? 'Télécharger le PDF' }}</span>
+        <span class="ai-pdf-chip-name">{{ fileName }}</span>
+    </span>
+</a>
+{%- endmacro -%}

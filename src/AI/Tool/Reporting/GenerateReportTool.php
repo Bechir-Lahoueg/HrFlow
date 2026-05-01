@@ -72,7 +72,17 @@ final class GenerateReportTool extends ApplicationTool
             'REJECTED' => $stats['REJECTED'] ?? 0,
         ];
 
-        $summary = "Rapport généré: {$total} candidature(s) analysée(s).";
+        $summary = sprintf(
+            "Rapport généré: %d candidature(s) analysée(s).\nRépartition par statut:\n" .
+            "- PENDING: %d\n- REVIEWING: %d\n- INTERVIEW: %d\n- OFFER: %d\n- HIRED: %d\n- REJECTED: %d",
+            $total,
+            $pipelineData['PENDING'],
+            $pipelineData['REVIEWING'],
+            $pipelineData['INTERVIEW'],
+            $pipelineData['OFFER'],
+            $pipelineData['HIRED'],
+            $pipelineData['REJECTED'],
+        );
 
         return $this->createOutput($summary, [
             'type' => 'pipeline_report',

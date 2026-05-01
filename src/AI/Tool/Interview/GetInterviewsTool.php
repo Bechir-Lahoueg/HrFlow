@@ -77,6 +77,21 @@ final class GetInterviewsTool extends InterviewTool
         }
 
         $summary = \count($data) . ' entretien(s) trouvé(s).';
+        if (\count($data) > 0) {
+            $summary .= "\nListe des entretiens:\n";
+            foreach ($data as $intv) {
+                $summary .= sprintf(
+                    "- ID: %d | Candidat: %s | Offre: %s | Type: %s | Date: %s | Résultat: %s | Score: %s\n",
+                    $intv['id'],
+                    $intv['candidate_name'] ?? 'N/A',
+                    $intv['job_title'] ?? 'N/A',
+                    $intv['type'] ?? 'N/A',
+                    $intv['interview_date'] ?? 'N/A',
+                    $intv['result'] ?? 'N/A',
+                    $intv['score'] !== null ? $intv['score'] . '/100' : 'N/A',
+                );
+            }
+        }
 
         return $this->createOutput($summary, [
             'type' => 'interviews_table',

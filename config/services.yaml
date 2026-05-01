@@ -12,6 +12,8 @@ parameters:
     upload_dir: '%env(UPLOAD_DIR)%'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
     groq_api_key: '%env(GROQ_API_KEY)%'
+    groq_api: '%env(GROQ_API)%'
+    nvidia_api_key: '%env(NVIDIA_API_KEY)%'
 
 
 services:
@@ -22,6 +24,8 @@ services:
         bind:
             $geminiApiKey: '%gemini_api_key%'
             $groqApiKey: '%groq_api_key%'
+            $groqApi: '%groq_api%'
+            $nvidiaApiKey: '%nvidia_api_key%'
             $projectDir: '%kernel.project_dir%'
 
 
@@ -76,15 +80,7 @@ services:
         App\AI\Contract\ToolInterface:
             tags: ['app.ai_tool']
 
-    # Use Groq as the LLM provider.
-    App\Service\AI\LlmClientInterface: '@App\Service\AI\GroqClient'
-
-    # QuickChart Service
-    App\Service\QuickChartService:
-        arguments:
-            $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
-
-    # AI Module - Core services
+    # Use Gemma 4 (via Gemini API) as the LLM provider.
     App\AI\Contract\LlmClientInterface: '@App\AI\Core\GeminiClient'
 
     App\AI\Core\GeminiClient:
@@ -93,9 +89,15 @@ services:
             $apiKey: '%gemini_api_key%'
             $logger: '@logger'
 
+    # QuickChart Service
+    App\Service\QuickChartService:
+        arguments:
+            $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
+
     # Tool Registry - gets all tagged tools
     App\AI\Core\ToolRegistry:
         class: App\AI\Core\ToolRegistry
+        factory: ['App\AI\Core\ToolRegistry', 'createFromTaggedTools']
         arguments:
             - !tagged_iterator app.ai_tool
 

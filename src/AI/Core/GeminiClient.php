@@ -9,8 +9,6 @@ use App\AI\Infrastructure\ChatMessage;
 use App\AI\Infrastructure\ChatRequest;
 use App\AI\Infrastructure\ChatResponse;
 use App\AI\Infrastructure\ToolCall;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -18,7 +16,7 @@ use Psr\Log\LoggerInterface;
 
 final class GeminiClient implements LlmClientInterface
 {
-    private const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2-flash-preview:generateContent';
+    private const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
@@ -55,51 +53,71 @@ final class GeminiClient implements LlmClientInterface
 
         $url = self::BASE_URL . '?key=' . $this->apiKey;
 
-        try {
-            $response = $this->httpClient->request('POST', $url, [
-                'json' => $payload,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'timeout' => 30,
-            ]);
+        $maxRetries = 2;
+        $retryCount = 0;
 
-            $statusCode = $response->getStatusCode();
-            $content = $response->getContent(false);
-            
-            if ($statusCode >= 400) {
-                $this->logger->error('Gemini API error', [
-                    'status' => $statusCode,
-                    'response' => $content,
+        while ($retryCount <= $maxRetries) {
+            try {
+                $response = $this->httpClient->request('POST', $url, [
+                    'json' => $payload,
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                    ],
+                    'timeout' => 30,
                 ]);
+
+                $statusCode = $response->getStatusCode();
+                $content = $response->getContent(false);
+
+                if ($statusCode === 500 && $retryCount < $maxRetries) {
+                    ++$retryCount;
+                    $this->logger->warning('Gemma API 500, retrying', ['attempt' => $retryCount]);
+                    sleep(1);
+                    continue;
+                }
+                
+                if ($statusCode >= 400) {
+                    $this->logger->error('Gemma API error', [
+                        'status' => $statusCode,
+                        'response' => $content,
+                    ]);
+                    return new ChatResponse(
+                        content: 'Erreur de connexion au service IA (code ' . $statusCode . '). Veuillez réessayer.',
+                        toolCalls: [],
+                    );
+                }
+                
+                $data = json_decode($content, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $this->logger->error('Gemma JSON decode error', [
+                        'error' => json_last_error_msg(),
+                    ]);
+                    return new ChatResponse(
+                        content: 'Erreur de traitement de la réponse IA.',
+                        toolCalls: [],
+                    );
+                }
+                
+                break;
+            } catch (ClientExceptionInterface|ServerExceptionInterface $e) {
+                if ($retryCount < $maxRetries) {
+                    ++$retryCount;
+                    $this->logger->warning('Gemma HTTP error, retrying', ['attempt' => $retryCount, 'message' => $e->getMessage()]);
+                    sleep(1);
+                    continue;
+                }
+                $this->logger->error('Gemma HTTP error', ['message' => $e->getMessage()]);
                 return new ChatResponse(
-                    content: 'Erreur de connexion au service IA (code ' . $statusCode . '). Veuillez réessayer.',
+                    content: 'Erreur de communication avec le service IA. Veuillez réessayer.',
+                    toolCalls: [],
+                );
+            } catch (\Exception $e) {
+                $this->logger->error('Gemma unexpected error', ['message' => $e->getMessage()]);
+                return new ChatResponse(
+                    content: 'Une erreur inattendue est survenue. Veuillez réessayer.',
                     toolCalls: [],
                 );
             }
-            
-            $data = json_decode($content, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Gemini JSON decode error', [
-                    'error' => json_last_error_msg(),
-                ]);
-                return new ChatResponse(
-                    content: 'Erreur de traitement de la réponse IA.',
-                    toolCalls: [],
-                );
-            }
-        } catch (ClientExceptionInterface|ServerExceptionInterface $e) {
-            $this->logger->error('Gemini HTTP error', ['message' => $e->getMessage()]);
-            return new ChatResponse(
-                content: 'Erreur de communication avec le service IA. Veuillez réessayer.',
-                toolCalls: [],
-            );
-        } catch (\Exception $e) {
-            $this->logger->error('Gemini unexpected error', ['message' => $e->getMessage()]);
-            return new ChatResponse(
-                content: 'Une erreur inattendue est survenue. Veuillez réessayer.',
-                toolCalls: [],
-            );
         }
 
         return $this->parseResponse($data);
@@ -108,14 +126,49 @@ final class GeminiClient implements LlmClientInterface
     private function buildContents(array $messages): array
     {
         $contents = [];
+
         foreach ($messages as $message) {
-            $contents[] = [
-                'role' => $message->role,
-                'parts' => [
-                    ['text' => $message->content],
-                ],
-            ];
+            if ($message->isToolCall()) {
+                $args = $message->toolCallArgs ?? [];
+                if (empty($args)) {
+                    $args = new \stdClass();
+                }
+                $contents[] = [
+                    'role' => 'model',
+                    'parts' => [
+                        [
+                            'functionCall' => [
+                                'name' => $message->toolCallName,
+                                'args' => $args,
+                            ],
+                        ],
+                    ],
+                ];
+            } elseif ($message->isToolResponse()) {
+                $contents[] = [
+                    'role' => 'user',
+                    'parts' => [
+                        [
+                            'functionResponse' => [
+                                'name' => $message->toolCallName,
+                                'response' => [
+                                    'name' => $message->toolCallName,
+                                    'content' => $message->content,
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+            } else {
+                $contents[] = [
+                    'role' => $message->role,
+                    'parts' => [
+                        ['text' => $message->content],
+                    ],
+                ];
+            }
         }
+
         return $contents;
     }
 

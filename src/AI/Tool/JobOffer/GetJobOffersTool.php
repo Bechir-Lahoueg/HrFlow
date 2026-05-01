@@ -70,6 +70,21 @@ final class GetJobOffersTool extends JobOfferTool
         }
 
         $summary = \count($data) . ' offre(s) d\'emploi trouvée(s).';
+        if (\count($data) > 0) {
+            $summary .= "\nListe des offres:\n";
+            foreach ($data as $offer) {
+                $summary .= sprintf(
+                    "- ID: %d | Titre: %s | Département: %s | Lieu: %s | Statut: %s | Type: %s | Créée le: %s\n",
+                    $offer['id'],
+                    $offer['title'],
+                    $offer['department'] ?? 'N/A',
+                    $offer['location'] ?? 'N/A',
+                    $offer['status'] ?? 'N/A',
+                    $offer['employment_type'] ?? 'N/A',
+                    $offer['created_at'] ?? 'N/A',
+                );
+            }
+        }
 
         return $this->createOutput($summary, [
             'type' => 'job_offers_list',

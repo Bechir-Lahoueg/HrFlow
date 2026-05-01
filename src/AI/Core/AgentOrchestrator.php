@@ -57,15 +57,36 @@ final class AgentOrchestrator
         $loopResult = $this->runAgenticLoop($messages, $scopedTools, $user, $sessionId);
         $finalMessage = $loopResult['message'];
         $toolCalls = $loopResult['toolCalls'];
+        $toolResults = $loopResult['toolResults'];
         $pendingChangesets = $loopResult['pendingChangesets'];
 
-        $uiPayload = $this->buildUiPayload($toolCalls);
-        $finalMessage->content = $finalMessage->content ?: 'Traitement terminé.';
+        $uiPayload = $this->buildUiPayload($toolCalls, $toolResults);
 
         $this->memory->save($sessionId, $messages);
 
+        $formattedToolCalls = \array_map(function (ToolCall $tc, array $result) {
+            return [
+                'tool_name' => $tc->name,
+                'status' => 'done',
+                'details' => $result['uiPayload'] ?? null,
+                'args' => $tc->arguments,
+                'download_url' => $result['uiPayload']['download_url'] ?? null,
+                'chart_data' => $result['uiPayload']['chart_data'] ?? null,
+            ];
+        }, $toolCalls, $toolResults);
+
+        $planSteps = [];
+        foreach ($toolCalls as $tc) {
+            $planSteps[] = 'Exécuter ' . $tc->name;
+        }
+        if (empty($planSteps)) {
+            $planSteps[] = 'Analyser la requête';
+        }
+
+        $aggregates = $this->aggregateToolResults($toolResults);
+
         return new AgentResponse(
-            message: $finalMessage->content,
+            message: $finalMessage->content ?: 'Traitement terminé.',
             uiPayload: $uiPayload,
             pendingChangesets: \array_map(
                 fn(PendingChangeset $c) => [
@@ -75,10 +96,13 @@ final class AgentOrchestrator
                 ],
                 $pendingChangesets,
             ),
-            toolCalls: \array_map(
-                fn(ToolCall $tc) => ['name' => $tc->name, 'args' => $tc->arguments],
-                $toolCalls,
-            ),
+            toolCalls: $formattedToolCalls,
+            plan: $planSteps,
+            completedSteps: \count($planSteps),
+            activeJob: $aggregates['activeJob'],
+            candidates: $aggregates['candidates'],
+            candidatesAnalyzed: $aggregates['candidatesAnalyzed'],
+            interviewsPlanned: $aggregates['interviewsPlanned'],
         );
     }
 
@@ -110,13 +134,14 @@ final class AgentOrchestrator
 
     /**
      * @param ToolInterface[] $tools
-     * @return array{message: ChatMessage, toolCalls: ToolCall[], pendingChangesets: PendingChangeset[]}
+     * @return array{message: ChatMessage, toolCalls: ToolCall[], toolResults: array[], pendingChangesets: PendingChangeset[]}
      */
     private function runAgenticLoop(array $messages, array $tools, object $user, string $sessionId): array
     {
         $iteration = 0;
         $pendingChangesets = [];
         $allToolCalls = [];
+        $allToolResults = [];
 
         while ($iteration < self::MAX_LOOP_ITERATIONS) {
             ++$iteration;
@@ -134,6 +159,7 @@ final class AgentOrchestrator
                 return [
                     'message' => new ChatMessage('model', $response->content),
                     'toolCalls' => $allToolCalls,
+                    'toolResults' => $allToolResults,
                     'pendingChangesets' => $pendingChangesets,
                 ];
             }
@@ -150,6 +176,10 @@ final class AgentOrchestrator
 
                 $toolResult = $tool->execute($toolCall->arguments, $user);
                 $allToolCalls[] = $toolCall;
+                $allToolResults[] = [
+                    'llmSummary' => $toolResult->llmSummary,
+                    'uiPayload' => $toolResult->uiPayload,
+                ];
 
                 if ($toolResult->hasPendingChange && $toolResult->pendingChangeset !== null) {
                     $changeset = $this->changesetManager->stage(
@@ -160,13 +190,26 @@ final class AgentOrchestrator
                     $pendingChangesets[] = $changeset;
                 }
 
-                $messages[] = new ChatMessage('user', $toolResult->llmSummary);
+                $messages[] = new ChatMessage(
+                    role: 'model',
+                    content: '',
+                    toolCallId: $toolCall->id,
+                    toolCallName: $toolCall->name,
+                    toolCallArgs: $toolCall->arguments,
+                );
+                $messages[] = new ChatMessage(
+                    role: 'user',
+                    content: $toolResult->llmSummary,
+                    toolResponse: $toolResult->uiPayload,
+                    toolCallName: $toolCall->name,
+                );
             }
         }
 
         return [
             'message' => new ChatMessage('model', 'Nombre maximum d\'itérations atteint.'),
             'toolCalls' => $allToolCalls,
+            'toolResults' => $allToolResults,
             'pendingChangesets' => $pendingChangesets,
         ];
     }
@@ -177,11 +220,11 @@ final class AgentOrchestrator
      */
     private function trimMessages(array $messages): array
     {
-        if (\count($messages) <= 20) {
+        if (\count($messages) <= 10) {
             return $messages;
         }
 
-        $recent = \array_slice($messages, -15);
+        $recent = \array_slice($messages, -8);
         $summary = $this->memory->summarizeOld($messages);
 
         return [$summary, ...$recent];
@@ -202,17 +245,75 @@ final class AgentOrchestrator
 
     /**
      * @param ToolCall[] $toolCalls
+     * @param array[] $toolResults
      */
-    private function buildUiPayload(array $toolCalls): array
+    private function buildUiPayload(array $toolCalls, array $toolResults): array
     {
         $payload = [];
-        foreach ($toolCalls as $tc) {
+        foreach ($toolCalls as $i => $tc) {
+            $result = $toolResults[$i] ?? [];
             $payload[] = [
                 'name' => $tc->name,
                 'status' => 'done',
-                'body' => 'Outil exécuté avec succès.',
+                'body' => $result['llmSummary'] ?? 'Outil exécuté avec succès.',
+                'uiPayload' => $result['uiPayload'] ?? [],
             ];
         }
         return $payload;
+    }
+
+    /**
+     * Extract aggregates from tool results for the response.
+     *
+     * @param array[] $toolResults
+     * @return array{activeJob: ?array, candidates: array, candidatesAnalyzed: int, interviewsPlanned: int}
+     */
+    private function aggregateToolResults(array $toolResults): array
+    {
+        $activeJob = null;
+        $candidates = [];
+        $candidatesAnalyzed = 0;
+        $interviewsPlanned = 0;
+
+        foreach ($toolResults as $result) {
+            $ui = $result['uiPayload'] ?? [];
+            $uiType = $ui['type'] ?? null;
+
+            if ($uiType === 'applications_table' && isset($ui['data'])) {
+                $candidates = array_merge($candidates, $ui['data']);
+                $candidatesAnalyzed += count($ui['data']);
+            }
+            if ($uiType === 'candidates_table' && isset($ui['data'])) {
+                $candidates = array_merge($candidates, $ui['data']);
+                $candidatesAnalyzed += count($ui['data']);
+            }
+            if ($uiType === 'ranking' && isset($ui['data'])) {
+                $candidates = array_merge($candidates, $ui['data']);
+                $candidatesAnalyzed = max($candidatesAnalyzed, count($ui['data']));
+            }
+            if (isset($ui['candidates_analyzed'])) {
+                $candidatesAnalyzed = max($candidatesAnalyzed, (int) $ui['candidates_analyzed']);
+            }
+            if (isset($ui['interviews_planned'])) {
+                $interviewsPlanned += (int) $ui['interviews_planned'];
+            }
+            if (isset($ui['job_offer']) && is_array($ui['job_offer'])) {
+                $activeJob = $ui['job_offer'];
+            }
+            if ($uiType === 'job_offers_table' && isset($ui['data']) && count($ui['data']) > 0) {
+                $activeJob = [
+                    'title' => $ui['data'][0]['title'] ?? null,
+                    'location' => $ui['data'][0]['location'] ?? null,
+                    'applications' => count($ui['data']),
+                ];
+            }
+        }
+
+        return [
+            'activeJob' => $activeJob,
+            'candidates' => $candidates,
+            'candidatesAnalyzed' => $candidatesAnalyzed,
+            'interviewsPlanned' => $interviewsPlanned,
+        ];
     }
 }

@@ -70,6 +70,20 @@ final class GetApplicationsTool extends ApplicationTool
         }
 
         $summary = \count($data) . ' candidature(s) trouvée(s).';
+        if (\count($data) > 0) {
+            $summary .= "\nListe des candidatures:\n";
+            foreach ($data as $app) {
+                $summary .= sprintf(
+                    "- ID: %d | Nom: %s | Email: %s | Offre: %s | Statut: %s | Date: %s\n",
+                    $app['id'],
+                    $app['candidate_name'],
+                    $app['email'] ?? 'N/A',
+                    $app['job_title'] ?? 'N/A',
+                    $app['status'],
+                    $app['applied_at'],
+                );
+            }
+        }
 
         return $this->createOutput($summary, [
             'type' => 'applications_table',

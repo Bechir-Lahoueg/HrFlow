@@ -68,6 +68,15 @@ final class RankCandidatesTool extends ApplicationTool
         }
 
         $summary = \count($candidates) . ' candidat(s) classé(s) pour l\'offre #' . $args['job_offer_id'];
+        foreach ($candidates as $c) {
+            $summary .= sprintf(
+                "\n#%d — %s | Score: %d/100 | Email: %s",
+                $c['rank'],
+                $c['name'],
+                $c['score'],
+                $c['email'] ?? 'N/A',
+            );
+        }
 
         return $this->createOutput($summary, [
             'type' => 'candidate_grid',
