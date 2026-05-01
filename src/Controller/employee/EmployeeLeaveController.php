@@ -225,7 +225,7 @@ final class EmployeeLeaveController extends AbstractController
             return ['success' => false, 'message' => 'Le justificatif est invalide.'];
         }
 
-        if (($file->getSize() ?? 0) > 3 * 1024 * 1024) {
+        if ($file->getSize() > 3 * 1024 * 1024) {
             return ['success' => false, 'message' => 'Le justificatif depasse 3 Mo.'];
         }
 
