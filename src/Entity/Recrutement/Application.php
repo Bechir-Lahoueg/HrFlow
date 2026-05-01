@@ -21,7 +21,12 @@ class Application
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
+
+    public function __construct()
+    {
+        $this->interviews = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     #[ORM\Column(name: 'candidate_name', length: 255)]
     #[Assert\NotBlank(message: 'Candidate name is required')]
@@ -83,9 +88,14 @@ class Application
     private ?string $source = null;
 
     #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
-    private $interviews;
+    private \Doctrine\Common\Collections\Collection $interviews;
 
-    public function getId(): ?int
+    public function __construct()
+    {
+        $this->interviews = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    public function getId(): int
     {
         return $this->id;
     }
