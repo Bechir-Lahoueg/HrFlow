@@ -73,9 +73,17 @@ final class EmployeeFormationController extends AbstractController
         }
 
         usort($topFormationRows, static function (array $a, array $b): int {
-            return ($b['average'] <=> $a['average'])
-                ?: (($b['count'] <=> $a['count'])
-                    ?: strcmp((string) $a['formation']->getTitre(), (string) $b['formation']->getTitre()));
+            $cmpAverage = $b['average'] <=> $a['average'];
+            if ($cmpAverage !== 0) {
+                return $cmpAverage;
+            }
+
+            $cmpCount = $b['count'] <=> $a['count'];
+            if ($cmpCount !== 0) {
+                return $cmpCount;
+            }
+
+            return strcmp((string) $a['formation']->getTitre(), (string) $b['formation']->getTitre());
         });
 
         $topFormateursMap = [];
