@@ -21,6 +21,7 @@ final class ProjectService
     // CRUD PROJETS
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getAllProjects(): array
     {
         try {
@@ -30,6 +31,7 @@ final class ProjectService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectsByRh(int $rhId): array
     {
         try {
@@ -39,6 +41,7 @@ final class ProjectService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getProjectById(int $id): ?array
     {
         try {
@@ -48,6 +51,7 @@ final class ProjectService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createProject(array $data): void
     {
         $data = $this->normalizeProjectInput($data);
@@ -69,6 +73,7 @@ final class ProjectService
         ]);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateProject(int $id, array $data): void
     {
         $data = $this->normalizeProjectInput($data);
@@ -122,6 +127,7 @@ final class ProjectService
     // STATISTIQUES
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<string, int|float> */
     public function getProjectStats(int $rhId): array
     {
         try {
@@ -154,6 +160,7 @@ final class ProjectService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectsWithDetails(int $rhId): array
     {
         try {
@@ -239,6 +246,10 @@ final class ProjectService
         };
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validate(array $data): array
     {
         $data = $this->normalizeProjectInput($data);
@@ -303,6 +314,10 @@ final class ProjectService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeProjectInput(array $data): array
     {
         $name = isset($data['name']) ? trim((string) $data['name']) : '';
