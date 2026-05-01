@@ -11,6 +11,7 @@ final class RequestTypeService
 
     public function __construct(private readonly RequestTypeRepository $requestTypeRepository) {}
 
+    /** @return array<int, array<string, mixed>> */
     public function getAll(): array
     {
         try {
@@ -20,6 +21,7 @@ final class RequestTypeService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
@@ -29,6 +31,7 @@ final class RequestTypeService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
@@ -45,6 +48,7 @@ final class RequestTypeService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
@@ -70,6 +74,10 @@ final class RequestTypeService
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validate(array $data): array
     {
         $data = $this->normalizeRequestTypeInput($data);
@@ -88,6 +96,10 @@ final class RequestTypeService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeRequestTypeInput(array $data): array
     {
         $name = trim((string)($data['name'] ?? ''));

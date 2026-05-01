@@ -19,6 +19,7 @@ class ProjectTaskRepository extends ServiceEntityRepository
         parent::__construct($registry, ProjectTask::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByProject(int $projectId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -31,6 +32,7 @@ class ProjectTaskRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $task = $this->getConnection()->fetchAssociative(
@@ -52,11 +54,13 @@ class ProjectTaskRepository extends ServiceEntityRepository
         );
     }
 
+    /** @param array<string, mixed> $data */
     public function insertTask(array $data): void
     {
         $this->getConnection()->insert('project_tasks', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateTask(int $taskId, array $data): void
     {
         $this->getConnection()->update('project_tasks', $data, ['id' => $taskId]);
@@ -91,6 +95,7 @@ class ProjectTaskRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByEmployee(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(

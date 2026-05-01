@@ -16,6 +16,7 @@ final class RequestService
     // CREATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
@@ -42,16 +43,19 @@ final class RequestService
     // READ
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getByUserId(int $employeeId): array
     {
         return $this->requestRepository->fetchByUserId($employeeId);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getByRhId(int $rhId): array
     {
         return $this->requestRepository->fetchByRhId($rhId);
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
@@ -65,6 +69,7 @@ final class RequestService
     // UPDATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
@@ -136,6 +141,10 @@ final class RequestService
         };
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateCreate(array $data): array
     {
         $data = $this->normalizeRequestInput($data);
@@ -162,6 +171,10 @@ final class RequestService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateUpdate(array $data): array
     {
         $data = $this->normalizeRequestInput($data);
@@ -182,6 +195,10 @@ final class RequestService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeRequestInput(array $data): array
     {
         $title = trim((string)($data['title'] ?? ''));

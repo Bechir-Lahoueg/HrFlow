@@ -17,6 +17,7 @@ class ProjectRepository extends ServiceEntityRepository
         parent::__construct($registry, Project::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchAll(): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -24,6 +25,7 @@ class ProjectRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByRh(int $rhId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -32,6 +34,7 @@ class ProjectRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $project = $this->getConnection()->fetchAssociative(
@@ -42,11 +45,13 @@ class ProjectRepository extends ServiceEntityRepository
         return $project ?: null;
     }
 
+    /** @param array<string, mixed> $data */
     public function insert(array $data): void
     {
         $this->getConnection()->insert('projects', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateProject(int $id, array $data): void
     {
         $this->getConnection()->update('projects', $data, ['id' => $id]);

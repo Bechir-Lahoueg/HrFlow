@@ -12,6 +12,7 @@ final class ProjectUpdateService
     // CRUD UPDATES (Activités)
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getUpdatesByProject(int $projectId, int $limit = 50, ?int $authorUserId = null, bool $includeProjectRhUpdates = false): array
     {
         try {
@@ -21,6 +22,7 @@ final class ProjectUpdateService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createUpdate(array $data): void
     {
         $insertData = [

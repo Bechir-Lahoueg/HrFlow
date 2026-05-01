@@ -12,6 +12,7 @@ final class ProjectMilestoneService
     // CRUD JALONS
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getMilestonesByProject(int $projectId): array
     {
         try {
@@ -21,6 +22,7 @@ final class ProjectMilestoneService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getMilestoneById(int $id): ?array
     {
         try {
@@ -30,6 +32,7 @@ final class ProjectMilestoneService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createMilestone(array $data): void
     {
         $this->milestoneRepository->insertMilestone([
@@ -44,6 +47,7 @@ final class ProjectMilestoneService
         ]);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateMilestone(int $id, array $data): void
     {
         $this->milestoneRepository->updateMilestone($id, [
@@ -78,6 +82,7 @@ final class ProjectMilestoneService
     // STATISTIQUES
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<string, int|float> */
     public function getProjectMilestoneStats(int $projectId): array
     {
         try {
@@ -125,6 +130,7 @@ final class ProjectMilestoneService
         };
     }
 
+    /** @param array<string, mixed> $milestone */
     public function isOverdue(array $milestone): bool
     {
         if ($milestone['status'] === 'completed') {

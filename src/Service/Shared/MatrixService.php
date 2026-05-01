@@ -193,9 +193,9 @@ final class MatrixService
         }
 
         $uri = (string) ($media['mxc'] ?? ($media['url'] ?? ''));
-        $name = trim((string) ($media['name'] ?? 'fichier'));
-        $mime = trim((string) ($media['mime'] ?? 'application/octet-stream'));
-        $size = (int) ($media['size'] ?? 0);
+        $name = trim((string) $media['name']);
+        $mime = trim((string) $media['mime']);
+        $size = (int) $media['size'];
         $sender = trim($senderLabel);
 
         if ($roomId === '' || $uri === '') {
@@ -371,13 +371,13 @@ final class MatrixService
 
                 $headers = $response->getHeaders(false);
                 $mime = 'application/octet-stream';
-                if (isset($headers['content-type'][0]) && is_string($headers['content-type'][0])) {
+                if (isset($headers['content-type'][0])) {
                     $mime = trim(explode(';', $headers['content-type'][0])[0]);
                 }
 
                 $filename = $mediaId;
-                if (isset($headers['content-disposition'][0]) && is_string($headers['content-disposition'][0])) {
-                    if (preg_match('/filename\\*?="?([^";]+)"?/i', $headers['content-disposition'][0], $matches)) {
+                if (isset($headers['content-disposition'][0])) {
+                    if (preg_match('/filename\*?="?([^";]+)"?/i', $headers['content-disposition'][0], $matches)) {
                         $filename = rawurldecode($matches[1]);
                     }
                 }
@@ -385,7 +385,7 @@ final class MatrixService
                 return [
                     'content' => $content,
                     'mime' => $mime !== '' ? $mime : 'application/octet-stream',
-                    'filename' => $filename !== '' ? $filename : $mediaId,
+                    'filename' => $filename,
                 ];
             } catch (\Throwable) {
                 // On essaie le endpoint suivant pour compatibilite homeserver.
@@ -515,20 +515,23 @@ final class MatrixService
 
             $events = array_reverse($events);
 
+            /**
+             * @var array<int, array{kind:'message',event_id:string,sender:string,origin_server_ts:int,msgtype:string,body:string,url:string,download_url:string,info:array<string,mixed>}|array{kind:'reaction',event_id:string,sender:string,origin_server_ts:int,target_event_id:string,key:string}> $events
+             */
             $messages = [];
             $messageIndexById = [];
 
             foreach ($events as $event) {
-                if (($event['kind'] ?? '') === 'message') {
+                if ($event['kind'] === 'message') {
                     $message = [
-                        'event_id' => (string) ($event['event_id'] ?? ''),
-                        'sender' => (string) ($event['sender'] ?? ''),
-                        'origin_server_ts' => (int) ($event['origin_server_ts'] ?? 0),
-                        'msgtype' => (string) ($event['msgtype'] ?? 'm.text'),
-                        'body' => (string) ($event['body'] ?? ''),
-                        'url' => (string) ($event['url'] ?? ''),
-                        'download_url' => (string) ($event['download_url'] ?? ''),
-                        'info' => is_array($event['info'] ?? null) ? $event['info'] : [],
+                        'event_id' => $event['event_id'],
+                        'sender' => $event['sender'],
+                        'origin_server_ts' => $event['origin_server_ts'],
+                        'msgtype' => $event['msgtype'],
+                        'body' => $event['body'],
+                        'url' => $event['url'],
+                        'download_url' => $event['download_url'],
+                        'info' => $event['info'],
                         'reactions' => [],
                     ];
 
@@ -537,18 +540,21 @@ final class MatrixService
                     continue;
                 }
 
-                if (($event['kind'] ?? '') !== 'reaction') {
+                $targetEventId = $event['target_event_id'];
+                $key = $event['key'];
+                if ($targetEventId === '' || $key === '') {
                     continue;
                 }
 
-                $targetEventId = (string) ($event['target_event_id'] ?? '');
-                $key = (string) ($event['key'] ?? '');
-                if ($targetEventId === '' || $key === '' || !isset($messageIndexById[$targetEventId])) {
+                if (!isset($messageIndexById[$targetEventId])) {
                     continue;
                 }
 
                 $messageIndex = $messageIndexById[$targetEventId];
-                $reactions = $messages[$messageIndex]['reactions'];
+                $reactions = $messages[$messageIndex]['reactions'] ?? [];
+                if (!is_array($reactions)) {
+                    $reactions = [];
+                }
                 $reactions[$key] = ((int) ($reactions[$key] ?? 0)) + 1;
                 $messages[$messageIndex]['reactions'] = $reactions;
             }
@@ -569,6 +575,7 @@ final class MatrixService
     }
 
     /**
+     * @param array<string,mixed> $options
      * @return array{status:int,body:array<string,mixed>}
      */
     private function request(string $method, string $path, array $options = []): array
@@ -670,7 +677,7 @@ final class MatrixService
     {
         try {
             $mime = $file->getMimeType();
-            if (is_string($mime) && $mime !== '') {
+            if ($mime !== null && $mime !== '') {
                 return $mime;
             }
         } catch (\Throwable) {
@@ -678,8 +685,7 @@ final class MatrixService
         }
 
         $clientMime = $file->getClientMimeType();
-        return is_string($clientMime) && $clientMime !== '' ? $clientMime : 'application/octet-stream';
+        return $clientMime !== '' ? $clientMime : 'application/octet-stream';
     }
 }
-
 

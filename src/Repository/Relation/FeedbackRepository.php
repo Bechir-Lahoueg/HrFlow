@@ -17,11 +17,13 @@ class FeedbackRepository extends ServiceEntityRepository
         parent::__construct($registry, Feedback::class);
     }
 
+    /** @param array<string, mixed> $data */
     public function insert(array $data): void
     {
         $this->getConnection()->insert('feedbacks', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFeedback(int $id, array $data): void
     {
         $this->getConnection()->update('feedbacks', $data, ['id' => $id]);
@@ -37,6 +39,7 @@ class FeedbackRepository extends ServiceEntityRepository
         $this->getConnection()->delete('feedbacks', ['id' => $id]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchAll(): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -50,6 +53,7 @@ class FeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByRhId(int $rhId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -65,6 +69,7 @@ class FeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchReceivedByEmployee(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -80,6 +85,7 @@ class FeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchSentByEmployee(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -95,6 +101,7 @@ class FeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $row = $this->getConnection()->fetchAssociative(
@@ -111,6 +118,7 @@ class FeedbackRepository extends ServiceEntityRepository
         return $row ?: null;
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchColleagues(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(

@@ -250,6 +250,12 @@ final class FormationService
      */
     public function createSession(array $data): SessionFormation
     {
+    $debut = new \DateTime($data['date_debut']);
+        $fin   = new \DateTime($data['date_fin']);
+
+        if ($fin <= $debut) {
+            throw new \InvalidArgumentException('La date de fin doit être postérieure à la date de début.');
+        }
         $formation = $this->formationRepository->find((int) $data['id_formation']);
         if (!$formation) {
             throw new \RuntimeException('Formation introuvable.');
@@ -300,7 +306,7 @@ final class FormationService
         $this->em->flush();
     }
 
-    private function calculateStatut(string $dateDebut, string $dateFin): string
+    public function calculateStatut(string $dateDebut, string $dateFin): string
     {
         $now = new \DateTime();
         $now->setTime(0, 0, 0);
