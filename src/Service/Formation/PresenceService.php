@@ -22,6 +22,9 @@ final class PresenceService
         return $this->presenceRepository->findBySession($sessionId);
     }
 
+    /**
+     * @param array<int,string> $presencesData
+     */
     public function savePresences(string $date, array $presencesData): void
     {
         $this->em->beginTransaction();

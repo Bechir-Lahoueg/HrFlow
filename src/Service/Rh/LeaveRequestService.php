@@ -50,6 +50,7 @@ final class LeaveRequestService
         return $this->leaveRequestRepository->countPendingByEmployee($employeeId);
     }
 
+    /** @return array{success: bool, message: string} */
     public function submitEmployeeRequest(
         int $employeeId,
         string $startDateInput,
@@ -210,11 +211,13 @@ final class LeaveRequestService
         return $this->leaveRequestRepository->countPendingByRh($rhId);
     }
 
+    /** @return array{total_count: int, pending_count: int, approved_count: int, rejected_count: int} */
     public function getRhDashboardStats(int $rhId): array
     {
         return $this->leaveRequestRepository->getStatsByRh($rhId);
     }
 
+    /** @return array{success: bool, message: string} */
     public function approveRequestByRh(int $rhId, int $leaveRequestId, string $rhComment = '', string $rhActor = 'RH'): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
@@ -253,7 +256,18 @@ final class LeaveRequestService
         $request->setRhDecisionBy($rhActor);
         $request->appendAuditLog($rhActor, 'RH_APPROVED', $rhComment);
 
-        $deducted = $this->leaveBalanceService->deductApprovedDays($request->getEmployee()->getId(), $request->getDaysCount(), false);
+        $employee = $request->getEmployee();
+        if (!$employee) {
+            return ['success' => false, 'message' => 'Employe introuvable pour cette demande.'];
+        }
+
+        $employeeId = $employee->getId();
+        $daysCount = $request->getDaysCount();
+        if ($employeeId === null || $daysCount === null) {
+            return ['success' => false, 'message' => 'Donnees employe invalides pour cette demande.'];
+        }
+
+        $deducted = $this->leaveBalanceService->deductApprovedDays($employeeId, $daysCount, false);
         if (!$deducted) {
             return ['success' => false, 'message' => 'Credit insuffisant. Utilisez une demande exceptionnelle pour depassement.'];
         }
@@ -267,6 +281,7 @@ final class LeaveRequestService
         return ['success' => true, 'message' => 'Demande approuvee avec succes.'];
     }
 
+    /** @return array{success: bool, message: string} */
     public function rejectRequestByRh(int $rhId, int $leaveRequestId, string $rhComment, string $rhActor = 'RH'): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
@@ -310,6 +325,7 @@ final class LeaveRequestService
         return $this->leaveRequestRepository->findAdminExceptionsForReviewAndApprovedBy($adminActor);
     }
 
+    /** @return array{success: bool, message: string} */
     public function approveExceptionByAdmin(int $leaveRequestId, string $adminComment = '', string $adminActor = 'ADMIN'): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
@@ -329,7 +345,18 @@ final class LeaveRequestService
         $request->setAdminDecisionBy($adminActor);
         $request->appendAuditLog($adminActor, 'ADMIN_APPROVED_EXCEPTION', $adminComment);
 
-        $deducted = $this->leaveBalanceService->deductApprovedDays($request->getEmployee()->getId(), $request->getDaysCount(), true);
+        $employee = $request->getEmployee();
+        if (!$employee) {
+            return ['success' => false, 'message' => 'Employe introuvable pour cette demande.'];
+        }
+
+        $employeeId = $employee->getId();
+        $daysCount = $request->getDaysCount();
+        if ($employeeId === null || $daysCount === null) {
+            return ['success' => false, 'message' => 'Donnees employe invalides pour cette demande.'];
+        }
+
+        $deducted = $this->leaveBalanceService->deductApprovedDays($employeeId, $daysCount, true);
         if (!$deducted) {
             return ['success' => false, 'message' => 'Impossible de deduire le solde pour cette demande.'];
         }
@@ -343,6 +370,7 @@ final class LeaveRequestService
         return ['success' => true, 'message' => 'Demande exceptionnelle approuvee definitivement par Admin.'];
     }
 
+    /** @return array{success: bool, message: string} */
     public function rejectExceptionByAdmin(int $leaveRequestId, string $adminComment, string $adminActor = 'ADMIN'): array
     {
         $this->autoFreezeExpiredExceptionalRequests();
@@ -374,11 +402,13 @@ final class LeaveRequestService
         return ['success' => true, 'message' => 'Demande exceptionnelle refusee par Admin.'];
     }
 
+    /** @return array{pending_count: int, approved_count: int, rejected_count: int} */
     public function getEmployeeDashboardStats(int $employeeId): array
     {
         return $this->leaveRequestRepository->getStatsByEmployee($employeeId);
     }
 
+    /** @return array{available_sum: float, used_sum: float, accrued_sum: float, employees_count: int} */
     public function getRhCreditSummary(int $rhId): array
     {
         return $this->leaveBalanceService->getCreditSummaryByRh($rhId);
@@ -396,8 +426,14 @@ final class LeaveRequestService
 
         $blockedDates = [];
         foreach ($activeLeaves as $leave) {
-            $current = new \DateTime($leave->getStartDate()->format('Y-m-d'));
-            $end = new \DateTime($leave->getEndDate()->format('Y-m-d'));
+            $startDate = $leave->getStartDate();
+            $endDate = $leave->getEndDate();
+            if (!$startDate || !$endDate) {
+                continue;
+            }
+
+            $current = new \DateTime($startDate->format('Y-m-d'));
+            $end = new \DateTime($endDate->format('Y-m-d'));
             while ($current <= $end) {
                 $day = (int) $current->format('N'); // 6=Sat, 7=Sun
                 if ($day < 6) {
@@ -439,10 +475,16 @@ final class LeaveRequestService
         $calendarLeaves = [];
         foreach ($activeLeaves as $leave) {
             if ($leave->getStatus() === 'ACCEPTE') {
+                $startDate = $leave->getStartDate();
+                $endDate = $leave->getEndDate();
+                if (!$startDate || !$endDate) {
+                    continue;
+                }
+
                 $calendarLeaves[] = [
                     'name' => 'Mon conge',
-                    'start' => $leave->getStartDate()->format('Y-m-d'),
-                    'end' => $leave->getEndDate()->format('Y-m-d'),
+                    'start' => $startDate->format('Y-m-d'),
+                    'end' => $endDate->format('Y-m-d'),
                     'type' => $leave->getLeaveType() ?? 'Conge',
                 ];
             }
@@ -481,5 +523,10 @@ final class LeaveRequestService
         }
 
         $this->em->flush();
+    }
+
+    private function formatDate(?\DateTimeInterface $date): string
+    {
+        return $date ? $date->format('Y-m-d') : '';
     }
 }

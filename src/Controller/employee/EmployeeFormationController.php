@@ -10,6 +10,7 @@ use App\Service\Formation\SessionService;
 use App\Service\Shared\HrFlowMailer;
 use App\Repository\Formation\EmployeeNotificationRepository;
 use App\Repository\Formation\ParticipationFormationRepository;
+use App\Repository\Formation\PresenceFormationRepository;
 use App\Repository\Formation\SessionFeedbackRepository;
 use App\Repository\Rh\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ final class EmployeeFormationController extends AbstractController
         private readonly ParticipationFormationRepository $participationRepository,
         private readonly SessionFeedbackService $sessionFeedbackService,
         private readonly SessionFeedbackRepository $sessionFeedbackRepository,
+        private readonly PresenceFormationRepository $presenceFormationRepository,
         private readonly UserRepository $userRepository,
         private readonly HrFlowMailer $hrFlowMailer,
         private readonly EntityManagerInterface $em,
@@ -40,13 +42,13 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/', name: 'employee_formation_index')]
     public function index(Request $request): Response
     {
-        $search = $request->query->get('search', '');
-        $type = $request->query->get('type', '');
+        $search = (string) $request->query->get('search', '');
+        $type = (string) $request->query->get('type', '');
         $organisme = trim((string) $request->query->get('organisme', ''));
-        $sortQuery = $request->query->get('sort', 'created_at-DESC');
+        $sortQuery = (string) $request->query->get('sort', 'created_at-DESC');
 
-        $sortParts = explode('-', $sortQuery);
-        $sort = $sortParts[0] ?? 'created_at';
+        $sortParts = explode('-', $sortQuery, 2);
+        $sort = $sortParts[0];
         $dir = $sortParts[1] ?? 'DESC';
 
         $formations = $this->formationService->getAllFormations($search, $type, $sort, $dir, $organisme);
@@ -140,9 +142,9 @@ final class EmployeeFormationController extends AbstractController
         });
 
         $rhIds = array_values(array_unique(array_filter(array_map(
-            static fn($f) => method_exists($f, 'getRhId') ? (int) $f->getRhId() : 0,
+            static fn($f) => (int) $f->getRhId(),
             $formations
-        ))));
+        ), static fn(int $id): bool => $id > 0)));
         $rhNames = [];
         if ($rhIds !== []) {
             foreach ($this->userRepository->findBy(['id' => $rhIds]) as $rhUser) {
@@ -150,10 +152,73 @@ final class EmployeeFormationController extends AbstractController
             }
         }
 
+        $weekStart = new \DateTimeImmutable('monday this week');
+        $weekEnd = $weekStart->modify('+6 days');
+        $weeklyRows = $this->presenceFormationRepository->countWeeklyAttendanceByEmployee(
+            $this->requireUserId(),
+            $weekStart,
+            $weekEnd
+        );
+
+        $attendanceByDate = [];
+        foreach ($weeklyRows as $row) {
+            $presenceDate = $row['presenceDate'];
+            $attendanceByDate[$presenceDate->format('Y-m-d')] = (int) $row['attendanceCount'];
+        }
+
+        $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $dayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        $fullDayLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        $weeklyDays = [];
+        $maxValue = 0;
+        $totalTrainingDays = 0;
+        $bestDayLabel = null;
+        $bestDayValue = 0;
+
+        for ($index = 0; $index < 7; $index++) {
+            $date = $weekStart->modify('+' . $index . ' days');
+            $dateKey = $date->format('Y-m-d');
+            $value = (int) ($attendanceByDate[$dateKey] ?? 0);
+            $isToday = $dateKey === $todayKey;
+
+            if ($value > 0) {
+                $totalTrainingDays++;
+            }
+
+            if ($value > $bestDayValue) {
+                $bestDayValue = $value;
+                $bestDayLabel = $fullDayLabels[$index];
+            }
+
+            $maxValue = max($maxValue, $value);
+
+            $weeklyDays[] = [
+                'label' => $dayLabels[$index],
+                'date' => $date,
+                'value' => $value,
+                'isToday' => $isToday,
+            ];
+        }
+
+        $maxValue = max(1, $maxValue);
+        foreach ($weeklyDays as &$day) {
+            $day['heightPercent'] = $day['value'] > 0 ? max(14, (int) round(($day['value'] / $maxValue) * 100)) : 8;
+        }
+        unset($day);
+
+        $weeklyTraining = [
+            'days' => $weeklyDays,
+            'totalTrainingDays' => $totalTrainingDays,
+            'bestDayLabel' => $bestDayLabel,
+            'bestDayValue' => $bestDayValue,
+            'weekRangeLabel' => sprintf('%s - %s', $weekStart->format('d/m'), $weekEnd->format('d/m')),
+        ];
+
         return $this->render('DashboardEmployee/formation/formation_index.html.twig', [
             'formations' => $formations,
             'ratingMap' => $ratingMap,
             'rhNames' => $rhNames,
+            'weeklyTraining' => $weeklyTraining,
             'topFormations' => array_slice($topFormationRows, 0, 3),
             'topFormateurs' => array_slice($topFormateurs, 0, 3),
             'filters' => [
@@ -215,9 +280,9 @@ final class EmployeeFormationController extends AbstractController
         $formationsPage = array_slice($formations, $offset, $perPage);
 
         $rhIds = array_values(array_unique(array_filter(array_map(
-            static fn($f) => method_exists($f, 'getRhId') ? (int) $f->getRhId() : 0,
+            static fn($f) => (int) $f->getRhId(),
             $formationsPage
-        ))));
+        ), static fn(int $id): bool => $id > 0)));
         $rhNames = [];
         if ($rhIds !== []) {
             foreach ($this->userRepository->findBy(['id' => $rhIds]) as $rhUser) {
@@ -241,12 +306,16 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/my-requests', name: 'employee_formation_requests')]
     public function myRequests(): Response
     {
-        $userId = $this->getUser()->getId();
+        $userId = $this->requireUserId();
         $participations = $this->participationService->getEmployeeParticipations($userId);
 
         $attendanceMap = [];
         foreach ($participations as $p) {
-            $attendanceMap[$p->getId()] = $this->participationService->getAttendancePercentage($p->getId());
+            $participationId = $p->getId();
+            if ($participationId === null) {
+                continue;
+            }
+            $attendanceMap[$participationId] = $this->participationService->getAttendancePercentage($participationId);
         }
 
         return $this->render('DashboardEmployee/formation/formation_requests.html.twig', [
@@ -258,11 +327,11 @@ final class EmployeeFormationController extends AbstractController
  #[Route('/my-certificates', name: 'employee_formation_certificates', methods: ['GET'])]
  public function myCertificates(Request $request): Response // Ajoute l'argument Request
  {
-     $userId = $this->getUser()->getId();
+     $userId = $this->requireUserId();
      $participations = $this->participationService->getEmployeeParticipations($userId);
 
      // 1. Récupérer le paramètre de tri (par défaut 'date-DESC')
-     $sort = $request->query->get('sort', 'date-DESC');
+     $sort = (string) $request->query->get('sort', 'date-DESC');
 
      $certificateRows = [];
      foreach ($participations as $participation) {
@@ -297,7 +366,7 @@ final class EmployeeFormationController extends AbstractController
          }
 
          if (str_starts_with($sort, 'titre-')) {
-             $cmp = strcmp($a['formation']->getTitre(), $b['formation']->getTitre());
+             $cmp = strcmp((string) $a['formation']->getTitre(), (string) $b['formation']->getTitre());
              return str_ends_with($sort, 'DESC') ? -$cmp : $cmp;
          }
 
@@ -324,12 +393,16 @@ final class EmployeeFormationController extends AbstractController
         }
 
         $sessions = $this->sessionService->getSessionsByFormation($idInt);
-        $userId = $this->getUser()->getId();
+        $userId = $this->requireUserId();
         $myParticipations = $this->participationService->getEmployeeParticipations($userId);
 
         $mySessionStats = [];
         foreach ($myParticipations as $participation) {
-            $mySessionStats[$participation->getSession()->getId()] = [
+            $session = $participation->getSession();
+            if ($session === null || $participation->getId() === null || $session->getId() === null) {
+                continue;
+            }
+            $mySessionStats[$session->getId()] = [
                 'statut' => $participation->getStatutParticipation(),
                 'pourcentage' => $this->participationService->getAttendancePercentage($participation->getId()),
             ];
@@ -337,7 +410,11 @@ final class EmployeeFormationController extends AbstractController
 
         $feedbackGivenBySession = [];
         foreach ($myParticipations as $participation) {
-            $sessionId = (int) $participation->getSession()->getId();
+            $session = $participation->getSession();
+            if ($session === null || $session->getId() === null) {
+                continue;
+            }
+            $sessionId = (int) $session->getId();
             $feedbackGivenBySession[$sessionId] = $this->sessionFeedbackRepository->hasFeedbackForSessionAndUser($sessionId, $userId);
         }
 
@@ -358,8 +435,9 @@ final class EmployeeFormationController extends AbstractController
             return $this->redirectToRoute('employee_formation_index');
         }
 
+        $userId = $this->requireUserId();
         $result = $this->sessionFeedbackService->submitFeedback(
-            $this->getUser()->getId(),
+            $userId,
             $sessionId,
             (int) $request->request->get('rating', 0),
             (string) $request->request->get('comment', ''),
@@ -377,14 +455,14 @@ final class EmployeeFormationController extends AbstractController
     public function register(string $id): Response
     {
         $idInt = (int) $id;
-        $userId = $this->getUser()->getId();
+        $userId = $this->requireUserId();
 
         $result = $this->participationService->registerEmployeeDetailed($userId, $idInt);
 
         if ($result['ok']) {
             $this->addFlash('success', 'Inscription confirmée.');
         } else {
-            $reasons = $result['reasons'] ?? [];
+            $reasons = $result['reasons'];
             if (count($reasons) > 1) {
                 $this->addFlash('error', "Impossible de s'inscrire pour les raisons suivantes :\n\n" . implode("\n", $reasons));
             } elseif (count($reasons) === 1) {
@@ -401,7 +479,7 @@ final class EmployeeFormationController extends AbstractController
     public function downloadCertificate(string $id): Response
     {
         $participationId = (int) $id;
-        $employeeId = $this->getUser()->getId();
+        $employeeId = $this->requireUserId();
 
         $participation = $this->participationRepository->find($participationId);
         if (!$participation || (int) $participation->getEmployee()?->getId() !== $employeeId) {
@@ -414,9 +492,10 @@ final class EmployeeFormationController extends AbstractController
             return $this->redirectToRoute('employee_formation_requests');
         }
 
-        $attendance = $this->participationService->getAttendancePercentage($participationId);
-        if ($attendance < 80) {
-            $this->addFlash('error', 'Certificat indisponible : votre taux de presence doit etre superieur ou egal a 80%.');
+        $dateDebut = $session->getDateDebut();
+        $dateFin = $session->getDateFin();
+        if ($dateDebut === null || $dateFin === null) {
+            $this->addFlash('error', 'Certificat indisponible : dates de session invalides.');
             return $this->redirectToRoute('employee_formation_requests');
         }
 
@@ -438,11 +517,12 @@ final class EmployeeFormationController extends AbstractController
             $this->em->flush();
         }
 
+        $user = $this->getUser();
         $certificate = $this->certificateService->generateCertificate(
-            $participation->getEmployee()?->getFullName() ?? $this->getUser()->getUserIdentifier(),
+            $participation->getEmployee()?->getFullName() ?? ($user?->getUserIdentifier() ?? 'Employe'),
             $formation?->getTitre() ?? 'Formation',
-            $session->getDateDebut(),
-            $session->getDateFin(),
+            $dateDebut,
+            $dateFin,
             $organisme,
             $rhCreatorName,
             $token
@@ -494,7 +574,7 @@ final class EmployeeFormationController extends AbstractController
     public function markAllNotificationsRead(Request $request, EmployeeNotificationRepository $notificationRepository): Response
     {
         if ($this->isCsrfTokenValid('employee-notifications-mark-all-read', (string) $request->request->get('_token'))) {
-            $notificationRepository->markAllAsReadByEmployee($this->getUser()->getId());
+            $notificationRepository->markAllAsReadByEmployee($this->requireUserId());
         }
 
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('employee_formation_index'));
@@ -503,7 +583,7 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/notifications/{id}/open', name: 'employee_notification_open', methods: ['GET'])]
     public function openNotification(string $id, EmployeeNotificationRepository $notificationRepository): Response
     {
-        $notification = $notificationRepository->findOneByIdAndEmployee((int) $id, $this->getUser()->getId());
+        $notification = $notificationRepository->findOneByIdAndEmployee((int) $id, $this->requireUserId());
         if (!$notification) {
             return $this->redirectToRoute('employee_formation_index');
         }
@@ -530,7 +610,7 @@ final class EmployeeFormationController extends AbstractController
     #[Route('/notifications/history', name: 'employee_notifications_history', methods: ['GET'])]
     public function notificationsHistory(EmployeeNotificationRepository $notificationRepository): Response
     {
-        $employeeId = $this->getUser()->getId();
+        $employeeId = $this->requireUserId();
 
         return $this->render('DashboardEmployee/formation/notifications_history.html.twig', [
             'notifications' => $notificationRepository->findAllByEmployee($employeeId, 200),
@@ -553,5 +633,15 @@ final class EmployeeFormationController extends AbstractController
             'formation' => $formation,
             'feedbacks' => $feedbacks,
         ]);
+    }
+
+    private function requireUserId(): int
+    {
+        $user = $this->getUser();
+        if ($user === null || !method_exists($user, 'getId') || $user->getId() === null) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return (int) $user->getId();
     }
 }

@@ -9,12 +9,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/notifications/leave')]
 final class LeaveNotificationController extends AbstractController
 {
     public function __construct(
         private readonly LeaveNotificationRepository $repository,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -53,7 +55,7 @@ final class LeaveNotificationController extends AbstractController
     #[Route('/mark-all-read', name: 'leave_notifications_mark_all_read', methods: ['POST'])]
     public function markAllRead(Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('leave-notifications-mark-all-read', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('leave-notifications-mark-all-read', (string) $request->request->get('_token', ''))) {
             throw $this->createAccessDeniedException();
         }
 
@@ -84,13 +86,13 @@ final class LeaveNotificationController extends AbstractController
 
         if (!$notification->isRead()) {
             $notification->setIsRead(true);
-            $this->repository->getEntityManager()->flush();
+            $this->em->flush();
         }
 
         $type = $notification->getType();
         if (str_starts_with($type, 'formation_') || str_starts_with($type, 'session_')) {
             $user = $this->getUser();
-            if (method_exists($user, 'isEmployee') && $user->isEmployee()) {
+            if ($user !== null && method_exists($user, 'isEmployee') && $user->isEmployee()) {
                 return $this->redirectToRoute('employee_formation_index');
             }
 
@@ -99,11 +101,11 @@ final class LeaveNotificationController extends AbstractController
 
         // Redirect to the appropriate leave page based on role
         $user = $this->getUser();
-        if (method_exists($user, 'isEmployee') && $user->isEmployee()) {
+        if ($user !== null && method_exists($user, 'isEmployee') && $user->isEmployee()) {
             return $this->redirectToRoute('app_employee_leave_requests');
         }
 
-        $role = method_exists($user, 'getRole') ? $user->getRole() : '';
+        $role = ($user !== null && method_exists($user, 'getRole')) ? $user->getRole() : '';
         if (strtoupper($role) === 'ADMIN') {
             return $this->redirectToRoute('app_admin_leave_exceptions');
         }
@@ -117,7 +119,7 @@ final class LeaveNotificationController extends AbstractController
     private function resolveRecipient(): array
     {
         $user = $this->getUser();
-        if (!$user || !method_exists($user, 'getId')) {
+        if ($user === null || !method_exists($user, 'getId')) {
             return ['', null];
         }
 

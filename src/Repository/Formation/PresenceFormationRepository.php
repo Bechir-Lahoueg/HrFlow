@@ -85,4 +85,25 @@ class PresenceFormationRepository extends ServiceEntityRepository
             ->setParameter('formationId', $formationId)
             ->execute();
     }
+
+    /**
+     * @return array<int, array{presenceDate:\DateTimeInterface, attendanceCount:string|int}>
+     */
+    public function countWeeklyAttendanceByEmployee(int $employeeId, \DateTimeInterface $weekStart, \DateTimeInterface $weekEnd): array
+    {
+        return $this->createQueryBuilder('pr')
+            ->select('pr.datePresence AS presenceDate', 'COUNT(pr.id) AS attendanceCount')
+            ->join('pr.participation', 'p')
+            ->where('p.employee = :employeeId')
+            ->andWhere('pr.datePresence BETWEEN :weekStart AND :weekEnd')
+            ->andWhere('pr.statut IN (:statuts)')
+            ->setParameter('employeeId', $employeeId)
+            ->setParameter('weekStart', $weekStart)
+            ->setParameter('weekEnd', $weekEnd)
+            ->setParameter('statuts', ['Present', 'Justifie'])
+            ->groupBy('pr.datePresence')
+            ->orderBy('pr.datePresence', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
