@@ -2,14 +2,14 @@
 
 namespace App\Service;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Relation\FeedbackRepository;
 
 final class FeedbackService
 {
     private const ALLOWED_TYPES = ['performance', 'behavior', 'collaboration', 'other'];
     private const MAX_COMMENT_LENGTH = 2000;
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly FeedbackRepository $feedbackRepository) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CREATE
@@ -19,7 +19,7 @@ final class FeedbackService
     {
         try {
             $data = $this->normalizeFeedbackInput($data);
-            $this->connection->insert('feedbacks', [
+            $this->feedbackRepository->insert([
                 'from_user_id'  => $data['from_user_id'],
                 'to_user_id'    => $data['to_user_id'],
                 'feedback_type' => $data['feedback_type'],
@@ -33,7 +33,7 @@ final class FeedbackService
                 'updated_at'    => date('Y-m-d H:i:s'),
             ]);
             return true;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -45,15 +45,7 @@ final class FeedbackService
     public function getAll(): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT f.*,
-                    CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
-                    CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
-                FROM feedbacks f
-                INNER JOIN employees e1 ON f.from_user_id = e1.id
-                INNER JOIN employees e2 ON f.to_user_id   = e2.id
-                ORDER BY f.created_at DESC"
-            );
+            return $this->feedbackRepository->fetchAll();
         } catch (\Throwable) {
             return [];
         }
@@ -62,17 +54,7 @@ final class FeedbackService
     public function getByRhId(int $rhId): array
     {
         try {
-            $rows = $this->connection->fetchAllAssociative(
-                "SELECT f.*,
-                    CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
-                    CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
-                FROM feedbacks f
-                INNER JOIN employees e1 ON f.from_user_id = e1.id
-                INNER JOIN employees e2 ON f.to_user_id   = e2.id
-                WHERE e1.rh_id = ? OR e2.rh_id = ?
-                ORDER BY f.created_at DESC",
-                [$rhId, $rhId]
-            );
+            $rows = $this->feedbackRepository->fetchByRhId($rhId);
             return $this->applyAnonymity($this->applyEmotionFallback($rows));
         } catch (\Throwable) {
             return [];
@@ -82,17 +64,7 @@ final class FeedbackService
     public function getReceivedByEmployee(int $employeeId): array
     {
         try {
-            $rows = $this->connection->fetchAllAssociative(
-                "SELECT f.*,
-                    CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
-                    CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
-                FROM feedbacks f
-                LEFT JOIN employees e1 ON f.from_user_id = e1.id
-                LEFT JOIN employees e2 ON f.to_user_id   = e2.id
-                WHERE f.to_user_id = ?
-                ORDER BY f.created_at DESC",
-                [$employeeId]
-            );
+            $rows = $this->feedbackRepository->fetchReceivedByEmployee($employeeId);
             return $this->applyAnonymity($this->applyEmotionFallback($rows));
         } catch (\Throwable) {
             return [];
@@ -102,17 +74,7 @@ final class FeedbackService
     public function getSentByEmployee(int $employeeId): array
     {
         try {
-            $rows = $this->connection->fetchAllAssociative(
-                "SELECT f.*,
-                    CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
-                    CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
-                FROM feedbacks f
-                LEFT JOIN employees e1 ON f.from_user_id = e1.id
-                LEFT JOIN employees e2 ON f.to_user_id   = e2.id
-                WHERE f.from_user_id = ?
-                ORDER BY f.created_at DESC",
-                [$employeeId]
-            );
+            $rows = $this->feedbackRepository->fetchSentByEmployee($employeeId);
             return $this->applyEmotionFallback($rows);
         } catch (\Throwable) {
             return [];
@@ -122,17 +84,7 @@ final class FeedbackService
     public function getById(int $id): ?array
     {
         try {
-            $row = $this->connection->fetchAssociative(
-                "SELECT f.*,
-                    CONCAT(e1.first_name, ' ', e1.last_name) AS from_username,
-                    CONCAT(e2.first_name, ' ', e2.last_name) AS to_username
-                FROM feedbacks f
-                LEFT JOIN employees e1 ON f.from_user_id = e1.id
-                LEFT JOIN employees e2 ON f.to_user_id   = e2.id
-                WHERE f.id = ?",
-                [$id]
-            ) ?: null;
-
+            $row = $this->feedbackRepository->fetchById($id);
             if (!is_array($row)) {
                 return null;
             }
@@ -152,7 +104,7 @@ final class FeedbackService
     {
         try {
             $data = $this->normalizeFeedbackInput($data);
-            $this->connection->update('feedbacks', [
+            $this->feedbackRepository->updateFeedback($id, [
                 'feedback_type' => $data['feedback_type'],
                 'rating'        => $data['rating'],
                 'comment'       => $data['comment'],
@@ -160,7 +112,7 @@ final class FeedbackService
                 'emotion_label' => $data['emotion_label'],
                 'emotion_score' => $data['emotion_score'],
                 'updated_at'    => date('Y-m-d H:i:s'),
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -170,7 +122,7 @@ final class FeedbackService
     public function acknowledge(int $id): bool
     {
         try {
-            $this->connection->update('feedbacks', ['status' => 'acknowledged'], ['id' => $id]);
+            $this->feedbackRepository->acknowledge($id);
             return true;
         } catch (\Throwable) {
             return false;
@@ -184,7 +136,7 @@ final class FeedbackService
     public function delete(int $id): bool
     {
         try {
-            $this->connection->delete('feedbacks', ['id' => $id]);
+            $this->feedbackRepository->deleteFeedback($id);
             return true;
         } catch (\Throwable) {
             return false;
@@ -314,14 +266,7 @@ final class FeedbackService
     public function getColleagues(int $employeeId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS fullname
-                FROM employees e
-                WHERE e.rh_id = (SELECT rh_id FROM employees WHERE id = ?)
-                AND e.id != ?
-                ORDER BY e.first_name",
-                [$employeeId, $employeeId]
-            );
+            return $this->feedbackRepository->fetchColleagues($employeeId);
         } catch (\Throwable) {
             return [];
         }

@@ -2,14 +2,12 @@
 
 namespace App\Service\Projet;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Projet\ProjectTaskRepository;
 
 final class ProjectTaskService
 {
-    private ?bool $hasTaskStartDateColumn = null;
-
     public function __construct(
-        private readonly Connection $connection,
+        private readonly ProjectTaskRepository $taskRepository,
         private readonly ProjectService $projectService
     ) {}
 
@@ -20,14 +18,7 @@ final class ProjectTaskService
     public function getTasksByProject(int $projectId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT t.*, CONCAT(e.first_name, ' ', e.last_name) as assigned_to_name
-                FROM project_tasks t
-                LEFT JOIN employees e ON t.assigned_to = e.id
-                WHERE t.project_id = ?
-                ORDER BY t.order_index ASC, t.created_at DESC",
-                [$projectId]
-            );
+            return $this->taskRepository->fetchByProject($projectId);
         } catch (\Throwable) {
             return [];
         }
@@ -36,13 +27,7 @@ final class ProjectTaskService
     public function getTaskById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                "SELECT t.*, CONCAT(e.first_name, ' ', e.last_name) as assigned_to_name
-                FROM project_tasks t
-                LEFT JOIN employees e ON t.assigned_to = e.id
-                WHERE t.id = ?",
-                [$id]
-            ) ?: null;
+            return $this->taskRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
@@ -52,11 +37,7 @@ final class ProjectTaskService
     {
         $data = $this->normalizeTaskInput($data);
 
-        // Obtenir le prochain order_index
-        $maxOrder = $this->connection->fetchOne(
-            'SELECT COALESCE(MAX(order_index), 0) FROM project_tasks WHERE project_id = ?',
-            [$data['project_id']]
-        );
+        $maxOrder = $this->taskRepository->getMaxOrderIndex($data['project_id']);
 
         $insertData = [
             'project_id' => $data['project_id'],
@@ -69,7 +50,7 @@ final class ProjectTaskService
             'actual_hours' => 0,
             'due_date' => $data['due_date'] ?? null,
             'completed_date' => null,
-            'order_index' => (int)$maxOrder + 1,
+            'order_index' => (int) $maxOrder + 1,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
@@ -78,7 +59,7 @@ final class ProjectTaskService
             $insertData['start_date'] = $data['start_date'] ?? null;
         }
 
-        $this->connection->insert('project_tasks', $insertData);
+        $this->taskRepository->insertTask($insertData);
 
         // Mettre à jour le taux d'avancement du projet
         $this->projectService->updateCompletionRate($data['project_id']);
@@ -113,7 +94,7 @@ final class ProjectTaskService
             $updateData['completed_date'] = date('Y-m-d');
         }
 
-        $this->connection->update('project_tasks', $updateData, ['id' => $id]);
+        $this->taskRepository->updateTask($id, $updateData);
 
         // Mettre à jour le taux d'avancement du projet
         $this->projectService->updateCompletionRate($task['project_id']);
@@ -136,7 +117,7 @@ final class ProjectTaskService
             $updateData['completed_date'] = date('Y-m-d');
         }
 
-        $this->connection->update('project_tasks', $updateData, ['id' => $id]);
+        $this->taskRepository->updateTask($id, $updateData);
 
         // Mettre à jour le taux d'avancement du projet
         $this->projectService->updateCompletionRate($task['project_id']);
@@ -149,10 +130,7 @@ final class ProjectTaskService
             return false;
         }
 
-        $this->connection->update('project_tasks', [
-            'assigned_to' => $employeeId,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ], ['id' => $taskId]);
+        $this->taskRepository->assignTask($taskId, $employeeId);
 
         return true;
     }
@@ -166,7 +144,7 @@ final class ProjectTaskService
 
         $projectId = $task['project_id'];
 
-        $this->connection->delete('project_tasks', ['id' => $id]);
+        $this->taskRepository->deleteTask($id);
 
         // Mettre à jour le taux d'avancement du projet
         $this->projectService->updateCompletionRate($projectId);
@@ -179,12 +157,7 @@ final class ProjectTaskService
             return;
         }
 
-        $newActualHours = (int)$task['actual_hours'] + $hours;
-
-        $this->connection->update('project_tasks', [
-            'actual_hours' => $newActualHours,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ], ['id' => $taskId]);
+        $this->taskRepository->incrementActualHours($taskId, $hours);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -193,53 +166,13 @@ final class ProjectTaskService
 
     public function updateTaskOrder(int $taskId, int $newOrder): void
     {
-        $this->connection->update('project_tasks', [
-            'order_index' => $newOrder,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ], ['id' => $taskId]);
+        $this->taskRepository->updateTaskOrder($taskId, $newOrder);
     }
 
-    public function getTasksByStatus(int $projectId): array
-    {
-        $tasks = $this->getTasksByProject($projectId);
-
-        return [
-            'todo' => array_filter($tasks, fn($t) => $t['status'] === 'todo'),
-            'in_progress' => array_filter($tasks, fn($t) => $t['status'] === 'in_progress'),
-            'done' => array_filter($tasks, fn($t) => $t['status'] === 'done'),
-        ];
-    }
-
-    /**
-     * @return array<int,array<string,mixed>>
-     */
     public function getProjectAssigneeCandidates(int $projectId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT
-                    c.employee_id,
-                    CONCAT(e.first_name, ' ', e.last_name) AS username,
-                    e.job_title,
-                    COALESCE((
-                        SELECT COUNT(*)
-                        FROM project_tasks t
-                        WHERE t.assigned_to = c.employee_id
-                          AND t.project_id = c.project_id
-                          AND t.status != 'done'
-                    ), 0) AS active_project_tasks,
-                    COALESCE((
-                        SELECT COUNT(*)
-                        FROM project_tasks t2
-                        WHERE t2.assigned_to = c.employee_id
-                          AND t2.status != 'done'
-                    ), 0) AS active_total_tasks
-                FROM project_collaborators c
-                JOIN employees e ON e.id = c.employee_id
-                WHERE c.project_id = ? AND c.is_active = 1
-                ORDER BY active_project_tasks ASC, active_total_tasks ASC, e.first_name ASC",
-                [$projectId]
-            );
+            return $this->taskRepository->getProjectAssigneeCandidates($projectId);
         } catch (\Throwable) {
             return [];
         }
@@ -252,14 +185,7 @@ final class ProjectTaskService
     public function getTasksByEmployee(int $employeeId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT t.*, p.name as project_name, p.status as project_status
-                FROM project_tasks t
-                JOIN projects p ON t.project_id = p.id
-                WHERE t.assigned_to = ?
-                ORDER BY t.due_date ASC, t.created_at DESC',
-                [$employeeId]
-            );
+            return $this->taskRepository->fetchByEmployee($employeeId);
         } catch (\Throwable) {
             return [];
         }
@@ -268,26 +194,10 @@ final class ProjectTaskService
     public function getEmployeeTaskStats(int $employeeId): array
     {
         try {
-            $total = $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM project_tasks WHERE assigned_to = ?',
-                [$employeeId]
-            );
-
-            $completed = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_tasks WHERE assigned_to = ? AND status = 'done'",
-                [$employeeId]
-            );
-
-            $inProgress = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_tasks WHERE assigned_to = ? AND status = 'in_progress'",
-                [$employeeId]
-            );
-
-            $overdue = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_tasks
-                WHERE assigned_to = ? AND status != 'done' AND due_date < CURDATE()",
-                [$employeeId]
-            );
+            $total = $this->taskRepository->countByEmployee($employeeId);
+            $completed = $this->taskRepository->countByEmployeeAndStatus($employeeId, 'done');
+            $inProgress = $this->taskRepository->countByEmployeeAndStatus($employeeId, 'in_progress');
+            $overdue = $this->taskRepository->countOverdueByEmployee($employeeId);
 
             return [
                 'total_tasks' => (int) $total,
@@ -470,17 +380,7 @@ final class ProjectTaskService
 
     private function supportsTaskStartDate(): bool
     {
-        if ($this->hasTaskStartDateColumn !== null) {
-            return $this->hasTaskStartDateColumn;
-        }
-
-        try {
-            $columns = $this->connection->createSchemaManager()->listTableColumns('project_tasks');
-            $this->hasTaskStartDateColumn = array_key_exists('start_date', $columns);
-        } catch (\Throwable) {
-            $this->hasTaskStartDateColumn = false;
-        }
-
-        return $this->hasTaskStartDateColumn;
+        return $this->taskRepository->supportsTaskStartDate();
     }
 }
+

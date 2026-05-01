@@ -32,15 +32,12 @@ final class EmployeeLeaveController extends AbstractController
         MedicalCertificateOcrService $medicalCertificateOcrService,
     ): Response {
         if ($request->isMethod('POST')) {
-            $redirect = $this->handleSubmitRequest(
+            return $this->handleSubmitRequest(
                 $request,
                 $leaveRequestService,
                 $medicalCertificateOcrService,
                 $this->container->has('logger') ? $this->container->get('logger') : null,
             );
-            if ($redirect !== null) {
-                return $redirect;
-            }
         }
 
         $employeeId = $this->getCurrentEmployeeId();
@@ -130,7 +127,7 @@ final class EmployeeLeaveController extends AbstractController
         LeaveRequestService $leaveRequestService,
         MedicalCertificateOcrService $medicalCertificateOcrService,
         ?LoggerInterface $logger = null,
-    ): ?RedirectResponse
+    ): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('employee_leave_submit', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -162,17 +159,18 @@ final class EmployeeLeaveController extends AbstractController
                 $fileMimeType = $this->resolveAttachmentMimeType($file);
                 $validation = $this->validateAttachment($file);
                 if (!$validation['success']) {
-                    $this->addFlash('error', (string) $validation['message']);
+                    $this->addFlash('error', (string) ($validation['message'] ?? 'Le justificatif est invalide.'));
                     return $this->redirectToRoute('app_employee_leave_requests');
                 }
 
                 $upload = $this->storeAttachment($file, $logger);
                 if (!$upload['success']) {
-                    $this->addFlash('error', (string) $upload['message']);
+                    $this->addFlash('error', (string) ($upload['message'] ?? 'Echec de televersement du justificatif.'));
                     return $this->redirectToRoute('app_employee_leave_requests');
                 }
 
-                $attachmentPath = (string) $upload['path'];
+                $attachmentPath = (string) ($upload['path'] ?? '');
+
 
                 $ocr = $medicalCertificateOcrService->extractFromAttachment(
                     (string) ($upload['absolute_path'] ?? ''),
@@ -202,7 +200,10 @@ final class EmployeeLeaveController extends AbstractController
             $attachmentOcrSummary,
         );
 
-        $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
+        $this->addFlash(
+            $result['success'] ? 'success' : 'error',
+            (string) ($result['message'] ?? 'Une erreur est survenue lors de l\'envoi de la demande.'),
+        );
         return $this->redirectToRoute('app_employee_leave_requests');
     }
 
@@ -266,7 +267,8 @@ final class EmployeeLeaveController extends AbstractController
     /** @return array{success: bool, path?: string, absolute_path?: string, message?: string} */
     private function storeAttachment(UploadedFile $file, ?LoggerInterface $logger = null): array
     {
-        $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/leave-exceptions';
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $targetDir = $projectDir . '/public/uploads/leave-exceptions';
 
         if (!is_dir($targetDir)) {
             if (!@mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {

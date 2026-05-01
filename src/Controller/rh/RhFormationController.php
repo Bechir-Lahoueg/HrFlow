@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller\rh;
 
+use App\Security\DbUser;
 use App\Service\Formation\FormationService;
 use App\Service\Formation\FormationChangeNotificationService;
 use App\Service\Formation\ParticipationService;
@@ -36,14 +38,14 @@ final class RhFormationController extends AbstractController
     #[Route('/', name: 'rh_formation_list', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $userId = $this->getUser()->getId();
+        $userId = $this->getCurrentRhId();
 
-        $search = $request->query->get('search', '');
-        $type = $request->query->get('type', '');
-        $sortQuery = $request->query->get('sort', 'created_at-DESC');
+        $search = (string) $request->query->get('search', '');
+        $type = (string) $request->query->get('type', '');
+        $sortQuery = (string) $request->query->get('sort', 'created_at-DESC');
 
-        $sortParts = explode('-', $sortQuery);
-        $sort = $sortParts[0] ?? 'created_at';
+        $sortParts = explode('-', $sortQuery, 2);
+        $sort = $sortParts[0];
         $dir = $sortParts[1] ?? 'DESC';
 
         $formations = $this->formationService->getFormationsByRhId($userId, $search, $type, $sort, $dir);
@@ -68,7 +70,7 @@ final class RhFormationController extends AbstractController
     public function create(Request $request, \Doctrine\ORM\EntityManagerInterface $em): Response
     {
         $formation = new Formation();
-        $formation->setRhId($this->getUser()->getId());
+        $formation->setRhId($this->getCurrentRhId());
 
         $form = $this->createForm(FormationType::class, $formation);
         $form->handleRequest($request);
@@ -139,7 +141,7 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Formation non trouvée');
         }
 
-        if ($this->isCsrfTokenValid('delete-formation-' . $idInt, $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-formation-' . $idInt, (string) $request->request->get('_token', ''))) {
             $sentCount = $this->formationChangeNotificationService->notifyFormationDeleted($formation);
             $this->formationService->deleteFormationWithRelations($formation);
 
@@ -189,16 +191,31 @@ final class RhFormationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $dateDebut = $session->getDateDebut();
+            if (!$dateDebut instanceof \DateTimeInterface) {
+                $this->addFlash('error', 'La date de debut de session est obligatoire.');
+                return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
+            }
+
             if (empty($session->getDateFin())) {
-                $debutDate = clone $session->getDateDebut();
-                $joursToAdd = max(0, $formation->getDuree() - 1);
+                $debutDate = clone $dateDebut;
+                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
             }
 
-            $now = new \DateTime(); $now->setTime(0,0,0);
-            $debut = clone $session->getDateDebut(); $debut->setTime(0,0,0);
-            $fin = clone $session->getDateFin(); $fin->setTime(0,0,0);
+            $dateFin = $session->getDateFin();
+            if (!$dateFin instanceof \DateTimeInterface) {
+                $this->addFlash('error', 'La date de fin de session est obligatoire.');
+                return $this->redirectToRoute('rh_formation_sessions', ['id' => $id]);
+            }
+
+            $now = new \DateTime();
+            $now->setTime(0, 0, 0);
+            $debut = clone $dateDebut;
+            $debut->setTime(0, 0, 0);
+            $fin = clone $dateFin;
+            $fin->setTime(0, 0, 0);
 
             if ($now < $debut) { $session->setStatut('Planifiee'); }
             elseif ($now > $fin) { $session->setStatut('Terminee'); }
@@ -227,6 +244,9 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
         $formation = $session->getFormation();
+        if (!$formation instanceof Formation) {
+            throw $this->createNotFoundException('Formation non trouvée');
+        }
 
         $form = $this->createForm(SessionFormationType::class, $session);
         $form->handleRequest($request);
@@ -237,9 +257,15 @@ final class RhFormationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $dateDebut = $session->getDateDebut();
+            if (!$dateDebut instanceof \DateTimeInterface) {
+                $this->addFlash('error', 'La date de debut de session est obligatoire.');
+                return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
+            }
+
             if (!$session->getDateFin()) {
-                $debutDate = clone $session->getDateDebut();
-                $joursToAdd = max(0, $formation->getDuree() - 1);
+                $debutDate = clone $dateDebut;
+                $joursToAdd = max(0, (int) $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
             }
@@ -310,8 +336,8 @@ final class RhFormationController extends AbstractController
     #[Route('/participants', name: 'rh_formation_all_participants', methods: ['GET'])]
     public function allParticipants(Request $request, ParticipationService $participationService): Response
     {
-        $userId = $this->getUser()->getId();
-        $status = $request->query->get('status', '');
+        $userId = $this->getCurrentRhId();
+        $status = (string) $request->query->get('status', '');
         $formationIdRaw = $request->query->get('formation', '');
         $priorityOnly = $request->query->getBoolean('priorityOnly', false);
         $formationId = is_numeric($formationIdRaw) ? (int) $formationIdRaw : null;
@@ -333,7 +359,7 @@ final class RhFormationController extends AbstractController
     #[Route('/sessions/active', name: 'rh_formation_active_sessions', methods: ['GET'])]
     public function activeSessions(SessionService $sessionService): Response
     {
-        $userId = $this->getUser()->getId();
+        $userId = $this->getCurrentRhId();
 
         return $this->render('DashboardHr/formation/formation_active_sessions.html.twig', [
             'sessions' => $sessionService->getActiveSessionsByRh($userId),
@@ -387,6 +413,11 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
+        $formation = $session->getFormation();
+        if (!$formation instanceof Formation) {
+            throw $this->createNotFoundException('Formation non trouvée');
+        }
+
         $returnToActive = $request->query->get('return') === 'active';
 
         if ($session->getStatut() !== 'En cours') {
@@ -394,18 +425,24 @@ final class RhFormationController extends AbstractController
             if ($returnToActive) {
                 return $this->redirectToRoute('rh_formation_active_sessions');
             }
-            return $this->redirectToRoute('rh_formation_sessions', ['id' => $session->getFormation()->getId()]);
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
         }
-
-        $formation = $session->getFormation();
 
         $debut = $session->getDateDebut();
         $fin = $session->getDateFin();
+        if (!$debut instanceof \DateTimeInterface || !$fin instanceof \DateTimeInterface) {
+            $this->addFlash('error', 'Dates de session invalides.');
+            if ($returnToActive) {
+                return $this->redirectToRoute('rh_formation_active_sessions');
+            }
+            return $this->redirectToRoute('rh_formation_sessions', ['id' => $formation->getId()]);
+        }
+
         $today = new \DateTime();
 
         $maxDate = $today < $fin ? clone $today : clone $fin;
 
-        $selectedDateStr = $request->query->get('date', $maxDate->format('Y-m-d'));
+        $selectedDateStr = (string) $request->query->get('date', $maxDate->format('Y-m-d'));
         $selectedDate = new \DateTime($selectedDateStr);
 
         if ($selectedDate < $debut || $selectedDate > $maxDate) {
@@ -413,7 +450,7 @@ final class RhFormationController extends AbstractController
             $selectedDateStr = $maxDate->format('Y-m-d');
         }
 
-        $allParticipations = $participationService->getSessionParticipations($id);
+        $allParticipations = $participationService->getSessionParticipations($idInt);
         $acceptedParticipations = array_filter(
             $allParticipations,
             fn($p) => $p->getStatutParticipation() === 'Accepte'
@@ -429,7 +466,7 @@ final class RhFormationController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $presencesDataAll = $request->request->all('presences');
-            if (!empty($presencesDataAll) && is_array($presencesDataAll)) {
+            if ($presencesDataAll !== []) {
                 try {
                     foreach ($presencesDataAll as $date => $presencesData) {
                         $presenceService->savePresences($date, $presencesData);
@@ -446,10 +483,15 @@ final class RhFormationController extends AbstractController
             }
         }
 
-        $existingPresences = $presenceService->getPresencesBySession($id);
+        $existingPresences = $presenceService->getPresencesBySession($idInt);
         $currentPresences = [];
         foreach ($existingPresences as $p) {
-            $currentPresences[$p->getDatePresence()->format('Y-m-d')][$p->getParticipation()->getId()] = $p->getStatut();
+            $datePresence = $p->getDatePresence();
+            $participation = $p->getParticipation();
+            if (!$datePresence instanceof \DateTimeInterface || $participation === null) {
+                continue;
+            }
+            $currentPresences[$datePresence->format('Y-m-d')][$participation->getId()] = $p->getStatut();
         }
 
         return $this->render('DashboardHr/formation/formation_presence.html.twig', [
@@ -514,5 +556,15 @@ final class RhFormationController extends AbstractController
 
         return in_array($scheme, ['http', 'https'], true);
     }
-}
 
+    private function getCurrentRhId(): int
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur RH invalide.');
+        }
+
+        return $user->getId();
+    }
+}

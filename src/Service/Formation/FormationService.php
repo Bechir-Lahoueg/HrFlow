@@ -42,10 +42,19 @@ final class FormationService
         return $this->formationRepository->findAllFiltered($search, $type, $sort, $dir, $organisme);
     }
 
+    /**
+     * @return array{total_formations:int,active_sessions:int,total_participants:int}
+     */
     public function getFormationStatsByRhId(int $rhId): array
     {
         try {
-            return $this->formationRepository->getStatsByRh($rhId);
+            $stats = $this->formationRepository->getStatsByRh($rhId);
+
+            return [
+                'total_formations' => (int) ($stats['total_formations'] ?? 0),
+                'active_sessions' => (int) ($stats['active_sessions'] ?? 0),
+                'total_participants' => (int) ($stats['total_participants'] ?? 0),
+            ];
         } catch (\Throwable) {
             return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
         }
@@ -105,6 +114,17 @@ final class FormationService
         }
     }
 
+    /**
+     * @param array{
+     *   titre:string,
+     *   description:string,
+     *   type:string,
+     *   duree:int|string,
+     *   organisme:string,
+     *   objectifs:string,
+     *   id_rh:int|string
+     * } $data
+     */
     public function createFormation(array $data): Formation
     {
         $formation = new Formation();
@@ -122,6 +142,16 @@ final class FormationService
         return $formation;
     }
 
+    /**
+     * @param array{
+     *   titre:string,
+     *   description:string,
+     *   type:string,
+     *   duree:int|string,
+     *   organisme:string,
+     *   objectifs:string
+     * } $data
+     */
     public function updateFormation(int $id, array $data): void
     {
         $formation = $this->formationRepository->find($id);
@@ -208,6 +238,16 @@ final class FormationService
         return $this->sessionFormationRepository->findByFormation($formationId);
     }
 
+    /**
+     * @param array{
+     *   id_formation:int|string,
+     *   date_debut:string,
+     *   date_fin:string,
+     *   lieu:string,
+     *   mode:string,
+     *   capacite_max:int|string
+     * } $data
+     */
     public function createSession(array $data): SessionFormation
     {
         $formation = $this->formationRepository->find((int) $data['id_formation']);
@@ -232,6 +272,15 @@ final class FormationService
         return $session;
     }
 
+    /**
+     * @param array{
+     *   date_debut:string,
+     *   date_fin:string,
+     *   lieu:string,
+     *   mode:string,
+     *   capacite_max:int|string
+     * } $data
+     */
     public function updateSession(int $id, array $data): void
     {
         $session = $this->sessionFormationRepository->find($id);
