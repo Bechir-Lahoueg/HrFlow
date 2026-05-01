@@ -43,6 +43,10 @@ class SessionFeedbackRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param int[] $formationIds
+     * @return array<int, array{average: float, count: int}>
+     */
     public function getAverageMapByFormationIds(array $formationIds): array
     {
         if ($formationIds === []) {
@@ -87,6 +91,7 @@ class SessionFeedbackRepository extends ServiceEntityRepository
             ->execute();
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByUser(int $userId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -104,6 +109,7 @@ class SessionFeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByRhId(int $rhId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -121,6 +127,7 @@ class SessionFeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $row = $this->getConnection()->fetchAssociative(
@@ -139,11 +146,13 @@ class SessionFeedbackRepository extends ServiceEntityRepository
         return $row ?: null;
     }
 
+    /** @param array<string, mixed> $data */
     public function insertFeedback(array $data): void
     {
         $this->getConnection()->insert('feedback_formation', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFeedback(int $id, array $data): void
     {
         $this->getConnection()->update('feedback_formation', $data, ['id' => $id]);
@@ -154,6 +163,7 @@ class SessionFeedbackRepository extends ServiceEntityRepository
         $this->getConnection()->delete('feedback_formation', ['id' => $id]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchApprovedFormations(int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -167,6 +177,7 @@ class SessionFeedbackRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchApprovedSessionsForFormation(int $formationId, int $employeeId): array
     {
         return $this->getConnection()->fetchAllAssociative(

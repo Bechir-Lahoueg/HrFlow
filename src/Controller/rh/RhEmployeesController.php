@@ -27,10 +27,7 @@ final class RhEmployeesController extends AbstractController
         LeaveRequestService $leaveRequestService,
     ): Response {
         if ($request->isMethod('POST')) {
-            $redirect = $this->handleCreateEmployee($request, $employeeRepository, $userRepository, $em);
-            if ($redirect !== null) {
-                return $redirect;
-            }
+            return $this->handleCreateEmployee($request, $employeeRepository, $userRepository, $em);
         }
 
         $rhId = $this->getCurrentRhId();
@@ -53,10 +50,10 @@ final class RhEmployeesController extends AbstractController
             $employees = array_values(array_filter(
                 $employees,
                 static function (Employee $employee) use ($needle): bool {
-                    return str_contains(mb_strtolower($employee->getFirstName()), $needle)
-                        || str_contains(mb_strtolower($employee->getLastName()), $needle)
-                        || str_contains(mb_strtolower($employee->getEmail()), $needle)
-                        || str_contains(mb_strtolower($employee->getJobTitle()), $needle);
+                    return str_contains(mb_strtolower((string) $employee->getFirstName()), $needle)
+                        || str_contains(mb_strtolower((string) $employee->getLastName()), $needle)
+                        || str_contains(mb_strtolower((string) $employee->getEmail()), $needle)
+                        || str_contains(mb_strtolower((string) $employee->getJobTitle()), $needle);
                 }
             ));
         }
@@ -76,7 +73,7 @@ final class RhEmployeesController extends AbstractController
         EmployeeRepository $employeeRepository,
         UserRepository $userRepository,
         EntityManagerInterface $em,
-    ): ?RedirectResponse {
+    ): RedirectResponse {
         if (!$this->isCsrfTokenValid('create_employee_rh', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide. Reessayez.');
             return $this->redirectToRoute('app_rh_employees');
