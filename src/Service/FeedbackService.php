@@ -15,6 +15,7 @@ final class FeedbackService
     // CREATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
@@ -42,6 +43,7 @@ final class FeedbackService
     // READ
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getAll(): array
     {
         try {
@@ -51,6 +53,7 @@ final class FeedbackService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getByRhId(int $rhId): array
     {
         try {
@@ -61,6 +64,7 @@ final class FeedbackService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getReceivedByEmployee(int $employeeId): array
     {
         try {
@@ -71,6 +75,7 @@ final class FeedbackService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getSentByEmployee(int $employeeId): array
     {
         try {
@@ -81,6 +86,7 @@ final class FeedbackService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
@@ -100,6 +106,7 @@ final class FeedbackService
     // UPDATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
@@ -147,6 +154,10 @@ final class FeedbackService
     // HELPERS
     // ═══════════════════════════════════════════════════════════════
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateCreate(array $data): array
     {
         $data = $this->normalizeFeedbackInput($data);
@@ -176,6 +187,10 @@ final class FeedbackService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateUpdate(array $data): array
     {
         $data = $this->normalizeFeedbackInput($data);
@@ -196,6 +211,10 @@ final class FeedbackService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeFeedbackInput(array $data): array
     {
         $feedbackType = strtolower(trim((string)($data['feedback_type'] ?? '')));
@@ -227,6 +246,10 @@ final class FeedbackService
         ];
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
     private function applyAnonymity(array $rows): array
     {
         return array_map(function ($row) {
@@ -237,6 +260,10 @@ final class FeedbackService
         }, $rows);
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
     private function applyEmotionFallback(array $rows): array
     {
         return array_map(function ($row) {
@@ -263,6 +290,7 @@ final class FeedbackService
         }, $rows);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getColleagues(int $employeeId): array
     {
         try {

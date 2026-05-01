@@ -80,7 +80,7 @@ final class HuggingFaceEmotionService
                 $predictions = $decoded[0];
             }
 
-            if (!is_array($predictions) || $predictions === []) {
+            if ($predictions === []) {
                 return ['label' => self::DEFAULT_LABEL, 'score' => 0.0];
             }
 
@@ -110,5 +110,4 @@ final class HuggingFaceEmotionService
         }
     }
 }
-
 

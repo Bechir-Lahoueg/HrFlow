@@ -17,6 +17,7 @@ class ProjectMilestoneRepository extends ServiceEntityRepository
         parent::__construct($registry, ProjectMilestone::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByProject(int $projectId): array
     {
         return $this->getConnection()->fetchAllAssociative(
@@ -27,6 +28,7 @@ class ProjectMilestoneRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return array<string, mixed>|null */
     public function fetchById(int $id): ?array
     {
         $milestone = $this->getConnection()->fetchAssociative(
@@ -37,11 +39,13 @@ class ProjectMilestoneRepository extends ServiceEntityRepository
         return $milestone ?: null;
     }
 
+    /** @param array<string, mixed> $data */
     public function insertMilestone(array $data): void
     {
         $this->getConnection()->insert('project_milestones', $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateMilestone(int $id, array $data): void
     {
         $this->getConnection()->update('project_milestones', $data, ['id' => $id]);
@@ -92,4 +96,3 @@ class ProjectMilestoneRepository extends ServiceEntityRepository
         return $this->getEntityManager()->getConnection();
     }
 }
-

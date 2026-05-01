@@ -2,6 +2,7 @@
 
 namespace App\Controller\rh;
 
+use App\Security\DbUser;
 use App\Service\Projet\ProjectService;
 use App\Service\Projet\ProjectTaskService;
 use App\Service\Projet\ProjectCollaboratorService;
@@ -37,16 +38,16 @@ class RhProjectController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $rhId = $user->getId();
 
         $projects = $this->projectService->getProjectsWithDetails($rhId);
         $stats = $this->projectService->getProjectStats($rhId);
 
         // Filtres
-        $statusFilter = $request->query->get('status', '');
-        $priorityFilter = $request->query->get('priority', '');
-        $search = $request->query->get('search', '');
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $priorityFilter = trim((string) $request->query->get('priority', ''));
+        $search = trim((string) $request->query->get('search', ''));
 
         $projects = $this->applyProjectFilters($projects, $statusFilter, $priorityFilter, $search);
 
@@ -64,7 +65,7 @@ class RhProjectController extends AbstractController
     #[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
     public function exportPdf(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $rhId = $user->getId();
 
         $statusFilter = trim((string) $request->query->get('status', ''));
@@ -125,12 +126,12 @@ class RhProjectController extends AbstractController
             return $this->redirectToRoute('rh_project_index');
         }
 
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $rhId = $user->getId();
 
         $result = $this->taskDeadlineAlertService->sendAlertsForRh($rhId);
 
-        if (($result['tasksFlagged'] ?? 0) === 0) {
+        if ($result['tasksFlagged'] === 0) {
             $this->addFlash('success', 'Aucune alerte a envoyer pour le moment.');
         } else {
             $this->addFlash(
@@ -164,7 +165,7 @@ class RhProjectController extends AbstractController
     #[Route('/new', name: 'new')]
     public function new(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
 
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
@@ -268,7 +269,7 @@ class RhProjectController extends AbstractController
     #[Route('/{id}/tasks/new', name: 'task_new', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function newTask(int $id, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $data = $request->request->all();
         $data['project_id'] = $id;
 
@@ -348,11 +349,11 @@ class RhProjectController extends AbstractController
     #[Route('/{id}/tasks/{taskId}/move', name: 'task_move', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
     public function moveTask(int $id, int $taskId, Request $request): JsonResponse
     {
-        $user = $this->getUser();
-        $newStatus = $request->request->get('status');
+        $user = $this->getDbUser();
+        $newStatus = trim((string) $request->request->get('status', ''));
         $task = $this->taskService->getTaskById($taskId);
 
-        if ($task && $newStatus) {
+        if ($task && $newStatus !== '') {
             $this->taskService->updateTaskStatus($taskId, $newStatus);
             if ($newStatus === 'done') {
                 $this->updateService->logTaskCompleted($id, $user->getId(), $task['title'], true);
@@ -491,7 +492,7 @@ class RhProjectController extends AbstractController
     #[Route('/{id}/milestones/{milestoneId}/complete', name: 'milestone_complete', requirements: ['id' => '\d+', 'milestoneId' => '\d+'], methods: ['POST'])]
     public function completeMilestone(int $id, int $milestoneId): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $milestone = $this->milestoneService->getMilestoneById($milestoneId);
         $this->milestoneService->markAsCompleted($milestoneId);
         if ($milestone) {
@@ -516,7 +517,7 @@ class RhProjectController extends AbstractController
     #[Route('/{id}/comment', name: 'comment', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function addComment(int $id, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $content = $request->request->get('content');
 
         if ($content) {
@@ -538,9 +539,11 @@ class RhProjectController extends AbstractController
     // ANALYTICS HELPER
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $formState */
     private function renderProjectShow(int $id, array $formState = [], int $status = 200): Response
     {
-        $user = $this->getUser();
+        /** @var array<string, mixed> $formState */
+        $user = $this->getDbUser();
         $rhId = $user->getId();
 
         $project = $this->projectService->getProjectById($id);
@@ -595,6 +598,13 @@ class RhProjectController extends AbstractController
         ], $formState), new Response(null, $status));
     }
 
+    /**
+     * @param array<string, mixed> $project
+     * @param array<int, array<string, mixed>> $tasks
+     * @param array<int, array<string, mixed>> $team
+     * @param array<int, array<string, mixed>> $milestones
+     * @return array<string, mixed>
+     */
     private function calculateAnalytics(array $project, array $tasks, array $team, array $milestones): array
     {
         $totalTasks = count($tasks);
@@ -616,7 +626,8 @@ class RhProjectController extends AbstractController
             $predictedEnd = (new \DateTime())->modify("+{$daysNeeded} days");
             $plannedEnd = new \DateTime($project['end_date']);
             $diff = $predictedEnd->diff($plannedEnd);
-            $daysDiff = $predictedEnd > $plannedEnd ? -$diff->days : $diff->days;
+            $diffDays = $diff->days === false ? 0 : $diff->days;
+            $daysDiff = $predictedEnd > $plannedEnd ? -$diffDays : $diffDays;
 
             $prediction = [
                 'predicted_date' => $predictedEnd->format('Y-m-d'),
@@ -695,6 +706,10 @@ class RhProjectController extends AbstractController
         ];
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $projects
+     * @return array<int, array<string, mixed>>
+     */
     private function applyProjectFilters(array $projects, string $statusFilter, string $priorityFilter, string $search): array
     {
         if ($statusFilter === '' && $priorityFilter === '' && $search === '') {
@@ -749,14 +764,14 @@ class RhProjectController extends AbstractController
 
         $result = [];
         foreach ($aiSuggestions as $item) {
-            $employeeId = (int) ($item['employee_id'] ?? 0);
+            $employeeId = (int) $item['employee_id'];
             if (!isset($byEmployeeId[$employeeId])) {
                 continue;
             }
 
             $result[] = array_merge($byEmployeeId[$employeeId], [
-                'score' => (int) ($item['score'] ?? 0),
-                'reason' => (string) ($item['reason'] ?? 'Profil adapte a la tache.'),
+                'score' => (int) $item['score'],
+                'reason' => (string) $item['reason'],
             ]);
         }
 
@@ -780,5 +795,15 @@ class RhProjectController extends AbstractController
 
         usort($fallback, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
         return array_slice($fallback, 0, 3);
+    }
+
+    private function getDbUser(): DbUser
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifie.');
+        }
+
+        return $user;
     }
 }

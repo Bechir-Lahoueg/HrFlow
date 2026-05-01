@@ -15,11 +15,13 @@ final class ProjectCollaboratorService
     // CRUD COLLABORATEURS
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getCollaboratorsByProject(int $projectId): array
     {
         return $this->collaboratorRepository->fetchByProject($projectId);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectsByEmployee(int $employeeId): array
     {
         try {
@@ -29,6 +31,10 @@ final class ProjectCollaboratorService
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     public function addCollaborator(array $data): array
     {
         $data = $this->normalizeAddCollaboratorInput($data);
@@ -59,6 +65,7 @@ final class ProjectCollaboratorService
         return ['success' => true, 'message' => 'Membre ajoute avec succes.'];
     }
 
+    /** @param array<string, mixed> $data */
     public function updateCollaborator(int $id, array $data): void
     {
         $this->collaboratorRepository->updateCollaborator($id, [
@@ -108,6 +115,7 @@ final class ProjectCollaboratorService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getAvailableEmployees(int $projectId, int $rhId): array
     {
         return $this->collaboratorRepository->getAvailableEmployees($projectId, $rhId);
@@ -142,6 +150,10 @@ final class ProjectCollaboratorService
         return trim($jobTitle);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeAddCollaboratorInput(array $data): array
     {
         $projectId = isset($data['project_id']) && is_numeric($data['project_id'])
@@ -154,7 +166,7 @@ final class ProjectCollaboratorService
 
         $assignedHours = $data['assigned_hours'] ?? 0;
         $assignedHours = is_string($assignedHours) ? trim($assignedHours) : $assignedHours;
-        if ($assignedHours === '' || $assignedHours === null) {
+        if ($assignedHours === '') {
             $assignedHours = 0;
         }
 
@@ -165,6 +177,10 @@ final class ProjectCollaboratorService
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     private function validateAddCollaboratorInput(array $data): array
     {
         $errors = [];
