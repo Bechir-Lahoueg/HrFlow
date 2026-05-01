@@ -2,6 +2,7 @@
 
 namespace App\Controller\rh;
 
+use App\Security\DbUser;
 use App\Service\FeedbackService;
 use App\Service\FeedbackFormationService;
 use App\Service\RequestService;
@@ -29,8 +30,8 @@ class RhRelationController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(Request $request): Response
     {
-        $user   = $this->getUser();
-        $rhId   = $user->getId();
+        $user = $this->getDbUser();
+        $rhId = $user->getId();
 
         $viewData = $this->buildIndexData($request, $rhId);
 
@@ -44,7 +45,7 @@ class RhRelationController extends AbstractController
     #[Route('/requests/{id}/approve', name: 'request_approve', methods: ['POST'])]
     public function approveRequest(int $id, Request $request): Response
     {
-        $user    = $this->getUser();
+        $user = $this->getDbUser();
         $comment = $request->request->get('comment', '');
         $this->requestService->updateStatus($id, 'approved', $user->getId(), $comment);
         $this->addFlash('success', 'Demande approuvée avec succès.');
@@ -54,7 +55,7 @@ class RhRelationController extends AbstractController
     #[Route('/requests/{id}/reject', name: 'request_reject', methods: ['POST'])]
     public function rejectRequest(int $id, Request $request): Response
     {
-        $user   = $this->getUser();
+        $user = $this->getDbUser();
         $reason = $request->request->get('reason', '');
         $this->requestService->updateStatus($id, 'rejected', $user->getId(), $reason);
         $this->addFlash('success', 'Demande rejetée.');
@@ -73,7 +74,7 @@ class RhRelationController extends AbstractController
 
         $errors = $this->requestTypeService->validate($data);
         if (count($errors) > 0) {
-            $viewData = $this->buildIndexData($request, $this->getUser()->getId());
+            $viewData = $this->buildIndexData($request, $this->getDbUser()->getId());
             $viewData['typeErrors'] = $errors;
             $viewData['typeOld'] = $data;
             $viewData['typeMode'] = 'new';
@@ -93,7 +94,7 @@ class RhRelationController extends AbstractController
 
         $errors = $this->requestTypeService->validate($data);
         if (count($errors) > 0) {
-            $viewData = $this->buildIndexData($request, $this->getUser()->getId());
+            $viewData = $this->buildIndexData($request, $this->getDbUser()->getId());
             $viewData['typeErrors'] = $errors;
             $viewData['typeOld'] = $data;
             $viewData['typeMode'] = 'edit';
@@ -157,6 +158,7 @@ class RhRelationController extends AbstractController
         return new JsonResponse($ff);
     }
 
+    /** @return array<string, mixed> */
     private function buildIndexData(Request $request, int $rhId): array
     {
         $tab    = $request->query->get('tab', 'requests');
@@ -237,5 +239,15 @@ class RhRelationController extends AbstractController
             'typeMode'       => null,
             'typeEditId'     => null,
         ];
+    }
+
+    private function getDbUser(): DbUser
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifie.');
+        }
+
+        return $user;
     }
 }

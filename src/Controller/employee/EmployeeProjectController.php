@@ -2,6 +2,7 @@
 
 namespace App\Controller\employee;
 
+use App\Security\DbUser;
 use App\Service\Projet\ProjectService;
 use App\Service\Projet\ProjectTaskService;
 use App\Service\Projet\ProjectCollaboratorService;
@@ -29,7 +30,7 @@ class EmployeeProjectController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $projects = $this->collaboratorService->getProjectsByEmployee($employeeId);
@@ -65,7 +66,7 @@ class EmployeeProjectController extends AbstractController
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'])]
     public function show(int $id): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $project = $this->projectService->getProjectById($id);
@@ -115,7 +116,7 @@ class EmployeeProjectController extends AbstractController
     #[Route('/{id}/tasks/{taskId}/move', name: 'task_move', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
     public function moveTask(int $id, int $taskId, Request $request): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $newStatus = $request->request->get('status');
@@ -151,7 +152,7 @@ class EmployeeProjectController extends AbstractController
     #[Route('/{id}/tasks/{taskId}/log-hours', name: 'task_log_hours', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
     public function logHours(int $id, int $taskId, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $hours = (int) $request->request->get('hours', 0);
@@ -189,7 +190,7 @@ class EmployeeProjectController extends AbstractController
     #[Route('/{id}/comment', name: 'comment', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function addComment(int $id, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $content = $request->request->get('content');
@@ -211,6 +212,7 @@ class EmployeeProjectController extends AbstractController
     // HELPER
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<string, mixed>|null */
     private function getMyCollaboration(int $projectId, int $employeeId): ?array
     {
         $collabs = $this->collaboratorService->getCollaboratorsByProject($projectId);
@@ -219,4 +221,15 @@ class EmployeeProjectController extends AbstractController
         }
         return null;
     }
+
+    private function getDbUser(): DbUser
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifie.');
+        }
+
+        return $user;
+    }
 }
+

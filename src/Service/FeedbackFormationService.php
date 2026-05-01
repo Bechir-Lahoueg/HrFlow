@@ -14,6 +14,7 @@ final class FeedbackFormationService
     // CREATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
@@ -39,6 +40,7 @@ final class FeedbackFormationService
     // READ
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getByUser(int $userId): array
     {
         try {
@@ -48,6 +50,7 @@ final class FeedbackFormationService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getByRhId(int $rhId): array
     {
         try {
@@ -57,6 +60,7 @@ final class FeedbackFormationService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
@@ -70,6 +74,7 @@ final class FeedbackFormationService
     // UPDATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
@@ -105,6 +110,10 @@ final class FeedbackFormationService
     // HELPERS
     // ═══════════════════════════════════════════════════════════════
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateCreate(array $data): array
     {
         $data = $this->normalizeFeedbackFormationInput($data);
@@ -135,6 +144,10 @@ final class FeedbackFormationService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateUpdate(array $data): array
     {
         $data = $this->normalizeFeedbackFormationInput($data);
@@ -156,6 +169,10 @@ final class FeedbackFormationService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeFeedbackFormationInput(array $data): array
     {
         $rating = $data['rating'] ?? null;
@@ -194,6 +211,7 @@ final class FeedbackFormationService
         return $value === '' ? null : $value;
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getApprovedFormations(int $employeeId): array
     {
         try {
@@ -203,6 +221,7 @@ final class FeedbackFormationService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getApprovedSessionsForFormation(int $formationId, int $employeeId): array
     {
         try {

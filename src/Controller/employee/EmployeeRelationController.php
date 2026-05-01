@@ -2,6 +2,7 @@
 
 namespace App\Controller\employee;
 
+use App\Security\DbUser;
 use App\Service\FeedbackService;
 use App\Service\FeedbackFormationService;
 use App\Service\RequestService;
@@ -32,7 +33,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/requests', name: 'requests')]
     public function requests(Request $request): Response
     {
-        $user       = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $viewData = $this->buildRequestsViewData($request, $employeeId);
@@ -43,7 +44,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/requests/new', name: 'request_new', methods: ['POST'])]
     public function newRequest(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $data = $request->request->all();
         $data['user_id'] = $user->getId();
 
@@ -99,7 +100,7 @@ class EmployeeRelationController extends AbstractController
             $data = $request->request->all();
             $errors = $this->requestService->validateUpdate($data);
             if (count($errors) > 0) {
-                $viewData = $this->buildRequestsViewData($request, $this->getUser()->getId());
+                $viewData = $this->buildRequestsViewData($request, $this->getDbUser()->getId());
                 $viewData['requestEditErrors'] = $errors;
                 $viewData['requestEditOld'] = $data;
                 $viewData['requestEditId'] = $id;
@@ -114,7 +115,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/requests/{id}/cancel', name: 'request_cancel', methods: ['POST'])]
     public function cancelRequest(int $id): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $req  = $this->requestService->getById($id);
         if ($req && $req['status'] === 'pending') {
             $this->requestService->updateStatus($id, 'cancelled', $user->getId(), 'Annulée par l\'employé');
@@ -141,7 +142,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks', name: 'feedbacks')]
     public function feedbacks(Request $request): Response
     {
-        $user       = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $viewData = $this->buildFeedbacksViewData($request, $employeeId);
@@ -152,7 +153,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks/send', name: 'feedback_send', methods: ['POST'])]
     public function sendFeedback(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $data = $request->request->all();
         $data['from_user_id'] = $user->getId();
         $data['is_anonymous'] = $request->request->has('is_anonymous');
@@ -178,7 +179,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks/{id}/edit', name: 'feedback_edit', methods: ['POST'])]
     public function editFeedback(int $id, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $fb   = $this->feedbackService->getById($id);
         if ($fb && (int)$fb['from_user_id'] === $user->getId()) {
             $data = $request->request->all();
@@ -206,7 +207,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks/{id}/delete', name: 'feedback_delete', methods: ['POST'])]
     public function deleteFeedback(int $id): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $fb   = $this->feedbackService->getById($id);
         if ($fb && (int)$fb['from_user_id'] === $user->getId()) {
             $this->feedbackService->delete($id);
@@ -222,7 +223,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks-formation', name: 'ff_index')]
     public function ffIndex(Request $request): Response
     {
-        $user       = $this->getUser();
+        $user = $this->getDbUser();
         $employeeId = $user->getId();
 
         $ffList     = $this->ffService->getByUser($employeeId);
@@ -248,7 +249,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks-formation/sessions', name: 'ff_sessions', methods: ['GET'])]
     public function ffSessions(Request $request): JsonResponse
     {
-        $user        = $this->getUser();
+        $user = $this->getDbUser();
         $formationId = (int)$request->query->get('formation_id', 0);
         $sessions    = $this->ffService->getApprovedSessionsForFormation($formationId, $user->getId());
         return new JsonResponse($sessions);
@@ -257,7 +258,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks-formation/new', name: 'ff_new', methods: ['POST'])]
     public function newFf(Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $data = $request->request->all();
         $data['user_id']   = $user->getId();
         $data['recommande'] = $request->request->has('recommande');
@@ -279,7 +280,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks-formation/{id}/edit', name: 'ff_edit', methods: ['POST'])]
     public function editFf(int $id, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $ff   = $this->ffService->getById($id);
         if ($ff && (int)$ff['user_id'] === $user->getId()) {
             $data = $request->request->all();
@@ -302,7 +303,7 @@ class EmployeeRelationController extends AbstractController
     #[Route('/feedbacks-formation/{id}/delete', name: 'ff_delete', methods: ['POST'])]
     public function deleteFf(int $id): Response
     {
-        $user = $this->getUser();
+        $user = $this->getDbUser();
         $ff   = $this->ffService->getById($id);
         if ($ff && (int)$ff['user_id'] === $user->getId()) {
             $this->ffService->delete($id);
@@ -339,6 +340,7 @@ class EmployeeRelationController extends AbstractController
         return new JsonResponse($ff ?? []);
     }
 
+    /** @return array<string, mixed> */
     private function buildRequestsViewData(Request $request, int $employeeId): array
     {
         $allRequests  = $this->requestService->getByUserId($employeeId);
@@ -379,6 +381,7 @@ class EmployeeRelationController extends AbstractController
         ];
     }
 
+    /** @return array<string, mixed> */
     private function buildFeedbacksViewData(Request $request, int $employeeId): array
     {
         $received = $this->feedbackService->getReceivedByEmployee($employeeId);
@@ -440,7 +443,7 @@ class EmployeeRelationController extends AbstractController
             return ['success' => false, 'message' => 'La pièce jointe est invalide.'];
         }
 
-        if (($file->getSize() ?? 0) > 3 * 1024 * 1024) {
+        if ((int) $file->getSize() > 3 * 1024 * 1024) {
             return ['success' => false, 'message' => 'La pièce jointe dépasse 3 Mo.'];
         }
 
@@ -529,7 +532,7 @@ class EmployeeRelationController extends AbstractController
     {
         try {
             $mime = $file->getMimeType();
-            if (is_string($mime) && $mime !== '') {
+            if ($mime !== null && $mime !== '') {
                 return strtolower($mime);
             }
         } catch (\Throwable) {
@@ -537,22 +540,32 @@ class EmployeeRelationController extends AbstractController
         }
 
         $clientMime = $file->getClientMimeType();
-        return is_string($clientMime) ? strtolower(trim($clientMime)) : '';
+        return strtolower(trim($clientMime));
     }
 
     private function resolveAttachmentExtension(UploadedFile $file): string
     {
         $clientExtension = $file->getClientOriginalExtension();
-        if (is_string($clientExtension) && $clientExtension !== '') {
+        if ($clientExtension !== '') {
             return strtolower(trim($clientExtension));
         }
 
         $originalName = $file->getClientOriginalName();
-        if (!is_string($originalName) || $originalName === '') {
+        if ($originalName === '') {
             return '';
         }
 
         $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-        return is_string($ext) ? strtolower(trim($ext)) : '';
+        return strtolower(trim((string) $ext));
+    }
+
+    private function getDbUser(): DbUser
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifie.');
+        }
+
+        return $user;
     }
 }

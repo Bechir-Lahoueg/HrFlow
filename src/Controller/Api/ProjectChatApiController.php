@@ -85,10 +85,6 @@ final class ProjectChatApiController extends AbstractController
 
         $messages = $result['messages'];
         foreach ($messages as &$message) {
-            if (!is_array($message)) {
-                continue;
-            }
-
             $url = (string) ($message['url'] ?? '');
             if (!str_starts_with($url, 'mxc://')) {
                 continue;
@@ -267,15 +263,15 @@ final class ProjectChatApiController extends AbstractController
 
         if (is_array($media)) {
             $debug['stage'] = 'matrix_send_media';
-            $mime = (string) ($media['mime'] ?? 'application/octet-stream');
+            $mime = (string) $media['mime'];
             $msgType = $this->resolveMessageTypeByMime($mime);
 
             $ok = $this->matrixService->sendMediaMessage($roomId, $sender, [
-                'mxc' => (string) ($media['mxc'] ?? ''),
-                'url' => (string) ($media['url'] ?? ''),
-                'name' => (string) ($media['name'] ?? 'fichier'),
+                'mxc' => (string) $media['mxc'],
+                'url' => (string) $media['download_url'],
+                'name' => (string) $media['name'],
                 'mime' => $mime,
-                'size' => (int) ($media['size'] ?? 0),
+                'size' => (int) $media['size'],
             ], $msgType);
 
             if ($ok) {
@@ -283,7 +279,7 @@ final class ProjectChatApiController extends AbstractController
                 return $this->json([
                     'success' => true,
                     'msgType' => $msgType,
-                    'fileName' => (string) ($media['name'] ?? ''),
+                    'fileName' => (string) $media['name'],
                 ]);
             }
 
@@ -302,7 +298,7 @@ final class ProjectChatApiController extends AbstractController
         }
 
         $debug['stage'] = 'local_fallback_send_link';
-        $relativeUrl = (string) ($localMedia['url'] ?? '');
+        $relativeUrl = (string) $localMedia['url'];
         $publicUrl = str_starts_with($relativeUrl, 'http://') || str_starts_with($relativeUrl, 'https://')
             ? $relativeUrl
             : rtrim($request->getSchemeAndHttpHost(), '/') . $relativeUrl;
@@ -310,7 +306,7 @@ final class ProjectChatApiController extends AbstractController
         $ok = $this->matrixService->sendMessage(
             $roomId,
             $sender,
-            'Fichier: ' . (string) ($localMedia['name'] ?? 'fichier') . ' - ' . $publicUrl
+            'Fichier: ' . (string) $localMedia['name'] . ' - ' . $publicUrl
         );
 
         if (!$ok) {
@@ -325,7 +321,7 @@ final class ProjectChatApiController extends AbstractController
         return $this->json([
             'success' => true,
             'msgType' => 'm.file',
-            'fileName' => (string) ($localMedia['name'] ?? ''),
+            'fileName' => (string) $localMedia['name'],
         ]);
     }
 
@@ -363,6 +359,7 @@ final class ProjectChatApiController extends AbstractController
         ]);
     }
 
+    /** @return array<string, mixed>|null */
     private function getAuthorizedProject(int $projectId): ?array
     {
         $project = $this->projectService->getProjectById($projectId);
@@ -468,7 +465,7 @@ final class ProjectChatApiController extends AbstractController
     {
         try {
             $mime = $file->getMimeType();
-            if (is_string($mime) && $mime !== '') {
+            if ($mime !== null && $mime !== '') {
                 return $mime;
             }
         } catch (\Throwable) {
@@ -476,8 +473,7 @@ final class ProjectChatApiController extends AbstractController
         }
 
         $clientMime = $file->getClientMimeType();
-        return is_string($clientMime) && $clientMime !== '' ? $clientMime : 'application/octet-stream';
+        return $clientMime !== '' ? $clientMime : 'application/octet-stream';
     }
 }
-
 

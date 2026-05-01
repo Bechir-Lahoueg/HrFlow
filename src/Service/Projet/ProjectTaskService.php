@@ -15,6 +15,7 @@ final class ProjectTaskService
     // CRUD TÂCHES
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getTasksByProject(int $projectId): array
     {
         try {
@@ -24,6 +25,7 @@ final class ProjectTaskService
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getTaskById(int $id): ?array
     {
         try {
@@ -33,6 +35,7 @@ final class ProjectTaskService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createTask(array $data): void
     {
         $data = $this->normalizeTaskInput($data);
@@ -65,6 +68,7 @@ final class ProjectTaskService
         $this->projectService->updateCompletionRate($data['project_id']);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateTask(int $id, array $data): void
     {
         $task = $this->getTaskById($id);
@@ -169,6 +173,7 @@ final class ProjectTaskService
         $this->taskRepository->updateTaskOrder($taskId, $newOrder);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectAssigneeCandidates(int $projectId): array
     {
         try {
@@ -182,6 +187,7 @@ final class ProjectTaskService
     // TÂCHES PAR EMPLOYÉ
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getTasksByEmployee(int $employeeId): array
     {
         try {
@@ -191,6 +197,7 @@ final class ProjectTaskService
         }
     }
 
+    /** @return array<string, int|float> */
     public function getEmployeeTaskStats(int $employeeId): array
     {
         try {
@@ -241,6 +248,7 @@ final class ProjectTaskService
         };
     }
 
+    /** @param array<string, mixed> $task */
     public function isOverdue(array $task): bool
     {
         if (!$task['due_date'] || $task['status'] === 'done') {
@@ -250,6 +258,10 @@ final class ProjectTaskService
         return (new \DateTime($task['due_date'])) < (new \DateTime());
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validate(array $data): array
     {
         $data = $this->normalizeTaskInput($data);
@@ -316,6 +328,10 @@ final class ProjectTaskService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeTaskInput(array $data): array
     {
         $title = isset($data['title']) ? trim((string) $data['title']) : '';

@@ -19,6 +19,7 @@ class ProjectUpdateRepository extends ServiceEntityRepository
         parent::__construct($registry, ProjectUpdate::class);
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function fetchByProject(int $projectId, int $limit = 50, ?int $authorUserId = null, bool $includeProjectRhUpdates = false): array
     {
         $safeLimit = max(1, min(200, $limit));
@@ -78,6 +79,7 @@ class ProjectUpdateRepository extends ServiceEntityRepository
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function insertUpdate(array $data): void
     {
         $this->getConnection()->insert('project_updates', $data);
