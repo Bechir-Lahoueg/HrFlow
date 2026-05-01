@@ -18,7 +18,7 @@ class SessionFormation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_session')]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'sessions')]
     #[ORM\JoinColumn(name: 'id_formation', referencedColumnName: 'id_formation', nullable: false)]

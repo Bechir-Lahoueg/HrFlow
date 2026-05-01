@@ -26,7 +26,7 @@ class LeaveNotification
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\Column(name: 'recipient_type', length: 20)]
     private string $recipientType;

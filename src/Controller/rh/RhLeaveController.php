@@ -40,7 +40,11 @@ final class RhLeaveController extends AbstractController
         $balances = $leaveBalanceService->getBalancesByRh($rhId);
         $balanceMap = [];
         foreach ($balances as $lb) {
-            $balanceMap[$lb->getEmployee()->getId()] = $lb->getAvailableDays();
+            $employee = $lb->getEmployee();
+            if ($employee === null || $employee->getId() === null) {
+                continue;
+            }
+            $balanceMap[$employee->getId()] = $lb->getAvailableDays();
         }
 
         return $this->render('DashboardHr/Congé/leave_requests.html.twig', [
@@ -170,7 +174,7 @@ final class RhLeaveController extends AbstractController
             'leave_type' => (string) $leave->getLeaveType(),
             'start_date' => $leave->getStartDate()?->format('Y-m-d') ?? '',
             'end_date' => $leave->getEndDate()?->format('Y-m-d') ?? '',
-            'days_count' => $leave->getDaysCount(),
+            'days_count' => (int) ($leave->getDaysCount() ?? 0),
             'urgency_level' => (string) $leave->getUrgencyLevel(),
             'reason' => (string) $leave->getReason(),
         ]);

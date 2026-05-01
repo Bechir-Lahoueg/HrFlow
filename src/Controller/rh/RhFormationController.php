@@ -298,7 +298,11 @@ final class RhFormationController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
 
-        $formationId = $session->getFormation()->getId();
+        $formation = $session->getFormation();
+        if (!$formation instanceof Formation) {
+            throw $this->createNotFoundException('Formation non trouvée');
+        }
+        $formationId = $formation->getId();
 
         if (!$this->isCsrfTokenValid('delete-session-' . $idInt, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
@@ -458,7 +462,7 @@ final class RhFormationController extends AbstractController
 
         $dates = [];
         $interval = new \DateInterval('P1D');
-        $endDateForPeriod = (clone $maxDate)->modify('+1 day');
+        $endDateForPeriod = \DateTimeImmutable::createFromInterface($maxDate)->modify('+1 day');
         $period = new \DatePeriod($debut, $interval, $endDateForPeriod);
         foreach ($period as $dt) {
             $dates[] = $dt->format('Y-m-d');
