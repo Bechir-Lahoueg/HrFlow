@@ -91,9 +91,6 @@ final class PublicHolidayService
             }
 
             $payload = $response->toArray(false);
-            if (!is_array($payload)) {
-                return [];
-            }
 
             $holidays = [];
             foreach ($payload as $item) {

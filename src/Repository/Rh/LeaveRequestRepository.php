@@ -141,6 +141,7 @@ class LeaveRequestRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /** @return array{total_count: int, pending_count: int, approved_count: int, rejected_count: int} */
     public function getStatsByRh(int $rhId): array
     {
         $result = $this->createQueryBuilder('lr')
@@ -164,6 +165,7 @@ class LeaveRequestRepository extends ServiceEntityRepository
         ];
     }
 
+    /** @return array{pending_count: int, approved_count: int, rejected_count: int} */
     public function getStatsByEmployee(int $employeeId): array
     {
         $result = $this->createQueryBuilder('lr')
