@@ -1,0 +1,436 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Accessibilité — feuille de styles globale
+   Activée par des classes appliquées sur <html> par le manager JS / Twig.
+   Préférences : taille de texte, contraste élevé, mode simplifié,
+   réduction des animations, indicateurs de focus renforcés.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Skip link (lien d'évitement, lecteurs d'écran + clavier) ──────────── */
+.a11y-skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    z-index: 9999;
+    padding: 12px 18px;
+    background: #111827;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 0 0 12px 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: top 0.18s ease;
+    text-decoration: none;
+}
+.a11y-skip-link:focus,
+.a11y-skip-link:focus-visible {
+    top: 0;
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+}
+
+/* ── Indicateurs de focus renforcés (WCAG 2.4.7) ─────────────────────── */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+.a11y-high-contrast :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+/* Contenu uniquement pour lecteurs d'écran */
+.a11y-sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Échelles de taille de texte (5 paliers)
+   On scale `font-size` du <html> → toutes les unités rem suivent.
+   Pour les classes Tailwind utilisant des unités absolues, on applique
+   un facteur supplémentaire via une variable CSS afin de couvrir
+   les éléments qui n'utilisent pas rem.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+    --a11y-font-scale: 1;
+}
+html.a11y-font-90  { font-size: 0.90rem; --a11y-font-scale: 0.90; }
+html.a11y-font-100 { font-size: 1.00rem; --a11y-font-scale: 1.00; }
+html.a11y-font-115 { font-size: 1.15rem; --a11y-font-scale: 1.15; }
+html.a11y-font-130 { font-size: 1.30rem; --a11y-font-scale: 1.30; }
+html.a11y-font-150 { font-size: 1.50rem; --a11y-font-scale: 1.50; }
+
+/* Forcer une amplification cohérente sur les classes Tailwind à tailles fixes */
+html.a11y-font-115 .text-xs   { font-size: 0.825rem !important; }
+html.a11y-font-115 .text-sm   { font-size: 0.95rem !important; }
+html.a11y-font-115 .text-base { font-size: 1.10rem !important; }
+html.a11y-font-115 .text-lg   { font-size: 1.25rem !important; }
+
+html.a11y-font-130 .text-xs   { font-size: 0.92rem !important; }
+html.a11y-font-130 .text-sm   { font-size: 1.05rem !important; }
+html.a11y-font-130 .text-base { font-size: 1.20rem !important; }
+html.a11y-font-130 .text-lg   { font-size: 1.40rem !important; }
+
+html.a11y-font-150 .text-xs   { font-size: 1.05rem !important; }
+html.a11y-font-150 .text-sm   { font-size: 1.20rem !important; }
+html.a11y-font-150 .text-base { font-size: 1.40rem !important; }
+html.a11y-font-150 .text-lg   { font-size: 1.60rem !important; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Mode contraste élevé
+   - Texte noir sur blanc (ou inversé en dark)
+   - Bordures visibles partout
+   - Couleurs d'accent renforcées
+   - Nous utilisons "html.a11y-high-contrast" pour cibler tout le document.
+   ────────────────────────────────────────────────────────────────────────── */
+html.a11y-high-contrast {
+    --a11y-fg: #000;
+    --a11y-bg: #fff;
+    --a11y-accent: #0033ff;
+    --a11y-danger: #b91c1c;
+    --a11y-success: #006400;
+}
+html.a11y-high-contrast.dark {
+    --a11y-fg: #fff;
+    --a11y-bg: #000;
+    --a11y-accent: #ffd166;
+    --a11y-danger: #ff6b6b;
+    --a11y-success: #00ff88;
+}
+
+html.a11y-high-contrast body {
+    background: var(--a11y-bg) !important;
+    color: var(--a11y-fg) !important;
+}
+
+html.a11y-high-contrast :where(p, span, h1, h2, h3, h4, h5, h6, label, li, td, th, dt, dd) {
+    color: var(--a11y-fg) !important;
+}
+
+html.a11y-high-contrast :where(button, a) {
+    text-decoration: underline;
+}
+
+html.a11y-high-contrast :where(button:not(.a11y-skip-link), a:not(.a11y-skip-link)) {
+    border: 2px solid var(--a11y-fg) !important;
+}
+
+html.a11y-high-contrast :where(input, select, textarea) {
+    background: var(--a11y-bg) !important;
+    color: var(--a11y-fg) !important;
+    border: 2px solid var(--a11y-fg) !important;
+}
+
+html.a11y-high-contrast :where(.bg-white, .bg-zinc-50, .bg-zinc-100, .bg-zinc-900, .bg-zinc-800) {
+    background: var(--a11y-bg) !important;
+    color: var(--a11y-fg) !important;
+    border: 1px solid var(--a11y-fg) !important;
+}
+
+html.a11y-high-contrast :where(.text-zinc-400, .text-zinc-500, .text-zinc-600) {
+    color: var(--a11y-fg) !important;
+    opacity: 1 !important;
+}
+
+/* Désactiver les gradients décoratifs en mode contraste élevé */
+html.a11y-high-contrast :where(.bg-gradient-to-r, .bg-gradient-to-l, .bg-gradient-to-t,
+    .bg-gradient-to-b, .bg-gradient-to-br, .bg-gradient-to-tr, .bg-gradient-to-bl, .bg-gradient-to-tl) {
+    background: var(--a11y-bg) !important;
+}
+
+/* Garder les couleurs sémantiques mais avec un contraste fort */
+html.a11y-high-contrast .text-rose-600,
+html.a11y-high-contrast .text-rose-700,
+html.a11y-high-contrast .text-red-600 { color: var(--a11y-danger) !important; }
+
+html.a11y-high-contrast .text-emerald-600,
+html.a11y-high-contrast .text-emerald-700,
+html.a11y-high-contrast .text-green-600 { color: var(--a11y-success) !important; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Mode interface simplifiée (option C — fort)
+   - Masque widgets décoratifs
+   - Garde uniquement contenu essentiel + actions principales
+   - Augmente l'espacement
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Espacement augmenté */
+html.a11y-simplified {
+    line-height: 1.6;
+}
+
+/* Désactive toutes les animations / transitions décoratives */
+html.a11y-simplified *,
+html.a11y-simplified *::before,
+html.a11y-simplified *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Masque les décorations purement esthétiques :
+   motifs, gradients d'arrière-plan, blobs, dot-grid, noise-bg */
+html.a11y-simplified .dot-grid,
+html.a11y-simplified .mesh-blob,
+html.a11y-simplified .mesh-blob-alt,
+html.a11y-simplified .noise-bg::after,
+html.a11y-simplified .glow-pulse,
+html.a11y-simplified .badge-glow-amber {
+    background-image: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+}
+
+/* Masque les éléments marqués comme "secondaires" / décoratifs */
+html.a11y-simplified [data-a11y-decorative="true"],
+html.a11y-simplified [data-a11y-secondary="true"] {
+    display: none !important;
+}
+
+/* Allège les ombres et bordures pour un rendu plus calme */
+html.a11y-simplified :where(.shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+    box-shadow: none !important;
+}
+
+html.a11y-simplified :where(.rounded-2xl, .rounded-xl) {
+    border-radius: 0.5rem !important;
+}
+
+/* Les badges décoratifs et glows sont neutralisés */
+html.a11y-simplified :where(.stat-stripe::before) {
+    display: none !important;
+}
+
+html.a11y-simplified :where(.bg-gradient-to-r, .bg-gradient-to-br, .bg-gradient-to-tr) {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html.a11y-simplified.dark :where(.bg-gradient-to-r, .bg-gradient-to-br, .bg-gradient-to-tr) {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Augmente l'espacement entre les sections principales */
+html.a11y-simplified main > * + * {
+    margin-top: 1.5rem !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Réduction des animations (séparé du mode simplifié)
+   Respecte aussi prefers-reduced-motion automatiquement.
+   ────────────────────────────────────────────────────────────────────────── */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Bouton flottant d'accessibilité
+   ────────────────────────────────────────────────────────────────────────── */
+.a11y-fab {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 70;
+    width: 56px; height: 56px;
+    border-radius: 9999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #2563eb;
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35), 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.a11y-fab:hover { transform: translateY(-2px) scale(1.04); background: #1d4ed8; }
+.a11y-fab:focus-visible { outline: 3px solid #fbbf24; outline-offset: 3px; }
+
+.a11y-fab-icon { width: 26px; height: 26px; }
+
+/* Mini-panneau ouvert depuis le bouton flottant */
+.a11y-popover {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 5.5rem;
+    z-index: 70;
+    width: 320px;
+    max-width: calc(100vw - 2rem);
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18), 0 6px 12px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    transform-origin: bottom right;
+}
+.dark .a11y-popover {
+    background: #18181b;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #fafafa;
+}
+.a11y-popover[hidden] { display: none; }
+
+.a11y-popover h2 {
+    font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+
+.a11y-popover .a11y-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 0; gap: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 0.875rem;
+}
+.dark .a11y-popover .a11y-row { border-color: rgba(255, 255, 255, 0.06); }
+.a11y-popover .a11y-row:first-of-type { border-top: 0; }
+
+.a11y-popover .a11y-row-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-weight: 600;
+}
+
+/* Toggle accessible */
+.a11y-toggle {
+    --w: 44px;
+    position: relative; width: var(--w); height: 24px; flex: 0 0 var(--w);
+    background: #d4d4d8;
+    border-radius: 9999px;
+    border: 0;
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+    padding: 0;
+}
+.a11y-toggle::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.18s ease;
+}
+.a11y-toggle[aria-pressed="true"] { background: #2563eb; }
+.a11y-toggle[aria-pressed="true"]::after { transform: translateX(calc(var(--w) - 24px)); }
+.a11y-toggle:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+
+/* Indicateur textuel à côté du toggle (renforcement non-couleur) */
+.a11y-toggle-state {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 8px; border-radius: 999px;
+    background: #e4e4e7; color: #3f3f46;
+}
+.a11y-toggle[aria-pressed="true"] + .a11y-toggle-state {
+    background: #dbeafe; color: #1e40af;
+}
+.dark .a11y-toggle-state { background: #27272a; color: #d4d4d8; }
+.dark .a11y-toggle[aria-pressed="true"] + .a11y-toggle-state {
+    background: rgba(37, 99, 235, 0.25); color: #93c5fd;
+}
+
+/* Boutons +/- pour la taille de texte */
+.a11y-stepper {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    padding: 4px;
+}
+.dark .a11y-stepper { background: rgba(255, 255, 255, 0.06); }
+
+.a11y-stepper button {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 0;
+    background: transparent;
+    font-weight: 800;
+    cursor: pointer;
+    color: inherit;
+}
+.a11y-stepper button:hover:not(:disabled) { background: rgba(0, 0, 0, 0.06); }
+.dark .a11y-stepper button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); }
+.a11y-stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
+.a11y-stepper button:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+
+.a11y-stepper-value {
+    min-width: 56px; text-align: center;
+    font-weight: 800; font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Modale de confirmation
+   ────────────────────────────────────────────────────────────────────────── */
+.a11y-confirm-backdrop {
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+}
+.a11y-confirm-backdrop[hidden] { display: none !important; }
+
+.a11y-confirm-dialog {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%; max-width: 460px;
+    padding: 1.5rem;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+    color: #18181b;
+}
+.dark .a11y-confirm-dialog { background: #18181b; color: #fafafa; }
+
+.a11y-confirm-title {
+    font-size: 1.1rem; font-weight: 800; margin: 0 0 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.a11y-confirm-title svg { color: #f59e0b; flex: 0 0 22px; }
+.a11y-confirm-message { font-size: 0.95rem; margin: 0 0 1.25rem; line-height: 1.5; }
+
+.a11y-confirm-actions {
+    display: flex; justify-content: flex-end; gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.a11y-confirm-btn {
+    flex: 1 1 0;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    font-weight: 700; font-size: 0.875rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: center;
+}
+.a11y-confirm-btn-cancel {
+    background: #f4f4f5; color: #27272a;
+    border-color: #e4e4e7;
+}
+.dark .a11y-confirm-btn-cancel {
+    background: #27272a; color: #fafafa; border-color: #3f3f46;
+}
+.a11y-confirm-btn-confirm {
+    background: #dc2626; color: #fff;
+}
+.a11y-confirm-btn-confirm:hover { background: #b91c1c; }
+.a11y-confirm-btn-cancel:hover { background: #e4e4e7; }
+.a11y-confirm-btn:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+
+/* Pour les confirmations non-destructives, surcharge du bouton */
+.a11y-confirm-dialog[data-variant="info"] .a11y-confirm-btn-confirm {
+    background: #2563eb;
+}
+.a11y-confirm-dialog[data-variant="info"] .a11y-confirm-btn-confirm:hover {
+    background: #1d4ed8;
+}

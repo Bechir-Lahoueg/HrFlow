@@ -21,6 +21,36 @@
                 if(localStorage.getItem('hrflow-theme')==='dark') document.documentElement.classList.add('dark');
             })();
         </script>
+
+        {# ─── Préférences d'accessibilité (anti-flash) ───
+           Applique les classes a11y-* sur <html> AVANT le premier render.
+           Source : préférences DB (utilisateur connecté) ou localStorage (sinon). #}
+        {% set __a11y_seed = app.user ? accessibility_prefs() : null %}
+        <meta name="a11y-csrf" content="{{ csrf_token('a11y_prefs') }}">
+        {% if __a11y_seed %}
+            <meta name="a11y-prefs" content="{{ __a11y_seed|json_encode|e('html_attr') }}">
+        {% endif %}
+        <script>
+            (function(){
+                var html = document.documentElement;
+                var prefs = null;
+                {% if __a11y_seed %}
+                    prefs = {{ __a11y_seed|json_encode|raw }};
+                    window.__A11Y_PREFS__ = prefs;
+                {% else %}
+                    try {
+                        var raw = localStorage.getItem('hrflow-a11y-prefs');
+                        if (raw) prefs = JSON.parse(raw);
+                    } catch(e) { prefs = null; }
+                {% endif %}
+                if (!prefs) prefs = { high_contrast:false, font_scale:100, voice_feedback:false, simplified_ui:false, reduce_motion:false };
+                if (prefs.high_contrast) html.classList.add('a11y-high-contrast');
+                if (prefs.simplified_ui) html.classList.add('a11y-simplified');
+                if (prefs.reduce_motion) html.classList.add('a11y-reduce-motion');
+                var fs = [90,100,115,130,150].indexOf(prefs.font_scale) !== -1 ? prefs.font_scale : 100;
+                html.classList.add('a11y-font-' + fs);
+            })();
+        </script>
         
         {#
             Protection "bouton retour" SANS rechargements intempestifs.
@@ -53,11 +83,20 @@
         {% endif %}
     </head>
     <body>
+        {# Skip link : accessible au clavier en premier (Tab) #}
+        <a href="#main" class="a11y-skip-link">Aller au contenu principal</a>
+
         {% block body %}
         <div class="page-wrapper">
             {% block content %}{% endblock %}
         </div>
         {% endblock %}
+
+        {# ── Composants d'accessibilité globaux ── #}
+        {% if app.user %}
+            {% include 'Components/_a11y_floating_button.html.twig' %}
+        {% endif %}
+        {% include 'Components/_confirm_dialog.html.twig' %}
 
         {# Theme toggle logic #}
         <script>

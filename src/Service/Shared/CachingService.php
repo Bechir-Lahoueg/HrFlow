@@ -8,7 +8,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 /**
  * CachingService - Centralized caching for payroll calculations
  */
-final class CachingService
+class CachingService
 {
     private const CACHE_TTL = 3600; // 1 hour cache
 
