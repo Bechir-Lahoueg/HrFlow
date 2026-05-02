@@ -1,0 +1,120 @@
+{# ──────────────────────────────────────────────────────────────────────────
+   Bouton flottant d'accessibilité + mini-popover
+   Inclus dans base.html.twig pour tout utilisateur authentifié.
+   Câblé par assets/js/accessibility/floating-button.js
+   ────────────────────────────────────────────────────────────────────────── #}
+<div id="a11y-fab-root" data-a11y-decorative="false">
+    {# data-a11y-decorative="false" garantit que le bouton reste visible
+       même en mode interface simplifiée (l'a11y est essentielle). #}
+
+    <button type="button"
+            class="a11y-fab"
+            aria-label="Ouvrir les paramètres rapides d'accessibilité"
+            aria-expanded="false"
+            aria-controls="a11y-fab-popover"
+            title="Accessibilité (paramètres rapides)">
+        {# Icône "personne accessible" — universelle (Bootstrap Icons) #}
+        <svg class="a11y-fab-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M9.5 2.671a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M5.418 12.314c.252.357.673.586 1.146.586a1.4 1.4 0 0 0 .445-.07c.214-.071.418-.193.6-.358l.001-.002 1.39-1.16 1.39 1.16.001.002c.182.165.386.287.6.358a1.4 1.4 0 0 0 .445.07c.473 0 .894-.229 1.146-.586a1.4 1.4 0 0 0 .249-.93c-.018-.32-.137-.66-.434-.96L8.001 5.96 5.602 10.424c-.297.3-.416.64-.434.96-.013.351.06.682.25.93Z"/>
+        </svg>
+    </button>
+
+    <div id="a11y-fab-popover"
+         class="a11y-popover"
+         role="region"
+         aria-label="Paramètres rapides d'accessibilité"
+         hidden>
+
+        <h2>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            </svg>
+            Accessibilité
+        </h2>
+
+        {# Contraste élevé #}
+        <div class="a11y-row">
+            <span class="a11y-row-label">Contraste élevé</span>
+            <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="high_contrast"
+                        aria-pressed="false"
+                        aria-label="Activer ou désactiver le contraste élevé"></button>
+                <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
+            </span>
+        </div>
+
+        {# Taille du texte #}
+        <div class="a11y-row">
+            <span class="a11y-row-label">Taille du texte</span>
+            <span class="a11y-stepper" role="group" aria-label="Modifier la taille du texte">
+                <button type="button" data-a11y-font-step="-1" aria-label="Diminuer la taille du texte">A−</button>
+                <span class="a11y-stepper-value" data-a11y-font-value aria-live="polite">100 %</span>
+                <button type="button" data-a11y-font-step="1" aria-label="Augmenter la taille du texte">A+</button>
+            </span>
+        </div>
+
+        {# Retour vocal #}
+        <div class="a11y-row">
+            <span class="a11y-row-label">Retour vocal</span>
+            <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="voice_feedback"
+                        aria-pressed="false"
+                        aria-label="Activer ou désactiver le retour vocal"></button>
+                <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
+            </span>
+        </div>
+
+        {# Mode simplifié #}
+        <div class="a11y-row">
+            <span class="a11y-row-label">Interface simplifiée</span>
+            <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="simplified_ui"
+                        aria-pressed="false"
+                        aria-label="Activer ou désactiver le mode interface simplifiée"></button>
+                <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
+            </span>
+        </div>
+
+        {# Animations réduites #}
+        <div class="a11y-row">
+            <span class="a11y-row-label">Réduire les animations</span>
+            <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="reduce_motion"
+                        aria-pressed="false"
+                        aria-label="Activer ou désactiver la réduction des animations"></button>
+                <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
+            </span>
+        </div>
+
+        <div class="a11y-row" style="justify-content:space-between; padding-top:0.75rem;">
+            {% if app.user %}
+                {% set settingsRoute = is_granted('ROLE_ADMIN') ? 'app_admin_settings'
+                    : (is_granted('ROLE_RH') ? 'app_rh_settings'
+                    : (is_granted('ROLE_EMPLOYEE') ? 'app_employee_settings' : null)) %}
+                {% if settingsRoute %}
+                    <a href="{{ path(settingsRoute) }}#a11y-panel-root"
+                       style="font-weight:700; text-decoration:underline; color:#2563eb;">
+                        Plus de paramètres
+                    </a>
+                {% else %}
+                    <span></span>
+                {% endif %}
+            {% else %}
+                <span></span>
+            {% endif %}
+            <button type="button"
+                    data-a11y-reset-all
+                    style="font-size:0.8rem; font-weight:700; background:transparent; border:0; color:#dc2626; cursor:pointer; text-decoration:underline;">
+                Réinitialiser
+            </button>
+        </div>
+    </div>
+</div>

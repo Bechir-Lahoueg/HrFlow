@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class LeaveBalanceService
+class LeaveBalanceService
 {
     private const MONTHLY_ACCRUAL_DAYS = 1.8;
 

@@ -7,7 +7,7 @@ use App\Entity\Rh\LeaveRequest;
 use App\Repository\Rh\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class LeaveNotificationService
+class LeaveNotificationService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
