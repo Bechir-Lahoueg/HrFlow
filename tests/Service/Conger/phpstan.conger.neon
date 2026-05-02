@@ -1,0 +1,15 @@
+parameters:
+    level: 8
+
+    memoryLimit: 1G
+
+    paths:
+        - ../../../src/Service/Rh
+        - ../../../src/Entity/Rh
+        - ../../../src/Repository/Rh
+
+    excludePaths:
+        analyse:
+            - ../../../vendor
+
+    treatPhpDocTypesAsCertain: false
