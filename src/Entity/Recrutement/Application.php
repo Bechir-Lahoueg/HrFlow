@@ -23,11 +23,6 @@ class Application
     #[ORM\Column]
     private int $id;
 
-    public function __construct()
-    {
-        $this->interviews = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
     #[ORM\Column(name: 'candidate_name', length: 255)]
     #[Assert\NotBlank(message: 'Candidate name is required')]
     #[Assert\Length(max: 255, maxMessage: 'Candidate name cannot exceed 255 characters')]
