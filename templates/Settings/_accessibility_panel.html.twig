@@ -1,0 +1,189 @@
+{# ──────────────────────────────────────────────────────────────────────────
+   Panneau d'accessibilité complet (page Settings).
+   Inclus depuis _settings_form.html.twig pour les 3 dashboards.
+   Câblé par assets/js/accessibility/panel.js
+   ────────────────────────────────────────────────────────────────────────── #}
+{% set a11yPrefs = accessibility_prefs() %}
+{% set accent = accentColor|default('teal') %}
+
+<section id="a11y-panel-root"
+         role="region"
+         aria-labelledby="a11y-panel-title"
+         class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/60 shadow-sm overflow-hidden">
+
+    {# ── En-tête ── #}
+    <div class="px-6 py-5 border-b border-zinc-200/80 dark:border-zinc-800/60 flex items-center justify-between gap-4">
+        <div>
+            <h2 id="a11y-panel-title" class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
+                <svg class="w-4 h-4 text-{{ accent }}-600" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M9.5 2.671a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M5.418 12.314c.252.357.673.586 1.146.586a1.4 1.4 0 0 0 .445-.07c.214-.071.418-.193.6-.358l.001-.002 1.39-1.16 1.39 1.16.001.002c.182.165.386.287.6.358a1.4 1.4 0 0 0 .445.07c.473 0 .894-.229 1.146-.586a1.4 1.4 0 0 0 .249-.93c-.018-.32-.137-.66-.434-.96L8.001 5.96 5.602 10.424c-.297.3-.416.64-.434.96-.013.351.06.682.25.93Z"/>
+                </svg>
+                Accessibilité
+            </h2>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Adaptez l'interface à vos besoins. Les modifications sont enregistrées automatiquement.
+            </p>
+        </div>
+        <button type="button"
+                data-a11y-reset-all
+                data-confirm="Voulez-vous vraiment réinitialiser toutes vos préférences d'accessibilité ?"
+                data-confirm-title="Réinitialiser l'accessibilité"
+                data-confirm-variant="info"
+                data-confirm-ok="Oui, réinitialiser"
+                class="text-xs font-bold text-rose-600 hover:text-rose-700 underline">
+            Réinitialiser
+        </button>
+    </div>
+
+    <div class="p-6 space-y-6">
+
+        {# ── 1. Vision : contraste élevé ── #}
+        <div class="grid sm:grid-cols-[1fr_auto] gap-3 items-center">
+            <div>
+                <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Contraste élevé
+                </h3>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                    Renforce les couleurs et bordures. Recommandé pour les utilisateurs malvoyants ou daltoniens.
+                </p>
+            </div>
+            <span class="flex items-center gap-2 justify-end">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="high_contrast"
+                        aria-pressed="{{ a11yPrefs.high_contrast ? 'true' : 'false' }}"
+                        aria-describedby="a11y-help-contrast"
+                        aria-label="Activer ou désactiver le contraste élevé"></button>
+                <span class="a11y-toggle-state" aria-live="polite">{{ a11yPrefs.high_contrast ? 'Activé' : 'Désactivé' }}</span>
+            </span>
+            <span id="a11y-help-contrast" class="a11y-sr-only">
+                Renforce le contraste des couleurs pour une meilleure lisibilité.
+            </span>
+        </div>
+
+        {# ── 2. Lecture : taille du texte ── #}
+        <div class="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+            <div class="grid sm:grid-cols-[1fr_auto] gap-3 items-center">
+                <div>
+                    <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                        Taille du texte
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                        Actuel : <span data-a11y-font-label class="font-semibold">Normale</span>
+                        (<span data-a11y-font-value>{{ a11yPrefs.font_scale }} %</span>)
+                    </p>
+                </div>
+                <span class="a11y-stepper" role="group" aria-label="Modifier la taille du texte">
+                    <button type="button" data-a11y-font-step="-1" aria-label="Diminuer la taille du texte"
+                            {% if a11yPrefs.font_scale <= 90 %}disabled{% endif %}>A−</button>
+                    <button type="button" data-a11y-font-reset aria-label="Réinitialiser la taille à 100%"
+                            class="a11y-stepper-value" style="cursor:pointer; min-width:auto; padding:0 8px;">↺</button>
+                    <button type="button" data-a11y-font-step="1" aria-label="Augmenter la taille du texte"
+                            {% if a11yPrefs.font_scale >= 150 %}disabled{% endif %}>A+</button>
+                </span>
+            </div>
+        </div>
+
+        {# ── 3. Audio : retour vocal ── #}
+        <div class="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+            <div class="grid sm:grid-cols-[1fr_auto] gap-3 items-start">
+                <div>
+                    <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+                        Retour vocal
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                        Le navigateur lit à voix haute les confirmations importantes (Web Speech API).
+                    </p>
+                    <div class="flex flex-wrap items-center gap-3 mt-3">
+                        <label class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                            Langue :
+                            <select data-a11y-voice-lang
+                                    class="ml-2 px-2 py-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs">
+                                <option value="fr-FR" {% if a11yPrefs.voice_lang == 'fr-FR' %}selected{% endif %}>Français</option>
+                                <option value="en-US" {% if a11yPrefs.voice_lang == 'en-US' %}selected{% endif %}>English</option>
+                                <option value="ar-TN" {% if a11yPrefs.voice_lang == 'ar-TN' %}selected{% endif %}>العربية</option>
+                            </select>
+                        </label>
+                        <button type="button"
+                                data-a11y-voice-test
+                                class="px-3 py-1.5 rounded-lg bg-{{ accent }}-100 hover:bg-{{ accent }}-200 dark:bg-{{ accent }}-500/20 dark:hover:bg-{{ accent }}-500/30 text-{{ accent }}-800 dark:text-{{ accent }}-200 text-xs font-bold inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.48 7.48 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303z"/>
+                                <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.48 5.48 0 0 1 11.025 8a5.48 5.48 0 0 1-1.61 3.89z"/>
+                                <path d="M8.707 11.182A4.5 4.5 0 0 0 10.025 8a4.5 4.5 0 0 0-1.318-3.182L8 5.525A3.5 3.5 0 0 1 9.025 8 3.5 3.5 0 0 1 8 10.475zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+                            </svg>
+                            Tester
+                        </button>
+                    </div>
+                </div>
+                <span class="flex items-center gap-2 justify-end">
+                    <button type="button"
+                            class="a11y-toggle"
+                            data-a11y-toggle="voice_feedback"
+                            aria-pressed="{{ a11yPrefs.voice_feedback ? 'true' : 'false' }}"
+                            aria-label="Activer ou désactiver le retour vocal"></button>
+                    <span class="a11y-toggle-state" aria-live="polite">{{ a11yPrefs.voice_feedback ? 'Activé' : 'Désactivé' }}</span>
+                </span>
+            </div>
+        </div>
+
+        {# ── 4. Confort cognitif : mode simplifié ── #}
+        <div class="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+            <div class="grid sm:grid-cols-[1fr_auto] gap-3 items-center">
+                <div>
+                    <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                        Interface simplifiée
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                        Masque les éléments décoratifs et widgets secondaires. Garde uniquement le contenu essentiel et les actions principales.
+                    </p>
+                </div>
+                <span class="flex items-center gap-2 justify-end">
+                    <button type="button"
+                            class="a11y-toggle"
+                            data-a11y-toggle="simplified_ui"
+                            aria-pressed="{{ a11yPrefs.simplified_ui ? 'true' : 'false' }}"
+                            aria-label="Activer ou désactiver l'interface simplifiée"></button>
+                    <span class="a11y-toggle-state" aria-live="polite">{{ a11yPrefs.simplified_ui ? 'Activé' : 'Désactivé' }}</span>
+                </span>
+            </div>
+        </div>
+
+        {# ── 5. Mouvement : animations ── #}
+        <div class="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+            <div class="grid sm:grid-cols-[1fr_auto] gap-3 items-center">
+                <div>
+                    <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"/></svg>
+                        Réduire les animations
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                        Désactive les transitions et animations. Recommandé en cas de sensibilité au mouvement.
+                    </p>
+                </div>
+                <span class="flex items-center gap-2 justify-end">
+                    <button type="button"
+                            class="a11y-toggle"
+                            data-a11y-toggle="reduce_motion"
+                            aria-pressed="{{ a11yPrefs.reduce_motion ? 'true' : 'false' }}"
+                            aria-label="Activer ou désactiver la réduction des animations"></button>
+                    <span class="a11y-toggle-state" aria-live="polite">{{ a11yPrefs.reduce_motion ? 'Activé' : 'Désactivé' }}</span>
+                </span>
+            </div>
+        </div>
+
+        {# ── Note d'aide ── #}
+        <div class="rounded-xl bg-{{ accent }}-50 dark:bg-{{ accent }}-500/10 border border-{{ accent }}-200 dark:border-{{ accent }}-500/30 p-4 text-xs text-{{ accent }}-800 dark:text-{{ accent }}-300 flex gap-3">
+            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+            <p>
+                Vous pouvez aussi accéder à ces paramètres rapidement via le bouton flottant
+                <strong>Accessibilité</strong> en bas à droite, sur n'importe quelle page.
+                Vos préférences vous suivent partout — y compris si vous changez de navigateur.
+            </p>
+        </div>
+    </div>
+</section>

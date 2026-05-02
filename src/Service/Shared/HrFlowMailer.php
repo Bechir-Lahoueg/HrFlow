@@ -20,7 +20,7 @@ use Symfony\Component\Mime\Address;
  *  3. New leave request    → RH notification
  *  4. Exception pending    → Admin notification
  */
-final class HrFlowMailer
+class HrFlowMailer
 {
     public function __construct(
         private readonly MailerInterface $mailer,

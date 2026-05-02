@@ -44,12 +44,12 @@ class JobOffer
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     #[Assert\NotNull(message: 'Minimum salary is required')]
     #[Assert\GreaterThanOrEqual(value: 0, message: 'Minimum salary must be positive')]
-    private ?string $salaryMin = '0.00';
+    private string $salaryMin = '0.00';
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     #[Assert\NotNull(message: 'Maximum salary is required')]
     #[Assert\GreaterThanOrEqual(propertyPath: 'salaryMin', message: 'Maximum salary must be greater than or equal to minimum salary')]
-    private ?string $salaryMax = '0.00';
+    private string $salaryMax = '0.00';
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Status is required')]
@@ -68,7 +68,12 @@ class JobOffer
     private bool $isDeleted = false;
 
     #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'jobOffer', cascade: ['remove'])]
-    private $applications;
+    private \Doctrine\Common\Collections\Collection $applications;
+
+    public function __construct()
+    {
+        $this->applications = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -202,7 +207,10 @@ class JobOffer
         return $this;
     }
 
-    public function getApplications()
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, Application>
+     */
+    public function getApplications(): \Doctrine\Common\Collections\Collection
     {
         return $this->applications;
     }
