@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de participation | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .detail-card{transition:all .2s}
+        .detail-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px -14px rgba(2,46,105,.25)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        <main class="p-6 space-y-6 max-w-6xl mx-auto">
+            <div class="flex flex-col gap-4">
+                <a href="{{ path('employee_formation_certificates') }}" class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition w-fit">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    Retour aux certificats
+                </a>
+
+                <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10">
+                    <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                    <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                    <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                                <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Détails de participation</span>
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">{{ formation.titre }}</h2>
+                            <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Votre récapitulatif complet pour cette session certifiée.</p>
+                            <div class="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                                <span class="px-3 py-1 rounded-full bg-white/10 border border-white/20 font-semibold">{{ session.mode }}</span>
+                                <span class="text-cyan-100">{{ session.dateDebut|date('d/m/Y') }} → {{ session.dateFin|date('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                                <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Présence</p>
+                                <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ presentDays }}</p>
+                                <p class="text-xs text-cyan-100/60 mt-1">jour(s) présents</p>
+                            </div>
+                            <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                                <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Quiz</p>
+                                <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ quizScore is not null ? quizScore ~ '%' : '--' }}</p>
+                                <p class="text-xs text-cyan-100/60 mt-1">score</p>
+                            </div>
+                            <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                                <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Absences</p>
+                                <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ absentDays }}</p>
+                                <p class="text-xs text-cyan-100/60 mt-1">jour(s) absents</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="detail-card bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/60 p-5 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Session</p>
+                    <div class="mt-3 space-y-2 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Début</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ session.dateDebut|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Fin</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ session.dateFin|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Lieu / Lien</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100 text-right">{{ session.lieu ?: '—' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/60 p-5 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Présence</p>
+                    <div class="mt-3 space-y-2 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Jours présents</span>
+                            <span class="font-semibold text-emerald-600">{{ presentDays }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Jours absents</span>
+                            <span class="font-semibold text-amber-600">{{ absentDays }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Total</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ totalDays }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/60 p-5 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Quiz</p>
+                    <div class="mt-3 space-y-2 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Score</span>
+                            <span class="font-semibold {{ quizScore is not null and quizScore >= 60 ? 'text-emerald-600' : 'text-amber-600' }}">{{ quizScore is not null ? quizScore ~ '%' : 'Non tenté' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Bonnes réponses</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ quizCorrect }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Mauvaises réponses</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ quizWrong }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-500">Total questions</span>
+                            <span class="font-semibold text-zinc-800 dark:text-zinc-100">{{ quizTotal }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock %}

@@ -46,6 +46,21 @@ class ParticipationFormation
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $token = null;
 
+    #[ORM\Column(name: 'quiz_score', type: Types::INTEGER, nullable: true)]
+    private ?int $quizScore = null;
+
+    #[ORM\Column(name: 'quiz_passed', type: Types::BOOLEAN)]
+    private bool $quizPassed = false;
+
+    #[ORM\Column(name: 'quiz_attempted_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $quizAttemptedAt = null;
+
+    #[ORM\Column(name: 'quiz_correct_count', type: Types::INTEGER, nullable: true)]
+    private ?int $quizCorrectCount = null;
+
+    #[ORM\Column(name: 'quiz_total_questions', type: Types::INTEGER, nullable: true)]
+    private ?int $quizTotalQuestions = null;
+
     public function getToken(): ?string
     {
         return $this->token;
@@ -131,6 +146,61 @@ class ParticipationFormation
     public function getPresences(): Collection
     {
         return $this->presences;
+    }
+
+    public function getQuizScore(): ?int
+    {
+        return $this->quizScore;
+    }
+
+    public function setQuizScore(?int $quizScore): static
+    {
+        $this->quizScore = $quizScore;
+        return $this;
+    }
+
+    public function isQuizPassed(): bool
+    {
+        return $this->quizPassed;
+    }
+
+    public function setQuizPassed(bool $quizPassed): static
+    {
+        $this->quizPassed = $quizPassed;
+        return $this;
+    }
+
+    public function getQuizAttemptedAt(): ?\DateTimeInterface
+    {
+        return $this->quizAttemptedAt;
+    }
+
+    public function setQuizAttemptedAt(?\DateTimeInterface $quizAttemptedAt): static
+    {
+        $this->quizAttemptedAt = $quizAttemptedAt;
+        return $this;
+    }
+
+    public function getQuizCorrectCount(): ?int
+    {
+        return $this->quizCorrectCount;
+    }
+
+    public function setQuizCorrectCount(?int $quizCorrectCount): static
+    {
+        $this->quizCorrectCount = $quizCorrectCount;
+        return $this;
+    }
+
+    public function getQuizTotalQuestions(): ?int
+    {
+        return $this->quizTotalQuestions;
+    }
+
+    public function setQuizTotalQuestions(?int $quizTotalQuestions): static
+    {
+        $this->quizTotalQuestions = $quizTotalQuestions;
+        return $this;
     }
 
     #[ORM\PrePersist]
