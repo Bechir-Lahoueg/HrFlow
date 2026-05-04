@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quiz Formation | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .quiz-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px -12px rgba(2,46,105,.25)}
+        .quiz-option{transition:all .2s}
+        .quiz-option:hover{border-color:#3FA9F5;background:rgba(63,169,245,.08)}
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+    {% include 'DashboardEmployee/components/_sidebar.html.twig' %}
+
+    <div class="lg:ml-[272px] transition-all duration-300">
+        {% include 'DashboardEmployee/components/_header.html.twig' %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <main class="p-6 space-y-6 max-w-5xl mx-auto">
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl mesh-blob"></div>
+                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl mesh-blob-alt"></div>
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Quiz de validation</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">{{ formation.titre }}</h2>
+                        <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Validez votre certificat en atteignant un score minimum de <strong>60%</strong>.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Présence</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ attendance }}%</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">session terminée</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Questions</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ questions|length }}</p>
+                            <p class="text-xs text-cyan-100/60 mt-1">dans ce quiz</p>
+                        </div>
+                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Retour</p>
+                            <p class="mt-1 text-3xl font-extrabold font-mono-num">
+                                <a href="{{ return == 'certificates' ? path('employee_formation_certificates') : path('employee_formation_requests') }}" class="hover:text-cyan-300 transition-colors">Voir</a>
+                            </p>
+                            <p class="text-xs text-cyan-100/60 mt-1">mes listes</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <form method="post" action="{{ path('employee_formation_quiz', {id: participation.id, return: return}) }}" class="space-y-4">
+                <input type="hidden" name="_token" value="{{ csrf_token('formation-quiz-' ~ participation.id) }}">
+
+                {% for question in questions %}
+                    <div class="quiz-card bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm transition-all">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Question {{ loop.index }}</p>
+                                <h3 class="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 mt-1">{{ question.question }}</h3>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid gap-2">
+                            {% for key, value in question.choices %}
+                                <label class="quiz-option flex items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800/70 px-3 py-2 cursor-pointer">
+                                    <input type="radio" name="answers[{{ question.id }}]" value="{{ key }}" class="text-[#145EB7] focus:ring-[#145EB7]">
+                                    <span class="text-sm text-zinc-700 dark:text-zinc-200">{{ value }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-end">
+                    <a href="{{ return == 'certificates' ? path('employee_formation_certificates') : path('employee_formation_requests') }}" class="px-4 py-1.5 bg-zinc-100 text-zinc-600 border border-zinc-200 font-semibold rounded-lg hover:bg-zinc-200 transition">Annuler</a>
+                    <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Valider le quiz</button>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+{% endblock %}
