@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\Formation\QuizService;
 
 
 #[Route('/employee/formation')]
@@ -36,6 +37,7 @@ final class EmployeeFormationController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly HrFlowMailer $hrFlowMailer,
         private readonly EntityManagerInterface $em,
+        private readonly QuizService $quizService,
     ) {
     }
 
@@ -353,6 +355,8 @@ final class EmployeeFormationController extends AbstractController
              'formation' => $formation,
              'attendance' => $attendance,
              'isEligible' => true,
+             'quizPassed' => $participation->isQuizPassed(),
+             'quizScore' => $participation->getQuizScore(),
          ];
      }
 
@@ -402,9 +406,20 @@ final class EmployeeFormationController extends AbstractController
             if ($session === null || $participation->getId() === null || $session->getId() === null) {
                 continue;
             }
+            $participationId = (int) $participation->getId();
+            $presentDays = $this->presenceFormationRepository->countPresentByParticipation($participationId);
+            $totalDays = $this->presenceFormationRepository->countByParticipation($participationId);
+            $absentDays = max(0, $totalDays - $presentDays);
+
             $mySessionStats[$session->getId()] = [
                 'statut' => $participation->getStatutParticipation(),
                 'pourcentage' => $this->participationService->getAttendancePercentage($participation->getId()),
+                'participationId' => $participationId,
+                'quizScore' => $participation->getQuizScore(),
+                'quizCorrect' => $participation->getQuizCorrectCount(),
+                'quizTotal' => $participation->getQuizTotalQuestions(),
+                'presentDays' => $presentDays,
+                'absentDays' => $absentDays,
             ];
         }
 
@@ -508,6 +523,11 @@ final class EmployeeFormationController extends AbstractController
         $organisme = trim((string) ($formation?->getOrganisme() ?? ''));
         if ($organisme === '') {
             $organisme = 'HrFlow';
+        }
+
+        if (!$participation->isQuizPassed()) {
+            $this->addFlash('error', 'Certificat indisponible : quiz non validé (score minimum 60%).');
+            return $this->redirectToRoute('employee_formation_requests');
         }
 
         $token = $participation->getToken();
@@ -635,6 +655,203 @@ final class EmployeeFormationController extends AbstractController
         ]);
     }
 
+    #[Route('/participation/{id}/quiz', name: 'employee_formation_quiz', methods: ['GET', 'POST'])]
+    public function quiz(Request $request, string $id): Response
+    {
+        $participationId = (int) $id;
+        $employeeId = $this->requireUserId();
+
+        $participation = $this->participationRepository->find($participationId);
+        if (!$participation || (int) $participation->getEmployee()?->getId() !== $employeeId) {
+            throw $this->createNotFoundException('Participation introuvable.');
+        }
+
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+        if (!$session || !$formation) {
+            $this->addFlash('error', 'Session introuvable pour ce quiz.');
+            return $this->redirectToRoute('employee_formation_requests');
+        }
+
+        $attendance = $this->participationService->getAttendancePercentage($participationId);
+        $eligible = $session->getStatut() === 'Terminee'
+            && $attendance >= 80
+            && in_array($participation->getStatutParticipation(), ['Accepte', 'Certificat obtenu'], true);
+
+        if (!$eligible) {
+            $this->addFlash('error', 'Quiz indisponible : vous devez terminer la formation et atteindre 80% de présence.');
+            return $this->redirectToRoute('employee_formation_requests');
+        }
+
+        $quizKey = 'formation_quiz_' . $participationId;
+        $returnTarget = (string) $request->query->get('return', 'requests');
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('formation-quiz-' . $participationId, (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token invalide, veuillez réessayer.');
+                return $this->redirectToRoute('employee_formation_quiz', ['id' => $participationId, 'return' => $returnTarget]);
+            }
+
+            $payload = $request->getSession()->get($quizKey);
+            if (!is_array($payload) || empty($payload['questions'])) {
+                $this->addFlash('error', 'Quiz expiré, veuillez le relancer.');
+                return $this->redirectToRoute('employee_formation_quiz', ['id' => $participationId, 'return' => $returnTarget]);
+            }
+
+            $answers = (array) $request->request->all('answers');
+            $questions = (array) $payload['questions'];
+            $total = count($questions);
+            $correct = 0;
+
+            foreach ($questions as $questionId => $correctKey) {
+                $picked = $answers[$questionId] ?? null;
+                if ($picked !== null && (string) $picked === (string) $correctKey) {
+                    $correct++;
+                }
+            }
+
+            $score = $total > 0 ? (int) round(($correct / $total) * 100) : 0;
+            $participation->setQuizScore($score);
+            $participation->setQuizCorrectCount($correct);
+            $participation->setQuizTotalQuestions($total);
+            $participation->setQuizAttemptedAt(new \DateTime());
+            $participation->setQuizPassed($score >= 60);
+            $this->em->flush();
+
+            $request->getSession()->remove($quizKey);
+
+            if ($score >= 60) {
+                $this->addFlash('success', 'Quiz réussi (' . $score . '%). Votre certificat est débloqué.');
+            } else {
+                $this->addFlash('error', 'Quiz non validé (' . $score . '%). Score minimum : 60%.');
+            }
+
+            return $this->redirectToRoute($returnTarget === 'certificates' ? 'employee_formation_certificates' : 'employee_formation_requests');
+        }
+
+        $tag = $this->buildQuizTag($formation->getType(), $formation->getTitre());
+        $rawQuestions = $this->quizService->getTechnicalQuiz($tag);
+
+        $questions = [];
+        $correctMap = [];
+
+        if ($rawQuestions === []) {
+            $fallback = $this->buildFallbackQuestions($formation->getTitre(), $formation->getType());
+            foreach ($fallback as $item) {
+                $questions[] = [
+                    'id' => $item['id'],
+                    'question' => $item['question'],
+                    'choices' => $item['choices'],
+                ];
+                $correctMap[$item['id']] = $item['correct'];
+            }
+        } else {
+            foreach ($rawQuestions as $row) {
+                $id = (string) ($row['id'] ?? '');
+                $questionText = trim((string) ($row['question'] ?? ''));
+                $answers = is_array($row['answers'] ?? null) ? $row['answers'] : [];
+                $correctAnswers = is_array($row['correct_answers'] ?? null) ? $row['correct_answers'] : [];
+
+                if ($id === '' || $questionText === '') {
+                    continue;
+                }
+
+                $choices = [];
+                foreach ($answers as $key => $value) {
+                    if ($value !== null && $value !== '') {
+                        $choices[$key] = $value;
+                    }
+                }
+
+                if ($choices === []) {
+                    continue;
+                }
+
+                $correctKey = null;
+                foreach ($correctAnswers as $key => $value) {
+                    if ($value === 'true') {
+                        $correctKey = str_replace('_correct', '', (string) $key);
+                        break;
+                    }
+                }
+
+                if ($correctKey === null || !array_key_exists($correctKey, $choices)) {
+                    continue;
+                }
+
+                $questions[] = [
+                    'id' => $id,
+                    'question' => $questionText,
+                    'choices' => $choices,
+                ];
+                $correctMap[$id] = $correctKey;
+
+                if (count($questions) >= 10) {
+                    break;
+                }
+            }
+        }
+
+        if ($questions === []) {
+            $this->addFlash('error', 'Impossible de générer un quiz pour cette formation pour le moment.');
+            return $this->redirectToRoute('employee_formation_requests');
+        }
+
+        $request->getSession()->set($quizKey, [
+            'questions' => $correctMap,
+            'createdAt' => time(),
+        ]);
+
+        return $this->render('DashboardEmployee/formation/formation_quiz.html.twig', [
+            'participation' => $participation,
+            'session' => $session,
+            'formation' => $formation,
+            'attendance' => $attendance,
+            'questions' => $questions,
+            'return' => $returnTarget,
+        ]);
+    }
+
+    #[Route('/participation/{id}/details', name: 'employee_formation_participation_details', methods: ['GET'])]
+    public function participationDetails(string $id): Response
+    {
+        $participationId = (int) $id;
+        $employeeId = $this->requireUserId();
+
+        $participation = $this->participationRepository->find($participationId);
+        if (!$participation || (int) $participation->getEmployee()?->getId() !== $employeeId) {
+            throw $this->createNotFoundException('Participation introuvable.');
+        }
+
+        $session = $participation->getSession();
+        $formation = $session?->getFormation();
+        if (!$session || !$formation) {
+            throw $this->createNotFoundException('Session introuvable.');
+        }
+
+        $presentDays = $this->presenceFormationRepository->countPresentByParticipation($participationId);
+        $totalDays = $this->presenceFormationRepository->countByParticipation($participationId);
+        $absentDays = max(0, $totalDays - $presentDays);
+
+        $quizScore = $participation->getQuizScore();
+        $quizCorrect = $participation->getQuizCorrectCount() ?? 0;
+        $quizTotal = $participation->getQuizTotalQuestions() ?? 0;
+        $quizWrong = max(0, $quizTotal - $quizCorrect);
+
+        return $this->render('DashboardEmployee/formation/formation_participation_details.html.twig', [
+            'participation' => $participation,
+            'session' => $session,
+            'formation' => $formation,
+            'presentDays' => $presentDays,
+            'absentDays' => $absentDays,
+            'totalDays' => $totalDays,
+            'quizScore' => $quizScore,
+            'quizCorrect' => $quizCorrect,
+            'quizWrong' => $quizWrong,
+            'quizTotal' => $quizTotal,
+        ]);
+    }
+
     private function requireUserId(): int
     {
         $user = $this->getUser();
@@ -643,5 +860,78 @@ final class EmployeeFormationController extends AbstractController
         }
 
         return (int) $user->getId();
+    }
+
+    private function buildQuizTag(?string $type, ?string $title): string
+    {
+        $raw = trim((string) ($type ?: $title ?: 'general'));
+        $raw = preg_replace('/[^A-Za-z0-9+.#]/', ' ', $raw) ?: 'general';
+        $parts = preg_split('/\s+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $tag = $parts[0] ?? 'general';
+
+        return $tag === '' ? 'general' : $tag;
+    }
+
+    private function buildFallbackQuestions(?string $title, ?string $type): array
+    {
+        $label = trim((string) ($title ?: $type ?: 'Formation'));
+
+        return [
+            [
+                'id' => 'fallback-1',
+                'question' => 'Quel est l objectif principal de la formation ' . $label . ' ?',
+                'choices' => [
+                    'answer_a' => 'Renforcer les competences du domaine',
+                    'answer_b' => 'Remplacer l equipe projet',
+                    'answer_c' => 'Arreter la formation continue',
+                    'answer_d' => 'Supprimer les evaluations',
+                ],
+                'correct' => 'answer_a',
+            ],
+            [
+                'id' => 'fallback-2',
+                'question' => 'Quelle bonne pratique s applique a toute formation technique ?',
+                'choices' => [
+                    'answer_a' => 'Ne pas documenter',
+                    'answer_b' => 'Pratiquer sur des cas concrets',
+                    'answer_c' => 'Eviter les retours',
+                    'answer_d' => 'Ignorer les tests',
+                ],
+                'correct' => 'answer_b',
+            ],
+            [
+                'id' => 'fallback-3',
+                'question' => 'Quel element est essentiel pour valider un apprentissage ?',
+                'choices' => [
+                    'answer_a' => 'Des exercices pratiques',
+                    'answer_b' => 'Une absence totale de feedback',
+                    'answer_c' => 'Aucune evaluation',
+                    'answer_d' => 'Un seul support PDF',
+                ],
+                'correct' => 'answer_a',
+            ],
+            [
+                'id' => 'fallback-4',
+                'question' => 'Pourquoi respecter les bonnes pratiques de securite ?',
+                'choices' => [
+                    'answer_a' => 'Pour compliquer le travail',
+                    'answer_b' => 'Pour proteger les donnees et les utilisateurs',
+                    'answer_c' => 'Pour ralentir le projet',
+                    'answer_d' => 'Pour eviter les tests',
+                ],
+                'correct' => 'answer_b',
+            ],
+            [
+                'id' => 'fallback-5',
+                'question' => 'Quel est un avantage des formations continues ?',
+                'choices' => [
+                    'answer_a' => 'Ameliorer la performance et la qualite',
+                    'answer_b' => 'Diminuer les competences',
+                    'answer_c' => 'Eviter la collaboration',
+                    'answer_d' => 'Supprimer la documentation',
+                ],
+                'correct' => 'answer_a',
+            ],
+        ];
     }
 }

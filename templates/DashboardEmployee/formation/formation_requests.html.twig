@@ -141,12 +141,23 @@
                                 <td class="py-3 px-4">
                                     {% set attendance = attendanceMap[participation.id]|default(0) %}
                                     {% set canDownloadCertificate = participation.session.statut == 'Terminee' and attendance >= 80 and (participation.statutParticipation == 'Accepte' or participation.statutParticipation == 'Certificat obtenu') %}
+                                    {% set quizPassed = participation.quizPassed %}
 
-                                    {% if canDownloadCertificate %}
+                                    {% if canDownloadCertificate and quizPassed %}
                                         <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}" class="cert-download-from-requests inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#145EB7]/10 text-[#145EB7] border border-[#145EB7]/30 hover:bg-[#145EB7]/20 transition-colors">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v-9m0 9l-3-3m3 3l3-3M21 16.5v1.125A2.625 2.625 0 0118.375 20.25H5.625A2.625 2.625 0 013 17.625V16.5"/></svg>
                                             Telecharger
                                         </a>
+                                    {% elseif canDownloadCertificate %}
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-zinc-100 text-zinc-500 border border-zinc-200 cursor-not-allowed">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v-9m0 9l-3-3m3 3l3-3M21 16.5v1.125A2.625 2.625 0 0118.375 20.25H5.625A2.625 2.625 0 013 17.625V16.5"/></svg>
+                                                Quiz requis
+                                            </span>
+                                            <a href="{{ path('employee_formation_quiz', {id: participation.id, return: 'requests'}) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#145EB7] text-white hover:bg-[#0f4a92] transition-colors">
+                                                Passer le quiz
+                                            </a>
+                                        </div>
                                     {% elseif participation.certificatObtenu %}
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Obtenu</span>
                                     {% else %}
