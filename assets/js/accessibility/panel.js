@@ -13,46 +13,65 @@ class AccessibilityPanel {
         this.root = document.querySelector(ROOT_SELECTOR);
         if (!this.root) return;
 
-        // Toggles
-        this.root.querySelectorAll('[data-a11y-toggle]').forEach((btn) => {
-            const key = btn.dataset.a11yToggle;
-            btn.addEventListener('click', () => {
+        // Toggles — délégation au niveau du root pour qu'aucun re-render
+        // (re-rendu partiel, restauration depuis bfcache, contenu réinjecté)
+        // ne fasse perdre les listeners. Un seul handler global suffit.
+        this.root.addEventListener('click', (e) => {
+            const toggleBtn = e.target.closest('[data-a11y-toggle]');
+            if (toggleBtn && this.root.contains(toggleBtn)) {
+                e.preventDefault();
+                const key = toggleBtn.dataset.a11yToggle;
                 const current = a11y.get();
                 a11y.update({ [key]: !current[key] });
-            });
+                this._refresh();
+                return;
+            }
+
+            const stepBtn = e.target.closest('[data-a11y-font-step]');
+            if (stepBtn && this.root.contains(stepBtn)) {
+                e.preventDefault();
+                const delta = Number(stepBtn.dataset.a11yFontStep) || 0;
+                this._step(delta);
+                this._refresh();
+                return;
+            }
+
+            const resetBtn = e.target.closest('[data-a11y-font-reset]');
+            if (resetBtn && this.root.contains(resetBtn)) {
+                e.preventDefault();
+                a11y.update({ font_scale: 100 });
+                this._refresh();
+                return;
+            }
+
+            const resetAll = e.target.closest('[data-a11y-reset-all]');
+            if (resetAll && this.root.contains(resetAll)) {
+                e.preventDefault();
+                a11y.reset();
+                this._refresh();
+            }
         });
 
-        // Stepper taille
-        const dec = this.root.querySelector('[data-a11y-font-step="-1"]');
-        const inc = this.root.querySelector('[data-a11y-font-step="1"]');
-        const reset = this.root.querySelector('[data-a11y-font-reset]');
-        if (dec) dec.addEventListener('click', () => this._step(-1));
-        if (inc) inc.addEventListener('click', () => this._step(+1));
-        if (reset) reset.addEventListener('click', () => a11y.update({ font_scale: 100 }));
+        // Bouton "Tester la voix" (déléggué après le bloc click générique)
+        this.root.addEventListener('click', (e) => {
+            const testBtn = e.target.closest('[data-a11y-voice-test]');
+            if (!testBtn || !this.root.contains(testBtn)) return;
+            e.preventDefault();
+            const prefs = a11y.get();
+            if (!prefs.voice_feedback) {
+                a11y.update({ voice_feedback: true }, { silent: true });
+                this._refresh();
+            }
+            a11y.speak('Bonjour, le retour vocal est activé. Vous entendrez les confirmations importantes.');
+        });
 
-        // Sélecteur de langue
-        const langSelect = this.root.querySelector('[data-a11y-voice-lang]');
-        if (langSelect) {
-            langSelect.addEventListener('change', (e) => {
-                a11y.update({ voice_lang: e.target.value }, { silent: true });
-            });
-        }
-
-        // Bouton "Tester la voix"
-        const testBtn = this.root.querySelector('[data-a11y-voice-test]');
-        if (testBtn) {
-            testBtn.addEventListener('click', () => {
-                const prefs = a11y.get();
-                if (!prefs.voice_feedback) {
-                    a11y.update({ voice_feedback: true }, { silent: true });
-                }
-                a11y.speak('Bonjour, le retour vocal est activé. Vous entendrez les confirmations importantes.');
-            });
-        }
-
-        // Réinitialiser tout
-        const resetAll = this.root.querySelector('[data-a11y-reset-all]');
-        if (resetAll) resetAll.addEventListener('click', (e) => { e.preventDefault(); a11y.reset(); });
+        // Sélecteur de langue (délégation change)
+        this.root.addEventListener('change', (e) => {
+            const langSelect = e.target.closest('[data-a11y-voice-lang]');
+            if (!langSelect || !this.root.contains(langSelect)) return;
+            a11y.update({ voice_lang: langSelect.value }, { silent: true });
+            this._refresh();
+        });
 
         document.addEventListener('a11y:prefs-changed', () => this._refresh());
         this._refresh();
