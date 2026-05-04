@@ -14,37 +14,50 @@
 
     <script>
         (function () {
-            var v = document.getElementById('hero-bg-video');
-            if (!v) return;
-            v.muted = true;
-            v.defaultMuted = true;
-            v.setAttribute('muted', '');
-            var reveal = function () { v.classList.remove('opacity-0'); };
-            v.addEventListener('playing', reveal);
-            v.addEventListener('loadeddata', reveal);
-            v.addEventListener('error', function () {
-                console.warn('[hero-bg-video] failed to load', v.error);
-            });
-            var tryPlay = function () {
-                var p = v.play();
-                if (p && typeof p.catch === 'function') {
-                    p.catch(function () {
-                        var resume = function () {
-                            v.play().catch(function () {});
+            function initHeroVideo() {
+                var v = document.getElementById('hero-bg-video');
+                if (!v) return;
+                // Reset visibility in case Turbo restored a snapshot where it was already visible
+                v.classList.add('opacity-0');
+                v.muted = true;
+                v.defaultMuted = true;
+                v.setAttribute('muted', '');
+                var reveal = function () { v.classList.remove('opacity-0'); };
+                v.addEventListener('playing', reveal, { once: true });
+                v.addEventListener('loadeddata', reveal, { once: true });
+                v.addEventListener('error', function () {
+                    console.warn('[hero-bg-video] failed to load', v.error);
+                }, { once: true });
+                var tryPlay = function () {
+                    var p = v.play();
+                    if (p && typeof p.catch === 'function') {
+                        p.catch(function () {
+                            var resume = function () {
+                                v.play().catch(function () {});
+                                ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
+                                    document.removeEventListener(ev, resume);
+                                });
+                            };
                             ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
-                                document.removeEventListener(ev, resume);
+                                document.addEventListener(ev, resume, { once: true, passive: true });
                             });
-                        };
-                        ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
-                            document.addEventListener(ev, resume, { once: true, passive: true });
                         });
-                    });
+                    }
+                };
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    tryPlay();
+                } else {
+                    document.addEventListener('DOMContentLoaded', tryPlay, { once: true });
                 }
-            };
-            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                tryPlay();
-            } else {
-                document.addEventListener('DOMContentLoaded', tryPlay);
+            }
+
+            initHeroVideo();
+
+            // Handle Turbo page restoration (back/forward) — snapshot is restored
+            // with opacity-0 still on the video; turbo:load fires after restoration.
+            if (!document.__heroVideoTurboSetup) {
+                document.__heroVideoTurboSetup = true;
+                document.addEventListener('turbo:load', initHeroVideo);
             }
         })();
     </script>

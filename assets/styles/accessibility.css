@@ -434,3 +434,27 @@ html.a11y-reduce-motion *::after {
 .a11y-confirm-dialog[data-variant="info"] .a11y-confirm-btn-confirm:hover {
     background: #1d4ed8;
 }
+
+/* ── Feature cards (settings panel v2) ────────────────────────────────── */
+.a11y-feature-card {
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.a11y-feature-card.is-active {
+    box-shadow: 0 0 0 1px currentColor;
+}
+
+/* ── Speed selector buttons ─────────────────────────────────────────────── */
+.a11y-speed-btn {
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.a11y-speed-active {
+    background: #0d9488 !important;  /* teal-600 */
+    border-color: #0d9488 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+/* ── Voice opts dim transition ──────────────────────────────────────────── */
+[data-a11y-voice-opts] {
+    transition: opacity 0.2s ease;
+}

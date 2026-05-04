@@ -525,8 +525,4 @@ final class LeaveRequestService
         $this->em->flush();
     }
 
-    private function formatDate(?\DateTimeInterface $date): string
-    {
-        return $date ? $date->format('Y-m-d') : '';
-    }
 }
