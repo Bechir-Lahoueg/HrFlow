@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # --- Dépendances système ---
 RUN apt-get update && apt-get install -y \
@@ -12,8 +12,15 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
-    # wkhtmltopdf pour knp-snappy
-    wkhtmltopdf \
+    fontconfig \
+    xfonts-75dpi \
+    xfonts-base \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --- wkhtmltopdf (retiré des dépôts Debian Trixie, installation manuelle) ---
+RUN curl -fsSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -o /tmp/wkhtmltox.deb \
+    && apt-get update && apt-get install -y /tmp/wkhtmltox.deb \
+    && rm /tmp/wkhtmltox.deb \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # --- Extensions PHP ---
@@ -51,6 +58,9 @@ RUN mkdir -p var/cache var/log \
 
 # --- Exécution des scripts Composer post-install ---
 RUN composer run-script post-install-cmd --no-interaction || true
+
+# --- Build Tailwind CSS ---
+RUN APP_ENV=prod php bin/console tailwind:build --no-interaction
 
 EXPOSE 9000
 CMD ["php-fpm"]
