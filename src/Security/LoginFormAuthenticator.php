@@ -59,7 +59,7 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             new UserBadge($identifier, fn (string $userIdentifier) => $this->userProvider->loadUserByIdentifier($userIdentifier)),
             new CustomCredentials(
                 function (array $credentials, PasswordAuthenticatedUserInterface $user): bool {
-                    $isPasswordValid = $this->isPasswordValid($credentials['password'], $user->getPassword());
+                    $isPasswordValid = $this->isPasswordValid($credentials['password'], $user->getPassword() ?? '');
                     if (!$isPasswordValid) {
                         return false;
                     }
@@ -94,7 +94,7 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         );
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
         $roles = $token->getRoleNames();
         $this->removeTargetPath($request->getSession(), $firewallName);
@@ -109,7 +109,7 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                     $user->getFullName() ?? $user->getUsername(),
                     in_array('ROLE_ADMIN', $roles, true) ? 'Administrateur' : 'RH',
                     $request->getClientIp() ?? 'Inconnu',
-                    $request->headers->get('User-Agent', 'Inconnu')
+                    $request->headers->get('User-Agent') ?? 'Inconnu'
                 );
             }
         }

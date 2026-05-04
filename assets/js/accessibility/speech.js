@@ -11,6 +11,7 @@ class SpeechFeedback {
         this.supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
         this.lang = 'fr-FR';
         this.enabled = false;
+        this.rate = 1.0;
         this._cachedVoice = null;
         this._cachedVoiceForLang = null;
 
@@ -38,6 +39,14 @@ class SpeechFeedback {
         }
     }
 
+    /** Définit la vitesse de lecture (0.5 – 2.0). */
+    setRate(rate) {
+        const r = Number(rate);
+        if (!Number.isNaN(r) && r >= 0.5 && r <= 2.0) {
+            this.rate = r;
+        }
+    }
+
     /** Coupe immédiatement toute lecture en cours. */
     cancel() {
         if (!this.supported) return;
@@ -57,9 +66,9 @@ class SpeechFeedback {
         try {
             this.cancel();
             const utterance = new SpeechSynthesisUtterance(trimmed);
-            utterance.lang = this.lang;
-            utterance.rate = options.rate ?? 1.0;
-            utterance.pitch = options.pitch ?? 1.0;
+            utterance.lang   = this.lang;
+            utterance.rate   = options.rate   ?? this.rate  ?? 1.0;
+            utterance.pitch  = options.pitch  ?? 1.0;
             utterance.volume = options.volume ?? 1.0;
 
             const voice = this._pickVoice(this.lang);
