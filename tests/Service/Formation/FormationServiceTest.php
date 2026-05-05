@@ -17,7 +17,6 @@ class FormationServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        // On crée des "doublures" (mocks) pour toutes les dépendances
         $this->service = new FormationService(
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(FormationRepository::class),
@@ -27,8 +26,6 @@ class FormationServiceTest extends TestCase
             $this->createStub(SessionFeedbackRepository::class),
         );
     }
-
-    // --- Tests pour calculateStatut ---
 
     public function testStatutPlanifieeQuandDateDebutDansLeFutur(): void
     {
@@ -60,8 +57,6 @@ class FormationServiceTest extends TestCase
         $this->assertSame('Terminee', $statut);
     }
 
-    // --- Test pour createSession : date invalide ---
-
     public function testCreateSessionLanceExceptionSiDateFinAvantDateDebut(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -69,7 +64,7 @@ class FormationServiceTest extends TestCase
         $this->service->createSession([
             'id_formation'  => 1,
             'date_debut'    => '2025-06-10',
-            'date_fin'      => '2025-06-05', // fin AVANT debut
+            'date_fin'      => '2025-06-05',
             'lieu'          => 'Tunis',
             'mode'          => 'Présentiel',
             'capacite_max'  => 20,

@@ -74,19 +74,10 @@ final class EmployeeFormationController extends AbstractController
             ];
         }
 
-        usort($topFormationRows, static function (array $a, array $b): int {
-            $cmpAverage = $b['average'] <=> $a['average'];
-            if ($cmpAverage !== 0) {
-                return $cmpAverage;
-            }
-
-            $cmpCount = $b['count'] <=> $a['count'];
-            if ($cmpCount !== 0) {
-                return $cmpCount;
-            }
-
-            return strcmp((string) $a['formation']->getTitre(), (string) $b['formation']->getTitre());
-        });
+     usort($topFormationRows, static function (array $a, array $b): int {
+            return [$b['average'], $b['count'], (string) $b['formation']->getTitre()]
+                <=> [$a['average'], $a['count'], (string) $a['formation']->getTitre()];
+     });
 
         $topFormateursMap = [];
         foreach ($allFormations as $formation) {
@@ -871,6 +862,9 @@ final class EmployeeFormationController extends AbstractController
 
         return $tag === '' ? 'general' : $tag;
     }
+/**
+ * @return array<int, array{id: string, question: string, choices: array<string, string>, correct: string}>
+ */
 
     private function buildFallbackQuestions(?string $title, ?string $type): array
     {
