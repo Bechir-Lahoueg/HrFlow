@@ -14,16 +14,19 @@
 import { speech } from './speech.js';
 
 const STORAGE_KEY = 'hrflow-a11y-prefs';
-const ALLOWED_FONT_SCALES = [90, 100, 115, 130, 150];
-const ALLOWED_VOICE_LANGS = ['fr-FR', 'en-US', 'ar-TN'];
+const ALLOWED_FONT_SCALES  = [90, 100, 115, 130, 150];
+const ALLOWED_VOICE_LANGS  = ['fr-FR', 'en-US', 'ar-TN'];
+const ALLOWED_VOICE_SPEEDS = [0.75, 1.0, 1.25, 1.5];
 
 const DEFAULT_PREFS = {
-    high_contrast: false,
-    font_scale: 100,
+    high_contrast:  false,
+    font_scale:     100,
     voice_feedback: false,
-    simplified_ui: false,
-    reduce_motion: false,
-    voice_lang: 'fr-FR',
+    hover_reading:  false,
+    voice_speed:    1.0,
+    simplified_ui:  false,
+    reduce_motion:  false,
+    voice_lang:     'fr-FR',
 };
 
 class AccessibilityManager {
@@ -61,6 +64,7 @@ class AccessibilityManager {
 
         // 3. Configurer le moteur vocal.
         speech.setLang(this.prefs.voice_lang);
+        speech.setRate(this.prefs.voice_speed);
         speech.setEnabled(this.prefs.voice_feedback);
 
         // 4. Appliquer les classes (idempotent : déjà fait par le script inline).
@@ -83,7 +87,13 @@ class AccessibilityManager {
     update(patch, options = {}) {
         const next = this._sanitize({ ...this.prefs, ...patch });
         const changed = JSON.stringify(next) !== JSON.stringify(this.prefs);
-        if (!changed) return;
+        if (!changed) {
+            // Même sans changement réel, on re-dispatch pour que les
+            // panels/popovers réalignent leur UI (utile si un toggle a été
+            // cliqué mais que la sanitization l'a annulé).
+            this._dispatch();
+            return;
+        }
 
         this.prefs = next;
         this.apply();
@@ -114,8 +124,9 @@ class AccessibilityManager {
         ALLOWED_FONT_SCALES.forEach((s) => html.classList.remove(`a11y-font-${s}`));
         html.classList.add(`a11y-font-${this.prefs.font_scale}`);
 
-        // Met à jour le moteur vocal.
+        // Met à jour le moteur vocal (langue, vitesse, activation).
         speech.setLang(this.prefs.voice_lang);
+        speech.setRate(this.prefs.voice_speed);
         speech.setEnabled(this.prefs.voice_feedback);
     }
 
@@ -133,11 +144,15 @@ class AccessibilityManager {
         const out = { ...DEFAULT_PREFS };
         out.high_contrast  = !!prefs.high_contrast;
         out.voice_feedback = !!prefs.voice_feedback;
+        out.hover_reading  = !!prefs.hover_reading;
         out.simplified_ui  = !!prefs.simplified_ui;
         out.reduce_motion  = !!prefs.reduce_motion;
 
         const fs = Number(prefs.font_scale);
         out.font_scale = ALLOWED_FONT_SCALES.includes(fs) ? fs : DEFAULT_PREFS.font_scale;
+
+        const vs = Number(prefs.voice_speed);
+        out.voice_speed = ALLOWED_VOICE_SPEEDS.includes(vs) ? vs : DEFAULT_PREFS.voice_speed;
 
         out.voice_lang = ALLOWED_VOICE_LANGS.includes(prefs.voice_lang)
             ? prefs.voice_lang
@@ -225,7 +240,8 @@ class AccessibilityManager {
 }
 
 export const a11y = new AccessibilityManager();
-export const A11Y_FONT_SCALES = ALLOWED_FONT_SCALES;
+export const A11Y_FONT_SCALES   = ALLOWED_FONT_SCALES;
+export const A11Y_VOICE_SPEEDS  = ALLOWED_VOICE_SPEEDS;
 
 // Démarrage automatique dès que le DOM est prêt.
 if (document.readyState === 'loading') {
@@ -233,6 +249,9 @@ if (document.readyState === 'loading') {
 } else {
     a11y.init();
 }
+// Re-init après chaque navigation Turbo Drive (le body est remplacé,
+// les références DOM et le token CSRF doivent être relus).
+document.addEventListener('turbo:load', () => a11y.init());
 
 // Expose en global pour le code Twig non-modulaire (boutons inline, etc.)
 window.HrFlowA11y = a11y;

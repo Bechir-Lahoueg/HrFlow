@@ -72,6 +72,9 @@ class FormationRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+      * @return array{total_formations: int, active_sessions: int, total_participants: int}
+      */
     public function getStatsByRh(int $rhId): array
     {
         $total = (int) $this->createQueryBuilder('f')

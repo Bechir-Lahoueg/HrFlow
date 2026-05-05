@@ -17,6 +17,7 @@ class FloatingButton {
         this.fab = null;
         this.popover = null;
         this.isOpen = false;
+        this._docListenersAdded = false;
     }
 
     init() {
@@ -28,23 +29,27 @@ class FloatingButton {
 
         this.fab.addEventListener('click', () => this.toggle());
 
-        document.addEventListener('click', (e) => {
-            if (!this.isOpen) return;
-            if (this.root.contains(e.target)) return;
-            this.close();
-        });
+        if (!this._docListenersAdded) {
+            this._docListenersAdded = true;
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
+            document.addEventListener('click', (e) => {
+                if (!this.isOpen) return;
+                if (this.root && this.root.contains(e.target)) return;
                 this.close();
-                this.fab.focus();
-            }
-        });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.isOpen) {
+                    this.close();
+                    if (this.fab) this.fab.focus();
+                }
+            });
+
+            // Resync UI quand les prefs changent (depuis le panneau settings ou ailleurs)
+            document.addEventListener('a11y:prefs-changed', () => this._refreshUI());
+        }
 
         this._wireControls();
-
-        // Resync UI quand les prefs changent (depuis le panneau settings ou ailleurs)
-        document.addEventListener('a11y:prefs-changed', () => this._refreshUI());
         this._refreshUI();
     }
 
@@ -126,3 +131,6 @@ if (document.readyState === 'loading') {
 } else {
     floatingButton.init();
 }
+// Re-init après chaque navigation Turbo Drive : le body est remplacé,
+// le bouton flottant est un nouvel élément DOM → on doit le recâbler.
+document.addEventListener('turbo:load', () => floatingButton.init());

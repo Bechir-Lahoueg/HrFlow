@@ -34,8 +34,8 @@ class SessionFeedbackRepository extends ServiceEntityRepository
     public function findByFormation(int $formationId): array
     {
         return $this->createQueryBuilder('sf')
-            ->leftJoin('sf.employee', 'e')->addSelect('e')
-            ->leftJoin('sf.session', 's')->addSelect('s')
+            ->innerJoin('sf.employee', 'e')->addSelect('e')
+            ->innerjoin('sf.session', 's')->addSelect('s')
             ->where('sf.formation = :formationId')
             ->setParameter('formationId', $formationId)
             ->orderBy('sf.createdAt', 'DESC')

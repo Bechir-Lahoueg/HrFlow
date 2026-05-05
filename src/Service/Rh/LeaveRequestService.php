@@ -99,7 +99,7 @@ final class LeaveRequestService
         $isExceptionRequest = $requestMode === self::CATEGORY_EXCEPTION;
 
         $balance = $this->leaveBalanceService->getEmployeeBalance($employeeId);
-        $availableDays = (float) ($balance['available_days'] ?? 0.0);
+       $availableDays = (float) $balance['available_days'];
 
         if (!$isExceptionRequest && ($availableDays <= 0 || $workingDays > $availableDays)) {
             return [
@@ -524,7 +524,7 @@ final class LeaveRequestService
 
         $this->em->flush();
     }
-
+    /** @phpstan-ignore method.unused */
     private function formatDate(?\DateTimeInterface $date): string
     {
         return $date ? $date->format('Y-m-d') : '';
