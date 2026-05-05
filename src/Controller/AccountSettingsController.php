@@ -86,7 +86,7 @@ final class AccountSettingsController extends AbstractController
     }
 
     /**
-     * @param array<string, string> $config
+ * @param array<string, string|bool> $config
      */
     private function handleSettings(Request $request, string $template, array $config): Response
     {
