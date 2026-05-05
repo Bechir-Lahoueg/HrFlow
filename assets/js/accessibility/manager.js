@@ -83,7 +83,13 @@ class AccessibilityManager {
     update(patch, options = {}) {
         const next = this._sanitize({ ...this.prefs, ...patch });
         const changed = JSON.stringify(next) !== JSON.stringify(this.prefs);
-        if (!changed) return;
+        if (!changed) {
+            // Même sans changement réel, on re-dispatch pour que les
+            // panels/popovers réalignent leur UI (utile si un toggle a été
+            // cliqué mais que la sanitization l'a annulé).
+            this._dispatch();
+            return;
+        }
 
         this.prefs = next;
         this.apply();

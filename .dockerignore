@@ -1,0 +1,16 @@
+.git
+.gitignore
+docker
+docker-compose.yml
+compose.yaml
+compose.override.yaml
+var/cache
+var/log
+node_modules
+vendor
+*.md
+.env.local
+.env.*.local
+tests
+phpunit.dist.xml
+phpstan.neon

@@ -1040,8 +1040,14 @@
         }
     }
 
-    if (typeof flatpickr === 'function') {
-        var opts = {
+    // ── Initialisation flatpickr robuste ──
+    // Le script CDN peut etre indisponible au moment de l'execution (reseau lent,
+    // bfcache, retour bouton precedent). On initialise quand flatpickr est pret,
+    // et on garde une reference pour eviter les double-init.
+    var flatpickrInstances = { start: null, end: null };
+
+    function getFlatpickrOpts() {
+        return {
             dateFormat: 'Y-m-d',
             altInput: true,
             altFormat: 'd/m/Y',
@@ -1066,9 +1072,77 @@
             },
             onChange: updateSim,
         };
-        flatpickr(startInput, opts);
-        flatpickr(endInput, opts);
     }
+
+    function destroyFlatpickr() {
+        ['start', 'end'].forEach(function (k) {
+            if (flatpickrInstances[k] && typeof flatpickrInstances[k].destroy === 'function') {
+                try { flatpickrInstances[k].destroy(); } catch (e) {}
+            }
+            flatpickrInstances[k] = null;
+        });
+    }
+
+    function initFlatpickr() {
+        if (typeof flatpickr !== 'function') return false;
+        if (!startInput || !endInput) return false;
+        // Si une instance existe deja sur l'input, ne pas re-init
+        if (startInput._flatpickr && endInput._flatpickr) {
+            flatpickrInstances.start = startInput._flatpickr;
+            flatpickrInstances.end = endInput._flatpickr;
+            return true;
+        }
+        destroyFlatpickr();
+        var opts = getFlatpickrOpts();
+        flatpickrInstances.start = flatpickr(startInput, opts);
+        flatpickrInstances.end = flatpickr(endInput, opts);
+        return true;
+    }
+
+    function ensureFlatpickr(maxAttempts) {
+        var attempts = 0;
+        var max = maxAttempts || 40; // ~10s max (40 * 250ms)
+        if (initFlatpickr()) return;
+        var timer = setInterval(function () {
+            attempts++;
+            if (initFlatpickr() || attempts >= max) {
+                clearInterval(timer);
+            }
+        }, 250);
+    }
+
+    // Click direct sur le champ : si flatpickr n'est pas encore actif on tente
+    // une init immediate, puis on ouvre le calendrier.
+    function bindManualOpen(input, key) {
+        if (!input) return;
+        var openHandler = function () {
+            if (!input._flatpickr) {
+                initFlatpickr();
+            }
+            if (input._flatpickr && typeof input._flatpickr.open === 'function') {
+                input._flatpickr.open();
+            }
+        };
+        input.addEventListener('focus', openHandler);
+        input.addEventListener('click', openHandler);
+    }
+
+    bindManualOpen(startInput, 'start');
+    bindManualOpen(endInput, 'end');
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { ensureFlatpickr(); });
+    } else {
+        ensureFlatpickr();
+    }
+
+    // Restauration depuis bfcache (bouton precedent) : reinitialiser
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            destroyFlatpickr();
+            ensureFlatpickr();
+        }
+    });
 
     if (leaveTypeSelector) {
         leaveTypeSelector.querySelectorAll('.type-card').forEach(function (b) {
