@@ -4,7 +4,7 @@
  * Réutilise les mêmes hooks (data-a11y-*) que le mini-popover, plus
  * un sélecteur de langue de voix et un bouton "Tester la voix".
  */
-import { a11y, A11Y_FONT_SCALES } from './manager.js';
+import { a11y, A11Y_FONT_SCALES, A11Y_VOICE_SPEEDS } from './manager.js';
 
 const ROOT_SELECTOR = '#a11y-panel-root';
 
@@ -50,6 +50,17 @@ class AccessibilityPanel {
                 a11y.reset();
                 this._refresh();
             }
+
+            // Boutons de vitesse de lecture
+            const speedBtn = e.target.closest('[data-a11y-speed]');
+            if (speedBtn && this.root.contains(speedBtn)) {
+                e.preventDefault();
+                const speed = Number(speedBtn.dataset.a11ySpeed);
+                if (A11Y_VOICE_SPEEDS.includes(speed)) {
+                    a11y.update({ voice_speed: speed }, { silent: true });
+                    this._refresh();
+                }
+            }
         });
 
         // Bouton "Tester la voix" (déléggué après le bloc click générique)
@@ -73,7 +84,10 @@ class AccessibilityPanel {
             this._refresh();
         });
 
-        document.addEventListener('a11y:prefs-changed', () => this._refresh());
+        if (!this._docListenerAdded) {
+            this._docListenerAdded = true;
+            document.addEventListener('a11y:prefs-changed', () => this._refresh());
+        }
         this._refresh();
     }
 
@@ -87,6 +101,7 @@ class AccessibilityPanel {
     }
 
     _refresh() {
+        if (!this.root) return;
         const prefs = a11y.get();
 
         // Toggles + état textuel
@@ -113,6 +128,35 @@ class AccessibilityPanel {
         if (langSelect && langSelect.value !== prefs.voice_lang) {
             langSelect.value = prefs.voice_lang;
         }
+
+        // Boutons de vitesse
+        this.root.querySelectorAll('[data-a11y-speed]').forEach((btn) => {
+            const speed = Number(btn.dataset.a11ySpeed);
+            const isActive = speed === prefs.voice_speed;
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            btn.classList.toggle('a11y-speed-active', isActive);
+        });
+
+        // Sous-options vocales : opacity quand voice_feedback est off
+        const voiceOpts = this.root.querySelector('[data-a11y-voice-opts]');
+        if (voiceOpts) {
+            voiceOpts.classList.toggle('opacity-40', !prefs.voice_feedback);
+            voiceOpts.classList.toggle('pointer-events-none', !prefs.voice_feedback);
+        }
+
+        // Compteur de features actives
+        const countEl = this.root.querySelector('#a11y-active-count');
+        if (countEl) {
+            const active = ['high_contrast', 'voice_feedback', 'hover_reading', 'simplified_ui', 'reduce_motion']
+                .filter(k => prefs[k]).length;
+            countEl.textContent = active + (active > 1 ? ' actifs' : ' actif');
+        }
+
+        // Carte de feature : classe is-active
+        this.root.querySelectorAll('[data-a11y-feature]').forEach((card) => {
+            const key = card.dataset.a11yFeature;
+            card.classList.toggle('is-active', !!prefs[key]);
+        });
     }
 
     _fontLabel(scale) {
@@ -133,3 +177,6 @@ if (document.readyState === 'loading') {
 } else {
     panel.init();
 }
+// Re-init après chaque navigation Turbo Drive : la page Settings est
+// rechargée avec un nouveau DOM → le panneau doit être recâblé.
+document.addEventListener('turbo:load', () => panel.init());

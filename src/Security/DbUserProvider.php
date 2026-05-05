@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/** @implements UserProviderInterface<DbUser> */
 final class DbUserProvider implements UserProviderInterface
 {
     public function __construct(private readonly Connection $connection)
@@ -98,6 +99,7 @@ final class DbUserProvider implements UserProviderInterface
         return DbUser::class === $class;
     }
 
+    /** @param array<string, mixed> $row */
     private function hydrateUser(array $row): DbUser
     {
         return new DbUser(
@@ -116,6 +118,7 @@ final class DbUserProvider implements UserProviderInterface
         );
     }
 
+    /** @param array<string, mixed> $row */
     private function hydrateEmployee(array $row): DbUser
     {
         $firstName = (string) $row['first_name'];
@@ -133,10 +136,11 @@ final class DbUserProvider implements UserProviderInterface
             (string) $row['job_title'],
             (int) $row['age'],
             $row['rh_id'] ? (int) $row['rh_id'] : null,
-            isset($row['department']) && $row['department'] !== null ? (string) $row['department'] : null,
+            isset($row['department']) ? (string) $row['department'] : null,
         );
     }
 
+    /** @param array<string, mixed> $row */
     private function hydrateCandidate(array $row): DbUser
     {
         return new DbUser(

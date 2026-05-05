@@ -524,7 +524,7 @@ final class LeaveRequestService
 
         $this->em->flush();
     }
-/** @phpstan-ignore method.unused */
+    /** @phpstan-ignore method.unused */
     private function formatDate(?\DateTimeInterface $date): string
     {
         return $date ? $date->format('Y-m-d') : '';

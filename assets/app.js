@@ -12,4 +12,5 @@ import './styles/accessibility.css';
 import './js/accessibility/manager.js';
 import './js/accessibility/confirm-dialog.js';
 import './js/accessibility/floating-button.js';
+import './js/accessibility/screen-reader.js';
 import './js/accessibility/panel.js';
