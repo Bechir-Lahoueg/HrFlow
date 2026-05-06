@@ -21,6 +21,9 @@ if ! APP_ENV=prod php bin/console cache:warmup --no-interaction 2>&1; then
     echo "!!! cache:warmup FAILED - continuing anyway, check env vars above !!!"
 fi
 
+# Fix permissions: cache:warmup creates files as root; PHP-FPM (www-data) needs write access
+chmod -R 777 var/ public/uploads public/assets 2>/dev/null || true
+
 # Run pending database migrations automatically
 echo "==> Running database migrations..."
 APP_ENV=prod php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration 2>&1 || echo "!!! migrations FAILED !!!"
