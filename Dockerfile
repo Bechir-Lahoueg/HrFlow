@@ -55,21 +55,10 @@ RUN composer run-script post-install-cmd --no-interaction || true
 # --- Install importmap vendor assets (assets/vendor/ is gitignored, must be fetched at build time) ---
 RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console importmap:install --no-interaction
 
-# --- Tailwind CSS standalone binary ---
-RUN mkdir -p var/tailwind/v3.4.17 \
-    && curl -fsSL \
-        "https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64" \
-        -o var/tailwind/v3.4.17/tailwindcss-linux-x64 \
-    && chmod +x var/tailwind/v3.4.17/tailwindcss-linux-x64
+# --- Build Tailwind CSS (same approach as docker/php/Dockerfile) ---
+RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console tailwind:build --minify --no-interaction
 
-# --- Build Tailwind CSS ---
-RUN var/tailwind/v3.4.17/tailwindcss-linux-x64 \
-        -c tailwind.config.js \
-        -i assets/styles/app.css \
-        -o var/tailwind/app.built.css \
-        --minify
-
-# --- Compile all assets to public/assets/ (fingerprinted, tailwind output replaces @tailwind directives) ---
+# --- Compile all assets to public/assets/ (fingerprinted, required for prod) ---
 RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console asset-map:compile --no-interaction
 
 # --- Startup script ---
