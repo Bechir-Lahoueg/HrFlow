@@ -85,7 +85,18 @@ RUN chmod +x /start.sh
 # --- Permissions (LAST — covers all files created above, including tailwind output) ---
 # PHP-FPM (www-data) must be able to write var/cache, var/log, public/uploads at runtime
 RUN mkdir -p var/cache var/log var/tailwind public/uploads public/assets \
-    && chmod -R 777 var/ public/uploads public/assets
+    && chown -R www-data:www-data var/ public/uploads public/assets \
+    && chmod -R 775 var/ public/uploads public/assets
+
+# --- PHP-FPM pool: run workers as www-data (explicitly set, avoids inherited umask issues) ---
+RUN { \
+    echo '[www]'; \
+    echo 'user = www-data'; \
+    echo 'group = www-data'; \
+    echo 'listen.owner = www-data'; \
+    echo 'listen.group = www-data'; \
+    echo 'clear_env = no'; \
+    } > /usr/local/etc/php-fpm.d/zz-docker-override.conf
 
 # Render routes external traffic to port 10000 by default
 EXPOSE 10000
