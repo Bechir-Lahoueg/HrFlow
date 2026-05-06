@@ -52,6 +52,9 @@ COPY . .
 # --- Composer post-install scripts ---
 RUN composer run-script post-install-cmd --no-interaction || true
 
+# --- Install importmap vendor assets (assets/vendor/ is gitignored, must be fetched at build time) ---
+RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console importmap:install --no-interaction
+
 # --- Tailwind CSS standalone binary ---
 RUN mkdir -p var/tailwind/v3.4.17 \
     && curl -fsSL \
