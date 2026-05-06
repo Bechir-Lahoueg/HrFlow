@@ -32,10 +32,7 @@ final class ExternalApiService
     //  MÉTÉO (OpenWeatherMap)
     // ─────────────────────────────────────────────────────────
 
-    /**
-     * @return array{city:string,temp:float,feels_like:float,description:string,icon:string,humidity:int,wind:float,main:string}|null
-     */
-    public function getWeatherTunis(bool $refresh = false): ?array
+    public function getWeatherTunis(bool $refresh = false): array
     {
         $key = 'external.weather.tunis';
         if ($refresh) {
@@ -342,10 +339,7 @@ final class ExternalApiService
     //  CITATIONS (Quotable)
     // ─────────────────────────────────────────────────────────
 
-    /**
-     * @return array{content:string,author:string,tags:array<int,string>}|null
-     */
-    public function getDailyQuote(string $tag = 'motivational', bool $refresh = false): ?array
+    public function getDailyQuote(string $tag = 'motivational', bool $refresh = false): array
     {
         $key = 'external.quote.' . $tag;
         if ($refresh) {
@@ -387,7 +381,7 @@ final class ExternalApiService
     //  CONSEIL DU JOUR (Advice Slip)
     // ─────────────────────────────────────────────────────────
 
-    public function getAdviceOfTheDay(bool $refresh = false): ?string
+    public function getAdviceOfTheDay(bool $refresh = false): string
     {
         $key = 'external.advice.' . date('Y-m-d');
         if ($refresh) {

@@ -163,7 +163,9 @@ class ApplicationRepository extends ServiceEntityRepository
                ->setParameter('search', '%' . $search . '%');
         }
 
-        return $qb->getQuery();
+        $query = $qb->getQuery();
+        /** @var \Doctrine\ORM\Query<int, Application> $query */
+        return $query;
     }
 
     /**

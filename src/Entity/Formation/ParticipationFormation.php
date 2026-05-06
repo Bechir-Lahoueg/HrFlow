@@ -19,15 +19,15 @@ class ParticipationFormation
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Employee::class)]
-    #[ORM\JoinColumn(name: 'id_utilisateur', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_utilisateur_id', nullable: false)]
     private ?Employee $employee = null;
 
     #[ORM\ManyToOne(targetEntity: SessionFormation::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_session_id', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]
     private ?SessionFormation $session = null;
 
     #[ORM\Column(name: 'date_inscription', type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $dateInscription = null;
+    private \DateTimeInterface $dateInscription;
 
     #[ORM\Column(name: 'statut_participation', length: 30)]
     private ?string $statutParticipation = null;
@@ -35,11 +35,11 @@ class ParticipationFormation
     #[ORM\Column(name: 'certificat_obtenu', type: Types::BOOLEAN)]
     private bool $certificatObtenu = false;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     /** @var Collection<int, PresenceFormation> */
-    #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation')]
+    #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $presences;
 
     #[ORM\Column(length: 255, unique: true, nullable: true)]
@@ -74,6 +74,7 @@ class ParticipationFormation
     public function __construct()
     {
         $this->presences = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -103,7 +104,7 @@ class ParticipationFormation
         return $this;
     }
 
-    public function getDateInscription(): ?\DateTimeInterface
+    public function getDateInscription(): \DateTimeInterface
     {
         return $this->dateInscription;
     }

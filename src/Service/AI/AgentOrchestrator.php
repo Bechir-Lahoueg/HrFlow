@@ -483,7 +483,7 @@ PROMPT;
     private function truncateToolResult(mixed $result): string
     {
         if (!is_array($result)) {
-            return is_string($result) ? $result : json_encode($result);
+            return is_string($result) ? $result : (string) json_encode($result);
         }
 
         // Build natural language summary instead of JSON

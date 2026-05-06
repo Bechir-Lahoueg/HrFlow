@@ -24,8 +24,8 @@ class ProjectChatRoom
     #[ORM\Column(name: 'room_id', length: 255)]
     private ?string $roomId = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
@@ -33,6 +33,11 @@ class ProjectChatRoom
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
     }
 
     public function getProjectId(): ?int
