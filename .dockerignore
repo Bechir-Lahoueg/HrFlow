@@ -1,6 +1,5 @@
 .git
 .gitignore
-docker
 docker-compose.yml
 compose.yaml
 compose.override.yaml
