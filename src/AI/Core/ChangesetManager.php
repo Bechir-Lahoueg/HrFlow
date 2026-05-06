@@ -16,6 +16,9 @@ final class ChangesetManager
         private readonly ChangesetStorageInterface $storage,
     ) {}
 
+    /**
+     * @param array<string, mixed> $result
+     */
     public function stage(ToolCall $toolCall, array $result, object $user): PendingChangeset
     {
         $changeset = PendingChangeset::create(

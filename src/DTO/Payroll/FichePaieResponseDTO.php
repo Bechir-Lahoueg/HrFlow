@@ -25,15 +25,16 @@ class FichePaieResponseDTO
 
     public function __construct(FichePaie $fichePaie)
     {
-        $this->id = $fichePaie->getId();
-        $this->employeeId = $fichePaie->getEmployee()->getId();
-        $this->employeeName = $fichePaie->getEmployee()->getFirstName() . ' ' . $fichePaie->getEmployee()->getLastName();
-        $this->mois = $fichePaie->getMois();
-        $this->annee = $fichePaie->getAnnee();
-        $this->salaireBrut = $fichePaie->getSalaireBrut();
-        $this->totalPrimes = $fichePaie->getTotalPrimes();
-        $this->totalDeductions = $fichePaie->getTotalDeductions();
-        $this->salaireNet = $fichePaie->getSalaireNet();
+        $this->id = $fichePaie->getId() ?? 0;
+        $employee = $fichePaie->getEmployee();
+        $this->employeeId = $employee?->getId() ?? 0;
+        $this->employeeName = ($employee?->getFirstName() ?? '') . ' ' . ($employee?->getLastName() ?? '');
+        $this->mois = $fichePaie->getMois() ?? 0;
+        $this->annee = $fichePaie->getAnnee() ?? 0;
+        $this->salaireBrut = $fichePaie->getSalaireBrut() ?? '0.00';
+        $this->totalPrimes = $fichePaie->getTotalPrimes() ?? '0.00';
+        $this->totalDeductions = $fichePaie->getTotalDeductions() ?? '0.00';
+        $this->salaireNet = $fichePaie->getSalaireNet() ?? '0.00';
         $this->statutPaiement = $fichePaie->isStatutPaiement();
         $this->notes = $fichePaie->getNotes();
         $this->createdAt = $fichePaie->getCreatedAt();

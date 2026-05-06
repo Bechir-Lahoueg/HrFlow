@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/** @extends AbstractType<array<string, mixed>> */
 class CandidateLoginFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

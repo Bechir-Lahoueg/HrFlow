@@ -19,6 +19,7 @@ class ToolValidator
     /**
      * Validates a tool call before execution.
      * 
+     * @param array<mixed> $args
      * @throws \Exception If validation fails
      */
     public function validate(string $toolName, array $args): void
@@ -53,7 +54,7 @@ class ToolValidator
                 $this->logger->warning('AI tool validation failed: application ownership mismatch', [
                     'tool' => $toolName,
                     'application_id' => $args['application_id'],
-                    'job_created_by' => $app->getJobOffer()?->getCreatedBy(),
+                    'job_created_by' => $app->getJobOffer()->getCreatedBy(),
                     'user_id' => $userId,
                 ]);
                 throw new \Exception("Access Denied: You do not own the Job Offer associated with this application.");

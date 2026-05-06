@@ -221,6 +221,7 @@ class FichePaie
             5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
             9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
         ];
-        return ($months[$this->mois] ?? 'Invalid') . ' ' . $this->annee;
+        return ($months[$this->mois ?? 0] ?? 'Invalid') . ' ' . $this->annee;
     }
 }
+

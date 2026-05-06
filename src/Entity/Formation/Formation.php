@@ -17,8 +17,6 @@ class Formation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_formation')]
-
-    /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]

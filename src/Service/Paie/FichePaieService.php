@@ -79,6 +79,15 @@ class FichePaieService
         $this->validatePeriod($dto->mois, $dto->annee);
         $this->validateSalary($dto->salaireBrut);
 
+        if ($dto->employeeId === null) {
+            throw new \DomainException('Employee ID is required');
+        }
+        if ($dto->mois === null || $dto->annee === null) {
+            throw new \DomainException('Month and year are required');
+        }
+        if ($dto->salaireBrut === null) {
+            throw new \DomainException('Gross salary is required');
+        }
         $employee = $this->employeeRepository->find($dto->employeeId);
         if (!$employee) {
             throw EmployeeNotFoundException::withId($dto->employeeId);
@@ -121,7 +130,10 @@ class FichePaieService
         $this->em->flush();
 
         // Invalidate cache
-        $this->cachingService->forget(CachingService::payrollStatsKey($employee->getRhId()));
+        $rhId = $employee->getRhId();
+        if ($rhId !== null) {
+            $this->cachingService->forget(CachingService::payrollStatsKey($rhId));
+        }
         $this->cachingService->forget(CachingService::employeeFichesKey($dto->employeeId));
 
         return new FichePaieResponseDTO($fichePaie);
@@ -140,14 +152,21 @@ class FichePaieService
         $this->validatePeriod($dto->mois, $dto->annee);
         $this->validateSalary($dto->salaireBrut);
 
+        if ($dto->mois === null || $dto->annee === null || $dto->salaireBrut === null) {
+            throw new \DomainException('Missing required fields');
+        }
+
+        $employeeEntity = $fichePaie->getEmployee();
+        $employeeId = $employeeEntity !== null ? $employeeEntity->getId() : null;
+
         // Recalculate totals
         $totalPrimes = $this->primeRepository->getTotalByEmployeeAndPeriod(
-            $fichePaie->getEmployee()->getId(),
+            (int) $employeeId,
             $dto->mois,
             $dto->annee
         );
         $totalDeductions = $this->deductionRepository->getTotalByEmployeeAndPeriod(
-            $fichePaie->getEmployee()->getId(),
+            (int) $employeeId,
             $dto->mois,
             $dto->annee
         );
@@ -164,8 +183,13 @@ class FichePaieService
         $this->em->flush();
 
         // Invalidate cache
-        $this->cachingService->forget(CachingService::payrollStatsKey($fichePaie->getEmployee()->getRhId()));
-        $this->cachingService->forget(CachingService::employeeFichesKey($fichePaie->getEmployee()->getId()));
+        $rhId = $employeeEntity?->getRhId();
+        if ($rhId !== null) {
+            $this->cachingService->forget(CachingService::payrollStatsKey($rhId));
+        }
+        if ($employeeId !== null) {
+            $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
+        }
 
         return new FichePaieResponseDTO($fichePaie);
     }
@@ -180,15 +204,20 @@ class FichePaieService
             throw FichePaieNotFoundException::withId($id);
         }
 
-        $employeeId = $fichePaie->getEmployee()->getId();
-        $rhId = $fichePaie->getEmployee()->getRhId();
+        $employeeEntity = $fichePaie->getEmployee();
+        $employeeId = $employeeEntity?->getId();
+        $rhId = $employeeEntity?->getRhId();
 
         $this->em->remove($fichePaie);
         $this->em->flush();
 
         // Invalidate cache
-        $this->cachingService->forget(CachingService::payrollStatsKey($rhId));
-        $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
+        if ($rhId !== null) {
+            $this->cachingService->forget(CachingService::payrollStatsKey($rhId));
+        }
+        if ($employeeId !== null) {
+            $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
+        }
     }
 
     /**
@@ -252,7 +281,10 @@ class FichePaieService
 
         // Invalidate cache
         $employee = $fichePaie->getEmployee();
-        $this->cachingService->forget(CachingService::payrollStatsKey($employee->getRhId()));
+        $employeeRhId = $employee?->getRhId();
+        if ($employeeRhId !== null) {
+            $this->cachingService->forget(CachingService::payrollStatsKey($employeeRhId));
+        }
         $this->cachingService->forget(CachingService::employeeFichesKey($employeeId));
     }
 
@@ -269,7 +301,10 @@ class FichePaieService
         $fichePaie->setStatutPaiement(!$fichePaie->isStatutPaiement());
         $this->em->flush();
 
-        $this->cachingService->forget(CachingService::employeeFichesKey($fichePaie->getEmployee()->getId()));
+        $empId = $fichePaie->getEmployee()?->getId();
+        if ($empId !== null) {
+            $this->cachingService->forget(CachingService::employeeFichesKey($empId));
+        }
 
         return new FichePaieResponseDTO($fichePaie);
     }
@@ -286,7 +321,7 @@ class FichePaieService
 
         $employee = $fichePaie->getEmployee();
 
-        $this->recalculateTotals($employee->getId(), $fichePaie->getMois(), $fichePaie->getAnnee());
+        $this->recalculateTotals((int) $employee?->getId(), $fichePaie->getMois(), $fichePaie->getAnnee());
 
         // Re-fetch after recalculation
         $this->em->refresh($fichePaie);
@@ -358,11 +393,11 @@ class FichePaieService
         );
 
         return array_map(fn(FichePaie $f) => [
-            'mois' => $f->getMois(),
-            'brut' => $f->getSalaireBrut(),
-            'primes' => $f->getTotalPrimes(),
-            'deductions' => $f->getTotalDeductions(),
-            'net' => $f->getSalaireNet(),
+            'mois' => $f->getMois() ?? 0,
+            'brut' => $f->getSalaireBrut() ?? '0.00',
+            'primes' => $f->getTotalPrimes() ?? '0.00',
+            'deductions' => $f->getTotalDeductions() ?? '0.00',
+            'net' => $f->getSalaireNet() ?? '0.00',
         ], $fiches);
     }
 

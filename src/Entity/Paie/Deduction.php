@@ -145,11 +145,12 @@ class Deduction
 
     public function getMonth(): int
     {
-        return (int) $this->dateDeduction->format('m');
+        return (int) ($this->dateDeduction?->format('m') ?? 0);
     }
 
     public function getYear(): int
     {
-        return (int) $this->dateDeduction->format('Y');
+        return (int) ($this->dateDeduction?->format('Y') ?? 0);
     }
 }
+

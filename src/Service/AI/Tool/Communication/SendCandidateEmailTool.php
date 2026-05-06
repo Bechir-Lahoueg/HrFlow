@@ -57,13 +57,13 @@ class SendCandidateEmailTool implements ToolInterface
         if (!$app) return ['error' => "Candidature non trouvée"];
 
         // Check ownership
-        if ($app->getJobOffer()?->getCreatedBy() !== $user->getId()) {
+        if ($app->getJobOffer()?->getCreatedBy() !== (method_exists($user, 'getId') ? $user->getId() : null)) {
             return ['error' => "Vous n'avez pas l'autorisation d'envoyer un email pour cette candidature."];
         }
 
         $email = (new Email())
             ->from('hr@hrflow.ai')
-            ->to($app->getEmailAddress())
+            ->to($app->getEmailAddress() ?? '')
             ->subject($args['subject'])
             ->html(nl2br($args['body']));
 

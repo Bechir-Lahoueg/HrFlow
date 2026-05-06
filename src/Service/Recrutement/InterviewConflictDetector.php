@@ -39,7 +39,7 @@ class InterviewConflictDetector
             $conflict = $conflicts[0];
             $message = sprintf(
                 'Conflit détecté : L\'interviewer a déjà un entretien programmé à %s avec %s',
-                $conflict->getInterviewDate()->format('H:i'),
+                $conflict->getInterviewDate()?->format('H:i') ?? '?',
                 $conflict->getApplication()?->getCandidateName() ?? 'un candidat'
             );
         }
@@ -67,12 +67,16 @@ class InterviewConflictDetector
         $bookedSlots = [];
 
         foreach ($schedule as $interview) {
-            $bookedSlots[] = $interview->getInterviewDate()->format('H:i');
+            $bookedSlots[] = $interview->getInterviewDate()?->format('H:i') ?? '';
         }
 
         $slots = [];
         $current = \DateTime::createFromFormat('H:i', $startHour);
         $end = \DateTime::createFromFormat('H:i', $endHour);
+
+        if ($current === false || $end === false) {
+            return [];
+        }
 
         while ($current < $end) {
             $timeSlot = $current->format('H:i');

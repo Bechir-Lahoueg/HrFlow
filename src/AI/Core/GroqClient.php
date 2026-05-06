@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Core;
 
 use App\AI\Contract\LlmClientInterface;
+use App\AI\Contract\ToolInterface;
 use App\AI\Infrastructure\ChatMessage;
 use App\AI\Infrastructure\ChatRequest;
 use App\AI\Infrastructure\ChatResponse;
@@ -128,13 +129,16 @@ final class GroqClient implements LlmClientInterface
     }
 
     /**
-     * @param ToolInterface[] $tools
-     * @return array<array{type: string, function: array}>
+     * @param ToolInterface[]|array<int, array<string, mixed>> $tools
+     * @return array<int, array{type: string, function: array<string, mixed>}>
      */
     private function buildTools(array $tools): array
     {
         $functionDeclarations = [];
         foreach ($tools as $tool) {
+            if (!($tool instanceof ToolInterface)) {
+                continue;
+            }
             $definition = $tool->getDefinition();
             $functionDeclarations[] = [
                 'type' => 'function',
@@ -149,6 +153,9 @@ final class GroqClient implements LlmClientInterface
         return $functionDeclarations;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function parseResponse(array $data): ChatResponse
     {
         $content = '';

@@ -6,6 +6,7 @@ use App\Service\AI\ReportGeneratorService;
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\JobOfferRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GenerateReportTool implements ToolInterface
@@ -58,7 +59,7 @@ class GenerateReportTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) return ['error' => 'Non authentifié'];
+        if (!$user instanceof DbUser) return ['error' => 'Non authentifié'];
 
         $jobId = $args['job_id'] ?? null;
         $job = $jobId ? $this->jobOfferRepository->find($jobId) : null;
@@ -74,7 +75,7 @@ class GenerateReportTool implements ToolInterface
         // PDF Generation
         $data = [
             'title' => $job ? "Poste : " . $job->getTitle() : "Global Pipeline",
-            'user_name' => method_exists($user, 'getFullName') ? $user->getFullName() : $user->getUserIdentifier(),
+            'user_name' => $user->getFullName(),
             'total_applications' => $total,
             'hired_count' => $stats['HIRED'] ?? 0,
             'interview_count' => $stats['INTERVIEW'] ?? 0,
@@ -102,6 +103,7 @@ class GenerateReportTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $stats @return array<mixed> */
     private function buildChartData(string $type, array $stats, int $total): array
     {
         $labels = array_keys($stats);

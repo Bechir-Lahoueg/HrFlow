@@ -9,6 +9,7 @@ class ToolRegistry
     /** @var ToolInterface[] */
     private array $tools = [];
 
+    /** @param iterable<ToolInterface> $tools */
     public function __construct(
         #[TaggedIterator('app.ai_tool')] iterable $tools
     ) {
@@ -32,6 +33,7 @@ class ToolRegistry
 
     /**
      * Returns all tool definitions in Gemini format.
+     * @return array<mixed>
      */
     public function getDefinitions(): array
     {

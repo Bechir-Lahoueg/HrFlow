@@ -127,6 +127,7 @@ class RenderPdfTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $args */
     private function buildStructuredContent(array $args): ?string
     {
         if (empty($args['sections']) || !is_array($args['sections'])) {
@@ -186,8 +187,9 @@ class RenderPdfTool implements ToolInterface
     private function generateFilename(string $title): string
     {
         // Transliterate French characters and create safe filename
-        $slug = iconv('UTF-8', 'ASCII//TRANSLIT', strtolower($title));
-        $slug = preg_replace('/[^a-z0-9]+/', '_', $slug);
+        $iconvResult = iconv('UTF-8', 'ASCII//TRANSLIT', strtolower($title));
+        $slug = is_string($iconvResult) ? $iconvResult : $title;
+        $slug = (string) preg_replace('/[^a-z0-9]+/', '_', $slug);
         $slug = trim($slug, '_');
         return $slug ?: 'custom_report';
     }

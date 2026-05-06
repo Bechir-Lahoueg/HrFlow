@@ -167,7 +167,7 @@ class EmployeeRelationController extends AbstractController
             return $this->render('DashboardEmployee/Relation/feedbacks.html.twig', $viewData, new Response(null, 422));
         }
 
-        $emotion = $this->emotionService->analyze((string) ($data['comment'] ?? ''));
+        $emotion = $this->emotionService->analyze(is_string($data['comment'] ?? null) ? $data['comment'] : '');
         $data['emotion_label'] = $emotion['label'];
         $data['emotion_score'] = $emotion['score'];
 
@@ -194,7 +194,7 @@ class EmployeeRelationController extends AbstractController
                 return $this->render('DashboardEmployee/Relation/feedbacks.html.twig', $viewData, new Response(null, 422));
             }
 
-            $emotion = $this->emotionService->analyze((string) ($data['comment'] ?? ''));
+            $emotion = $this->emotionService->analyze(is_string($data['comment'] ?? null) ? $data['comment'] : '');
             $data['emotion_label'] = $emotion['label'];
             $data['emotion_score'] = $emotion['score'];
 

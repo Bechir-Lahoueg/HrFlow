@@ -14,8 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ChartsController extends AbstractController
 {
     public function __construct(
-        private QuickChartService $chartService,
-        private EntityManagerInterface $em
+        private QuickChartService $chartService
     ) {
     }
 
@@ -209,7 +208,8 @@ class ChartsController extends AbstractController
         $hires = [];
         
         for ($i = $months - 1; $i >= 0; $i--) {
-            $labels[] = date('M Y', strtotime("-$i months"));
+            $timestamp = strtotime("-$i months");
+            $labels[] = date('M Y', $timestamp !== false ? $timestamp : time());
             $applications[] = rand(40, 80);
             $hires[] = rand(3, 8);
         }

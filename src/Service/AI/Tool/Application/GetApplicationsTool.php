@@ -4,6 +4,7 @@ namespace App\Service\AI\Tool\Application;
 
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GetApplicationsTool implements ToolInterface
@@ -53,7 +54,7 @@ class GetApplicationsTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) return ['error' => 'Not authenticated'];
+        if (!$user instanceof DbUser) return ['error' => 'Not authenticated'];
 
         $applications = $this->applicationRepository->findByRh(
             $user,

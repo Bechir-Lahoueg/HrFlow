@@ -46,6 +46,7 @@ class CandidateRepository extends ServiceEntityRepository
 
     /**
      * Find all active candidates
+     * @return array<\App\Entity\Recrutement\Candidate>
      */
     public function findActive(): array
     {
