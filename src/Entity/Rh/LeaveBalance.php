@@ -32,10 +32,10 @@ class LeaveBalance
     private string $totalUsed = '0.00';
 
     #[ORM\Column(name: 'last_accrual_date', type: Types::DATE_IMMUTABLE, nullable: true)]
-    private ?\DateTimeInterface $lastAccrualDate = null;
+    private ?\DateTimeImmutable $lastAccrualDate = null;
 
     #[ORM\Column(name: 'hire_date', type: Types::DATE_IMMUTABLE, nullable: true)]
-    private ?\DateTimeInterface $hireDate = null;
+    private ?\DateTimeImmutable $hireDate = null;
 
     public function getId(): ?int
     {
@@ -97,23 +97,23 @@ class LeaveBalance
         return $this;
     }
 
-    public function getLastAccrualDate(): ?\DateTimeInterface
+    public function getLastAccrualDate(): ?\DateTimeImmutable
     {
         return $this->lastAccrualDate;
     }
 
-    public function setLastAccrualDate(?\DateTimeInterface $lastAccrualDate): static
+    public function setLastAccrualDate(?\DateTimeImmutable $lastAccrualDate): static
     {
         $this->lastAccrualDate = $lastAccrualDate;
         return $this;
     }
 
-    public function getHireDate(): ?\DateTimeInterface
+    public function getHireDate(): ?\DateTimeImmutable
     {
         return $this->hireDate;
     }
 
-    public function setHireDate(?\DateTimeInterface $hireDate): static
+    public function setHireDate(?\DateTimeImmutable $hireDate): static
     {
         $this->hireDate = $hireDate;
         return $this;

@@ -28,7 +28,7 @@ final class CorsSubscriber implements EventSubscriberInterface
         private readonly string $corsAllowHeaders,
         private readonly string $corsMaxAge,
     ) {
-        $this->allowedOrigins = array_filter(array_map('trim', explode(',', $corsAllowOrigins)));
+        $this->allowedOrigins = array_values(array_filter(array_map('trim', explode(',', $corsAllowOrigins))));
     }
 
     public static function getSubscribedEvents(): array

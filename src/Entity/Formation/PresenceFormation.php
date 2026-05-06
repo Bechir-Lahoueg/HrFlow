@@ -16,11 +16,11 @@ class PresenceFormation
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ParticipationFormation::class, inversedBy: 'presences')]
-    #[ORM\JoinColumn(name: 'id_participation', referencedColumnName: 'id_participation', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_participation_id', referencedColumnName: 'id_participation', nullable: false, onDelete: 'CASCADE')]
     private ?ParticipationFormation $participation = null;
 
     #[ORM\Column(name: 'date_presence', type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $datePresence = null;
+    private \DateTimeInterface $datePresence;
 
     #[ORM\Column(length: 20)]
     private ?string $statut = null;
@@ -41,7 +41,7 @@ class PresenceFormation
         return $this;
     }
 
-    public function getDatePresence(): ?\DateTimeInterface
+    public function getDatePresence(): \DateTimeInterface
     {
         return $this->datePresence;
     }

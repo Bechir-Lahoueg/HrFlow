@@ -551,7 +551,11 @@ final class MatrixService
                 }
 
                 $messageIndex = $messageIndexById[$targetEventId];
-                $reactions = $messages[$messageIndex]['reactions'] ?? [];
+                if (!is_array($messages[$messageIndex] ?? null)) {
+                    continue;
+                }
+                $reactions = $messages[$messageIndex]['reactions'];
+                // @phpstan-ignore-next-line function.alreadyNarrowedType
                 if (!is_array($reactions)) {
                     $reactions = [];
                 }

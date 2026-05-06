@@ -68,7 +68,7 @@ class JobOffer
     private bool $isDeleted = false;
 
     /** @var \Doctrine\Common\Collections\Collection<int, Application> */
-    #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'jobOffer', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'jobOffer', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private \Doctrine\Common\Collections\Collection $applications;
 
     public function __construct()

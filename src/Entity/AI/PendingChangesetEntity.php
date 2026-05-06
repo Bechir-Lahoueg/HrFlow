@@ -21,23 +21,23 @@ class PendingChangesetEntity
     private ?string $id = null;
 
     #[ORM\Column(name: 'session_id', length: 64)]
-    private ?string $sessionId = null;
+    private string $sessionId = '';
 
     #[ORM\Column(length: 64)]
-    private ?string $tool = null;
+    private string $tool = '';
 
     #[ORM\Column(length: 32)]
-    private ?string $action = null;
+    private string $action = '';
 
     /** @var array<mixed> */
     #[ORM\Column(type: Types::JSON)]
     private array $payload = [];
 
     #[ORM\Column(length: 20)]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(name: 'confirmed_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $confirmedAt = null;
@@ -47,13 +47,18 @@ class PendingChangesetEntity
         return $this->id;
     }
 
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
     public function setId(string $id): static
     {
         $this->id = $id;
         return $this;
     }
 
-    public function getSessionId(): ?string
+    public function getSessionId(): string
     {
         return $this->sessionId;
     }
@@ -64,7 +69,7 @@ class PendingChangesetEntity
         return $this;
     }
 
-    public function getTool(): ?string
+    public function getTool(): string
     {
         return $this->tool;
     }
@@ -75,7 +80,7 @@ class PendingChangesetEntity
         return $this;
     }
 
-    public function getAction(): ?string
+    public function getAction(): string
     {
         return $this->action;
     }
@@ -99,7 +104,7 @@ class PendingChangesetEntity
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -110,7 +115,7 @@ class PendingChangesetEntity
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }

@@ -321,7 +321,7 @@ class FichePaieService
 
         $employee = $fichePaie->getEmployee();
 
-        $this->recalculateTotals((int) $employee?->getId(), $fichePaie->getMois(), $fichePaie->getAnnee());
+        $this->recalculateTotals((int) $employee?->getId(), (int) $fichePaie->getMois(), (int) $fichePaie->getAnnee());
 
         // Re-fetch after recalculation
         $this->em->refresh($fichePaie);
