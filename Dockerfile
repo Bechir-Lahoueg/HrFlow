@@ -69,6 +69,9 @@ RUN var/tailwind/v3.4.17/tailwindcss-linux-x64 \
         -o var/tailwind/app.built.css \
         --minify
 
+# --- Compile all assets to public/assets/ (fingerprinted, tailwind output replaces @tailwind directives) ---
+RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console asset-map:compile --no-interaction
+
 # --- Startup script ---
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
