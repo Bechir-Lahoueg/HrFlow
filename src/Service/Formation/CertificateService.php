@@ -77,7 +77,8 @@ class CertificateService
 
     private function buildTemplateBackgroundDataUri(): ?string
     {
-        $projectDir = (string) $this->params->get('kernel.project_dir');
+        $projectDir = $this->params->get('kernel.project_dir');
+        assert(is_string($projectDir));
         $templatePath = $projectDir . '/public/images/certificate_template.png';
 
         if (!is_file($templatePath) || !is_readable($templatePath)) {

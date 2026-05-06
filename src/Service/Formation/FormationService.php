@@ -51,9 +51,9 @@ final class FormationService
             $stats = $this->formationRepository->getStatsByRh($rhId);
 
             return [
-                'total_formations' => (int) ($stats['total_formations'] ?? 0),
-                'active_sessions' => (int) ($stats['active_sessions'] ?? 0),
-                'total_participants' => (int) ($stats['total_participants'] ?? 0),
+                'total_formations' => $stats['total_formations'],
+                'active_sessions' => $stats['active_sessions'],
+                'total_participants' => $stats['total_participants'],
             ];
         } catch (\Throwable) {
             return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
