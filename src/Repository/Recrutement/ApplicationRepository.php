@@ -128,7 +128,6 @@ class ApplicationRepository extends ServiceEntityRepository
     /**
      * Find applications by RH with optional filters (returns Query for pagination)
      * @return \Doctrine\ORM\Query<int, Application>
-     * @phpstan-return \Doctrine\ORM\Query<int, Application>
      */
     public function findByRhQuery(
         DbUser $rh,

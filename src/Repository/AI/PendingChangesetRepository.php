@@ -75,12 +75,12 @@ class PendingChangesetRepository implements ChangesetStorageInterface
     {
         return new PendingChangeset(
             id: $entity->getId() ?? '',
-            sessionId: $entity->getSessionId(),
-            tool: $entity->getTool(),
-            action: $entity->getAction(),
+            sessionId: $entity->getSessionId() ?? '',
+            tool: $entity->getTool() ?? '',
+            action: $entity->getAction() ?? '',
             payload: $entity->getPayload(),
-            status: ChangesetStatus::from($entity->getStatus()),
-            createdAt: $entity->getCreatedAt(),
+            status: ChangesetStatus::from($entity->getStatus() ?? ''),
+            createdAt: $entity->getCreatedAt() ?? new \DateTimeImmutable(),
             confirmedAt: $entity->getConfirmedAt(),
         );
     }
