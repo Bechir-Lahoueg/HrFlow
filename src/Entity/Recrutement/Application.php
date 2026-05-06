@@ -85,7 +85,7 @@ class Application
     /**
      * @var \Doctrine\Common\Collections\Collection<int, Interview>
      */
-    #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
     private \Doctrine\Common\Collections\Collection $interviews;
 
     public function __construct()
