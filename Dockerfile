@@ -53,11 +53,20 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 COPY . .
 
 # --- Permissions ---
-RUN mkdir -p var/cache var/log public/uploads \
-    && chmod -R 777 var/ public/uploads
+RUN mkdir -p var/cache var/log var/tailwind public/uploads public/assets \
+    && chmod -R 777 var/ public/uploads public/assets
 
 # --- Composer post-install scripts ---
 RUN composer run-script post-install-cmd --no-interaction || true
+
+# --- Pre-download Tailwind CSS standalone binary (v3.4.17, linux-x64) ---
+# var/ is gitignored so the binary never arrives from git; fetch it explicitly
+# so tailwind:build never has to download at kernel-boot time.
+RUN mkdir -p var/tailwind/v3.4.17 \
+    && curl -fsSL \
+        "https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64" \
+        -o var/tailwind/v3.4.17/tailwindcss-linux-x64 \
+    && chmod +x var/tailwind/v3.4.17/tailwindcss-linux-x64
 
 # --- Build Tailwind CSS ---
 RUN APP_ENV=prod php bin/console tailwind:build --no-interaction
