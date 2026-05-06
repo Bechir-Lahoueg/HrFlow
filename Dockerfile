@@ -60,16 +60,20 @@ RUN mkdir -p var/cache var/log var/tailwind public/uploads public/assets \
 RUN composer run-script post-install-cmd --no-interaction || true
 
 # --- Pre-download Tailwind CSS standalone binary (v3.4.17, linux-x64) ---
-# var/ is gitignored so the binary never arrives from git; fetch it explicitly
-# so tailwind:build never has to download at kernel-boot time.
-RUN mkdir -p var/tailwind/v3.4.17 \
+# var/ is gitignored so the binary never arrives from git; fetch it explicitly.
+# We then run it DIRECTLY (bypasses Symfony kernel — no APP_SECRET/DB needed at build time).
+RUN mkdir -p var/tailwind/v3.4.17 var/tailwind \
     && curl -fsSL \
         "https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64" \
         -o var/tailwind/v3.4.17/tailwindcss-linux-x64 \
     && chmod +x var/tailwind/v3.4.17/tailwindcss-linux-x64
 
-# --- Build Tailwind CSS ---
-RUN APP_ENV=prod php bin/console tailwind:build --no-interaction
+# --- Build Tailwind CSS (direct binary, no Symfony kernel required) ---
+RUN var/tailwind/v3.4.17/tailwindcss-linux-x64 \
+        -c tailwind.config.js \
+        -i assets/styles/app.css \
+        -o var/tailwind/app.built.css \
+        --minify
 
 # --- Nginx: remove default site, add Render template ---
 RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
