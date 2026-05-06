@@ -91,6 +91,7 @@ class FichePaieRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return array<string, mixed> */
     public function getStatsByRh(int $rhId): array
     {
         $query = $this->createQueryBuilder('fp')

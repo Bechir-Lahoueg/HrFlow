@@ -5,6 +5,7 @@ namespace App\Service\AI\Tool\JobOffer;
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\JobOfferRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GetApplicationsPerJobOfferTool implements ToolInterface
@@ -47,7 +48,7 @@ class GetApplicationsPerJobOfferTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user || !method_exists($user, 'getId')) {
+        if (!$user instanceof DbUser) {
             return ['error' => 'Not authenticated'];
         }
 
@@ -72,12 +73,12 @@ class GetApplicationsPerJobOfferTool implements ToolInterface
             }
 
             // Respect status filter when include_deleted is true (findByRh already does it otherwise)
-            if ($includeDeleted && $status && method_exists($offer, 'getStatus') && $offer->getStatus() !== $status) {
+            if ($includeDeleted && $status && $offer->getStatus() !== $status) {
                 continue;
             }
 
-            $apps = $this->applicationRepository->findByJobOffer($offer->getId(), $user);
-            $count = is_array($apps) ? count($apps) : 0;
+            $apps = $this->applicationRepository->findByJobOffer((int) $offer->getId(), $user);
+            $count = count($apps);
             $totalApplications += $count;
 
             $rows[] = [
@@ -87,11 +88,11 @@ class GetApplicationsPerJobOfferTool implements ToolInterface
                 'location' => $offer->getLocation(),
                 'department' => $offer->getDepartment(),
                 'applications_count' => $count,
-                'is_deleted' => method_exists($offer, 'isDeleted') ? $offer->isDeleted() : false,
+                'is_deleted' => $offer->isDeleted(),
             ];
         }
 
-        usort($rows, fn ($a, $b) => ($b['applications_count'] ?? 0) <=> ($a['applications_count'] ?? 0));
+        usort($rows, fn ($a, $b) => $b['applications_count'] <=> $a['applications_count']);
 
         return [
             'rows' => $rows,

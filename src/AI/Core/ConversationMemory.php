@@ -10,7 +10,6 @@ use Psr\Cache\CacheItemPoolInterface;
 final class ConversationMemory
 {
     private const MAX_MESSAGES = 10;
-    private const MAX_CONTENT_LENGTH = 2000;
     private const CACHE_TTL = 3600;
 
     public function __construct(

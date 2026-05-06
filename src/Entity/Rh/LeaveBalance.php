@@ -13,7 +13,7 @@ class LeaveBalance
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null; // @phpstan-ignore-line
+    private ?int $id = null;
 
     #[ORM\OneToOne(targetEntity: Employee::class)]
     #[ORM\JoinColumn(name: 'employee_id', nullable: false)]

@@ -3,6 +3,7 @@
 namespace App\Controller\rh;
 
 use App\Entity\Recrutement\Application;
+use App\Form\CandidateApplicationType;
 use App\Form\Recrutement\BulkApplicationActionType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
@@ -218,7 +219,7 @@ final class RecruitmentApplicationController extends AbstractController
             return $this->redirectToRoute('app_rh_applications');
         }
 
-        $form = $this->createForm(ApplicationType::class, $application, ['is_edit' => true]);
+        $form = $this->createForm(CandidateApplicationType::class, $application, ['is_edit' => true]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

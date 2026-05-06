@@ -67,6 +67,7 @@ class JobOffer
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isDeleted = false;
 
+    /** @var \Doctrine\Common\Collections\Collection<int, Application> */
     #[ORM\OneToMany(targetEntity: Application::class, mappedBy: 'jobOffer', cascade: ['remove'])]
     private \Doctrine\Common\Collections\Collection $applications;
 

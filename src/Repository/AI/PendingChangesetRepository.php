@@ -17,7 +17,9 @@ class PendingChangesetRepository implements ChangesetStorageInterface
 
     public function __construct(ManagerRegistry $registry)
     {
-        $this->em = $registry->getManager();
+        $manager = $registry->getManager();
+        assert($manager instanceof EntityManagerInterface);
+        $this->em = $manager;
     }
 
     public function persist(PendingChangeset $changeset): void
@@ -52,6 +54,7 @@ class PendingChangesetRepository implements ChangesetStorageInterface
         return $this->toValueObject($entity);
     }
 
+    /** @return array<PendingChangeset> */
     public function findBySession(string $sessionId): array
     {
         $entities = $this->em->createQueryBuilder()
@@ -71,13 +74,13 @@ class PendingChangesetRepository implements ChangesetStorageInterface
     private function toValueObject(PendingChangesetEntity $entity): PendingChangeset
     {
         return new PendingChangeset(
-            id: $entity->getId(),
-            sessionId: $entity->getSessionId(),
-            tool: $entity->getTool(),
-            action: $entity->getAction(),
+            id: $entity->getId() ?? '',
+            sessionId: $entity->getSessionId() ?? '',
+            tool: $entity->getTool() ?? '',
+            action: $entity->getAction() ?? '',
             payload: $entity->getPayload(),
-            status: ChangesetStatus::from($entity->getStatus()),
-            createdAt: $entity->getCreatedAt(),
+            status: ChangesetStatus::from($entity->getStatus() ?? ''),
+            createdAt: $entity->getCreatedAt() ?? new \DateTimeImmutable(),
             confirmedAt: $entity->getConfirmedAt(),
         );
     }

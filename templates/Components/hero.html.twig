@@ -17,21 +17,37 @@
             function initHeroVideo() {
                 var v = document.getElementById('hero-bg-video');
                 if (!v) return;
-                // Reset visibility in case Turbo restored a snapshot where it was already visible
                 v.classList.add('opacity-0');
                 v.muted = true;
                 v.defaultMuted = true;
                 v.setAttribute('muted', '');
-                var reveal = function () { v.classList.remove('opacity-0'); };
-                v.addEventListener('playing', reveal, { once: true });
-                v.addEventListener('loadeddata', reveal, { once: true });
+
+                var revealed = false;
+                var reveal = function () {
+                    if (revealed) return;
+                    revealed = true;
+                    v.classList.remove('opacity-0');
+                };
+
+                // Cover all states: already loaded, about to load, or playing
+                v.addEventListener('playing',      reveal, { once: true });
+                v.addEventListener('canplay',      reveal, { once: true });
+                v.addEventListener('loadeddata',   reveal, { once: true });
+
+                // If the browser already has data (cached), reveal immediately
+                if (v.readyState >= 2) { reveal(); }
+
                 v.addEventListener('error', function () {
-                    console.warn('[hero-bg-video] failed to load', v.error);
+                    // Video failed to load — reveal anyway so the gradient fallback shows
+                    reveal();
                 }, { once: true });
+
                 var tryPlay = function () {
                     var p = v.play();
                     if (p && typeof p.catch === 'function') {
                         p.catch(function () {
+                            // Autoplay blocked: show the first frame / fallback and retry on user gesture
+                            reveal();
                             var resume = function () {
                                 v.play().catch(function () {});
                                 ['click', 'touchstart', 'scroll', 'keydown'].forEach(function (ev) {
@@ -44,6 +60,7 @@
                         });
                     }
                 };
+
                 if (document.readyState === 'complete' || document.readyState === 'interactive') {
                     tryPlay();
                 } else {
@@ -53,8 +70,6 @@
 
             initHeroVideo();
 
-            // Handle Turbo page restoration (back/forward) — snapshot is restored
-            // with opacity-0 still on the video; turbo:load fires after restoration.
             if (!document.__heroVideoTurboSetup) {
                 document.__heroVideoTurboSetup = true;
                 document.addEventListener('turbo:load', initHeroVideo);

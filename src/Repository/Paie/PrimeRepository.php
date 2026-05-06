@@ -115,6 +115,7 @@ class PrimeRepository extends ServiceEntityRepository
         return (string) ($result ?? '0.00');
     }
 
+    /** @return array<string, mixed> */
     public function getStatsByRh(int $rhId): array
     {
         $query = $this->createQueryBuilder('p')

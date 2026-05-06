@@ -8,6 +8,7 @@ use App\Repository\AI\PendingChangesetRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/** @phpstan-ignore argument.type */
 #[ORM\Entity(repositoryClass: PendingChangesetRepository::class)]
 #[ORM\Table(name: 'pending_changesets')]
 #[ORM\Index(name: 'idx_changeset_session', columns: ['session_id'])]
@@ -28,6 +29,7 @@ class PendingChangesetEntity
     #[ORM\Column(length: 32)]
     private ?string $action = null;
 
+    /** @var array<mixed> */
     #[ORM\Column(type: Types::JSON)]
     private array $payload = [];
 
@@ -84,11 +86,13 @@ class PendingChangesetEntity
         return $this;
     }
 
+    /** @return array<mixed> */
     public function getPayload(): array
     {
         return $this->payload;
     }
 
+    /** @param array<mixed> $payload */
     public function setPayload(array $payload): static
     {
         $this->payload = $payload;

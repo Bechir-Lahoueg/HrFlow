@@ -6,8 +6,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class QuizService
 {
-    private $httpClient;
-    private $apiKey = 'qa_sk_d3e548b8df478e3f1458c00186dc8476a7d160c5';
+    private HttpClientInterface $httpClient;
+    private string $apiKey = 'qa_sk_d3e548b8df478e3f1458c00186dc8476a7d160c5';
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -17,6 +17,7 @@ class QuizService
     /**
      * Récupère des questions basées sur un tag (Java, PHP, MySQL, etc.)
      */
+    /** @return array<mixed> */
     public function getQuestions(string $tag, int $limit = 10, string $difficulty = 'Medium'): array
     {
         try {
@@ -39,6 +40,7 @@ class QuizService
     /**
      * Une méthode spécifique pour vos besoins HR-Flow
      */
+    /** @return array<mixed> */
     public function getTechnicalQuiz(string $technology): array
     {
         // On peut mapper les technos internes vers les tags de l'API

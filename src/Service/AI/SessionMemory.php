@@ -27,6 +27,7 @@ class SessionMemory
         return $memory[$key] ?? null;
     }
 
+    /** @return array<mixed> */
     public function getAll(): array
     {
         $session = $this->requestStack->getSession();

@@ -145,11 +145,12 @@ class Prime
 
     public function getMonth(): int
     {
-        return (int) $this->dateAttribution->format('m');
+        return (int) ($this->dateAttribution?->format('m') ?? 0);
     }
 
     public function getYear(): int
     {
-        return (int) $this->dateAttribution->format('Y');
+        return (int) ($this->dateAttribution?->format('Y') ?? 0);
     }
 }
+

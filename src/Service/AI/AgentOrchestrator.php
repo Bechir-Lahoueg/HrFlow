@@ -24,10 +24,11 @@ class AgentOrchestrator
         private Security $security
     ) {}
 
+    /** @param array<mixed> $history @return array<mixed> */
     public function chat(string $userInput, array $history = [], ?string $requestId = null, ?string $sessionId = null): array
     {
         $user = $this->security->getUser();
-        $userName = method_exists($user, 'getFirstName') ? $user->getFirstName() : 'Responsable RH';
+        $userName = ($user !== null && method_exists($user, 'getFirstName')) ? $user->getFirstName() : 'Responsable RH';
 
         $this->logger->info('AI chat start', [
             'request_id' => $requestId,
@@ -110,10 +111,10 @@ PROMPT;
                 $parsed = $this->llmClient->parseResponse($response);
                 $responseMessage = [
                     'role' => 'assistant',
-                    'content' => $parsed['text'] ?? '',
+                    'content' => $parsed['text'],
                 ];
 
-                $toolCalls = $parsed['toolCalls'] ?? [];
+                $toolCalls = $parsed['toolCalls'];
 
                 if (empty($toolCalls)) {
                     break;
@@ -127,14 +128,14 @@ PROMPT;
                     $normalizedToolCalls[] = [
                         'id' => $callId,
                         'name' => $tc['name'],
-                        'args' => $tc['args'] ?? [],
+                        'args' => $tc['args'],
                     ];
                     $responseMessage['tool_calls'][] = [
                         'id' => $callId,
                         'type' => 'function',
                         'function' => [
                             'name' => $tc['name'],
-                            'arguments' => json_encode($tc['args'] ?? []),
+                            'arguments' => json_encode($tc['args']),
                         ],
                     ];
                 }
@@ -298,6 +299,7 @@ PROMPT;
         ];
     }
 
+    /** @param array<mixed>|null $activeJob @param array<mixed> $applicationsList @param array<mixed> $candidatesList @param array<mixed> $interviewsList */
     private function extractUiData(string $toolName, mixed $result, ?array &$activeJob, int &$candidatesAnalyzed, int &$interviewsPlanned, array &$applicationsList, array &$interviewsList, array &$candidatesList): void
     {
         if ($toolName === 'rank_candidates' && is_array($result)) {
@@ -368,6 +370,7 @@ PROMPT;
         }
     }
 
+    /** @phpstan-ignore method.unused */
     private function loadSkills(): string
     {
         $skillsDir = $this->projectDir . '/config/ai/skills';
@@ -375,14 +378,17 @@ PROMPT;
 
         if (is_dir($skillsDir)) {
             $files = glob($skillsDir . '/*.md');
-            foreach ($files as $file) {
-                $content .= file_get_contents($file) . "\n\n";
+            if ($files !== false) {
+                foreach ($files as $file) {
+                    $content .= file_get_contents($file) . "\n\n";
+                }
             }
         }
 
         return $content;
     }
 
+    /** @param array<mixed> $history @return array<mixed> */
     private function loadConversationMessages(array $history, ?string $sessionId): array
     {
         // Prefer server-side session memory to keep the UI simple.
@@ -413,6 +419,7 @@ PROMPT;
         return array_slice($normalized, -self::MAX_STORED_MESSAGES);
     }
 
+    /** @param array<mixed> $messages */
     private function storeConversationMessages(array $messages, ?string $sessionId): void
     {
         if (!$sessionId) {
@@ -506,7 +513,7 @@ PROMPT;
         }
 
         // For job offers (direct array)
-        if (is_array($result) && isset($result[0]) && isset($result[0]['title'])) {
+        if (isset($result[0]) && isset($result[0]['title'])) {
             $count = count($result);
             $titles = array_slice(array_column($result, 'title'), 0, 5);
             return "Tool result: Found {$count} job offers. " .
@@ -526,10 +533,21 @@ PROMPT;
 
         // Default: return natural language description
         $encoded = json_encode($result);
-        if (strlen($encoded) > 2000) {
+        if ($encoded === false || strlen($encoded) > 2000) {
             return "Tool result: Data retrieved successfully. The complete results are displayed in the UI below.";
         }
 
         return $encoded;
+    }
+
+    private function requiresTool(string $cleanInput): bool
+    {
+        $keywords = ['candidat', 'application', 'offre', 'interview', 'entretien', 'pdf', 'rapport', 'statistique', 'liste', 'montre', 'génère', 'planifie', 'déplace', 'envoie'];
+        foreach ($keywords as $keyword) {
+            if (str_contains($cleanInput, $keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

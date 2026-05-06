@@ -4,6 +4,7 @@ namespace App\Service\AI\Tool\Candidate;
 
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GetCandidatesTool implements ToolInterface
@@ -49,7 +50,7 @@ class GetCandidatesTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) return ['error' => 'Not authenticated'];
+        if (!$user instanceof DbUser) return ['error' => 'Not authenticated'];
 
         $limit = $args['limit'] ?? 10;
         $status = $args['status'] ?? null;

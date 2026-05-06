@@ -62,7 +62,7 @@ final class ScheduleInterviewTool extends InterviewTool
         $summary = "Entretien {$type} planifié pour le {$date} avec {$application->getCandidateName()}. Confirmation requise.";
 
         return $this->createOutput($summary, [
-            'type' => 'interview_scheduled',
+            'action' => 'interview_scheduled',
             'application_id' => $args['application_id'],
             'candidate_name' => $application->getCandidateName(),
             'type' => $type,

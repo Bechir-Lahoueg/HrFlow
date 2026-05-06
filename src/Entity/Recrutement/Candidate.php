@@ -74,7 +74,7 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->username;
+        return $this->username ?? '';
     }
 
     public function getEmail(): ?string

@@ -17,6 +17,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Range;
 
+/** @extends AbstractType<array<string, mixed>> */
 class InterviewType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

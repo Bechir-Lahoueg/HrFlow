@@ -82,6 +82,9 @@ class Application
     #[Assert\Length(max: 100, maxMessage: 'Source cannot exceed 100 characters')]
     private ?string $source = null;
 
+    /**
+     * @var \Doctrine\Common\Collections\Collection<int, Interview>
+     */
     #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
     private \Doctrine\Common\Collections\Collection $interviews;
 
@@ -221,6 +224,17 @@ class Application
         return $this->candidate;
     }
 
+    public function getCandidateUser(): ?Candidate
+    {
+        return $this->candidate;
+    }
+
+    /** @return \Doctrine\Common\Collections\Collection<int, Interview> */
+    public function getInterviews(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->interviews;
+    }
+
     public function setCandidate(?Candidate $candidate): static
     {
         $this->candidate = $candidate;
@@ -258,7 +272,7 @@ class Application
             'OFFER' => 'Offre',
             'HIRED' => 'Recrute',
             'REJECTED' => 'Rejete',
-            default => $this->status,
+            default => $this->status ?? '',
         };
     }
 

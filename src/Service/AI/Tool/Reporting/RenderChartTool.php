@@ -147,10 +147,11 @@ class RenderChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<string>|null $customColors @return array<mixed> */
     private function getColors(int $count, string $chartType, string $scheme, ?array $customColors): array
     {
         // Use custom colors if provided
-        if ($customColors && count($customColors) > 0) {
+        if ($customColors !== null && $customColors !== []) {
             $colors = [];
             for ($i = 0; $i < $count; $i++) {
                 $colors[] = $customColors[$i % count($customColors)];

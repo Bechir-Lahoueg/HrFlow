@@ -16,13 +16,14 @@ class QuickChartService
 {
     private const BASE_URL = 'https://quickchart.io';
 
+    /** @var array<mixed> */
     private array $defaultConfig;
 
     public function __construct(
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
-        private CacheInterface $cache,
-        private bool $useJsLibrary = false
+        private CacheInterface $cache, // @phpstan-ignore property.onlyWritten
+        private bool $useJsLibrary = false // @phpstan-ignore property.onlyWritten
     ) {
         $this->defaultConfig = [
             'width' => 600,
@@ -40,8 +41,8 @@ class QuickChartService
     /**
      * Generate a chart URL from Chart.js configuration
      * 
-     * @param array $chartConfig Chart.js configuration object
-     * @param array $options Additional options (width, height, format, etc.)
+     * @param array<mixed> $chartConfig Chart.js configuration object
+     * @param array<mixed> $options Additional options (width, height, format, etc.)
      * @return string The QuickChart URL
      */
     public function getChartUrl(array $chartConfig, array $options = []): string
@@ -58,7 +59,7 @@ class QuickChartService
         ];
 
         // For URLs, we use the /chart endpoint with GET
-        $chartConfigEncoded = urlencode(json_encode($chartConfig));
+        $chartConfigEncoded = urlencode((string) json_encode($chartConfig));
         
         $url = self::BASE_URL . '/chart?' . http_build_query([
             'c' => json_encode($chartConfig),
@@ -76,9 +77,9 @@ class QuickChartService
      * Generate a simple chart URL with minimal configuration
      * 
      * @param string $type Chart type: 'bar', 'line', 'pie', 'doughnut', 'radar', 'polarArea', 'bubble', 'scatter'
-     * @param array $data Array of data values
-     * @param array $labels Array of labels
-     * @param array $options Additional options
+     * @param array<mixed> $data Array of data values
+     * @param array<mixed> $labels Array of labels
+     * @param array<mixed> $options Additional options
      * @return string The QuickChart URL
      */
     public function getSimpleChartUrl(string $type, array $data, array $labels = [], array $options = []): string
@@ -132,8 +133,8 @@ class QuickChartService
     /**
      * Generate chart image as binary data
      * 
-     * @param array $chartConfig Chart.js configuration
-     * @param array $options Additional options
+     * @param array<mixed> $chartConfig Chart.js configuration
+     * @param array<mixed> $options Additional options
      * @return string Binary image data
      */
     public function getChartImage(array $chartConfig, array $options = []): string
@@ -169,8 +170,8 @@ class QuickChartService
     /**
      * Create a short URL for a chart
      * 
-     * @param array $chartConfig Chart.js configuration
-     * @param array $options Additional options
+     * @param array<mixed> $chartConfig Chart.js configuration
+     * @param array<mixed> $options Additional options
      * @return string Short URL
      */
     public function createShortUrl(array $chartConfig, array $options = []): string
@@ -203,9 +204,9 @@ class QuickChartService
     /**
      * Create a bar chart
      * 
-     * @param array $labels X-axis labels
-     * @param array $datasets Array of datasets with 'label', 'data', and optional styling
-     * @param array $options Chart options
+     * @param array<mixed> $labels X-axis labels
+     * @param array<mixed> $datasets Array of datasets with 'label', 'data', and optional styling
+     * @param array<mixed> $options Chart options
      * @return string Chart URL
      */
     public function createBarChart(array $labels, array $datasets, array $options = []): string
@@ -224,6 +225,9 @@ class QuickChartService
 
     /**
      * Create a horizontal bar chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createHorizontalBarChart(array $labels, array $datasets, array $options = []): string
     {
@@ -247,9 +251,9 @@ class QuickChartService
     /**
      * Create a line chart
      * 
-     * @param array $labels X-axis labels
-     * @param array $datasets Array of datasets
-     * @param array $options Chart options including 'tension' for curve smoothing
+     * @param array<mixed> $labels X-axis labels
+     * @param array<mixed> $datasets Array of datasets
+     * @param array<mixed> $options Chart options including 'tension' for curve smoothing
      * @return string Chart URL
      */
     public function createLineChart(array $labels, array $datasets, array $options = []): string
@@ -278,9 +282,9 @@ class QuickChartService
     /**
      * Create a pie chart
      * 
-     * @param array $labels Data labels
-     * @param array $data Data values
-     * @param array $options Chart options
+     * @param array<mixed> $labels Data labels
+     * @param array<mixed> $data Data values
+     * @param array<mixed> $options Chart options
      * @return string Chart URL
      */
     public function createPieChart(array $labels, array $data, array $options = []): string
@@ -308,6 +312,9 @@ class QuickChartService
 
     /**
      * Create a doughnut chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $data
+     * @param array<mixed> $options
      */
     public function createDoughnutChart(array $labels, array $data, array $options = []): string
     {
@@ -339,6 +346,9 @@ class QuickChartService
 
     /**
      * Create a radar chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createRadarChart(array $labels, array $datasets, array $options = []): string
     {
@@ -356,6 +366,9 @@ class QuickChartService
 
     /**
      * Create a polar area chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $data
+     * @param array<mixed> $options
      */
     public function createPolarAreaChart(array $labels, array $data, array $options = []): string
     {
@@ -382,6 +395,8 @@ class QuickChartService
 
     /**
      * Create a scatter plot
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createScatterChart(array $datasets, array $options = []): string
     {
@@ -398,6 +413,8 @@ class QuickChartService
 
     /**
      * Create a bubble chart
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createBubbleChart(array $datasets, array $options = []): string
     {
@@ -418,6 +435,7 @@ class QuickChartService
 
     /**
      * Create a gauge chart (using doughnut)
+     * @param array<mixed> $options
      */
     public function createGaugeChart(float $value, float $max = 100, array $options = []): string
     {
@@ -463,6 +481,9 @@ class QuickChartService
 
     /**
      * Create a stacked bar chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createStackedBarChart(array $labels, array $datasets, array $options = []): string
     {
@@ -506,6 +527,9 @@ class QuickChartService
 
     /**
      * Create an area chart (filled line chart)
+     * @param array<mixed> $labels
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createAreaChart(array $labels, array $datasets, array $options = []): string
     {
@@ -536,7 +560,7 @@ class QuickChartService
      * Create a graph/chart using Graphviz notation
      * 
      * @param string $graph Graphviz DOT notation
-     * @param array $options Layout options
+     * @param array<mixed> $options Layout options
      * @return string Chart URL
      */
     public function createGraphChart(string $graph, array $options = []): string
@@ -564,8 +588,8 @@ class QuickChartService
     /**
      * Generate QR code URL for a chart
      * 
-     * @param array $chartConfig Chart.js configuration
-     * @param array $options QR code options
+     * @param array<mixed> $chartConfig Chart.js configuration
+     * @param array<mixed> $options QR code options
      * @return string QR code image URL
      */
     public function getChartQrCode(array $chartConfig, array $options = []): string
@@ -577,6 +601,7 @@ class QuickChartService
 
     /**
      * Validate Chart.js configuration
+     * @param array<mixed> $config
      */
     public function validateConfig(array $config): bool
     {
@@ -600,6 +625,7 @@ class QuickChartService
      * ============ PRIVATE HELPERS ============
      */
 
+    /** @param array<mixed> $datasets @param array<mixed> $options @return array<mixed> */
     private function normalizeDatasets(array $datasets, array $options): array
     {
         $defaultColors = $this->getDefaultColors();
@@ -619,6 +645,7 @@ class QuickChartService
         return $normalized;
     }
 
+    /** @param array<mixed> $datasets @return array<mixed> */
     private function normalizeScatterDatasets(array $datasets): array
     {
         $normalized = [];
@@ -636,6 +663,7 @@ class QuickChartService
         return $normalized;
     }
 
+    /** @param array<mixed> $datasets @return array<mixed> */
     private function normalizeBubbleDatasets(array $datasets): array
     {
         $normalized = [];
@@ -657,6 +685,7 @@ class QuickChartService
         return $normalized;
     }
 
+    /** @param array<mixed> $options @return array<mixed> */
     private function buildChartOptions(array $options, bool $showScales): array
     {
         $chartOptions = [
@@ -704,6 +733,7 @@ class QuickChartService
         return $chartOptions;
     }
 
+    /** @return array<mixed> */
     private function getDefaultColors(int $count = 10): array
     {
         $colors = [
@@ -722,6 +752,7 @@ class QuickChartService
         return array_slice($colors, 0, max($count, 10));
     }
 
+    /** @return array<mixed> */
     private function getDefaultBorderColors(): array
     {
         return [
@@ -754,8 +785,8 @@ class QuickChartService
     /**
      * Create a word cloud (if supported by QuickChart)
      * 
-     * @param array $words Array of ['text' => string, 'size' => int]
-     * @param array $options Options for the word cloud
+     * @param array<mixed> $words Array of ['text' => string, 'size' => int]
+     * @param array<mixed> $options Options for the word cloud
      * @return string Chart URL
      */
     public function createWordCloud(array $words, array $options = []): string
@@ -782,6 +813,8 @@ class QuickChartService
 
     /**
      * Create a sparkline chart (mini chart)
+     * @param array<mixed> $data
+     * @param array<mixed> $options
      */
     public function createSparkline(array $data, array $options = []): string
     {
@@ -828,6 +861,9 @@ class QuickChartService
 
     /**
      * Create a multi-axis chart
+     * @param array<mixed> $labels
+     * @param array<mixed> $datasets
+     * @param array<mixed> $options
      */
     public function createMultiAxisChart(array $labels, array $datasets, array $options = []): string
     {

@@ -42,8 +42,7 @@ final class ExternalApiService
             $this->cache->delete($key);
         }
 
-        return $this->cache->get($key, function (ItemInterface $item): ?array {
-            $item->expiresAfter(1800); // 30 min
+        return $this->cache->get($key, function (ItemInterface $item): array {
 
             if (!$this->openWeatherKey) {
                 return $this->weatherFallback();
@@ -125,7 +124,7 @@ final class ExternalApiService
                     if (!isset($daily[$dateKey])) {
                         $daily[$dateKey] = [
                             'date' => $dateKey,
-                            'day' => $frDays[((int) $dt->format('N')) - 1] ?? $dt->format('D'),
+                            'day' => $frDays[((int) $dt->format('N')) - 1],
                             'temp_min' => 999.0,
                             'temp_max' => -999.0,
                             'icon' => (string) ($row['weather'][0]['icon'] ?? '01d'),
@@ -217,7 +216,7 @@ final class ExternalApiService
             }
             $days = (int) $today->diff($dt)->format('%a');
             $h['days_until'] = $days;
-            $h['formatted'] = $dt->format('j') . ' ' . ($frMonths[(int) $dt->format('n')] ?? '') . ' ' . $dt->format('Y');
+            $h['formatted'] = $dt->format('j') . ' ' . $frMonths[(int) $dt->format('n')] . ' ' . $dt->format('Y');
             $upcoming[] = $h;
         }
 
@@ -353,7 +352,7 @@ final class ExternalApiService
             $this->cache->delete($key);
         }
 
-        return $this->cache->get($key, function (ItemInterface $item) use ($tag): ?array {
+        return $this->cache->get($key, function (ItemInterface $item) use ($tag): array {
             $item->expiresAfter(21600); // 6h
 
             try {
@@ -395,7 +394,7 @@ final class ExternalApiService
             $this->cache->delete($key);
         }
 
-        return $this->cache->get($key, function (ItemInterface $item): ?string {
+        return $this->cache->get($key, function (ItemInterface $item): string {
             $item->expiresAfter(21600);
 
             try {
@@ -415,6 +414,7 @@ final class ExternalApiService
     //  FALLBACKS
     // ─────────────────────────────────────────────────────────
 
+    /** @return array<mixed> */
     private function weatherFallback(): array
     {
         return [
@@ -429,6 +429,7 @@ final class ExternalApiService
         ];
     }
 
+    /** @return array<mixed> */
     private function newsFallback(string $topic): array
     {
         return [
@@ -444,6 +445,7 @@ final class ExternalApiService
         ];
     }
 
+    /** @return array<mixed> */
     private function quoteFallback(string $tag): array
     {
         $fallbacks = [
