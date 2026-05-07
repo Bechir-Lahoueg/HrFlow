@@ -17,7 +17,6 @@ class ProjectMilestone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(name: 'project_id', type: Types::INTEGER)]
@@ -41,12 +40,17 @@ class ProjectMilestone
     #[ORM\Column(name: 'completion_rate', type: Types::INTEGER)]
     private int $completionRate = 0;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
     }
 
     public function getProjectId(): ?int

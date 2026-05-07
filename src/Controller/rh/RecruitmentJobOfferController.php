@@ -188,7 +188,7 @@ final class RecruitmentJobOfferController extends AbstractController
         }
 
         // Get applications for this job offer
-        $applications = $applicaitonRepository->findByJobOffer($jobOffer->getId(), $rh);
+        $applications = $applicaitonRepository->findByJobOffer($jobOffer->getId() ?? 0, $rh);
 
         return $this->render('Recrutement/job_offer_details.html.twig', [
             'jobOffer' => $jobOffer,

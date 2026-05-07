@@ -12,7 +12,7 @@ class CandidateManager
             throw new \InvalidArgumentException('Email invalide');
         }
 
-        if (strlen($candidate->getPassword()) < 8) {
+        if (strlen($candidate->getPassword() ?? '') < 8) {
             throw new \InvalidArgumentException('Le mot de passe doit contenir au moins 8 caractères');
         }
 

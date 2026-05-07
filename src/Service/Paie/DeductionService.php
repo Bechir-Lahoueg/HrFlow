@@ -70,6 +70,9 @@ final class DeductionService
      */
     public function createDeduction(DeductionRequestDTO $dto): DeductionResponseDTO
     {
+        if ($dto->employeeId === null) {
+            throw new \DomainException('Employee ID is required');
+        }
         $employee = $this->employeeRepository->find($dto->employeeId);
         if (!$employee) {
             throw EmployeeNotFoundException::withId($dto->employeeId);
@@ -101,7 +104,7 @@ final class DeductionService
         $deduction = new Deduction();
         $deduction->setEmployee($employee)
             ->setTypeDeduction($dto->typeDeduction)
-            ->setMontant($dto->montant)
+            ->setMontant($dto->montant ?? '0.00')
             ->setDateDeduction($dto->dateDeduction)
             ->setMotif($dto->motif);
 
@@ -150,10 +153,17 @@ final class DeductionService
         // Save old period before update (in case date changed)
         $oldMois = $deduction->getMonth();
         $oldAnnee = $deduction->getYear();
-        $employeeId = $deduction->getEmployee()->getId();
+        $employeeEntity = $deduction->getEmployee();
+        if ($employeeEntity === null) {
+            throw new \DomainException('Deduction has no associated employee');
+        }
+        $employeeId = $employeeEntity->getId();
+        if ($employeeId === null) {
+            throw new \DomainException('Employee has no ID');
+        }
 
         $deduction->setTypeDeduction($dto->typeDeduction)
-            ->setMontant($dto->montant)
+            ->setMontant($dto->montant ?? '0.00')
             ->setDateDeduction($dto->dateDeduction)
             ->setMotif($dto->motif);
 
@@ -185,7 +195,14 @@ final class DeductionService
             throw new \DomainException(sprintf('Deduction with ID %d not found', $id));
         }
 
-        $employeeId = $deduction->getEmployee()->getId();
+        $employeeEntity = $deduction->getEmployee();
+        if ($employeeEntity === null) {
+            throw new \DomainException('Deduction has no associated employee');
+        }
+        $employeeId = $employeeEntity->getId();
+        if ($employeeId === null) {
+            throw new \DomainException('Employee has no ID');
+        }
         $mois = $deduction->getMonth();
         $annee = $deduction->getYear();
 

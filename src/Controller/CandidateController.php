@@ -180,8 +180,9 @@ final class CandidateController extends AbstractController
 
         $appliedJobIds = [];
         foreach ($jobOffers as $offer) {
-            if ($this->applicationRepository->hasCandidateApplied($candidate, $offer->getId())) {
-                $appliedJobIds[] = $offer->getId();
+            $offerId = $offer->getId();
+            if ($offerId !== null && $this->applicationRepository->hasCandidateApplied($candidate, $offerId)) {
+                $appliedJobIds[] = $offerId;
             }
         }
 
@@ -288,6 +289,9 @@ final class CandidateController extends AbstractController
     private function getCurrentCandidate(): Candidate
     {
         $user = $this->getUser();
+        if ($user === null) {
+            throw $this->createAccessDeniedException('Non authentifié.');
+        }
         $candidate = $this->candidateRepository->findOneBy(['username' => $user->getUserIdentifier()]);
 
         if (!$candidate) {
@@ -321,7 +325,8 @@ final class CandidateController extends AbstractController
         
         $newFilename = $prefix . '_' . $safeFilename . '_' . uniqid() . '.' . $extension;
 
-        $uploadPath = $this->getParameter('kernel.project_dir') . '/public' . $this->uploadDir;
+        $projectDir = is_scalar($this->getParameter('kernel.project_dir')) ? (string) $this->getParameter('kernel.project_dir') : '';
+        $uploadPath = $projectDir . '/public' . $this->uploadDir;
         if (!is_dir($uploadPath)) {
             mkdir($uploadPath, 0777, true);
         }
@@ -342,8 +347,8 @@ final class CandidateController extends AbstractController
         } elseif (function_exists('iconv')) {
             // Fallback to iconv if available
             $filename = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filename);
-            $filename = strtolower($filename);
-            $filename = preg_replace('/[^a-z0-9_]/', '_', $filename);
+            $filename = strtolower((string) $filename);
+            $filename = (string) preg_replace('/[^a-z0-9_]/', '_', $filename);
         } else {
             // Basic fallback - just remove/replace unsafe characters
             $filename = strtolower($filename);
@@ -359,11 +364,11 @@ final class CandidateController extends AbstractController
             ];
             $filename = strtr($filename, $replacements);
             // Replace any remaining non-alphanumeric chars with underscore
-            $filename = preg_replace('/[^a-z0-9_]/', '_', $filename);
+            $filename = (string) preg_replace('/[^a-z0-9_]/', '_', $filename);
         }
         
         // Ensure we don't have multiple underscores
-        $filename = preg_replace('/_+/', '_', $filename);
+        $filename = (string) preg_replace('/_+/', '_', (string) $filename);
         // Trim underscores from ends
         $filename = trim($filename, '_');
         

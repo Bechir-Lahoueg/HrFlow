@@ -19,6 +19,7 @@ use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email as EmailConstraint;
 
+/** @extends AbstractType<array<string, mixed>> */
 class ApplicationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

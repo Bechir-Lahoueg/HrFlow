@@ -198,7 +198,7 @@ final class RhFormationController extends AbstractController
             }
 
             if (empty($session->getDateFin())) {
-                $debutDate = clone $dateDebut;
+                $debutDate = \DateTime::createFromInterface($dateDebut);
                 $joursToAdd = max(0, (int) $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
@@ -212,9 +212,9 @@ final class RhFormationController extends AbstractController
 
             $now = new \DateTime();
             $now->setTime(0, 0, 0);
-            $debut = clone $dateDebut;
+            $debut = \DateTime::createFromInterface($dateDebut);
             $debut->setTime(0, 0, 0);
-            $fin = clone $dateFin;
+            $fin = \DateTime::createFromInterface($dateFin);
             $fin->setTime(0, 0, 0);
 
             if ($now < $debut) { $session->setStatut('Planifiee'); }
@@ -264,7 +264,7 @@ final class RhFormationController extends AbstractController
             }
 
             if (!$session->getDateFin()) {
-                $debutDate = clone $dateDebut;
+                $debutDate = \DateTime::createFromInterface($dateDebut);
                 $joursToAdd = max(0, (int) $formation->getDuree() - 1);
                 $debutDate->modify("+{$joursToAdd} days");
                 $session->setDateFin($debutDate);
@@ -492,7 +492,7 @@ final class RhFormationController extends AbstractController
         foreach ($existingPresences as $p) {
             $datePresence = $p->getDatePresence();
             $participation = $p->getParticipation();
-            if (!$datePresence instanceof \DateTimeInterface || $participation === null) {
+            if (!$datePresence instanceof \DateTimeInterface || $participation === null || $participation->getId() === null) {
                 continue;
             }
             $currentPresences[$datePresence->format('Y-m-d')][$participation->getId()] = $p->getStatut();
@@ -507,6 +507,9 @@ final class RhFormationController extends AbstractController
         ]);
     }
 
+    /**
+     * @param FormInterface<mixed> $form
+     */
     private function validateSessionLocationField(SessionFormation $session, FormInterface $form): void
     {
         $mode = $this->normalizeSessionMode((string) $session->getMode());

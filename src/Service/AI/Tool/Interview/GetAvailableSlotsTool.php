@@ -51,7 +51,7 @@ class GetAvailableSlotsTool implements ToolInterface
         if (!$interviewerId) {
             $user = $this->security->getUser();
             // Assuming User entity has getId() and can be an interviewer
-            if (method_exists($user, 'getId')) {
+            if ($user !== null && method_exists($user, 'getId')) {
                 $interviewerId = $user->getId();
             }
         }

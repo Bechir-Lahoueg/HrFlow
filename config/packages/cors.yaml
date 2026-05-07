@@ -1,0 +1,16 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CORS — Central configuration
+# All REST endpoints inherit these settings via CorsSubscriber.
+#
+# To add an origin: append it (comma-separated) to the CORS_ALLOW_ORIGINS
+# environment variable in .env (dev) or .env.render (prod).
+# ─────────────────────────────────────────────────────────────────────────────
+
+parameters:
+    # Comma-separated list of allowed origins read from the environment.
+    # Example value: "http://localhost:8000,https://esprit-pidev-web-3a4-hrflow-ctwx.onrender.com"
+    cors.allow_origins: '%env(string:CORS_ALLOW_ORIGINS)%'
+
+    cors.allow_methods: 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+    cors.allow_headers: 'Content-Type, Authorization, X-Requested-With, Accept'
+    cors.max_age: '3600'

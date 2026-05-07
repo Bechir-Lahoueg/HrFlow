@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_applications_applied_at', columns: ['applied_at'])]
 #[ORM\Index(name: 'idx_applications_is_deleted', columns: ['is_deleted'])]
 #[ORM\Index(name: 'idx_applications_department', columns: ['Department'])]
-#[ORM\Index(name: 'idx_applications_email', columns: ['EmailAddress'])]
+#[ORM\Index(name: 'idx_applications_email', columns: ['email_address'])]
 #[ORM\Index(name: 'idx_applications_candidate', columns: ['candidate_id'])]
 class Application
 {
@@ -65,7 +65,7 @@ class Application
     #[Assert\Length(max: 100, maxMessage: 'Experience level cannot exceed 100 characters')]
     private ?string $experienceLevel = null;
 
-    #[ORM\Column(name: 'EmailAddress', length: 255, nullable: true)]
+    #[ORM\Column(name: 'email_address', length: 255, nullable: true)]
     #[Assert\Length(max: 255, maxMessage: 'Email cannot exceed 255 characters')]
     #[Assert\Email(message: 'Please enter a valid email address')]
     private ?string $emailAddress = null;
@@ -82,6 +82,9 @@ class Application
     #[Assert\Length(max: 100, maxMessage: 'Source cannot exceed 100 characters')]
     private ?string $source = null;
 
+    /**
+     * @var \Doctrine\Common\Collections\Collection<int, Interview>
+     */
     #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
     private \Doctrine\Common\Collections\Collection $interviews;
 
@@ -221,6 +224,17 @@ class Application
         return $this->candidate;
     }
 
+    public function getCandidateUser(): ?Candidate
+    {
+        return $this->candidate;
+    }
+
+    /** @return \Doctrine\Common\Collections\Collection<int, Interview> */
+    public function getInterviews(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->interviews;
+    }
+
     public function setCandidate(?Candidate $candidate): static
     {
         $this->candidate = $candidate;
@@ -258,7 +272,7 @@ class Application
             'OFFER' => 'Offre',
             'HIRED' => 'Recrute',
             'REJECTED' => 'Rejete',
-            default => $this->status,
+            default => $this->status ?? '',
         };
     }
 

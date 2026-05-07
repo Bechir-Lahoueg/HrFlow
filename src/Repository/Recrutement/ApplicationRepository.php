@@ -127,6 +127,7 @@ class ApplicationRepository extends ServiceEntityRepository
 
     /**
      * Find applications by RH with optional filters (returns Query for pagination)
+     * @return \Doctrine\ORM\Query<int, Application>
      */
     public function findByRhQuery(
         DbUser $rh,
@@ -162,7 +163,9 @@ class ApplicationRepository extends ServiceEntityRepository
                ->setParameter('search', '%' . $search . '%');
         }
 
-        return $qb->getQuery();
+        $query = $qb->getQuery();
+        /** @var \Doctrine\ORM\Query<int, Application> $query */
+        return $query;
     }
 
     /**

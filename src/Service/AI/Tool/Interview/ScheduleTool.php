@@ -68,7 +68,7 @@ class ScheduleTool implements ToolInterface
         $interviewerId = $args['interviewer_id'] ?? null;
         if (!$interviewerId) {
             $user = $this->security->getUser();
-            if (method_exists($user, 'getId')) {
+            if ($user !== null && method_exists($user, 'getId')) {
                 $interviewerId = $user->getId();
             }
         }
@@ -96,7 +96,7 @@ class ScheduleTool implements ToolInterface
             'status' => 'success',
             'interview_id' => $interview->getId(),
             'candidate' => $application->getCandidateName(),
-            'date' => $interview->getInterviewDate()->format('Y-m-d H:i'),
+            'date' => $interview->getInterviewDate()?->format('Y-m-d H:i') ?? '',
             'type' => $interview->getType()
         ];
     }

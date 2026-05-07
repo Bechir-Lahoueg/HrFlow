@@ -60,9 +60,10 @@ final class ExportPdfTool implements ToolInterface
             'interviews' => $this->getInterviews($args),
             'pipeline_report' => $this->getPipelineReport($args),
             'performance_report' => $this->getPerformanceReport($args),
+            default => [],
         };
 
-        $rowCount = is_countable($data) ? count($data) : 0;
+        $rowCount = count($data);
 
         $pdfPath = $this->generatePdf($type, $data, $title, $args);
 
@@ -86,6 +87,10 @@ final class ExportPdfTool implements ToolInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<int, mixed>
+     */
     private function getCandidates(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -121,6 +126,10 @@ final class ExportPdfTool implements ToolInterface
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<int, mixed>
+     */
     private function getJobOffers(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -151,6 +160,10 @@ final class ExportPdfTool implements ToolInterface
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<int, mixed>
+     */
     private function getInterviews(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -184,6 +197,10 @@ final class ExportPdfTool implements ToolInterface
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getPipelineReport(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -219,6 +236,10 @@ final class ExportPdfTool implements ToolInterface
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getPerformanceReport(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -248,6 +269,10 @@ final class ExportPdfTool implements ToolInterface
         ];
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     * @param array<string, mixed> $args
+     */
     private function generatePdf(string $type, array $data, ?string $customTitle, array $args): string
     {
         $projectDir = $this->em->getConnection()->getParams()['path'] ?? '';
@@ -279,6 +304,9 @@ final class ExportPdfTool implements ToolInterface
         return '/uploads/reports/' . $fileName;
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function buildPdfHtml(string $type, array $data, string $title, string $generatedAt): string
     {
         $headers = match ($type) {
@@ -354,6 +382,9 @@ HTML;
         return "<table><thead><tr>{$th}</tr></thead><tbody>{$rows}</tbody></table>";
     }
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function buildReportHtml(string $type, array $data): string
     {
         if ($type === 'pipeline_report') {

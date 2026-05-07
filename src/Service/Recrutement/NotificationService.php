@@ -46,7 +46,7 @@ class NotificationService
             'REJECTED' => 'Rejeté',
         ];
 
-        $statusLabel = $statusLabels[$application->getStatus()] ?? $application->getStatus();
+        $statusLabel = $statusLabels[$application->getStatus() ?? ''] ?? $application->getStatus();
 
         $email = (new Email())
             ->from($this->senderAddress)
@@ -135,7 +135,7 @@ class NotificationService
             'NO_SHOW' => 'Absent',
         ];
 
-        $resultLabel = $resultLabels[$interview->getResult()] ?? $interview->getResult();
+        $resultLabel = $resultLabels[$interview->getResult() ?? ''] ?? $interview->getResult();
 
         $email = (new Email())
             ->from($this->senderAddress)
@@ -155,6 +155,7 @@ class NotificationService
         $this->log('info', 'Interview result email sent to {email} for interview {id}', ['email' => $emailAddress, 'id' => $interview->getId()]);
     }
 
+    /** @param array<mixed> $context */
     private function log(string $level, string $message, array $context = []): void
     {
         if ($this->logger) {

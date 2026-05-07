@@ -56,19 +56,20 @@ class Formation
     #[ORM\Column(name: 'id_rh')]
     private ?int $rhId = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
     /** @var Collection<int, SessionFormation> */
-    #[ORM\OneToMany(targetEntity: SessionFormation::class, mappedBy: 'formation')]
+    #[ORM\OneToMany(targetEntity: SessionFormation::class, mappedBy: 'formation', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $sessions;
 
     public function __construct()
     {
         $this->sessions = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int

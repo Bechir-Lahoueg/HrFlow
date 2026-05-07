@@ -22,12 +22,13 @@ class PrimeResponseDTO
 
     public function __construct(Prime $prime)
     {
-        $this->id = $prime->getId();
-        $this->employeeId = $prime->getEmployee()->getId();
-        $this->employeeName = $prime->getEmployee()->getFirstName() . ' ' . $prime->getEmployee()->getLastName();
+        $this->id = $prime->getId() ?? 0;
+        $employee = $prime->getEmployee();
+        $this->employeeId = $employee?->getId() ?? 0;
+        $this->employeeName = ($employee?->getFirstName() ?? '') . ' ' . ($employee?->getLastName() ?? '');
         $this->typePrime = $prime->getTypePrime();
-        $this->montant = $prime->getMontant();
-        $this->dateAttribution = $prime->getDateAttribution();
+        $this->montant = $prime->getMontant() ?? '0.00';
+        $this->dateAttribution = $prime->getDateAttribution() ?? new \DateTimeImmutable();
         $this->motif = $prime->getMotif();
         $this->createdAt = $prime->getCreatedAt();
         $this->updatedAt = $prime->getUpdatedAt();
