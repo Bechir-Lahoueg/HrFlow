@@ -18,7 +18,7 @@ class Interview
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\ManyToOne(targetEntity: Application::class, inversedBy: 'interviews')]
     #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false)]
@@ -54,7 +54,7 @@ class Interview
     #[ORM\Column(options: ['default' => 0])]
     #[Assert\GreaterThanOrEqual(value: 0, message: 'Score must be at least 0')]
     #[Assert\LessThanOrEqual(value: 100, message: 'Score cannot exceed 100')]
-    private ?int $score = 0;
+    private int $score = 0;
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Result is required')]
@@ -64,7 +64,7 @@ class Interview
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isDeleted = false;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }

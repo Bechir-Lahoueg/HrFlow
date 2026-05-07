@@ -102,7 +102,7 @@ final class AdminLeaveController extends AbstractController
             'leave_type' => (string) $leave->getLeaveType(),
             'start_date' => $leave->getStartDate()?->format('Y-m-d') ?? '',
             'end_date' => $leave->getEndDate()?->format('Y-m-d') ?? '',
-            'days_count' => $leave->getDaysCount(),
+            'days_count' => (int) ($leave->getDaysCount() ?? 0),
             'urgency_level' => (string) $leave->getUrgencyLevel(),
             'reason' => (string) $leave->getReason(),
             'rh_comment' => (string) $leave->getRhComment(),

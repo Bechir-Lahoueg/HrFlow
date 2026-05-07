@@ -11,6 +11,10 @@
         .filter-chip{transition:all .2s}
         .filter-chip:hover{transform:translateY(-1px)}
         .filter-chip.active{box-shadow:0 4px 14px -4px rgba(15,23,42,.3)}
+        .rank-badge{min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;font-size:11px;font-weight:800}
+        .rank-gold{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
+        .rank-silver{background:#e5e7eb;color:#374151;border:1px solid #9ca3af}
+        .rank-bronze{background:#ffedd5;color:#9a3412;border:1px solid #fb923c}
         .credit-card{position:relative;overflow:hidden}
         .credit-card::before{content:'';position:absolute;top:-50%;right:-30%;width:8rem;height:8rem;border-radius:9999px;opacity:.06;pointer-events:none}
         .credit-card:nth-child(1)::before{background:radial-gradient(circle,#14b8a6,transparent 70%)}
@@ -105,49 +109,102 @@
                 </div>
             </div>
 
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formations</h3>
-                        <span class="text-[11px] px-2 py-1 rounded bg-blue-50 text-blue-700 font-bold">Demandes + avis</span>
-                    </div>
-                    <div class="space-y-3">
-                        {% for item in topFormations|default([]) %}
-                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
-                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.titre }}</p>
-                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
-                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
-                                    <span>{{ item.feedbackCount|default(0) }} avis</span>
-                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
-                                </div>
-                            </div>
-                        {% else %}
-                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
-                        {% endfor %}
-                    </div>
-                </div>
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-slide-up">
 
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                {# ── Top 3 Formations ── #}
+                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">Top formateurs</h3>
-                        <span class="text-[11px] px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-bold">Par organisme</span>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
+                            Top 3 Formations
+                        </h3>
+                        <span class="text-[11px] font-semibold text-zinc-500">Basé sur les notes</span>
                     </div>
+
                     <div class="space-y-3">
-                        {% for item in topFormateurs|default([]) %}
-                            <div class="rounded-lg border border-zinc-100 dark:border-zinc-800/50 p-3">
-                                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ item.organisme }}</p>
-                                <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500">
-                                    <span>{{ item.formationsCount|default(0) }} formation(s)</span>
-                                    <span>{{ item.demandesCount|default(0) }} demandes</span>
-                                    <span>{{ item.averageRating is not null ? item.averageRating ~ '/5' : 'Aucune note' }}</span>
+                        {% for item in topFormations|default([])|slice(0, 3) %}
+                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                            {% set topFormationId = item.formationId|default(item.id|default(null)) %}
+                            <div {% if topFormationId is not null %}onclick="window.location.href='{{ path('rh_formation_sessions', {id: topFormationId}) }}'"{% endif %}
+                                 class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 transition bg-zinc-50/40 dark:bg-zinc-800/20 {% if topFormationId is not null %}hover:border-indigo-300 hover:ring-2 hover:ring-indigo-500/10 cursor-pointer{% endif %}">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ item.titre }}</p>
+                                            <p class="text-xs text-zinc-500 truncate">{{ item.organisme|default('Organisme non renseigné') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        {% if item.averageRating is not null %}
+                                            <div class="flex items-center justify-end gap-0.5">
+                                                {% for i in 1..5 %}
+                                                    <span class="text-sm {{ item.averageRating >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                                {% endfor %}
+                                            </div>
+                                            <p class="text-[11px] text-zinc-500 mt-0.5">{{ item.feedbackCount|default(0) }} avis</p>
+                                        {% else %}
+                                            <div class="flex items-center justify-end gap-0.5">
+                                                {% for i in 1..5 %}<span class="text-sm text-zinc-300">★</span>{% endfor %}
+                                            </div>
+                                            <p class="text-[11px] text-zinc-500 mt-0.5">0 avis</p>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         {% else %}
-                            <p class="text-sm text-zinc-500">Aucune donnee disponible.</p>
+                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
                         {% endfor %}
                     </div>
-                </div>
+                </article>
+
+                {# ── Top 3 Formateurs ── #}
+                <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
+                            Top 3 Formateurs
+                        </h3>
+                        <span class="text-[11px] font-semibold text-zinc-500">Par organisme</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for item in topFormateurs|default([])|slice(0, 3) %}
+                            {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
+                            <div class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 bg-zinc-50/40 dark:bg-zinc-800/20">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 truncate">{{ item.organisme }}</p>
+                                            <p class="text-xs text-zinc-500">{{ item.formationsCount|default(0) }} formation(s)</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        {% if item.averageRating is not null %}
+                                            <div class="flex items-center justify-end gap-0.5">
+                                                {% for i in 1..5 %}
+                                                    <span class="text-sm {{ item.averageRating >= i ? 'text-yellow-400' : 'text-zinc-300' }}">★</span>
+                                                {% endfor %}
+                                            </div>
+                                            <p class="text-[11px] text-zinc-500 mt-0.5">{{ item.feedbackCount|default(0) }} avis</p>
+                                        {% else %}
+                                            <div class="flex items-center justify-end gap-0.5">
+                                                {% for i in 1..5 %}<span class="text-sm text-zinc-300">★</span>{% endfor %}
+                                            </div>
+                                            <p class="text-[11px] text-zinc-500 mt-0.5">0 avis</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="rounded-xl border border-dashed border-zinc-200 p-4 text-sm text-zinc-400 text-center">Aucune donnée de classement pour le moment.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+
             </section>
+
 
             {# ══════════ Formation Table ══════════ #}
             <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-5">

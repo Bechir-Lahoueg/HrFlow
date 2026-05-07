@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\AI;
 
-use App\Service\AI\AgentOrchestrator;
-use App\Service\AI\SessionMemory;
+use App\AI\Core\AgentOrchestrator;
+use App\AI\Infrastructure\ChatMessage;
+use App\AI\Infrastructure\ConversationContext;
+use App\AI\Core\ConversationMemory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,57 +22,61 @@ class ChatbotController extends AbstractController
     {
         $requestId = bin2hex(random_bytes(8));
         $data = json_decode($request->getContent(), true);
+
+        if ($data === null) {
+            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+        }
+
         $message = $data['message'] ?? '';
-        $history = $data['history'] ?? [];
-        $sessionId = $data['session_id'] ?? null;
+        $sessionId = $data['session_id'] ?? $request->getSession()?->getId() ?? bin2hex(random_bytes(8));
 
         if (empty($message)) {
-            $res = new JsonResponse(['error' => 'Message is empty', 'request_id' => $requestId], 400);
-            $res->headers->set('X-Request-Id', $requestId);
-            return $res;
+            return new JsonResponse(['error' => 'Message is empty'], 400);
         }
 
         try {
-            $logger->info('AI chat request', [
+            $user = $this->getUser();
+            if ($user === null) {
+                return new JsonResponse(['error' => 'User not authenticated'], 401);
+            }
+
+            $conversationContext = new ConversationContext(
+                messages: [
+                    new ChatMessage('user', $message),
+                ],
+                user: $user,
+                sessionId: $sessionId,
+            );
+
+            $result = $orchestrator->process($conversationContext);
+
+            return new JsonResponse([
+                'message' => $result->message,
+                'ui_payload' => $result->uiPayload,
+                'pending_changesets' => $result->pendingChangesets,
+                'tool_calls' => $result->toolCalls,
+                'active_job' => $result->activeJob,
+                'candidates' => $result->candidates,
+                'candidates_analyzed' => $result->candidatesAnalyzed,
+                'interviews_planned' => $result->interviewsPlanned,
+                'plan' => $result->plan,
+                'completed_steps' => $result->completedSteps,
                 'request_id' => $requestId,
-                'path' => $request->getPathInfo(),
-                'user_id' => $this->getUser() && method_exists($this->getUser(), 'getId') ? $this->getUser()->getId() : null,
-                'session_id' => $sessionId,
-                'history_count' => is_array($history) ? count($history) : 0,
             ]);
-
-            $result = $orchestrator->chat($message, $history, $requestId, $sessionId);
-            $result['request_id'] = $requestId;
-
-            $res = new JsonResponse($result);
-            $res->headers->set('X-Request-Id', $requestId);
-            return $res;
         } catch (\Throwable $e) {
             $logger->error('AI chat failed', [
                 'request_id' => $requestId,
                 'error' => $e->getMessage(),
             ]);
 
-            // Return a user-friendly payload (avoid hard 500 breaking UI).
-            $payload = [
-                'message' => "Le chatbot a rencontré une erreur côté serveur. Réessayez dans quelques instants.\n\nRequest ID: `{$requestId}`",
+            return new JsonResponse([
+                'message' => "Le chatbot a rencontré une erreur. Réessayez dans quelques instants.\n\nRequest ID: `{$requestId}`",
                 'validation_error' => $e->getMessage(),
                 'plan' => [],
                 'completed_steps' => 0,
                 'tool_calls' => [],
-                'active_job' => null,
-                'candidates' => [],
-                'candidates_analyzed' => 0,
-                'interviews_planned' => 0,
                 'request_id' => $requestId,
-            ];
-            if ($this->getParameter('kernel.debug')) {
-                $payload['debug'] = ['trace' => $e->getTraceAsString()];
-            }
-
-            $res = new JsonResponse($payload, 200);
-            $res->headers->set('X-Request-Id', $requestId);
-            return $res;
+            ], 200);
         }
     }
 
@@ -79,13 +87,13 @@ class ChatbotController extends AbstractController
     }
 
     #[Route('/chat/clear', name: 'app_rh_ai_chat_clear', methods: ['POST'])]
-    public function clear(Request $request, SessionMemory $sessionMemory, LoggerInterface $logger): JsonResponse
+    public function clear(Request $request, ConversationMemory $memory, LoggerInterface $logger): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $sessionId = $data['session_id'] ?? null;
+        $sessionId = $data['session_id'] ?? $request->getSession()?->getId();
 
         if ($sessionId) {
-            $sessionMemory->delete('chat:' . $sessionId);
+            $cacheKey = "chat_memory_{$sessionId}";
             $logger->info('AI chat session cleared', [
                 'session_id' => $sessionId,
                 'user_id' => $this->getUser() && method_exists($this->getUser(), 'getId') ? $this->getUser()->getId() : null,

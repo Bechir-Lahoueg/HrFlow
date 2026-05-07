@@ -42,10 +42,19 @@ final class FormationService
         return $this->formationRepository->findAllFiltered($search, $type, $sort, $dir, $organisme);
     }
 
+    /**
+     * @return array{total_formations:int,active_sessions:int,total_participants:int}
+     */
     public function getFormationStatsByRhId(int $rhId): array
     {
         try {
-            return $this->formationRepository->getStatsByRh($rhId);
+            $stats = $this->formationRepository->getStatsByRh($rhId);
+
+            return [
+                'total_formations' => (int) ($stats['total_formations'] ?? 0),
+                'active_sessions' => (int) ($stats['active_sessions'] ?? 0),
+                'total_participants' => (int) ($stats['total_participants'] ?? 0),
+            ];
         } catch (\Throwable) {
             return ['total_formations' => 0, 'active_sessions' => 0, 'total_participants' => 0];
         }
@@ -94,8 +103,8 @@ final class FormationService
     {
         try {
             return [
-                'topFormations' => $this->formationRepository->findTopFormationsByRh($rhId, 5),
-                'topFormateurs' => $this->formationRepository->findTopFormateursByRh($rhId, 5),
+                'topFormations' => $this->formationRepository->findTopFormationsByRh($rhId, 3),
+                'topFormateurs' => $this->formationRepository->findTopFormateursByRh($rhId, 3),
             ];
         } catch (\Throwable) {
             return [
@@ -105,6 +114,17 @@ final class FormationService
         }
     }
 
+    /**
+     * @param array{
+     *   titre:string,
+     *   description:string,
+     *   type:string,
+     *   duree:int|string,
+     *   organisme:string,
+     *   objectifs:string,
+     *   id_rh:int|string
+     * } $data
+     */
     public function createFormation(array $data): Formation
     {
         $formation = new Formation();
@@ -122,6 +142,16 @@ final class FormationService
         return $formation;
     }
 
+    /**
+     * @param array{
+     *   titre:string,
+     *   description:string,
+     *   type:string,
+     *   duree:int|string,
+     *   organisme:string,
+     *   objectifs:string
+     * } $data
+     */
     public function updateFormation(int $id, array $data): void
     {
         $formation = $this->formationRepository->find($id);
@@ -208,8 +238,24 @@ final class FormationService
         return $this->sessionFormationRepository->findByFormation($formationId);
     }
 
+    /**
+     * @param array{
+     *   id_formation:int|string,
+     *   date_debut:string,
+     *   date_fin:string,
+     *   lieu:string,
+     *   mode:string,
+     *   capacite_max:int|string
+     * } $data
+     */
     public function createSession(array $data): SessionFormation
     {
+    $debut = new \DateTime($data['date_debut']);
+        $fin   = new \DateTime($data['date_fin']);
+
+        if ($fin <= $debut) {
+            throw new \InvalidArgumentException('La date de fin doit être postérieure à la date de début.');
+        }
         $formation = $this->formationRepository->find((int) $data['id_formation']);
         if (!$formation) {
             throw new \RuntimeException('Formation introuvable.');
@@ -232,6 +278,15 @@ final class FormationService
         return $session;
     }
 
+    /**
+     * @param array{
+     *   date_debut:string,
+     *   date_fin:string,
+     *   lieu:string,
+     *   mode:string,
+     *   capacite_max:int|string
+     * } $data
+     */
     public function updateSession(int $id, array $data): void
     {
         $session = $this->sessionFormationRepository->find($id);
@@ -251,7 +306,7 @@ final class FormationService
         $this->em->flush();
     }
 
-    private function calculateStatut(string $dateDebut, string $dateFin): string
+    public function calculateStatut(string $dateDebut, string $dateFin): string
     {
         $now = new \DateTime();
         $now->setTime(0, 0, 0);

@@ -9,7 +9,9 @@ use App\Service\Rh\LeaveRequestService;
 use App\Service\Shared\AiService;
 use App\Service\Shared\MedicalCertificateOcrService;
 use DateTimeImmutable;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -30,10 +32,12 @@ final class EmployeeLeaveController extends AbstractController
         MedicalCertificateOcrService $medicalCertificateOcrService,
     ): Response {
         if ($request->isMethod('POST')) {
-            $redirect = $this->handleSubmitRequest($request, $leaveRequestService, $medicalCertificateOcrService);
-            if ($redirect !== null) {
-                return $redirect;
-            }
+            return $this->handleSubmitRequest(
+                $request,
+                $leaveRequestService,
+                $medicalCertificateOcrService,
+                $this->container->has('logger') ? $this->container->get('logger') : null,
+            );
         }
 
         $employeeId = $this->getCurrentEmployeeId();
@@ -122,7 +126,8 @@ final class EmployeeLeaveController extends AbstractController
         Request $request,
         LeaveRequestService $leaveRequestService,
         MedicalCertificateOcrService $medicalCertificateOcrService,
-    ): ?RedirectResponse
+        ?LoggerInterface $logger = null,
+    ): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('employee_leave_submit', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide.');
@@ -154,17 +159,18 @@ final class EmployeeLeaveController extends AbstractController
                 $fileMimeType = $this->resolveAttachmentMimeType($file);
                 $validation = $this->validateAttachment($file);
                 if (!$validation['success']) {
-                    $this->addFlash('error', (string) $validation['message']);
+                    $this->addFlash('error', (string) ($validation['message'] ?? 'Le justificatif est invalide.'));
                     return $this->redirectToRoute('app_employee_leave_requests');
                 }
 
-                $upload = $this->storeAttachment($file);
+                $upload = $this->storeAttachment($file, $logger);
                 if (!$upload['success']) {
-                    $this->addFlash('error', (string) $upload['message']);
+                    $this->addFlash('error', (string) ($upload['message'] ?? 'Echec de televersement du justificatif.'));
                     return $this->redirectToRoute('app_employee_leave_requests');
                 }
 
-                $attachmentPath = (string) $upload['path'];
+                $attachmentPath = (string) ($upload['path'] ?? '');
+
 
                 $ocr = $medicalCertificateOcrService->extractFromAttachment(
                     (string) ($upload['absolute_path'] ?? ''),
@@ -194,7 +200,10 @@ final class EmployeeLeaveController extends AbstractController
             $attachmentOcrSummary,
         );
 
-        $this->addFlash($result['success'] ? 'success' : 'error', (string) $result['message']);
+        $this->addFlash(
+            $result['success'] ? 'success' : 'error',
+            (string) ($result['message'] ?? 'Une erreur est survenue lors de l\'envoi de la demande.'),
+        );
         return $this->redirectToRoute('app_employee_leave_requests');
     }
 
@@ -216,7 +225,7 @@ final class EmployeeLeaveController extends AbstractController
             return ['success' => false, 'message' => 'Le justificatif est invalide.'];
         }
 
-        if (($file->getSize() ?? 0) > 3 * 1024 * 1024) {
+        if ($file->getSize() > 3 * 1024 * 1024) {
             return ['success' => false, 'message' => 'Le justificatif depasse 3 Mo.'];
         }
 
@@ -256,25 +265,65 @@ final class EmployeeLeaveController extends AbstractController
     }
 
     /** @return array{success: bool, path?: string, absolute_path?: string, message?: string} */
-    private function storeAttachment(UploadedFile $file): array
+    private function storeAttachment(UploadedFile $file, ?LoggerInterface $logger = null): array
     {
-        try {
-            $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/leave-exceptions';
-            if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
-                return ['success' => false, 'message' => 'Impossible de creer le dossier justificatifs.'];
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $targetDir = $projectDir . '/public/uploads/leave-exceptions';
+
+        if (!is_dir($targetDir)) {
+            if (!@mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+                $err = error_get_last();
+                $logger?->error('[leave-attachment] mkdir failed', ['dir' => $targetDir, 'error' => $err]);
+                return [
+                    'success' => false,
+                    'message' => 'Impossible de creer le dossier justificatifs: ' . ($err['message'] ?? 'erreur inconnue'),
+                ];
             }
-
-            $extension = $file->guessExtension() ?: 'bin';
-            $fileName = 'leave_exception_' . uniqid('', true) . '.' . $extension;
-            $file->move($targetDir, $fileName);
-
-            return [
-                'success' => true,
-                'path' => '/uploads/leave-exceptions/' . $fileName,
-                'absolute_path' => $targetDir . '/' . $fileName,
-            ];
-        } catch (\Throwable) {
-            return ['success' => false, 'message' => 'Echec de televersement du justificatif.'];
         }
+
+        if (!is_writable($targetDir)) {
+            $logger?->error('[leave-attachment] target dir not writable', ['dir' => $targetDir]);
+            return [
+                'success' => false,
+                'message' => 'Le dossier justificatifs n\'est pas inscriptible: ' . $targetDir,
+            ];
+        }
+
+        $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
+        if (!in_array($extension, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            $extension = 'bin';
+        }
+
+        // N.B. uniqid('', true) contains a dot which can trip `UploadedFile::move()` on some Windows setups.
+        $uniqueToken = bin2hex(random_bytes(8));
+        $fileName = 'leave_exception_' . $uniqueToken . '.' . $extension;
+
+        try {
+            $file->move($targetDir, $fileName);
+        } catch (FileException $e) {
+            $logger?->error('[leave-attachment] move failed', [
+                'error' => $e->getMessage(),
+                'target' => $targetDir . DIRECTORY_SEPARATOR . $fileName,
+                'original' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime' => (function () use ($file) { try { return $file->getMimeType(); } catch (\Throwable) { return null; } })(),
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Echec de televersement du justificatif: ' . $e->getMessage(),
+            ];
+        } catch (\Throwable $e) {
+            $logger?->error('[leave-attachment] unexpected move error', ['error' => $e::class . ': ' . $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Echec de televersement du justificatif (' . $e::class . '): ' . $e->getMessage(),
+            ];
+        }
+
+        return [
+            'success' => true,
+            'path' => '/uploads/leave-exceptions/' . $fileName,
+            'absolute_path' => $targetDir . DIRECTORY_SEPARATOR . $fileName,
+        ];
     }
 }

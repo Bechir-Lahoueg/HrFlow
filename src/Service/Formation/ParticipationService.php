@@ -226,7 +226,7 @@ final class ParticipationService
             $pendingFormation = $pendingSession?->getFormation();
             $autoReason = 'Votre demande a ete refusee automatiquement car vous avez deja ete accepte(e) dans une session prioritaire.';
 
-            if ($pendingFormation && $formation && (int) $pendingFormation->getId() === (int) $formation->getId()) {
+            if ($pendingFormation && (int) $pendingFormation->getId() === (int) $formation->getId()) {
                 $acceptedDate = $session->getDateDebut()?->format('d/m/Y') ?? '-';
                 $autoReason = sprintf('Votre demande a ete refusee automatiquement car vous avez deja ete accepte(e) dans la session du %s de cette formation.', $acceptedDate);
             }

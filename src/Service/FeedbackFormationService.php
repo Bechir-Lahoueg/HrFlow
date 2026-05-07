@@ -2,23 +2,24 @@
 
 namespace App\Service;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Formation\SessionFeedbackRepository;
 
 final class FeedbackFormationService
 {
     private const MAX_COMMENT_LENGTH = 1000;
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly SessionFeedbackRepository $feedbackRepository) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CREATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
             $data = $this->normalizeFeedbackFormationInput($data);
-            $this->connection->insert('feedback_formation', [
+            $this->feedbackRepository->insertFeedback([
                 'user_id'                => $data['user_id'],
                 'formation_id'           => $data['formation_id'],
                 'session_id'             => $data['session_id'],
@@ -39,63 +40,31 @@ final class FeedbackFormationService
     // READ
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getByUser(int $userId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT ff.*,
-                    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-                    f.titre AS formation_name,
-                    CONCAT(sf.date_debut, ' — ', sf.lieu) AS session_name
-                FROM feedback_formation ff
-                LEFT JOIN employees        e  ON ff.user_id      = e.id
-                LEFT JOIN formation         f  ON ff.formation_id = f.id_formation
-                LEFT JOIN session_formation sf ON ff.session_id   = sf.id_session
-                WHERE ff.user_id = ?
-                ORDER BY ff.created_at DESC",
-                [$userId]
-            );
+            return $this->feedbackRepository->fetchByUser($userId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getByRhId(int $rhId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT ff.*,
-                    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-                    f.titre AS formation_name,
-                    CONCAT(sf.date_debut, ' — ', sf.lieu) AS session_name
-                FROM feedback_formation ff
-                INNER JOIN employees        e  ON ff.user_id      = e.id
-                LEFT JOIN  formation         f  ON ff.formation_id = f.id_formation
-                LEFT JOIN  session_formation sf ON ff.session_id   = sf.id_session
-                WHERE e.rh_id = ?
-                ORDER BY ff.created_at DESC",
-                [$rhId]
-            );
+            return $this->feedbackRepository->fetchByRhId($rhId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                "SELECT ff.*,
-                    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
-                    f.titre AS formation_name,
-                    CONCAT(sf.date_debut, ' — ', sf.lieu) AS session_name
-                FROM feedback_formation ff
-                LEFT JOIN employees        e  ON ff.user_id      = e.id
-                LEFT JOIN formation         f  ON ff.formation_id = f.id_formation
-                LEFT JOIN session_formation sf ON ff.session_id   = sf.id_session
-                WHERE ff.id = ?",
-                [$id]
-            ) ?: null;
+            return $this->feedbackRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
@@ -105,17 +74,18 @@ final class FeedbackFormationService
     // UPDATE
     // ═══════════════════════════════════════════════════════════════
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
             $data = $this->normalizeFeedbackFormationInput($data);
-            $this->connection->update('feedback_formation', [
+            $this->feedbackRepository->updateFeedback($id, [
                 'rating'               => $data['rating'],
                 'contenu_comment'      => $data['contenu_comment'],
                 'formateur_comment'    => $data['formateur_comment'],
                 'organisation_comment' => $data['organisation_comment'],
                 'recommande'           => $data['recommande'] ? 1 : 0,
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -129,7 +99,7 @@ final class FeedbackFormationService
     public function delete(int $id): bool
     {
         try {
-            $this->connection->delete('feedback_formation', ['id' => $id]);
+            $this->feedbackRepository->deleteFeedback($id);
             return true;
         } catch (\Throwable) {
             return false;
@@ -140,6 +110,10 @@ final class FeedbackFormationService
     // HELPERS
     // ═══════════════════════════════════════════════════════════════
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateCreate(array $data): array
     {
         $data = $this->normalizeFeedbackFormationInput($data);
@@ -170,6 +144,10 @@ final class FeedbackFormationService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validateUpdate(array $data): array
     {
         $data = $this->normalizeFeedbackFormationInput($data);
@@ -191,6 +169,10 @@ final class FeedbackFormationService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeFeedbackFormationInput(array $data): array
     {
         $rating = $data['rating'] ?? null;
@@ -229,33 +211,21 @@ final class FeedbackFormationService
         return $value === '' ? null : $value;
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getApprovedFormations(int $employeeId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT DISTINCT f.id_formation, f.titre
-                FROM formation f
-                JOIN session_formation s ON f.id_formation = s.id_formation
-                JOIN participation_formation p ON s.id_session = p.id_session
-                WHERE p.id_utilisateur = ? AND p.statut_participation = 'Accepte'
-                ORDER BY f.titre",
-                [$employeeId]
-            );
+            return $this->feedbackRepository->fetchApprovedFormations($employeeId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getApprovedSessionsForFormation(int $formationId, int $employeeId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                "SELECT s.id_session, s.date_debut, s.lieu
-                FROM session_formation s
-                JOIN participation_formation p ON s.id_session = p.id_session
-                WHERE s.id_formation = ? AND p.id_utilisateur = ? AND p.statut_participation = 'Accepte'",
-                [$formationId, $employeeId]
-            );
+            return $this->feedbackRepository->fetchApprovedSessionsForFormation($formationId, $employeeId);
         } catch (\Throwable) {
             return [];
         }
@@ -264,10 +234,7 @@ final class FeedbackFormationService
     public function getAverageRating(int $formationId): float
     {
         try {
-            return (float) $this->connection->fetchOne(
-                'SELECT AVG(rating) FROM feedback_formation WHERE formation_id = ?',
-                [$formationId]
-            );
+            return $this->feedbackRepository->getAverageRating($formationId);
         } catch (\Throwable) {
             return 0.0;
         }

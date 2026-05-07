@@ -24,10 +24,7 @@ final class AdminEmployeesController extends AbstractController
         EntityManagerInterface $em,
     ): Response {
         if ($request->isMethod('POST')) {
-            $redirect = $this->handleCreateRh($request, $userRepository, $em);
-            if ($redirect !== null) {
-                return $redirect;
-            }
+            return $this->handleCreateRh($request, $userRepository, $em);
         }
 
         $users = $userRepository->findBy([], ['id' => 'DESC']);
@@ -123,7 +120,7 @@ final class AdminEmployeesController extends AbstractController
         return $this->redirectToRoute('app_admin_employees');
     }
 
-    private function handleCreateRh(Request $request, UserRepository $userRepository, EntityManagerInterface $em): ?RedirectResponse
+    private function handleCreateRh(Request $request, UserRepository $userRepository, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('create_rh', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Token CSRF invalide. Reessayez.');

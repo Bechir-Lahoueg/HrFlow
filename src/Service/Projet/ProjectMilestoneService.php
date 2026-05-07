@@ -2,45 +2,40 @@
 
 namespace App\Service\Projet;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Projet\ProjectMilestoneRepository;
 
 final class ProjectMilestoneService
 {
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly ProjectMilestoneRepository $milestoneRepository) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CRUD JALONS
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getMilestonesByProject(int $projectId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT * FROM project_milestones
-                WHERE project_id = ?
-                ORDER BY target_date ASC',
-                [$projectId]
-            );
+            return $this->milestoneRepository->fetchByProject($projectId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getMilestoneById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                'SELECT * FROM project_milestones WHERE id = ?',
-                [$id]
-            ) ?: null;
+            return $this->milestoneRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createMilestone(array $data): void
     {
-        $this->connection->insert('project_milestones', [
+        $this->milestoneRepository->insertMilestone([
             'project_id' => $data['project_id'],
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
@@ -52,17 +47,18 @@ final class ProjectMilestoneService
         ]);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateMilestone(int $id, array $data): void
     {
-        $this->connection->update('project_milestones', [
+        $this->milestoneRepository->updateMilestone($id, [
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'target_date' => $data['target_date'],
             'completion_rate' => $data['completion_rate'] ?? 0,
-        ], ['id' => $id]);
+        ]);
 
         // Si completion_rate = 100, marquer comme complété
-        if (isset($data['completion_rate']) && (int)$data['completion_rate'] >= 100) {
+        if (isset($data['completion_rate']) && (int) $data['completion_rate'] >= 100) {
             $this->markAsCompleted($id);
         }
     }
@@ -74,41 +70,25 @@ final class ProjectMilestoneService
             return;
         }
 
-        $this->connection->update('project_milestones', [
-            'status' => 'completed',
-            'completion_rate' => 100,
-            'completion_date' => date('Y-m-d'),
-        ], ['id' => $id]);
+        $this->milestoneRepository->markCompleted($id);
     }
 
     public function deleteMilestone(int $id): void
     {
-        $this->connection->delete('project_milestones', ['id' => $id]);
+        $this->milestoneRepository->deleteMilestone($id);
     }
 
     // ═══════════════════════════════════════════════════════════════
     // STATISTIQUES
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<string, int|float> */
     public function getProjectMilestoneStats(int $projectId): array
     {
         try {
-            $total = $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM project_milestones WHERE project_id = ?',
-                [$projectId]
-            );
-
-            $completed = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_milestones
-                WHERE project_id = ? AND status = 'completed'",
-                [$projectId]
-            );
-
-            $overdue = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_milestones
-                WHERE project_id = ? AND status != 'completed' AND target_date < CURDATE()",
-                [$projectId]
-            );
+            $total = $this->milestoneRepository->countByProject($projectId);
+            $completed = $this->milestoneRepository->countCompletedByProject($projectId);
+            $overdue = $this->milestoneRepository->countOverdueByProject($projectId);
 
             return [
                 'total_milestones' => (int) $total,
@@ -150,6 +130,7 @@ final class ProjectMilestoneService
         };
     }
 
+    /** @param array<string, mixed> $milestone */
     public function isOverdue(array $milestone): bool
     {
         if ($milestone['status'] === 'completed') {

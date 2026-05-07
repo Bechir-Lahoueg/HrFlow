@@ -2,6 +2,7 @@
 
 namespace App\Controller\rh;
 
+use App\Security\DbUser;
 use App\Service\FeedbackService;
 use App\Service\FeedbackFormationService;
 use App\Service\RequestService;
@@ -29,8 +30,8 @@ class RhRelationController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(Request $request): Response
     {
-        $user   = $this->getUser();
-        $rhId   = $user->getId();
+        $user = $this->getDbUser();
+        $rhId = $user->getId();
 
         $viewData = $this->buildIndexData($request, $rhId);
 
@@ -44,9 +45,9 @@ class RhRelationController extends AbstractController
     #[Route('/requests/{id}/approve', name: 'request_approve', methods: ['POST'])]
     public function approveRequest(int $id, Request $request): Response
     {
-        $user    = $this->getUser();
-        $comment = $request->request->get('comment', '');
-        $this->requestService->updateStatus($id, 'approved', $user->getId(), $comment);
+        $user = $this->getDbUser();
+        $comment = trim((string) $request->request->get('comment', ''));
+        $this->requestService->updateStatus($id, 'approved', $user->getId(), $comment !== '' ? $comment : null);
         $this->addFlash('success', 'Demande approuvée avec succès.');
         return $this->redirectToRoute('rh_relation_index', ['tab' => 'requests']);
     }
@@ -54,9 +55,9 @@ class RhRelationController extends AbstractController
     #[Route('/requests/{id}/reject', name: 'request_reject', methods: ['POST'])]
     public function rejectRequest(int $id, Request $request): Response
     {
-        $user   = $this->getUser();
-        $reason = $request->request->get('reason', '');
-        $this->requestService->updateStatus($id, 'rejected', $user->getId(), $reason);
+        $user = $this->getDbUser();
+        $reason = trim((string) $request->request->get('reason', ''));
+        $this->requestService->updateStatus($id, 'rejected', $user->getId(), $reason !== '' ? $reason : null);
         $this->addFlash('success', 'Demande rejetée.');
         return $this->redirectToRoute('rh_relation_index', ['tab' => 'requests']);
     }
@@ -73,7 +74,7 @@ class RhRelationController extends AbstractController
 
         $errors = $this->requestTypeService->validate($data);
         if (count($errors) > 0) {
-            $viewData = $this->buildIndexData($request, $this->getUser()->getId());
+            $viewData = $this->buildIndexData($request, $this->getDbUser()->getId());
             $viewData['typeErrors'] = $errors;
             $viewData['typeOld'] = $data;
             $viewData['typeMode'] = 'new';
@@ -93,7 +94,7 @@ class RhRelationController extends AbstractController
 
         $errors = $this->requestTypeService->validate($data);
         if (count($errors) > 0) {
-            $viewData = $this->buildIndexData($request, $this->getUser()->getId());
+            $viewData = $this->buildIndexData($request, $this->getDbUser()->getId());
             $viewData['typeErrors'] = $errors;
             $viewData['typeOld'] = $data;
             $viewData['typeMode'] = 'edit';
@@ -157,6 +158,7 @@ class RhRelationController extends AbstractController
         return new JsonResponse($ff);
     }
 
+    /** @return array<string, mixed> */
     private function buildIndexData(Request $request, int $rhId): array
     {
         $tab    = $request->query->get('tab', 'requests');
@@ -164,12 +166,12 @@ class RhRelationController extends AbstractController
         $requests     = $this->requestService->getByRhId($rhId);
         $requestTypes = $this->requestTypeService->getAll();
 
-        $statusFilter = $request->query->get('status', '');
-        $searchReq    = $request->query->get('search_req', '');
-        if ($statusFilter) {
+        $statusFilter = trim((string) $request->query->get('status', ''));
+        $searchReq    = trim((string) $request->query->get('search_req', ''));
+        if ($statusFilter !== '') {
             $requests = array_filter($requests, fn($r) => $r['status'] === $statusFilter);
         }
-        if ($searchReq) {
+        if ($searchReq !== '') {
             $requests = array_filter($requests, fn($r) =>
                 stripos($r['title'], $searchReq) !== false ||
                 stripos($r['employee_name'] ?? '', $searchReq) !== false
@@ -185,12 +187,12 @@ class RhRelationController extends AbstractController
         ];
 
         $feedbacks    = $this->feedbackService->getByRhId($rhId);
-        $typeFilter   = $request->query->get('feedback_type', '');
-        $searchFb     = $request->query->get('search_fb', '');
-        if ($typeFilter) {
+        $typeFilter   = trim((string) $request->query->get('feedback_type', ''));
+        $searchFb     = trim((string) $request->query->get('search_fb', ''));
+        if ($typeFilter !== '') {
             $feedbacks = array_filter($feedbacks, fn($f) => $f['feedback_type'] === $typeFilter);
         }
-        if ($searchFb) {
+        if ($searchFb !== '') {
             $feedbacks = array_filter($feedbacks, fn($f) =>
                 stripos($f['from_username'] ?? '', $searchFb) !== false ||
                 stripos($f['to_username'] ?? '', $searchFb) !== false
@@ -237,5 +239,15 @@ class RhRelationController extends AbstractController
             'typeMode'       => null,
             'typeEditId'     => null,
         ];
+    }
+
+    private function getDbUser(): DbUser
+    {
+        $user = $this->getUser();
+        if (!$user instanceof DbUser) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifie.');
+        }
+
+        return $user;
     }
 }

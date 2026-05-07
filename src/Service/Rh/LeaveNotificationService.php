@@ -30,12 +30,17 @@ final class LeaveNotificationService
             return;
         }
 
+        $rhUserId = $rhUser->getId();
+        if ($rhUserId === null) {
+            return;
+        }
+
         $isException = $leave->getRequestCategory() === 'EXCEPTION';
         $typeLabel = $isException ? 'exceptionnelle' : 'de conge';
 
         $notification = new LeaveNotification();
         $notification->setRecipientType(LeaveNotification::RECIPIENT_USER)
-            ->setRecipientId($rhUser->getId())
+            ->setRecipientId($rhUserId)
             ->setLeaveRequestId($leave->getId())
             ->setType(LeaveNotification::TYPE_LEAVE_SUBMITTED)
             ->setTitle('Nouvelle demande ' . $typeLabel)
@@ -43,9 +48,9 @@ final class LeaveNotificationService
                 '%s a soumis une demande %s du %s au %s (%d jours).',
                 $employee->getFullName(),
                 $typeLabel,
-                $leave->getStartDate()->format('d/m/Y'),
-                $leave->getEndDate()->format('d/m/Y'),
-                $leave->getDaysCount()
+                $this->formatDate($leave->getStartDate()),
+                $this->formatDate($leave->getEndDate()),
+                (int) ($leave->getDaysCount() ?? 0)
             ));
 
         $this->em->persist($notification);
@@ -65,20 +70,25 @@ final class LeaveNotificationService
         $admins = $this->userRepository->findBy(['role' => 'ADMIN']);
 
         foreach ($admins as $admin) {
+            $adminId = $admin->getId();
+            if ($adminId === null) {
+                continue;
+            }
+
             $notification = new LeaveNotification();
             $notification->setRecipientType(LeaveNotification::RECIPIENT_USER)
-                ->setRecipientId($admin->getId())
+                ->setRecipientId($adminId)
                 ->setLeaveRequestId($leave->getId())
                 ->setType(LeaveNotification::TYPE_EXCEPTION_PENDING_ADMIN)
                 ->setTitle('Demande exceptionnelle a valider')
                 ->setMessage(sprintf(
                     'Demande exceptionnelle de %s (pre-approuvee par RH). Du %s au %s (%d jours). Urgence: %s. Motif: %s',
                     $employee->getFullName(),
-                    $leave->getStartDate()->format('d/m/Y'),
-                    $leave->getEndDate()->format('d/m/Y'),
-                    $leave->getDaysCount(),
+                    $this->formatDate($leave->getStartDate()),
+                    $this->formatDate($leave->getEndDate()),
+                    (int) ($leave->getDaysCount() ?? 0),
                     $leave->getUrgencyLevel() ?? 'N/A',
-                    mb_substr($leave->getReason(), 0, 100)
+                    mb_substr((string) $leave->getReason(), 0, 100)
                 ));
 
             $this->em->persist($notification);
@@ -97,20 +107,25 @@ final class LeaveNotificationService
             return;
         }
 
+        $employeeId = $employee->getId();
+        if ($employeeId === null) {
+            return;
+        }
+
         $isException = $leave->getRequestCategory() === 'EXCEPTION';
 
         $notification = new LeaveNotification();
         $notification->setRecipientType(LeaveNotification::RECIPIENT_EMPLOYEE)
-            ->setRecipientId($employee->getId())
+            ->setRecipientId($employeeId)
             ->setLeaveRequestId($leave->getId())
             ->setType($isException ? LeaveNotification::TYPE_EXCEPTION_APPROVED : LeaveNotification::TYPE_LEAVE_APPROVED)
             ->setTitle('Demande de conge acceptee')
             ->setMessage(sprintf(
                 'Votre demande %s du %s au %s (%d jours) a ete acceptee.',
                 $isException ? 'exceptionnelle' : 'de conge',
-                $leave->getStartDate()->format('d/m/Y'),
-                $leave->getEndDate()->format('d/m/Y'),
-                $leave->getDaysCount()
+                $this->formatDate($leave->getStartDate()),
+                $this->formatDate($leave->getEndDate()),
+                (int) ($leave->getDaysCount() ?? 0)
             ));
 
         $this->em->persist($notification);
@@ -127,23 +142,33 @@ final class LeaveNotificationService
             return;
         }
 
+        $employeeId = $employee->getId();
+        if ($employeeId === null) {
+            return;
+        }
+
         $isException = $leave->getRequestCategory() === 'EXCEPTION';
 
         $notification = new LeaveNotification();
         $notification->setRecipientType(LeaveNotification::RECIPIENT_EMPLOYEE)
-            ->setRecipientId($employee->getId())
+            ->setRecipientId($employeeId)
             ->setLeaveRequestId($leave->getId())
             ->setType($isException ? LeaveNotification::TYPE_EXCEPTION_REJECTED : LeaveNotification::TYPE_LEAVE_REJECTED)
             ->setTitle('Demande de conge refusee')
             ->setMessage(sprintf(
                 'Votre demande %s du %s au %s a ete refusee. Commentaire: %s',
                 $isException ? 'exceptionnelle' : 'de conge',
-                $leave->getStartDate()->format('d/m/Y'),
-                $leave->getEndDate()->format('d/m/Y'),
+                $this->formatDate($leave->getStartDate()),
+                $this->formatDate($leave->getEndDate()),
                 mb_substr($comment, 0, 150)
             ));
 
         $this->em->persist($notification);
         $this->em->flush();
+    }
+
+    private function formatDate(?\DateTimeInterface $date): string
+    {
+        return $date ? $date->format('d/m/Y') : 'N/A';
     }
 }

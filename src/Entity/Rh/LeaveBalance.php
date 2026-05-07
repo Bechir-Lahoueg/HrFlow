@@ -10,10 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'leave_balance')]
 class LeaveBalance
 {
+    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\OneToOne(targetEntity: Employee::class)]
     #[ORM\JoinColumn(name: 'employee_id', nullable: false)]
@@ -23,13 +24,13 @@ class LeaveBalance
     private ?string $employeeName = null;
 
     #[ORM\Column(name: 'available_days', type: Types::DECIMAL, precision: 8, scale: 2)]
-    private ?string $availableDays = '0.00';
+    private string $availableDays = '0.00';
 
     #[ORM\Column(name: 'total_accrued', type: Types::DECIMAL, precision: 8, scale: 2)]
-    private ?string $totalAccrued = '0.00';
+    private string $totalAccrued = '0.00';
 
     #[ORM\Column(name: 'total_used', type: Types::DECIMAL, precision: 8, scale: 2)]
-    private ?string $totalUsed = '0.00';
+    private string $totalUsed = '0.00';
 
     #[ORM\Column(name: 'last_accrual_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastAccrualDate = null;

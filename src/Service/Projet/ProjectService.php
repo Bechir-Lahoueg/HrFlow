@@ -2,59 +2,61 @@
 
 namespace App\Service\Projet;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Projet\ProjectCollaboratorRepository;
+use App\Repository\Projet\ProjectRepository;
+use App\Repository\Projet\ProjectTaskRepository;
 
 final class ProjectService
 {
     private const ALLOWED_STATUSES = ['planning', 'in_progress', 'on_hold', 'completed', 'cancelled'];
     private const ALLOWED_PRIORITIES = ['low', 'medium', 'high', 'critical'];
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(
+        private readonly ProjectRepository $projectRepository,
+        private readonly ProjectTaskRepository $taskRepository,
+        private readonly ProjectCollaboratorRepository $collaboratorRepository,
+    ) {}
 
     // ═══════════════════════════════════════════════════════════════
     // CRUD PROJETS
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<int, array<string, mixed>> */
     public function getAllProjects(): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT * FROM projects ORDER BY created_at DESC'
-            );
+            return $this->projectRepository->fetchAll();
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectsByRh(int $rhId): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT * FROM projects WHERE rh_id = ? ORDER BY created_at DESC',
-                [$rhId]
-            );
+            return $this->projectRepository->fetchByRh($rhId);
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getProjectById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                'SELECT * FROM projects WHERE id = ?',
-                [$id]
-            ) ?: null;
+            return $this->projectRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function createProject(array $data): void
     {
         $data = $this->normalizeProjectInput($data);
 
-        $this->connection->insert('projects', [
+        $this->projectRepository->insert([
             'rh_id' => $data['rh_id'],
             'name' => $data['name'],
             'description' => $data['description'],
@@ -71,6 +73,7 @@ final class ProjectService
         ]);
     }
 
+    /** @param array<string, mixed> $data */
     public function updateProject(int $id, array $data): void
     {
         $data = $this->normalizeProjectInput($data);
@@ -87,41 +90,23 @@ final class ProjectService
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
-        $this->connection->update('projects', $updateData, ['id' => $id]);
+        $this->projectRepository->updateProject($id, $updateData);
     }
 
     public function deleteProject(int $id): void
     {
-        // Supprimer en cascade (collaborateurs, tâches, jalons, updates)
-        $this->connection->delete('project_collaborators', ['project_id' => $id]);
-        $this->connection->delete('project_tasks', ['project_id' => $id]);
-        $this->connection->delete('project_milestones', ['project_id' => $id]);
-        $this->connection->delete('project_updates', ['project_id' => $id]);
-        $this->connection->delete('projects', ['id' => $id]);
+        $this->projectRepository->deleteProject($id);
     }
 
     public function updateCompletionRate(int $projectId): void
     {
         try {
-            // Calculer le taux d'avancement basé sur les tâches
-            $result = $this->connection->fetchAssociative(
-                "SELECT
-                    COUNT(*) as total,
-                    SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as completed
-                FROM project_tasks
-                WHERE project_id = ?",
-                [$projectId]
-            );
-
-            $total = (int) $result['total'];
-            $completed = (int) $result['completed'];
+            $total = $this->taskRepository->countByProject($projectId);
+            $completed = $this->taskRepository->countByProjectAndStatus($projectId, 'done');
 
             $completionRate = $total > 0 ? round(($completed / $total) * 100) : 0;
 
-            $this->connection->update('projects', [
-                'completion_rate' => $completionRate,
-                'updated_at' => date('Y-m-d H:i:s'),
-            ], ['id' => $projectId]);
+            $this->projectRepository->updateCompletionRate($projectId, (int) $completionRate);
         } catch (\Throwable) {
             // Ignore
         }
@@ -130,16 +115,9 @@ final class ProjectService
     public function updateActualHours(int $projectId): void
     {
         try {
-            // Sommer les heures travaillées des collaborateurs
-            $result = $this->connection->fetchOne(
-                'SELECT COALESCE(SUM(worked_hours), 0) FROM project_collaborators WHERE project_id = ?',
-                [$projectId]
-            );
+            $actualHours = $this->collaboratorRepository->sumWorkedHoursByProject($projectId);
 
-            $this->connection->update('projects', [
-                'actual_hours' => (int) $result,
-                'updated_at' => date('Y-m-d H:i:s'),
-            ], ['id' => $projectId]);
+            $this->projectRepository->updateActualHours($projectId, $actualHours);
         } catch (\Throwable) {
             // Ignore
         }
@@ -149,43 +127,16 @@ final class ProjectService
     // STATISTIQUES
     // ═══════════════════════════════════════════════════════════════
 
+    /** @return array<string, int|float> */
     public function getProjectStats(int $rhId): array
     {
         try {
-            $total = $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM projects WHERE rh_id = ?',
-                [$rhId]
-            );
-
-            // "En cours" = in_progress
-            $active = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM projects WHERE rh_id = ? AND status = 'in_progress'",
-                [$rhId]
-            );
-
-            $completed = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM projects WHERE rh_id = ? AND status = 'completed'",
-                [$rhId]
-            );
-
-            $onHold = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM projects WHERE rh_id = ? AND status = 'on_hold'",
-                [$rhId]
-            );
-
-            $totalTasks = $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM project_tasks pt
-                JOIN projects p ON pt.project_id = p.id
-                WHERE p.rh_id = ?',
-                [$rhId]
-            );
-
-            $completedTasks = $this->connection->fetchOne(
-                "SELECT COUNT(*) FROM project_tasks pt
-                JOIN projects p ON pt.project_id = p.id
-                WHERE p.rh_id = ? AND pt.status = 'done'",
-                [$rhId]
-            );
+            $total = $this->projectRepository->countByRh($rhId);
+            $active = $this->projectRepository->countByRhAndStatus($rhId, 'in_progress');
+            $completed = $this->projectRepository->countByRhAndStatus($rhId, 'completed');
+            $onHold = $this->projectRepository->countByRhAndStatus($rhId, 'on_hold');
+            $totalTasks = $this->projectRepository->countTasksByRh($rhId);
+            $completedTasks = $this->projectRepository->countTasksByRhAndStatus($rhId, 'done');
 
             return [
                 'total_projects' => (int) $total,
@@ -209,31 +160,22 @@ final class ProjectService
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function getProjectsWithDetails(int $rhId): array
     {
         try {
             $projects = $this->getProjectsByRh($rhId);
 
             foreach ($projects as &$project) {
-                // Nombre de collaborateurs
-                $project['team_count'] = (int) $this->connection->fetchOne(
-                    'SELECT COUNT(*) FROM project_collaborators WHERE project_id = ? AND is_active = 1',
-                    [$project['id']]
-                );
+                $projectId = (int) ($project['id'] ?? 0);
+                if ($projectId <= 0) {
+                    continue;
+                }
 
-                // Nombre de tâches
-                $project['tasks_count'] = (int) $this->connection->fetchOne(
-                    'SELECT COUNT(*) FROM project_tasks WHERE project_id = ?',
-                    [$project['id']]
-                );
+                $project['team_count'] = $this->collaboratorRepository->countActiveByProject($projectId);
+                $project['tasks_count'] = $this->taskRepository->countByProject($projectId);
+                $project['tasks_completed'] = $this->taskRepository->countByProjectAndStatus($projectId, 'done');
 
-                // Nombre de tâches terminées
-                $project['tasks_completed'] = (int) $this->connection->fetchOne(
-                    "SELECT COUNT(*) FROM project_tasks WHERE project_id = ? AND status = 'done'",
-                    [$project['id']]
-                );
-
-                // Vérifier si en retard
                 $project['is_overdue'] = (new \DateTime($project['end_date'])) < (new \DateTime())
                     && $project['status'] !== 'completed';
             }
@@ -304,6 +246,10 @@ final class ProjectService
         };
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validate(array $data): array
     {
         $data = $this->normalizeProjectInput($data);
@@ -368,6 +314,10 @@ final class ProjectService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeProjectInput(array $data): array
     {
         $name = isset($data['name']) ? trim((string) $data['name']) : '';

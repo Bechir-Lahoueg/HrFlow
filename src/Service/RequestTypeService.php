@@ -2,42 +2,41 @@
 
 namespace App\Service;
 
-use Doctrine\DBAL\Connection;
+use App\Repository\Relation\RequestTypeRepository;
 
 final class RequestTypeService
 {
     private const MAX_NAME_LENGTH = 255;
     private const MAX_DESCRIPTION_LENGTH = 1000;
 
-    public function __construct(private readonly Connection $connection) {}
+    public function __construct(private readonly RequestTypeRepository $requestTypeRepository) {}
 
+    /** @return array<int, array<string, mixed>> */
     public function getAll(): array
     {
         try {
-            return $this->connection->fetchAllAssociative(
-                'SELECT * FROM request_types ORDER BY name'
-            );
+            return $this->requestTypeRepository->fetchAll();
         } catch (\Throwable) {
             return [];
         }
     }
 
+    /** @return array<string, mixed>|null */
     public function getById(int $id): ?array
     {
         try {
-            return $this->connection->fetchAssociative(
-                'SELECT * FROM request_types WHERE id = ?', [$id]
-            ) ?: null;
+            return $this->requestTypeRepository->fetchById($id);
         } catch (\Throwable) {
             return null;
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function add(array $data): bool
     {
         try {
             $data = $this->normalizeRequestTypeInput($data);
-            $this->connection->insert('request_types', [
+            $this->requestTypeRepository->insert([
                 'name'              => $data['name'],
                 'description'       => $data['description'],
                 'requires_approval' => $data['requires_approval'] ? 1 : 0,
@@ -49,15 +48,16 @@ final class RequestTypeService
         }
     }
 
+    /** @param array<string, mixed> $data */
     public function update(int $id, array $data): bool
     {
         try {
             $data = $this->normalizeRequestTypeInput($data);
-            $this->connection->update('request_types', [
+            $this->requestTypeRepository->updateRequestType($id, [
                 'name'              => $data['name'],
                 'description'       => $data['description'],
                 'requires_approval' => $data['requires_approval'] ? 1 : 0,
-            ], ['id' => $id]);
+            ]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -67,13 +67,17 @@ final class RequestTypeService
     public function delete(int $id): bool
     {
         try {
-            $this->connection->delete('request_types', ['id' => $id]);
+            $this->requestTypeRepository->deleteRequestType($id);
             return true;
         } catch (\Throwable) {
             return false;
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
     public function validate(array $data): array
     {
         $data = $this->normalizeRequestTypeInput($data);
@@ -92,6 +96,10 @@ final class RequestTypeService
         return $errors;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function normalizeRequestTypeInput(array $data): array
     {
         $name = trim((string)($data['name'] ?? ''));
