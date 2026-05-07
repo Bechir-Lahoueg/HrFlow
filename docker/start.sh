@@ -24,4 +24,4 @@ APP_ENV=prod php bin/console doctrine:migrations:migrate --no-interaction --allo
 chmod -R 777 var/ public/uploads public/assets 2>/dev/null || true
 
 echo "==> Starting PHP built-in server on port ${PORT}..."
-exec php -S "0.0.0.0:${PORT}" -t public public/index.php
+exec php -S "0.0.0.0:${PORT}" -t public /var/www/html/docker/router.php
