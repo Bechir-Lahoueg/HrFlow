@@ -111,8 +111,8 @@
     var markForm   = document.getElementById('leave-mark-read-form');
     var pollUrl    = '{{ path("leave_notifications_poll") }}';
     var openBase   = '{{ path("leave_notification_open", {id: "__ID__"}) }}';
-    var POLL_MENU_OPEN_MS = 15000;
-    var POLL_IDLE_MS = 120000;
+    var POLL_MENU_OPEN_MS = 240000;
+    var POLL_IDLE_MS = 480000;
     var POLL_HIDDEN_MS = 300000;
 
     var timer = null;

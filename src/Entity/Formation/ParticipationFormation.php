@@ -23,7 +23,7 @@ class ParticipationFormation
     private ?Employee $employee = null;
 
     #[ORM\ManyToOne(targetEntity: SessionFormation::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(name: 'id_session_id', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]
     private ?SessionFormation $session = null;
 
     #[ORM\Column(name: 'date_inscription', type: Types::DATE_MUTABLE)]
