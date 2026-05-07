@@ -21,7 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * FichePaieService - Business logic for pay slip management
  */
-final class FichePaieService
+class FichePaieService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,

@@ -7,7 +7,7 @@ use DatePeriod;
 use DateTimeImmutable;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final class PublicHolidayService
+class PublicHolidayService
 {
     private const COUNTRY_CODE = 'TN';
 
