@@ -2,7 +2,8 @@
 
 namespace App\Service\Projet;
 
-use Knp\Snappy\Pdf;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Twig\Environment;
 
@@ -10,7 +11,6 @@ final class ProjectReportPdfService
 {
     public function __construct(
         private readonly Environment $twig,
-        private readonly Pdf $pdf,
         private readonly ParameterBagInterface $parameterBag,
     ) {}
 
@@ -23,11 +23,22 @@ final class ProjectReportPdfService
         $context['logoDataUri'] = $this->resolveLogoDataUri();
 
         $html = $this->twig->render('DashboardHr/Project/report_pdf.html.twig', $context);
-        $content = $this->pdf->getOutputFromHtml($html);
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+        }
+
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
 
         return [
             'fileName' => 'Rapport_Projets_RH_' . date('Ymd_His') . '.pdf',
-            'content' => (string) $content,
+            'content' => (string) $dompdf->output(),
         ];
     }
 
@@ -52,4 +63,3 @@ final class ProjectReportPdfService
         return 'data:image/png;base64,' . base64_encode($content);
     }
 }
-

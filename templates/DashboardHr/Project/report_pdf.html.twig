@@ -91,7 +91,6 @@
         {% set tasks = block.tasks %}
         {% set team = block.team %}
         {% set milestones = block.milestones %}
-        {% set updates = block.updates %}
         {% set analytics = block.analytics %}
 
         <div class="project-block">
@@ -202,34 +201,6 @@
                                 <td>{{ milestone.target_date ?: 'N/A' }}</td>
                                 <td>{{ milestone.completion_date ?: 'N/A' }}</td>
                                 <td>{{ milestone.completion_rate ?? 0 }}%</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
-
-            <div class="section-title">Activites recentes ({{ updates|length }})</div>
-            {% if updates is empty %}
-                <p class="muted">Aucune activite recente.</p>
-            {% else %}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Auteur</th>
-                            <th>Type</th>
-                            <th>Titre</th>
-                            <th>Contenu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for update in updates %}
-                            <tr>
-                                <td class="small">{{ update.created_at ? update.created_at|date('d/m/Y H:i') : 'N/A' }}</td>
-                                <td>{{ update.author_name ?: 'Systeme' }}</td>
-                                <td>{{ update.update_type ?: 'N/A' }}</td>
-                                <td>{{ update.title ?: 'N/A' }}</td>
-                                <td>{{ update.content ?: '-' }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
