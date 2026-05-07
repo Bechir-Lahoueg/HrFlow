@@ -87,17 +87,76 @@ class LeaveBalanceService
     public function getBalancesByRh(int $rhId): array
     {
         try {
+            // 1 query: load all employees for this RH
             $employees = $this->employeeRepository->findBy(['rhId' => $rhId]);
+            if (empty($employees)) {
+                return [];
+            }
+
+            // 1 query: load all existing balances (with employee already joined/selected)
+            $existingBalances = $this->leaveBalanceRepository->findByRh($rhId);
+            $balanceByEmployeeId = [];
+            foreach ($existingBalances as $lb) {
+                $emp = $lb->getEmployee();
+                if ($emp !== null && $emp->getId() !== null) {
+                    $balanceByEmployeeId[$emp->getId()] = $lb;
+                }
+            }
+
+            $today = new DateTimeImmutable('today');
+            $needsFlush = false;
 
             foreach ($employees as $employee) {
                 $employeeId = $employee->getId();
                 if ($employeeId === null) {
                     continue;
                 }
-                $this->accrueIfNeeded($employeeId);
+
+                if (!isset($balanceByEmployeeId[$employeeId])) {
+                    // Create missing balance record
+                    $hireDate = $employee->getCreatedAt()
+                        ? new DateTimeImmutable($employee->getCreatedAt()->format('Y-m-d'))
+                        : $today;
+
+                    $balance = new LeaveBalance();
+                    $balance->setEmployee($employee)
+                        ->setEmployeeName($employee->getFullName())
+                        ->setAvailableDays(0)
+                        ->setTotalAccrued(0)
+                        ->setTotalUsed(0)
+                        ->setHireDate($hireDate);
+
+                    $this->em->persist($balance);
+                    $balanceByEmployeeId[$employeeId] = $balance;
+                    $needsFlush = true;
+                }
+
+                $balance = $balanceByEmployeeId[$employeeId];
+
+                // Compute accrual in-memory (no extra DB query per employee)
+                $referenceDate = $balance->getLastAccrualDate()
+                    ? new DateTimeImmutable($balance->getLastAccrualDate()->format('Y-m-d'))
+                    : ($balance->getHireDate()
+                        ? new DateTimeImmutable($balance->getHireDate()->format('Y-m-d'))
+                        : $today);
+
+                $months = $this->getCompletedMonths($referenceDate, $today);
+                if ($months > 0) {
+                    $accruedDays = round(self::MONTHLY_ACCRUAL_DAYS * $months, 2);
+                    $balance->setEmployeeName($employee->getFullName());
+                    $balance->setAvailableDays($balance->getAvailableDays() + $accruedDays);
+                    $balance->setTotalAccrued($balance->getTotalAccrued() + $accruedDays);
+                    $balance->setLastAccrualDate($today);
+                    $needsFlush = true;
+                }
             }
 
-            return $this->leaveBalanceRepository->findByRh($rhId);
+            // Single flush for all changes
+            if ($needsFlush) {
+                $this->em->flush();
+            }
+
+            return array_values($balanceByEmployeeId);
         } catch (\Throwable $e) {
             $this->logger->error('getBalancesByRh failed', ['rhId' => $rhId, 'exception' => $e]);
             return [];

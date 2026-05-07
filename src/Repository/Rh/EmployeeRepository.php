@@ -42,18 +42,36 @@ class EmployeeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search employees by name (first or last) for autocomplete, scoped to RH.
+     * Count all employees for a given RH (SQL COUNT — no hydration).
+     */
+    public function countByRh(int $rhId): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.rhId = :rhId')
+            ->setParameter('rhId', $rhId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Search employees by name, email or job title, scoped to RH.
      *
      * @return Employee[]
      */
     public function searchByName(int $rhId, string $query, int $limit = 10): array
     {
+        $q = '%' . trim($query) . '%';
         return $this->createQueryBuilder('e')
             ->where('e.rhId = :rhId')
-            ->andWhere('CONCAT(e.firstName, \' \', e.lastName) LIKE :q')
+            ->andWhere(
+                'CONCAT(e.firstName, \' \', e.lastName) LIKE :q'
+                . ' OR e.email LIKE :q'
+                . ' OR e.jobTitle LIKE :q'
+            )
             ->setParameter('rhId', $rhId)
-            ->setParameter('q', '%' . trim($query) . '%')
-            ->orderBy('e.lastName', 'ASC')
+            ->setParameter('q', $q)
+            ->orderBy('e.id', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -87,12 +105,32 @@ class EmployeeRepository extends ServiceEntityRepository
             'minDeductions' => $minDeductions,
         ])->fetchAllAssociative();
 
+        if (empty($rows)) {
+            return [];
+        }
+
+        // Batch-load all employees in ONE query instead of N individual finds
+        $ids = array_column($rows, 'id');
+        $deductionCounts = array_column($rows, 'deduction_count', 'id');
+
+        $employees = $this->createQueryBuilder('e')
+            ->where('e.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $employeeMap = [];
+        foreach ($employees as $employee) {
+            $employeeMap[$employee->getId()] = $employee;
+        }
+
+        // Preserve ORDER BY deduction_count DESC from original SQL
         $results = [];
         foreach ($rows as $row) {
-            $employee = $this->find($row['id']);
-            if ($employee) {
+            $id = $row['id'];
+            if (isset($employeeMap[$id])) {
                 $results[] = [
-                    'employee' => $employee,
+                    'employee' => $employeeMap[$id],
                     'deductionCount' => (int) $row['deduction_count'],
                 ];
             }

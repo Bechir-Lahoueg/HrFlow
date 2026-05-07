@@ -16,6 +16,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_applications_department', columns: ['Department'])]
 #[ORM\Index(name: 'idx_applications_email', columns: ['email_address'])]
 #[ORM\Index(name: 'idx_applications_candidate', columns: ['candidate_id'])]
+#[ORM\Index(name: 'idx_app_candidate_deleted', columns: ['candidate_id', 'is_deleted'])]
+#[ORM\Index(name: 'idx_app_joboffer_deleted_status', columns: ['job_offer_id', 'is_deleted', 'status'])]
+#[ORM\Index(name: 'idx_app_status_applied', columns: ['status', 'applied_at'])]
 class Application
 {
     #[ORM\Id]
@@ -85,7 +88,7 @@ class Application
     /**
      * @var \Doctrine\Common\Collections\Collection<int, Interview>
      */
-    #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Interview::class, mappedBy: 'application', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private \Doctrine\Common\Collections\Collection $interviews;
 
     public function __construct()
