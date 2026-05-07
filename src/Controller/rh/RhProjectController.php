@@ -85,7 +85,6 @@ class RhProjectController extends AbstractController
             $tasks = $this->taskService->getTasksByProject($projectId);
             $team = $this->collaboratorService->getCollaboratorsByProject($projectId);
             $milestones = $this->milestoneService->getMilestonesByProject($projectId);
-            $updates = $this->updateService->getUpdatesByProject($projectId, 20);
             $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
 
             $reportProjects[] = [
@@ -93,7 +92,6 @@ class RhProjectController extends AbstractController
                 'tasks' => $tasks,
                 'team' => $team,
                 'milestones' => $milestones,
-                'updates' => $updates,
                 'analytics' => $analytics,
             ];
         }
