@@ -38,6 +38,7 @@ final class GenerateReportTool extends ApplicationTool
         return ['type'];
     }
 
+    /** @param array<mixed> $args */
     public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
     {
         $qb = $this->em->createQueryBuilder();

@@ -52,7 +52,7 @@ final class AgentOrchestrator
         $selectedTools = $this->intentRouter->selectTools($intent, $this->toolRegistry);
         $scopedTools = \array_slice($selectedTools, 0, self::MAX_TOOLS_PER_REQUEST);
 
-        $systemPrompt = $this->contextProvider->buildSystemPrompt($user, $intent?->value);
+        $systemPrompt = $this->contextProvider->buildSystemPrompt($user, $intent->value);
 
         $loopResult = $this->runAgenticLoop($messages, $scopedTools, $user, $sessionId);
         $finalMessage = $loopResult['message'];
@@ -70,8 +70,8 @@ final class AgentOrchestrator
                 'status' => 'done',
                 'details' => $result['uiPayload'] ?? null,
                 'args' => $tc->arguments,
-                'download_url' => $result['uiPayload']['download_url'] ?? null,
-                'chart_data' => $result['uiPayload']['chart_data'] ?? null,
+                'download_url' => ($result['uiPayload'] ?? [])['download_url'] ?? null,
+                'chart_data' => ($result['uiPayload'] ?? [])['chart_data'] ?? null,
             ];
         }, $toolCalls, $toolResults);
 
@@ -133,8 +133,9 @@ final class AgentOrchestrator
     }
 
     /**
+     * @param array<int, mixed> $messages
      * @param ToolInterface[] $tools
-     * @return array{message: ChatMessage, toolCalls: ToolCall[], toolResults: array[], pendingChangesets: PendingChangeset[]}
+     * @return array{message: ChatMessage, toolCalls: list<ToolCall>, toolResults: list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}>, pendingChangesets: list<PendingChangeset>}
      */
     private function runAgenticLoop(array $messages, array $tools, object $user, string $sessionId): array
     {
@@ -245,7 +246,8 @@ final class AgentOrchestrator
 
     /**
      * @param ToolCall[] $toolCalls
-     * @param array[] $toolResults
+     * @param list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}> $toolResults
+     * @return array<int, mixed>
      */
     private function buildUiPayload(array $toolCalls, array $toolResults): array
     {
@@ -265,8 +267,8 @@ final class AgentOrchestrator
     /**
      * Extract aggregates from tool results for the response.
      *
-     * @param array[] $toolResults
-     * @return array{activeJob: ?array, candidates: array, candidatesAnalyzed: int, interviewsPlanned: int}
+     * @param list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}> $toolResults
+     * @return array{activeJob: ?array<string, mixed>, candidates: array<int, mixed>, candidatesAnalyzed: int, interviewsPlanned: int}
      */
     private function aggregateToolResults(array $toolResults): array
     {

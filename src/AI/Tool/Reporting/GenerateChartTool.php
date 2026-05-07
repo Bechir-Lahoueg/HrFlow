@@ -71,6 +71,7 @@ final class GenerateChartTool implements ToolInterface
             'applications_over_time' => $this->getApplicationsOverTime($args),
             'interview_results' => $this->getInterviewResults($args),
             'hiring_funnel' => $this->getHiringFunnel($args),
+            default => [],
         };
 
         $chartConfig = $this->buildChartConfig($chartType, $chartData, $title);
@@ -92,6 +93,10 @@ final class GenerateChartTool implements ToolInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getPipelineData(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -122,7 +127,7 @@ final class GenerateChartTool implements ToolInterface
 
         foreach ($statusOrder as $status) {
             if (isset($stats[$status])) {
-                $labels[] = $statusLabels[$status] ?? $status;
+                $labels[] = $statusLabels[$status];
                 $data[] = $stats[$status];
             }
         }
@@ -139,6 +144,11 @@ final class GenerateChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $args @return array<mixed> */
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getApplicationsByOffer(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -173,6 +183,11 @@ final class GenerateChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $args @return array<mixed> */
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getApplicationsOverTime(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -206,6 +221,11 @@ final class GenerateChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $args @return array<mixed> */
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getInterviewResults(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -234,6 +254,11 @@ final class GenerateChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $args @return array<mixed> */
+    /**
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
     private function getHiringFunnel(array $args): array
     {
         $qb = $this->em->createQueryBuilder();
@@ -269,6 +294,11 @@ final class GenerateChartTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $chartData @return array<mixed> */
+    /**
+     * @param array<string, mixed> $chartData
+     * @return array<string, mixed>
+     */
     private function buildChartConfig(string $chartType, array $chartData, ?string $title): array
     {
         return [

@@ -22,12 +22,13 @@ class DeductionResponseDTO
 
     public function __construct(Deduction $deduction)
     {
-        $this->id = $deduction->getId();
-        $this->employeeId = $deduction->getEmployee()->getId();
-        $this->employeeName = $deduction->getEmployee()->getFirstName() . ' ' . $deduction->getEmployee()->getLastName();
+        $this->id = $deduction->getId() ?? 0;
+        $employee = $deduction->getEmployee();
+        $this->employeeId = $employee?->getId() ?? 0;
+        $this->employeeName = ($employee?->getFirstName() ?? '') . ' ' . ($employee?->getLastName() ?? '');
         $this->typeDeduction = $deduction->getTypeDeduction();
-        $this->montant = $deduction->getMontant();
-        $this->dateDeduction = $deduction->getDateDeduction();
+        $this->montant = $deduction->getMontant() ?? '0.00';
+        $this->dateDeduction = $deduction->getDateDeduction() ?? new \DateTimeImmutable();
         $this->motif = $deduction->getMotif();
         $this->createdAt = $deduction->getCreatedAt();
         $this->updatedAt = $deduction->getUpdatedAt();

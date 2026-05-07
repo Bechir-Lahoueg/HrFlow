@@ -14,14 +14,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class SessionFormation
 {
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_session')]
-    private ?int $id = null; // @phpstan-ignore-line
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'sessions')]
-    #[ORM\JoinColumn(name: 'id_formation', referencedColumnName: 'id_formation', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_formation_id', referencedColumnName: 'id_formation', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "La formation est obligatoire.")]
     private ?Formation $formation = null;
 
@@ -63,19 +62,20 @@ class SessionFormation
     )]
     private ?string $statut = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
     /** @var Collection<int, ParticipationFormation> */
-    #[ORM\OneToMany(targetEntity: ParticipationFormation::class, mappedBy: 'session')]
+    #[ORM\OneToMany(targetEntity: ParticipationFormation::class, mappedBy: 'session', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $participations;
 
     public function __construct()
     {
         $this->participations = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -196,3 +196,4 @@ class SessionFormation
         $this->updatedAt = new \DateTime();
     }
 }
+

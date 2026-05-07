@@ -53,7 +53,7 @@ abstract class ApplicationTool implements ToolInterface
     /**
      * @param array<string, mixed> $uiPayload
      */
-    protected function createOutput(string $summary, array $uiPayload = [], bool $pendingChange = false, ?object $changeset = null): ToolOutput
+    protected function createOutput(string $summary, array $uiPayload = [], bool $pendingChange = false, ?\App\AI\Domain\ValueObject\PendingChangeset $changeset = null): ToolOutput
     {
         return new ToolOutput(
             llmSummary: $summary,

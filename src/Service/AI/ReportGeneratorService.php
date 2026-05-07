@@ -13,6 +13,7 @@ class ReportGeneratorService
 
     public function __construct(
         private Environment $twig,
+        /** @phpstan-ignore property.onlyWritten */
         private ParameterBagInterface $params,
         string $projectDir
     ) {
@@ -24,6 +25,7 @@ class ReportGeneratorService
 
     /**
      * Generates a PDF report and returns the relative URL.
+     * @param array<mixed> $data
      */
     public function generatePdf(string $template, array $data, string $filenamePrefix = 'report'): string
     {
@@ -54,9 +56,11 @@ class ReportGeneratorService
         $files = glob($this->reportsDir . '/*.pdf');
         $now = time();
 
-        foreach ($files as $file) {
-            if ($now - filemtime($file) > 86400) {
-                unlink($file);
+        if ($files !== false) {
+            foreach ($files as $file) {
+                if ($now - filemtime($file) > 86400) {
+                    unlink($file);
+                }
             }
         }
     }

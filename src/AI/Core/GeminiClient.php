@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Core;
 
 use App\AI\Contract\LlmClientInterface;
+use App\AI\Contract\ToolInterface;
 use App\AI\Infrastructure\ChatMessage;
 use App\AI\Infrastructure\ChatRequest;
 use App\AI\Infrastructure\ChatResponse;
@@ -55,6 +56,7 @@ final class GeminiClient implements LlmClientInterface
 
         $maxRetries = 2;
         $retryCount = 0;
+        $data = null;
 
         while ($retryCount <= $maxRetries) {
             try {
@@ -120,9 +122,13 @@ final class GeminiClient implements LlmClientInterface
             }
         }
 
-        return $this->parseResponse($data);
+        return $this->parseResponse($data ?? []);
     }
 
+    /**
+     * @param ChatMessage[] $messages
+     * @return array<int, mixed>
+     */
     private function buildContents(array $messages): array
     {
         $contents = [];
@@ -172,10 +178,17 @@ final class GeminiClient implements LlmClientInterface
         return $contents;
     }
 
+    /**
+     * @param array<int, \App\AI\Contract\ToolInterface|array<string, mixed>> $tools
+     * @return array<int, mixed>
+     */
     private function buildTools(array $tools): array
     {
         $functionDeclarations = [];
         foreach ($tools as $tool) {
+            if (!($tool instanceof \App\AI\Contract\ToolInterface)) {
+                continue;
+            }
             $functionDeclarations[] = $tool->getDefinition();
         }
 
@@ -186,6 +199,9 @@ final class GeminiClient implements LlmClientInterface
         ];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function parseResponse(array $data): ChatResponse
     {
         $content = '';

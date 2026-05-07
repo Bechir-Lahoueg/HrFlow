@@ -96,6 +96,7 @@ final class FormationChangeNotificationService
         return $this->notifyEmployees($employees, $subject, $message, $type, $formation, null);
     }
 
+    /** @param array<mixed> $employees */
     private function notifyEmployees(array $employees, string $subject, string $message, string $type, Formation $formation, ?SessionFormation $session): int
     {
         $queuedInApp = 0;

@@ -70,6 +70,9 @@ final class PrimeService
      */
     public function createPrime(PrimeRequestDTO $dto): PrimeResponseDTO
     {
+        if ($dto->employeeId === null) {
+            throw new \DomainException('Employee ID is required');
+        }
         $employee = $this->employeeRepository->find($dto->employeeId);
         if (!$employee) {
             throw EmployeeNotFoundException::withId($dto->employeeId);
@@ -101,7 +104,7 @@ final class PrimeService
         $prime = new Prime();
         $prime->setEmployee($employee)
             ->setTypePrime($dto->typePrime)
-            ->setMontant($dto->montant)
+            ->setMontant($dto->montant ?? '0.00')
             ->setDateAttribution($dto->dateAttribution)
             ->setMotif($dto->motif);
 
@@ -148,10 +151,17 @@ final class PrimeService
         // Save old period before update (in case date changed)
         $oldMois = $prime->getMonth();
         $oldAnnee = $prime->getYear();
-        $employeeId = $prime->getEmployee()->getId();
+        $employeeEntity = $prime->getEmployee();
+        if ($employeeEntity === null) {
+            throw new \DomainException('Prime has no associated employee');
+        }
+        $employeeId = $employeeEntity->getId();
+        if ($employeeId === null) {
+            throw new \DomainException('Employee has no ID');
+        }
 
         $prime->setTypePrime($dto->typePrime)
-            ->setMontant($dto->montant)
+            ->setMontant($dto->montant ?? '0.00')
             ->setDateAttribution($dto->dateAttribution)
             ->setMotif($dto->motif);
 
@@ -183,7 +193,14 @@ final class PrimeService
             throw new \DomainException(sprintf('Prime with ID %d not found', $id));
         }
 
-        $employeeId = $prime->getEmployee()->getId();
+        $employeeEntity = $prime->getEmployee();
+        if ($employeeEntity === null) {
+            throw new \DomainException('Prime has no associated employee');
+        }
+        $employeeId = $employeeEntity->getId();
+        if ($employeeId === null) {
+            throw new \DomainException('Employee has no ID');
+        }
         $mois = $prime->getMonth();
         $annee = $prime->getYear();
 

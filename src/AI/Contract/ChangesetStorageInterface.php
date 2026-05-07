@@ -12,5 +12,8 @@ interface ChangesetStorageInterface
 
     public function find(string $id): ?PendingChangeset;
 
+    /**
+     * @return array<PendingChangeset>
+     */
     public function findBySession(string $sessionId): array;
 }

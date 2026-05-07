@@ -35,8 +35,8 @@ final class CandidateAuthController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Check if username or email already exists
             if ($this->candidateRepository->existsByUsernameOrEmail(
-                $candidate->getUsername(),
-                $candidate->getEmail()
+                $candidate->getUsername() ?? '',
+                $candidate->getEmail() ?? ''
             )) {
                 $this->addFlash('error', 'Ce nom d\'utilisateur ou email est deja utilise.');
                 return $this->render('Auth/candidate_register.html.twig', [

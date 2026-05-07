@@ -42,8 +42,8 @@ class Prime
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $motif = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
@@ -126,7 +126,7 @@ class Prime
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
         return $this;
@@ -145,11 +145,12 @@ class Prime
 
     public function getMonth(): int
     {
-        return (int) $this->dateAttribution->format('m');
+        return (int) ($this->dateAttribution?->format('m') ?? 0);
     }
 
     public function getYear(): int
     {
-        return (int) $this->dateAttribution->format('Y');
+        return (int) ($this->dateAttribution?->format('Y') ?? 0);
     }
 }
+

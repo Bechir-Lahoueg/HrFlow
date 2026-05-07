@@ -30,6 +30,7 @@ class LeaveBalanceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('lb')
             ->join('lb.employee', 'e')
+            ->addSelect('e')
             ->where('e.rhId = :rhId')
             ->setParameter('rhId', $rhId)
             ->orderBy('e.firstName', 'ASC')

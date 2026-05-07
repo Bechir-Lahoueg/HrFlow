@@ -50,8 +50,8 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Length(max: 20, maxMessage: 'Phone cannot exceed 20 characters')]
     private ?string $phone = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
@@ -59,6 +59,11 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
     }
 
     public function getUsername(): ?string
@@ -74,7 +79,7 @@ class Candidate implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->username;
+        return $this->username ?? '';
     }
 
     public function getEmail(): ?string

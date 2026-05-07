@@ -3,6 +3,7 @@
 namespace App\Service\AI\Tool\Application;
 
 use App\Repository\Recrutement\ApplicationRepository;
+use App\Security\DbUser;
 use App\Service\AI\Tool\ToolInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -39,7 +40,7 @@ class RestoreApplicationTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) {
+        if (!$user instanceof DbUser) {
             return ['error' => 'Not authenticated'];
         }
 

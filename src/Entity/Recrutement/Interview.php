@@ -21,7 +21,7 @@ class Interview
     private int $id;
 
     #[ORM\ManyToOne(targetEntity: Application::class, inversedBy: 'interviews')]
-    #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'Application is required')]
     private ?Application $application = null;
 

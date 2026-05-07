@@ -60,7 +60,7 @@ class BulkMoveStageTool implements ToolInterface
             $app = $this->applicationRepository->find($id);
             
             // Check ownership (security)
-            if ($app && $app->getJobOffer()?->getCreatedBy() === $user->getId()) {
+            if ($app && $app->getJobOffer()?->getCreatedBy() === (method_exists($user, 'getId') ? $user->getId() : null)) {
                 $app->setStatus($newStatus);
                 $moved[] = $app->getCandidateName();
             } else {

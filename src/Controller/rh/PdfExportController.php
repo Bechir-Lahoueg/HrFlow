@@ -47,7 +47,7 @@ class PdfExportController extends AbstractController
 
         return $this->generatePdfResponse(
             $html,
-            sprintf('offre-emploi-%s.pdf', $this->sanitizeFilename($jobOffer->getTitle()))
+            sprintf('offre-emploi-%s.pdf', $this->sanitizeFilename($jobOffer->getTitle() ?? ''))
         );
     }
 
@@ -73,7 +73,7 @@ class PdfExportController extends AbstractController
 
         return $this->generatePdfResponse(
             $html,
-            sprintf('candidature-%s.pdf', $this->sanitizeFilename($application->getCandidateName()))
+            sprintf('candidature-%s.pdf', $this->sanitizeFilename($application->getCandidateName() ?? ''))
         );
     }
 
@@ -216,11 +216,11 @@ class PdfExportController extends AbstractController
     private function sanitizeFilename(string $filename): string
     {
         // Remove accents
-        $filename = iconv('UTF-8', 'ASCII//TRANSLIT', $filename);
+        $filename = (string) iconv('UTF-8', 'ASCII//TRANSLIT', $filename);
         // Replace non-alphanumeric characters with hyphens
-        $filename = preg_replace('/[^A-Za-z0-9\-]/', '-', $filename);
+        $filename = (string) preg_replace('/[^A-Za-z0-9\-]/', '-', $filename);
         // Remove multiple consecutive hyphens
-        $filename = preg_replace('/-+/', '-', $filename);
+        $filename = (string) preg_replace('/-+/', '-', $filename);
         // Trim hyphens from beginning and end
         $filename = trim($filename, '-');
         // Convert to lowercase
