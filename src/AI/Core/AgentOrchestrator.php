@@ -48,59 +48,55 @@ final class AgentOrchestrator
             return $this->handleGreeting($lastUserMsg, $user);
         }
 
-        $intent = $this->intentRouter->classify($messages);
-        $selectedTools = $this->intentRouter->selectTools($intent, $this->toolRegistry);
+        $intents = $this->intentRouter->classify($messages);
+        $entities = $this->intentRouter->detectEntities($messages);
+        $selectedTools = $this->intentRouter->selectTools($intents, $this->toolRegistry, $entities);
         $scopedTools = \array_slice($selectedTools, 0, self::MAX_TOOLS_PER_REQUEST);
 
-        $systemPrompt = $this->contextProvider->buildSystemPrompt($user, $intent?->value);
+        $intentValue = !empty($intents) ? $intents[0]->value : null;
+        $systemPrompt = $this->contextProvider->buildSystemPrompt($user, $intentValue, $entities);
 
-        $loopResult = $this->runAgenticLoop($messages, $scopedTools, $user, $sessionId);
+        $loopResult = $this->runAgenticLoop($messages, $scopedTools, $user, $sessionId, $systemPrompt);
         $finalMessage = $loopResult['message'];
         $toolCalls = $loopResult['toolCalls'];
         $toolResults = $loopResult['toolResults'];
         $pendingChangesets = $loopResult['pendingChangesets'];
+        $enrichedMessages = $loopResult['messages'];
 
         $uiPayload = $this->buildUiPayload($toolCalls, $toolResults);
 
-        $this->memory->save($sessionId, $messages);
+        $this->memory->save($sessionId, $enrichedMessages);
 
         $formattedToolCalls = \array_map(function (ToolCall $tc, array $result) {
+            $ui = $result['uiPayload'] ?? [];
             return [
                 'tool_name' => $tc->name,
                 'status' => 'done',
-                'details' => $result['uiPayload'] ?? null,
+                'details' => $ui,
                 'args' => $tc->arguments,
-                'download_url' => $result['uiPayload']['download_url'] ?? null,
-                'chart_data' => $result['uiPayload']['chart_data'] ?? null,
+                'download_url' => $ui['download_url'] ?? $ui['file_path'] ?? null,
+                'chart_data' => $ui['chart_data'] ?? null,
+                'chart_config' => $ui['chart_config'] ?? null,
+                'file_name' => $ui['file_name'] ?? null,
+                'export_type' => $ui['export_type'] ?? null,
+                'ui_type' => $ui['type'] ?? null,
             ];
         }, $toolCalls, $toolResults);
 
-        $planSteps = [];
-        foreach ($toolCalls as $tc) {
-            $planSteps[] = 'Exécuter ' . $tc->name;
-        }
-        if (empty($planSteps)) {
-            $planSteps[] = 'Analyser la requête';
-        }
+        $planSteps = $this->buildPlanSteps($toolCalls);
 
         $aggregates = $this->aggregateToolResults($toolResults);
 
         return new AgentResponse(
             message: $finalMessage->content ?: 'Traitement terminé.',
             uiPayload: $uiPayload,
-            pendingChangesets: \array_map(
-                fn(PendingChangeset $c) => [
-                    'id' => $c->id,
-                    'tool' => $c->tool,
-                    'action' => $c->action,
-                ],
-                $pendingChangesets,
-            ),
+            pendingChangesets: $pendingChangesets,
             toolCalls: $formattedToolCalls,
             plan: $planSteps,
             completedSteps: \count($planSteps),
             activeJob: $aggregates['activeJob'],
             candidates: $aggregates['candidates'],
+            interviews: $aggregates['interviews'],
             candidatesAnalyzed: $aggregates['candidatesAnalyzed'],
             interviewsPlanned: $aggregates['interviewsPlanned'],
         );
@@ -134,9 +130,9 @@ final class AgentOrchestrator
 
     /**
      * @param ToolInterface[] $tools
-     * @return array{message: ChatMessage, toolCalls: ToolCall[], toolResults: array[], pendingChangesets: PendingChangeset[]}
+     * @return array{message: ChatMessage, toolCalls: ToolCall[], toolResults: array[], pendingChangesets: PendingChangeset[], messages: ChatMessage[]}
      */
-    private function runAgenticLoop(array $messages, array $tools, object $user, string $sessionId): array
+    private function runAgenticLoop(array $messages, array $tools, object $user, string $sessionId, string $systemPrompt = ''): array
     {
         $iteration = 0;
         $pendingChangesets = [];
@@ -148,7 +144,7 @@ final class AgentOrchestrator
 
             $request = new ChatRequest(
                 messages: $messages,
-                systemPrompt: '',
+                systemPrompt: $systemPrompt,
                 tools: $tools,
                 maxTools: self::MAX_TOOLS_PER_REQUEST,
             );
@@ -156,11 +152,13 @@ final class AgentOrchestrator
             $response = $this->llmClient->chat($request);
 
             if (\count($response->toolCalls) === 0) {
+                $messages[] = new ChatMessage('model', $response->content);
                 return [
                     'message' => new ChatMessage('model', $response->content),
                     'toolCalls' => $allToolCalls,
                     'toolResults' => $allToolResults,
                     'pendingChangesets' => $pendingChangesets,
+                    'messages' => $messages,
                 ];
             }
 
@@ -181,7 +179,7 @@ final class AgentOrchestrator
                     'uiPayload' => $toolResult->uiPayload,
                 ];
 
-                if ($toolResult->hasPendingChange && $toolResult->pendingChangeset !== null) {
+                if ($toolResult->hasPendingChange) {
                     $changeset = $this->changesetManager->stage(
                         $toolCall,
                         ['result' => $toolResult, 'sessionId' => $sessionId],
@@ -211,6 +209,7 @@ final class AgentOrchestrator
             'toolCalls' => $allToolCalls,
             'toolResults' => $allToolResults,
             'pendingChangesets' => $pendingChangesets,
+            'messages' => $messages,
         ];
     }
 
@@ -263,15 +262,68 @@ final class AgentOrchestrator
     }
 
     /**
+     * @param ToolCall[] $toolCalls
+     * @return string[]
+     */
+    private function buildPlanSteps(array $toolCalls): array
+    {
+        $steps = [];
+
+        foreach ($toolCalls as $tc) {
+            $action = $tc->arguments['action'] ?? null;
+            $toolLabel = match ($tc->name) {
+                'manage_job_offers' => 'offres d\'emploi',
+                'manage_applications' => 'candidatures',
+                'manage_interviews' => 'entretiens',
+                default => $tc->name,
+            };
+
+            $actionLabel = match ($action) {
+                'list' => 'Lister',
+                'search' => 'Rechercher',
+                'view' => 'Consulter',
+                'create' => 'Créer',
+                'update' => 'Modifier',
+                'change_status' => 'Changer le statut',
+                'move' => 'Déplacer',
+                'rank' => 'Classer',
+                'schedule' => 'Planifier',
+                'cancel' => 'Annuler',
+                'delete' => 'Supprimer',
+                default => 'Exécuter',
+            };
+
+            $details = '';
+
+            if (isset($tc->arguments['id'])) {
+                $details = ' #' . $tc->arguments['id'];
+            } elseif (isset($tc->arguments['job_offer_id'])) {
+                $details = ' pour l\'offre #' . $tc->arguments['job_offer_id'];
+            } elseif (isset($tc->arguments['application_id'])) {
+                $details = ' pour la candidature #' . $tc->arguments['application_id'];
+            }
+
+            $steps[] = "{$actionLabel} {$toolLabel}{$details}";
+        }
+
+        if (empty($steps)) {
+            $steps[] = 'Analyser la requête';
+        }
+
+        return $steps;
+    }
+
+    /**
      * Extract aggregates from tool results for the response.
      *
      * @param array[] $toolResults
-     * @return array{activeJob: ?array, candidates: array, candidatesAnalyzed: int, interviewsPlanned: int}
+     * @return array{activeJob: ?array, candidates: array, interviews: array, candidatesAnalyzed: int, interviewsPlanned: int}
      */
     private function aggregateToolResults(array $toolResults): array
     {
         $activeJob = null;
         $candidates = [];
+        $interviews = [];
         $candidatesAnalyzed = 0;
         $interviewsPlanned = 0;
 
@@ -287,9 +339,19 @@ final class AgentOrchestrator
                 $candidates = array_merge($candidates, $ui['data']);
                 $candidatesAnalyzed += count($ui['data']);
             }
+            if ($uiType === 'candidate_grid' && isset($ui['candidates'])) {
+                $candidates = array_merge($candidates, $ui['candidates']);
+                $candidatesAnalyzed = max($candidatesAnalyzed, count($ui['candidates']));
+            }
             if ($uiType === 'ranking' && isset($ui['data'])) {
                 $candidates = array_merge($candidates, $ui['data']);
                 $candidatesAnalyzed = max($candidatesAnalyzed, count($ui['data']));
+            }
+            if ($uiType === 'interviews_table' && isset($ui['data'])) {
+                $interviews = array_merge($interviews, $ui['data']);
+            }
+            if ($uiType === 'interview_scheduled') {
+                $interviewsPlanned++;
             }
             if (isset($ui['candidates_analyzed'])) {
                 $candidatesAnalyzed = max($candidatesAnalyzed, (int) $ui['candidates_analyzed']);
@@ -300,7 +362,7 @@ final class AgentOrchestrator
             if (isset($ui['job_offer']) && is_array($ui['job_offer'])) {
                 $activeJob = $ui['job_offer'];
             }
-            if ($uiType === 'job_offers_table' && isset($ui['data']) && count($ui['data']) > 0) {
+            if (\in_array($uiType, ['job_offers_table', 'job_offers_list'], true) && isset($ui['data']) && count($ui['data']) > 0) {
                 $activeJob = [
                     'title' => $ui['data'][0]['title'] ?? null,
                     'location' => $ui['data'][0]['location'] ?? null,
@@ -312,6 +374,7 @@ final class AgentOrchestrator
         return [
             'activeJob' => $activeJob,
             'candidates' => $candidates,
+            'interviews' => $interviews,
             'candidatesAnalyzed' => $candidatesAnalyzed,
             'interviewsPlanned' => $interviewsPlanned,
         ];

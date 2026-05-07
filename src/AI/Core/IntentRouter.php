@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Core;
 
+use App\AI\Contract\ToolRegistryInterface;
 use App\AI\Domain\Enum\IntentType;
 use App\AI\Infrastructure\ChatMessage;
 
@@ -15,48 +16,156 @@ final class IntentRouter
     private const SCHEDULE_KEYWORDS = ['planifier', ' RDV ', 'entretien', ' créneau', 'horaire', 'disponible'];
     private const REPORT_KEYWORDS = ['rapport', 'générer', 'export', ' pdf ', 'excel', 'csv'];
 
-    public function classify(array $messages): IntentType
+    private const JOB_OFFER_KEYWORDS = ['offre', 'emploi', 'poste', 'recrutement', 'job', 'recrute'];
+    private const APPLICATION_KEYWORDS = ['candidat', 'candidature', 'cv', 'postulant', 'candidats'];
+    private const INTERVIEW_KEYWORDS = ['entretien', 'rendez-vous', 'interview', 'rdv'];
+
+    /**
+     * @param ChatMessage[] $messages
+     * @return IntentType[]
+     */
+    public function classify(array $messages): array
     {
         $lastUserMessage = $this->getLastUserMessage($messages);
         $text = \strtolower($lastUserMessage);
 
         if ($this->containsAny($text, self::GREETING_KEYWORDS) && \strlen($text) < 30) {
-            return IntentType::GREETING;
+            return [IntentType::GREETING];
         }
 
+        $intents = [];
+
         if ($this->containsAny($text, self::MUTATION_KEYWORDS)) {
-            return IntentType::MUTATION;
+            $intents[] = IntentType::MUTATION;
         }
 
         if ($this->containsAny($text, self::SCHEDULE_KEYWORDS)) {
-            return IntentType::SCHEDULE;
+            $intents[] = IntentType::SCHEDULE;
         }
 
         if ($this->containsAny($text, self::REPORT_KEYWORDS)) {
-            return IntentType::REPORT;
+            $intents[] = IntentType::REPORT;
         }
 
-        if ($this->containsAny($text, self::QUERY_KEYWORDS)) {
-            return IntentType::DATA_QUERY;
+        if ($this->containsAny($text, self::QUERY_KEYWORDS) || empty($intents)) {
+            $intents[] = IntentType::DATA_QUERY;
         }
 
-        return IntentType::DATA_QUERY;
+        return \array_unique($intents);
     }
 
     /**
-     * @param IntentType $intent
-     * @param ToolRegistryInterface $registry
+     * @param ChatMessage[] $messages
+     * @return string[]
+     */
+    public function detectEntities(array $messages): array
+    {
+        $lastUserMessage = $this->getLastUserMessage($messages);
+        $text = \strtolower($lastUserMessage);
+
+        $entities = [];
+
+        if ($this->containsAny($text, self::JOB_OFFER_KEYWORDS)) {
+            $entities[] = 'job_offer';
+        }
+
+        if ($this->containsAny($text, self::APPLICATION_KEYWORDS)) {
+            $entities[] = 'application';
+        }
+
+        if ($this->containsAny($text, self::INTERVIEW_KEYWORDS)) {
+            $entities[] = 'interview';
+        }
+
+        return $entities;
+    }
+
+    /**
+     * @param IntentType[] $intents
+     * @param string[] $entities
      * @return ToolInterface[]
      */
-    public function selectTools(IntentType $intent, object $registry): array
+    public function selectTools(array $intents, object $registry, array $entities = []): array
     {
-        return match ($intent) {
-            IntentType::GREETING => [],
-            IntentType::DATA_QUERY => $this->getToolsForQuery($registry),
-            IntentType::MUTATION => $this->getToolsForMutation($registry),
-            IntentType::SCHEDULE => $this->getToolsForSchedule($registry),
-            IntentType::REPORT => $this->getToolsForReport($registry),
-        };
+        $toolNames = [];
+
+        foreach ($intents as $intent) {
+            $names = match ($intent) {
+                IntentType::DATA_QUERY => $this->getQueryToolNames(),
+                IntentType::MUTATION => $this->getMutationToolNames(),
+                IntentType::SCHEDULE => $this->getScheduleToolNames(),
+                IntentType::REPORT => $this->getReportToolNames(),
+                IntentType::GREETING => [],
+            };
+            $toolNames = \array_merge($toolNames, $names);
+        }
+
+        if (!empty($entities)) {
+            $entityTools = $this->getEntityToolNames($entities);
+            $toolNames = \array_merge($toolNames, $entityTools);
+        }
+
+        $toolNames = \array_unique(\array_values($toolNames));
+
+        return $this->fetchTools($registry, \array_slice($toolNames, 0, 5));
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getQueryToolNames(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getMutationToolNames(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getScheduleToolNames(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getReportToolNames(): array
+    {
+        return [
+            'generate_report',
+            'render_pdf',
+            'render_chart',
+        ];
+    }
+
+    /**
+     * @param string[] $entities
+     * @return string[]
+     */
+    private function getEntityToolNames(array $entities): array
+    {
+        $map = [
+            'job_offer' => 'manage_job_offers',
+            'application' => 'manage_applications',
+            'interview' => 'manage_interviews',
+        ];
+
+        $names = [];
+        foreach ($entities as $entity) {
+            if (isset($map[$entity])) {
+                $names[] = $map[$entity];
+            }
+        }
+
+        return $names;
     }
 
     /**
@@ -80,50 +189,6 @@ final class IntentRouter
             }
         }
         return false;
-    }
-
-    private function getToolsForQuery(object $registry): array
-    {
-        $names = [
-            'get_candidates',
-            'get_applications',
-            'get_job_offers',
-            'get_interviews',
-            'get_pipeline_stats',
-        ];
-        return $this->fetchTools($registry, $names);
-    }
-
-    private function getToolsForMutation(object $registry): array
-    {
-        $names = [
-            'move_stage',
-            'delete_application',
-            'update_job_offer',
-            'create_job_offer',
-            'bulk_move_stage',
-        ];
-        return $this->fetchTools($registry, $names);
-    }
-
-    private function getToolsForSchedule(object $registry): array
-    {
-        $names = [
-            'schedule_interview',
-            'get_available_slots',
-            'get_interviews',
-        ];
-        return $this->fetchTools($registry, $names);
-    }
-
-    private function getToolsForReport(object $registry): array
-    {
-        $names = [
-            'generate_report',
-            'render_pdf',
-            'render_chart',
-        ];
-        return $this->fetchTools($registry, $names);
     }
 
     private function fetchTools(object $registry, array $names): array

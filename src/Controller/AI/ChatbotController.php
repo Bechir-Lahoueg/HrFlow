@@ -57,6 +57,7 @@ class ChatbotController extends AbstractController
                 'tool_calls' => $result->toolCalls,
                 'active_job' => $result->activeJob,
                 'candidates' => $result->candidates,
+                'interviews' => $result->interviews,
                 'candidates_analyzed' => $result->candidatesAnalyzed,
                 'interviews_planned' => $result->interviewsPlanned,
                 'plan' => $result->plan,

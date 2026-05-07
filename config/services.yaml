@@ -94,13 +94,6 @@ services:
         arguments:
             $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
 
-    # Tool Registry - gets all tagged tools
-    App\AI\Core\ToolRegistry:
-        class: App\AI\Core\ToolRegistry
-        factory: ['App\AI\Core\ToolRegistry', 'createFromTaggedTools']
-        arguments:
-            - !tagged_iterator app.ai_tool
-
     # Conversation Memory
     App\AI\Core\ConversationMemory:
         arguments:

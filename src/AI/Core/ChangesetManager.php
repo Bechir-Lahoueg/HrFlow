@@ -80,6 +80,11 @@ final class ChangesetManager
         );
     }
 
+    public function stageFromChangeset(PendingChangeset $changeset): void
+    {
+        $this->storage->persist($changeset);
+    }
+
     private function applyChange(PendingChangeset $changeset, object $user): void
     {
     }

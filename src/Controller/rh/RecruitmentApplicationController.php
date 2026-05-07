@@ -79,6 +79,20 @@ final class RecruitmentApplicationController extends AbstractController
                 return $this->redirectToRoute('app_rh_applications');
             }
             
+            $candidateAppsByCandidate = [];
+            if ($action === 'hire') {
+                $candidateIds = array_filter(array_map(fn($a) => $a->getCandidate()?->getId(), $selected));
+                if (!empty($candidateIds)) {
+                    $allCandidateApps = $applicationRepository->findBy(['candidate' => array_values($candidateIds)]);
+                    foreach ($allCandidateApps as $ca) {
+                        $cid = $ca->getCandidate()?->getId();
+                        if ($cid) {
+                            $candidateAppsByCandidate[$cid][] = $ca;
+                        }
+                    }
+                }
+            }
+
             $count = 0;
             foreach ($selected as $application) {
                 switch ($action) {
@@ -98,8 +112,9 @@ final class RecruitmentApplicationController extends AbstractController
                         $application->setStatus('HIRED');
                         $count++;
                         // Auto-reject other applications from this candidate
-                        if ($application->getCandidate()) {
-                            $candidateApps = $applicationRepository->findBy(['candidate' => $application->getCandidate()]);
+                        $candidate = $application->getCandidate();
+                        if ($candidate) {
+                            $candidateApps = $candidateAppsByCandidate[$candidate->getId()] ?? [];
                             foreach ($candidateApps as $otherApp) {
                                 if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
                                     $otherApp->setStatus('REJECTED');
