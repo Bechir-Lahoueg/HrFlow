@@ -8,6 +8,10 @@ export PORT=${PORT:-10000}
 echo "==> PHP version: $(php -r 'echo PHP_VERSION;')"
 echo "==> APP_ENV=${APP_ENV:-not set}"
 
+# Verify compiled assets exist (debug)
+echo "==> Compiled CSS files in public/assets:"
+find public/assets -name '*.css' 2>/dev/null | head -10 || echo '  (none found)'
+
 # Warm up Symfony cache
 echo "==> Warming up Symfony cache..."
 APP_ENV=prod php bin/console cache:warmup --no-interaction
