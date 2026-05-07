@@ -59,7 +59,12 @@ final class RhPayrollController extends AbstractController
                 ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $total = count($queryBuilder->getQuery()->getResult());
+        // COUNT via SQL - avoids loading all rows just to count
+        $total = (int) (clone $queryBuilder)
+            ->select('COUNT(e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
         $employees = $queryBuilder
             ->orderBy('e.firstName', 'ASC')
             ->setMaxResults($limit)

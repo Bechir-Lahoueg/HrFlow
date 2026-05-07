@@ -40,6 +40,7 @@ final class ExternalApiService
         }
 
         return $this->cache->get($key, function (ItemInterface $item): array {
+            $item->expiresAfter(1800); // 30 min
 
             if (!$this->openWeatherKey) {
                 return $this->weatherFallback();

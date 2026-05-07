@@ -39,24 +39,17 @@ final class RhEmployeesController extends AbstractController
         }
 
         $searchTerm = trim((string) $request->query->get('q', ''));
-        $employees = $employeeRepository->findBy(['rhId' => $rhId], ['id' => 'DESC']);
-        $totalEmployees = count($employees);
+
+        // Count all employees for this RH (SQL COUNT — no hydration)
+        $totalEmployees = $employeeRepository->countByRh($rhId);
+
+        // Search and fetch in SQL — not in PHP after loading everything
+        $employees = $searchTerm !== ''
+            ? $employeeRepository->searchByName($rhId, $searchTerm, 200)
+            : $employeeRepository->findBy(['rhId' => $rhId], ['id' => 'DESC']);
 
         $rhAccount = $userRepository->find($rhId);
         $rhDepartment = $rhAccount?->getDepartment();
-
-        if ($searchTerm !== '') {
-            $needle = mb_strtolower($searchTerm);
-            $employees = array_values(array_filter(
-                $employees,
-                static function (Employee $employee) use ($needle): bool {
-                    return str_contains(mb_strtolower((string) $employee->getFirstName()), $needle)
-                        || str_contains(mb_strtolower((string) $employee->getLastName()), $needle)
-                        || str_contains(mb_strtolower((string) $employee->getEmail()), $needle)
-                        || str_contains(mb_strtolower((string) $employee->getJobTitle()), $needle);
-                }
-            ));
-        }
 
         return $this->render('DashboardHr/employees.html.twig', [
             'user' => $this->getUser(),

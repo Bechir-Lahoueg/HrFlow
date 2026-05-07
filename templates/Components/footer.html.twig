@@ -1,103 +1,103 @@
-{# ===== CTA + FOOTER ===== #}
-<section class="py-20 lg:py-28" id="contact">
-    <div class="max-w-7xl mx-auto px-6">
-        {# CTA Banner #}
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-10 lg:p-16 text-center mb-20">
-            <div class="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
-            <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+﻿{# ===== CTA BANNER ===== #}
+<section class="py-24 lg:py-32" id="contact" style="background:#f5f0e8;">
+    <div class="max-w-5xl mx-auto px-6">
+        <div class="relative overflow-hidden rounded-3xl p-10 lg:p-16 text-center bg-white" style="border:1px solid #e8dfd0;box-shadow:0 8px 48px rgba(26,18,9,0.08);">
+            <div class="absolute top-0 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none" style="background:rgba(5,150,105,0.07);"></div>
+            <div class="absolute bottom-0 right-1/4 w-56 h-56 rounded-full blur-3xl pointer-events-none" style="background:rgba(139,92,246,0.07);"></div>
             <div class="relative">
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-5">
-                    Ready to transform<br class="hidden sm:block"> your HR operations?
+                <p class="text-[11px] font-bold uppercase tracking-[.2em] text-emerald-600 mb-5">Commencez aujourd&#39;hui &mdash; c&#39;est gratuit</p>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-5 tracking-tight" style="color:#1a1209;font-family:'Playfair Display',Georgia,serif;">
+                    Votre équipe RH mérite<br class="hidden sm:block"> de meilleurs outils.
                 </h2>
-                <p class="text-lg text-slate-400 max-w-xl mx-auto mb-10">
-                    Join 2,000+ companies already using HrFlow to build better teams, faster.
+                <p class="text-[15px] max-w-xl mx-auto mb-10 leading-relaxed" style="color:#78716c;">
+                    Rejoignez 2&#x202F;000+ entreprises qui utilisent déjà HrFlow pour recruter plus intelligemment, payer plus vite et fidéliser plus longtemps.
                 </p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="{{ path('app_login') }}" class="group px-8 py-4 text-base font-bold text-slate-900 bg-white hover:bg-slate-50 rounded-full transition-all hover:shadow-xl flex items-center gap-2">
-                        Start your free trial
+                    <a href="{{ path('app_login') }}" class="group px-8 py-4 text-[15px] font-bold text-white rounded-full transition-all hover:scale-105 flex items-center gap-2" style="background:linear-gradient(135deg,#059669,#0891b2);box-shadow:0 8px 30px rgba(5,150,105,0.35);">
+                        Commencer &mdash; c&#39;est gratuit
                         <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
-                    <a href="#how-it-works" class="px-8 py-4 text-base font-bold text-white border border-slate-600 hover:border-slate-500 rounded-full transition-all">
-                        See how it works
+                    <a href="#how-it-works" class="px-8 py-4 text-[15px] font-bold rounded-full transition-all hover:opacity-80" style="color:#1a1209;border:1.5px solid #c8bfb0;">
+                        Voir comment ça marche
                     </a>
                 </div>
+                <p class="mt-6 text-[12px]" style="color:#a8a29e;">Aucune carte de crédit requise &bull; Démarrage en moins de 5 minutes &bull; Annulable à tout moment</p>
             </div>
         </div>
     </div>
 </section>
 
-<footer class="border-t border-slate-200 bg-white">
+<footer style="background:#faf7f2;border-top:1px solid #e8dfd0;">
     <div class="max-w-7xl mx-auto px-6 py-16">
-        {# Footer grid #}
         <div class="grid grid-cols-2 md:grid-cols-5 gap-10 mb-14">
+
             {# Brand #}
             <div class="col-span-2">
                 <div class="flex items-center gap-2.5 mb-5">
-                    <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover">
-                    <span class="text-xl font-extrabold text-slate-900">HrFlow</span>
+<img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-16 h-16 rounded-2xl object-cover">                    <span class="text-xl font-extrabold" style="color:#1a1209;">HrFlow</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-relaxed max-w-xs mb-6">
-                    The modern HR platform that brings smart recruitment, employee management, and workforce analytics into one seamless workflow.
+                <p class="text-[13px] leading-relaxed max-w-xs mb-6" style="color:#78716c;">
+                    La plateforme RH moderne qui centralise le recrutement intelligent, la gestion des collaborateurs et l&#39;analytique RH dans un workflow fluide.
                 </p>
                 <div class="flex items-center gap-3">
-                    <a href="#" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors" aria-label="LinkedIn">
-                        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:opacity-80" style="background:#ede8e0;border:1px solid #ddd4c7;" aria-label="LinkedIn">
+                        <svg class="w-4 h-4" style="color:#78716c;" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>
-                    <a href="#" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors" aria-label="Twitter">
-                        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:opacity-80" style="background:#ede8e0;border:1px solid #ddd4c7;" aria-label="Twitter">
+                        <svg class="w-4 h-4" style="color:#78716c;" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     </a>
-                    <a href="#" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors" aria-label="GitHub">
-                        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:opacity-80" style="background:#ede8e0;border:1px solid #ddd4c7;" aria-label="GitHub">
+                        <svg class="w-4 h-4" style="color:#78716c;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
                     </a>
                 </div>
             </div>
 
             {# Product #}
             <div>
-                <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-5">Product</h4>
+                <h4 class="text-[11px] font-bold uppercase tracking-widest mb-5" style="color:#a8a29e;">Produit</h4>
                 <ul class="space-y-3">
-                    <li><a href="#features" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Features</a></li>
-                    <li><a href="#how-it-works" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">How it works</a></li>
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Integrations</a></li>
-                    <li><a href="{{ path('app_subscriptions') }}" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Pricing</a></li>
+                    <li><a href="#features" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Fonctionnalités</a></li>
+                    <li><a href="#how-it-works" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Comment ça marche</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Intégrations</a></li>
+                    <li><a href="{{ path('app_subscriptions') }}" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Tarifs</a></li>
                 </ul>
             </div>
 
             {# Company #}
             <div>
-                <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-5">Company</h4>
+                <h4 class="text-[11px] font-bold uppercase tracking-widest mb-5" style="color:#a8a29e;">Entreprise</h4>
                 <ul class="space-y-3">
-                    <li><a href="{{ path('app_about') }}" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">About us</a></li>
+                    <li><a href="{{ path('app_about') }}" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">À propos</a></li>
                     <li>
-                        <a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors inline-flex items-center gap-2">
-                            Careers
+                        <a href="#" class="text-[13px] transition-colors hover:text-emerald-700 inline-flex items-center gap-2" style="color:#78716c;">
+                            Carrières
                             <span class="px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded">Hiring</span>
                         </a>
                     </li>
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Blog</a></li>
-                    <li><a href="{{ path('app_contact') }}" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Contact</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Blog</a></li>
+                    <li><a href="{{ path('app_contact') }}" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Contact</a></li>
                 </ul>
             </div>
 
             {# Resources #}
             <div>
-                <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-5">Resources</h4>
+                <h4 class="text-[11px] font-bold uppercase tracking-widest mb-5" style="color:#a8a29e;">Ressources</h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Documentation</a></li>
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Help center</a></li>
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">API reference</a></li>
-                    <li><a href="#" class="text-sm text-slate-500 hover:text-slate-900 transition-colors">Community</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Documentation</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Centre d&#39;aide</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Référence API</a></li>
+                    <li><a href="#" class="text-[13px] transition-colors hover:text-emerald-700" style="color:#78716c;">Communauté</a></li>
                 </ul>
             </div>
         </div>
 
         {# Bottom bar #}
-        <div class="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-slate-200 gap-4">
-            <p class="text-sm text-slate-400">&copy; {{ "now"|date("Y") }} HrFlow. All rights reserved.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-between pt-8 gap-4" style="border-top:1px solid #e8dfd0;">
+            <p class="text-[12px]" style="color:#a8a29e;">&copy; {{ "now"|date("Y") }} HrFlow. Tous droits réservés.</p>
             <div class="flex items-center gap-6">
-                <a href="#" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">Privacy Policy</a>
-                <a href="#" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">Terms of Service</a>
-                <a href="#" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">Cookies</a>
+                <a href="#" class="text-[12px] transition-colors hover:text-emerald-700" style="color:#a8a29e;">Politique de confidentialité</a>
+                <a href="#" class="text-[12px] transition-colors hover:text-emerald-700" style="color:#a8a29e;">Conditions d&#39;utilisation</a>
+                <a href="#" class="text-[12px] transition-colors hover:text-emerald-700" style="color:#a8a29e;">Cookies</a>
             </div>
         </div>
     </div>

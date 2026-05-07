@@ -34,7 +34,10 @@ class JobOfferRepository extends ServiceEntityRepository
                ->setParameter('status', $status);
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery()
+            ->setResultCacheLifetime(300) // 5 min — job offer list rarely changes
+            ->setResultCacheId('job_offers_rh_' . $rh->getId() . '_' . ($status ?? 'all'))
+            ->getResult();
     }
 
     /**
