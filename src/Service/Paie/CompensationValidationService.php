@@ -107,7 +107,7 @@ final class CompensationValidationService
      * Get min/max range for a prime type
      * 
      * @param string $primeTypeName The prime type name
-     * @return array|null Array with 'min' and 'max' keys, or null if not found
+     * @return array<mixed>|null Array with 'min' and 'max' keys, or null if not found
      */
     public function getPrimeRange(string $primeTypeName): ?array
     {
@@ -118,7 +118,7 @@ final class CompensationValidationService
      * Get min/max range for a deduction type
      * 
      * @param string $deductionTypeName The deduction type name
-     * @return array|null Array with 'min' and 'max' keys, or null if not found
+     * @return array<mixed>|null Array with 'min' and 'max' keys, or null if not found
      */
     public function getDeductionRange(string $deductionTypeName): ?array
     {
@@ -128,7 +128,7 @@ final class CompensationValidationService
     /**
      * Get all prime ranges
      * 
-     * @return array
+     * @return array<mixed>
      */
     public function getAllPrimeRanges(): array
     {
@@ -138,7 +138,7 @@ final class CompensationValidationService
     /**
      * Get all deduction ranges
      * 
-     * @return array
+     * @return array<mixed>
      */
     public function getAllDeductionRanges(): array
     {

@@ -19,10 +19,12 @@ class GeminiClient implements LlmClientInterface
         ParameterBagInterface $params,
         string $model = 'gemini-2.5-flash-lite'
     ) {
-        $this->apiKey = (string) $params->get('gemini_api_key');
+        $rawKey = $params->get('gemini_api_key');
+        $this->apiKey = is_string($rawKey) ? $rawKey : '';
         $this->model = $model;
     }
 
+    /** @param array<mixed> $messages @param array<mixed> $tools @param array<mixed> $config @return array<mixed> */
     public function generateContent(array $messages, array $tools = [], array $config = [], ?string $systemInstruction = null): array
     {
         $modelName = $config['model'] ?? $this->model;
@@ -85,6 +87,7 @@ class GeminiClient implements LlmClientInterface
         return $data;
     }
 
+    /** @param array<mixed> $messages @return array<mixed> */
     private function normalizeMessages(array $messages): array
     {
         $out = [];
@@ -135,6 +138,7 @@ class GeminiClient implements LlmClientInterface
         return $out;
     }
 
+    /** @param array<mixed> $schema @return array<mixed> */
     private function cleanSchema(array $schema): array
     {
         unset($schema['additionalProperties']);
@@ -151,6 +155,7 @@ class GeminiClient implements LlmClientInterface
         return $schema;
     }
 
+    /** @param array<mixed> $response @return array<mixed> */
     public function parseResponse(array $response): array
     {
         if (isset($response['error'])) {

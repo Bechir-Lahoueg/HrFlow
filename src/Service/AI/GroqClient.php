@@ -19,10 +19,12 @@ class GroqClient implements LlmClientInterface
         ParameterBagInterface $params,
         string $model = 'llama-3.3-70b-versatile'
     ) {
-        $this->apiKey = (string) $params->get('groq_api_key');
+        $rawKey = $params->get('groq_api_key');
+        $this->apiKey = is_string($rawKey) ? $rawKey : '';
         $this->model = $model;
     }
 
+    /** @param array<mixed> $messages @param array<mixed> $tools @param array<mixed> $config @return array<mixed> */
     public function generateContent(array $messages, array $tools = [], array $config = [], ?string $systemInstruction = null): array
     {
         $url = self::BASE_URL . '/chat/completions';
@@ -119,6 +121,7 @@ class GroqClient implements LlmClientInterface
      * Supports roles: system, user, assistant, tool.
      * Preserves tool-call metadata (tool_calls, tool_call_id, name) when present.
      */
+    /** @param array<mixed> $messages @return array<mixed> */
     private function normalizeMessages(array $messages, ?string $systemInstruction = null): array
     {
         $out = [];
@@ -182,6 +185,7 @@ class GroqClient implements LlmClientInterface
         return $out;
     }
 
+    /** @param array<mixed> $response @return array<mixed> */
     public function parseResponse(array $response): array
     {
         if (isset($response['error'])) {

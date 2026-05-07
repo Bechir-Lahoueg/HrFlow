@@ -4,6 +4,7 @@ namespace App\Service\AI\Tool\JobOffer;
 
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GetPipelineStatsTool implements ToolInterface
@@ -34,6 +35,9 @@ class GetPipelineStatsTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
+        if (!$user instanceof DbUser) {
+            return ['error' => 'Not authenticated'];
+        }
         $stats = $this->applicationRepository->getStatusStats($user);
 
         $total = array_sum($stats);
@@ -45,6 +49,7 @@ class GetPipelineStatsTool implements ToolInterface
         ];
     }
 
+    /** @param array<mixed> $stats */
     private function generateInsights(array $stats, int $total): string
     {
         if ($total === 0) return "No candidates found in your pipeline yet.";

@@ -7,13 +7,13 @@ namespace App\AI\Infrastructure;
 final class AgentResponse
 {
     /**
-     * @param array<string, mixed> $uiPayload
+     * @param array<int|string, mixed> $uiPayload
      * @param array<array<string, mixed>> $pendingChangesets
      * @param array<array<string, mixed>> $toolCalls
      * @param array<string, mixed> $activeJob
      * @param array<array<string, mixed>> $candidates
      * @param array<array<string, mixed>> $interviews
-     * @param array<string, mixed> $plan
+     * @param array<int|string, mixed> $plan
      */
     public function __construct(
         public readonly string $message,

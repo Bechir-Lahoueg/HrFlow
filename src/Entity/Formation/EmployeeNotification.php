@@ -12,11 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class EmployeeNotification
 {
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null; // @phpstan-ignore-line
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Employee::class)]
     #[ORM\JoinColumn(name: 'user_id', nullable: false)]
@@ -145,3 +144,4 @@ class EmployeeNotification
         }
     }
 }
+

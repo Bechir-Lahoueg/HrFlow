@@ -16,7 +16,6 @@ class Feedback
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(name: 'from_user_id', type: Types::INTEGER)]
@@ -46,8 +45,8 @@ class Feedback
     #[ORM\Column(name: 'emotion_score', type: Types::FLOAT, nullable: true)]
     private ?float $emotionScore = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
@@ -60,6 +59,11 @@ class Feedback
     public function getFromUserId(): ?int
     {
         return $this->fromUserId;
+    }
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
     }
 
     public function setFromUserId(int $fromUserId): static

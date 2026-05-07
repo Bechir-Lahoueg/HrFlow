@@ -3,6 +3,7 @@
 namespace App\Service\AI\Tool\JobOffer;
 
 use App\Repository\Recrutement\JobOfferRepository;
+use App\Security\DbUser;
 use App\Service\AI\Tool\ToolInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -47,7 +48,7 @@ class UpdateJobOfferTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) {
+        if (!$user instanceof DbUser) {
             return ['error' => 'Not authenticated'];
         }
 

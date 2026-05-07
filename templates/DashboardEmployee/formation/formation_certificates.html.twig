@@ -124,6 +124,8 @@
                         {% set session      = row.session %}
                         {% set participation= row.participation %}
                         {% set attendance   = row.attendance %}
+                        {% set quizPassed   = row.quizPassed %}
+                        {% set quizScore    = row.quizScore %}
 
                         <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between transition-all hover:ring-2 hover:ring-emerald-500/20">
                             <div>
@@ -141,9 +143,9 @@
                                             <h4 class="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1" title="{{ formation.titre }}">{{ formation.titre }}</h4>
                                         </div>
                                     </div>
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap ml-2 shrink-0">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                                        Disponible
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold {{ quizPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }} whitespace-nowrap ml-2 shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ quizPassed ? 'bg-emerald-500' : 'bg-amber-500' }} inline-block"></span>
+                                        {{ quizPassed ? 'Disponible' : 'Quiz requis' }}
                                     </span>
                                 </div>
 
@@ -161,6 +163,15 @@
 
                                         <p><span class="font-semibold text-zinc-500">Mode</span></p>
                                         <p class="text-zinc-800 dark:text-zinc-200">{{ session.mode }}</p>
+
+                                        <p><span class="font-semibold text-zinc-500">Quiz</span></p>
+                                        <p class="text-zinc-800 dark:text-zinc-200">
+                                            {% if quizScore is not null %}
+                                                {{ quizScore }}% {{ quizPassed ? '(validé)' : '(à valider)' }}
+                                            {% else %}
+                                                Non tenté
+                                            {% endif %}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -178,17 +189,30 @@
 
                             {# Actions #}
                             <div class="flex gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
-                                <a href="{{ path('employee_formation_sessions', {id: formation.id}) }}"
+                                <a href="{{ path('employee_formation_participation_details', {id: participation.id}) }}"
                                    class="flex-1 text-center px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition">
                                     Voir détails
                                 </a>
-                                <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}"
-                                   class="cert-download-btn flex-1 text-center px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition inline-flex items-center justify-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/>
-                                    </svg>
-                                    Télécharger
-                                </a>
+                                {% if quizPassed %}
+                                    <a href="{{ path('employee_formation_certificate_download', {id: participation.id}) }}"
+                                       class="cert-download-btn flex-1 text-center px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition inline-flex items-center justify-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/>
+                                        </svg>
+                                        Télécharger
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('employee_formation_quiz', {id: participation.id, return: 'certificates'}) }}"
+                                       class="flex-1 text-center px-3 py-2 rounded-xl bg-[#145EB7] text-white hover:bg-[#0f4a92] text-xs font-bold transition">
+                                        Passer le quiz
+                                    </a>
+                                    <span class="flex-1 text-center px-3 py-2 rounded-xl bg-zinc-100 text-zinc-500 text-xs font-bold border border-zinc-200 cursor-not-allowed inline-flex items-center justify-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17.5h16"/>
+                                        </svg>
+                                        Télécharger
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
 

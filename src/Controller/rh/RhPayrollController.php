@@ -59,7 +59,12 @@ final class RhPayrollController extends AbstractController
                 ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $total = count($queryBuilder->getQuery()->getResult());
+        // COUNT via SQL - avoids loading all rows just to count
+        $total = (int) (clone $queryBuilder)
+            ->select('COUNT(e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
         $employees = $queryBuilder
             ->orderBy('e.firstName', 'ASC')
             ->setMaxResults($limit)
@@ -180,7 +185,7 @@ final class RhPayrollController extends AbstractController
         EmployeeRepository $employeeRepository,
     ): Response {
         $rhId = $this->getCurrentRhId();
-        $employees = $employeeRepository->findByRh($this->getUser());
+        $employees = $employeeRepository->findByRh($this->getCurrentDbUser());
 
         if (empty($employees)) {
             $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
@@ -243,20 +248,26 @@ final class RhPayrollController extends AbstractController
                 return $this->redirectToRoute('app_rh_payroll_fiche_edit', ['id' => $id]);
             }
 
-            $result = $fichePaieService->updateFichePaie($idInt, $mois, $annee, $salaireBrut, $notes ?: null);
-
-            if ($result['success']) {
-                $this->addFlash('success', $result['message']);
-                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $idInt]);
-            } else {
-                $this->addFlash('error', $result['message']);
+            try {
+                $dto = new FichePaieRequestDTO(
+                    employeeId: $fiche->employeeId,
+                    mois: (int) $request->request->get('mois', 0),
+                    annee: (int) $request->request->get('annee', 0),
+                    salaireBrut: (string) $request->request->get('salaire_brut', '0'),
+                    notes: trim((string) $request->request->get('notes', '')) ?: null,
+                );
+                $fichePaieService->updateFichePaie($id, $dto);
+                $this->addFlash('success', 'Fiche de paie mise à jour avec succès.');
+                return $this->redirectToRoute('app_rh_payroll_fiche_show', ['id' => $id]);
+            } catch (InvalidPeriodException|InvalidSalaryException|EmployeeNotFoundException $e) {
+                $this->addFlash('error', $e->getMessage());
             }
         }
 
         return $this->render('DashboardHr/remuneration/fiche_paie_form.html.twig', [
             'user' => $this->getUser(),
             'fiche' => $fiche,
-            'employees' => $employeeRepository->findByRh($this->getUser()),
+            'employees' => $employeeRepository->findByRh($this->getCurrentDbUser()),
         ]);
     }
 
@@ -479,7 +490,7 @@ final class RhPayrollController extends AbstractController
         PrimeService $primeService,
         EmployeeRepository $employeeRepository,
     ): Response {
-        $employees = $employeeRepository->findByRh($this->getUser());
+        $employees = $employeeRepository->findByRh($this->getCurrentDbUser());
 
         if (empty($employees)) {
             $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
@@ -582,7 +593,7 @@ final class RhPayrollController extends AbstractController
         return $this->render('DashboardHr/remuneration/prime_form.html.twig', [
             'user' => $this->getUser(),
             'prime' => $prime,
-            'employees' => $employeeRepository->findByRh($this->getUser()),
+            'employees' => $employeeRepository->findByRh($this->getCurrentDbUser()),
             'typeChoices' => PrimeService::getPrimeTypeChoices(),
             'preSelectedEmployeeId' => null,
             'isEditing' => true,
@@ -721,7 +732,7 @@ final class RhPayrollController extends AbstractController
         DeductionService $deductionService,
         EmployeeRepository $employeeRepository,
     ): Response {
-        $employees = $employeeRepository->findByRh($this->getUser());
+        $employees = $employeeRepository->findByRh($this->getCurrentDbUser());
 
         if (empty($employees)) {
             $this->addFlash('warning', 'Vous n\'avez aucun employé assigné.');
@@ -830,7 +841,7 @@ final class RhPayrollController extends AbstractController
         return $this->render('DashboardHr/remuneration/deduction_form.html.twig', [
             'user' => $this->getUser(),
             'deduction' => $deduction,
-            'employees' => $employeeRepository->findByRh($this->getUser()),
+            'employees' => $employeeRepository->findByRh($this->getCurrentDbUser()),
             'typeChoices' => DeductionService::getDeductionTypeChoices(),
             'preSelectedEmployeeId' => null,
             'isEditing' => true,
@@ -899,13 +910,18 @@ final class RhPayrollController extends AbstractController
 
     private function getCurrentRhId(): int
     {
+        return $this->getCurrentDbUser()->getId();
+    }
+
+    private function getCurrentDbUser(): DbUser
+    {
         $user = $this->getUser();
 
         if (!$user instanceof DbUser) {
             throw $this->createAccessDeniedException('Invalid RH user.');
         }
 
-        return $user->getId();
+        return $user;
     }
 
     private function parsePrimeType(string $value): ?\App\Enum\PrimeType

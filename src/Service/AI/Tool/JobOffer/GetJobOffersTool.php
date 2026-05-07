@@ -53,14 +53,14 @@ class GetJobOffersTool implements ToolInterface
         }
 
         // Filter by current RH user ID
-        $criteria['createdBy'] = $user->getId();
+        $criteria['createdBy'] = method_exists($user, 'getId') ? $user->getId() : null;
 
         $offers = $this->jobOfferRepository->findBy($criteria);
         
         $result = [];
         foreach ($offers as $offer) {
             if (isset($args['title_search']) && !empty($args['title_search'])) {
-                if (!str_contains(strtolower($offer->getTitle()), strtolower($args['title_search']))) {
+                if (!str_contains(strtolower($offer->getTitle() ?? ''), strtolower((string) $args['title_search']))) {
                     continue;
                 }
             }

@@ -28,7 +28,7 @@ class ChatbotController extends AbstractController
         }
 
         $message = $data['message'] ?? '';
-        $sessionId = $data['session_id'] ?? $request->getSession()?->getId() ?? bin2hex(random_bytes(8));
+        $sessionId = $data['session_id'] ?? ($request->getSession()->getId() ?: bin2hex(random_bytes(8)));
 
         if (empty($message)) {
             return new JsonResponse(['error' => 'Message is empty'], 400);
@@ -82,7 +82,7 @@ class ChatbotController extends AbstractController
     }
 
     #[Route('/interface', name: 'app_ai_interface', methods: ['GET'])]
-    public function interface()
+    public function interface(): \Symfony\Component\HttpFoundation\Response
     {
         return $this->render('ai/chat.html.twig');
     }
@@ -91,13 +91,14 @@ class ChatbotController extends AbstractController
     public function clear(Request $request, ConversationMemory $memory, LoggerInterface $logger): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $sessionId = $data['session_id'] ?? $request->getSession()?->getId();
+        $sessionId = $data['session_id'] ?? $request->getSession()->getId();
 
         if ($sessionId) {
             $cacheKey = "chat_memory_{$sessionId}";
+            $user = $this->getUser();
             $logger->info('AI chat session cleared', [
                 'session_id' => $sessionId,
-                'user_id' => $this->getUser() && method_exists($this->getUser(), 'getId') ? $this->getUser()->getId() : null,
+                'user_id' => $user !== null && method_exists($user, 'getId') ? $user->getId() : null,
             ]);
         }
 

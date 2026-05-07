@@ -13,22 +13,21 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'participation_formation')]
 class ParticipationFormation
 {
-    /** @phpstan-ignore-next-line */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_participation')]
-    private ?int $id = null; // @phpstan-ignore-line
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Employee::class)]
-    #[ORM\JoinColumn(name: 'id_utilisateur', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_utilisateur_id', nullable: false)]
     private ?Employee $employee = null;
 
     #[ORM\ManyToOne(targetEntity: SessionFormation::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]
     private ?SessionFormation $session = null;
 
     #[ORM\Column(name: 'date_inscription', type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $dateInscription = null;
+    private \DateTimeInterface $dateInscription;
 
     #[ORM\Column(name: 'statut_participation', length: 30)]
     private ?string $statutParticipation = null;
@@ -36,15 +35,30 @@ class ParticipationFormation
     #[ORM\Column(name: 'certificat_obtenu', type: Types::BOOLEAN)]
     private bool $certificatObtenu = false;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
 
     /** @var Collection<int, PresenceFormation> */
-    #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation')]
+    #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $presences;
 
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $token = null;
+
+    #[ORM\Column(name: 'quiz_score', type: Types::INTEGER, nullable: true)]
+    private ?int $quizScore = null;
+
+    #[ORM\Column(name: 'quiz_passed', type: Types::BOOLEAN)]
+    private bool $quizPassed = false;
+
+    #[ORM\Column(name: 'quiz_attempted_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $quizAttemptedAt = null;
+
+    #[ORM\Column(name: 'quiz_correct_count', type: Types::INTEGER, nullable: true)]
+    private ?int $quizCorrectCount = null;
+
+    #[ORM\Column(name: 'quiz_total_questions', type: Types::INTEGER, nullable: true)]
+    private ?int $quizTotalQuestions = null;
 
     public function getToken(): ?string
     {
@@ -60,6 +74,7 @@ class ParticipationFormation
     public function __construct()
     {
         $this->presences = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -89,7 +104,7 @@ class ParticipationFormation
         return $this;
     }
 
-    public function getDateInscription(): ?\DateTimeInterface
+    public function getDateInscription(): \DateTimeInterface
     {
         return $this->dateInscription;
     }
@@ -133,9 +148,65 @@ class ParticipationFormation
         return $this->presences;
     }
 
+    public function getQuizScore(): ?int
+    {
+        return $this->quizScore;
+    }
+
+    public function setQuizScore(?int $quizScore): static
+    {
+        $this->quizScore = $quizScore;
+        return $this;
+    }
+
+    public function isQuizPassed(): bool
+    {
+        return $this->quizPassed;
+    }
+
+    public function setQuizPassed(bool $quizPassed): static
+    {
+        $this->quizPassed = $quizPassed;
+        return $this;
+    }
+
+    public function getQuizAttemptedAt(): ?\DateTimeInterface
+    {
+        return $this->quizAttemptedAt;
+    }
+
+    public function setQuizAttemptedAt(?\DateTimeInterface $quizAttemptedAt): static
+    {
+        $this->quizAttemptedAt = $quizAttemptedAt;
+        return $this;
+    }
+
+    public function getQuizCorrectCount(): ?int
+    {
+        return $this->quizCorrectCount;
+    }
+
+    public function setQuizCorrectCount(?int $quizCorrectCount): static
+    {
+        $this->quizCorrectCount = $quizCorrectCount;
+        return $this;
+    }
+
+    public function getQuizTotalQuestions(): ?int
+    {
+        return $this->quizTotalQuestions;
+    }
+
+    public function setQuizTotalQuestions(?int $quizTotalQuestions): static
+    {
+        $this->quizTotalQuestions = $quizTotalQuestions;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
         $this->createdAt = new \DateTime();
     }
 }
+

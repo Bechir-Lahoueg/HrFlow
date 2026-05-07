@@ -4,6 +4,7 @@ namespace App\Service\AI\Tool\Interview;
 
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\InterviewRepository;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class GetInterviewsTool implements ToolInterface
@@ -54,7 +55,7 @@ class GetInterviewsTool implements ToolInterface
     public function execute(array $args): mixed
     {
         $user = $this->security->getUser();
-        if (!$user) return ['error' => 'Not authenticated'];
+        if (!$user instanceof DbUser) return ['error' => 'Not authenticated'];
 
         $interviews = $this->interviewRepository->findByRh(
             $user,

@@ -129,6 +129,7 @@ final class AgentOrchestrator
     }
 
     /**
+     * @param array<int, mixed> $messages
      * @param ToolInterface[] $tools
      * @return array{message: ChatMessage, toolCalls: ToolCall[], toolResults: array[], pendingChangesets: PendingChangeset[], messages: ChatMessage[]}
      */
@@ -244,7 +245,8 @@ final class AgentOrchestrator
 
     /**
      * @param ToolCall[] $toolCalls
-     * @param array[] $toolResults
+     * @param list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}> $toolResults
+     * @return array<int, mixed>
      */
     private function buildUiPayload(array $toolCalls, array $toolResults): array
     {

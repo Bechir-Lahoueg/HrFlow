@@ -26,6 +26,9 @@ final class LeaveRequestService
 
     private const VALID_URGENCY_LEVELS = ['LOW', 'MEDIUM', 'HIGH'];
 
+    /** Ensures autoFreezeExpiredExceptionalRequests() runs at most once per request/service lifecycle */
+    private bool $freezeAlreadyRan = false;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly LeaveRequestRepository $leaveRequestRepository,
@@ -99,7 +102,7 @@ final class LeaveRequestService
         $isExceptionRequest = $requestMode === self::CATEGORY_EXCEPTION;
 
         $balance = $this->leaveBalanceService->getEmployeeBalance($employeeId);
-        $availableDays = (float) ($balance['available_days'] ?? 0.0);
+       $availableDays = (float) $balance['available_days'];
 
         if (!$isExceptionRequest && ($availableDays <= 0 || $workingDays > $availableDays)) {
             return [
@@ -502,6 +505,12 @@ final class LeaveRequestService
 
     private function autoFreezeExpiredExceptionalRequests(): void
     {
+        // Run at most once per request — called from 10 different methods
+        if ($this->freezeAlreadyRan) {
+            return;
+        }
+        $this->freezeAlreadyRan = true;
+
         $today = new DateTimeImmutable('today');
         $requests = $this->leaveRequestRepository->findExpiredExceptionalPending($today);
 
@@ -524,7 +533,7 @@ final class LeaveRequestService
 
         $this->em->flush();
     }
-
+    /** @phpstan-ignore method.unused */
     private function formatDate(?\DateTimeInterface $date): string
     {
         return $date ? $date->format('Y-m-d') : '';

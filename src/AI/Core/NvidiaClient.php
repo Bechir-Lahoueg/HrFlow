@@ -124,13 +124,16 @@ final class NvidiaClient implements LlmClientInterface
     }
 
     /**
-     * @param ToolInterface[] $tools
-     * @return array<array{type: string, function: array}>
+     * @param array<int, ToolInterface|array<string, mixed>> $tools
+     * @return array<int, array{type: string, function: array<string, mixed>}>
      */
     private function buildTools(array $tools): array
     {
         $functionDeclarations = [];
         foreach ($tools as $tool) {
+            if (!($tool instanceof ToolInterface)) {
+                continue;
+            }
             $definition = $tool->getDefinition();
             $functionDeclarations[] = [
                 'type' => 'function',
@@ -145,6 +148,9 @@ final class NvidiaClient implements LlmClientInterface
         return $functionDeclarations;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function parseResponse(array $data): ChatResponse
     {
         $content = '';

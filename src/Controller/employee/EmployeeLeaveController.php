@@ -202,7 +202,7 @@ final class EmployeeLeaveController extends AbstractController
 
         $this->addFlash(
             $result['success'] ? 'success' : 'error',
-            (string) ($result['message'] ?? 'Une erreur est survenue lors de l\'envoi de la demande.'),
+            (string) $result['message'],
         );
         return $this->redirectToRoute('app_employee_leave_requests');
     }
@@ -267,7 +267,8 @@ final class EmployeeLeaveController extends AbstractController
     /** @return array{success: bool, path?: string, absolute_path?: string, message?: string} */
     private function storeAttachment(UploadedFile $file, ?LoggerInterface $logger = null): array
     {
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $projectDir = $this->getParameter('kernel.project_dir');
+        assert(is_string($projectDir));
         $targetDir = $projectDir . '/public/uploads/leave-exceptions';
 
         if (!is_dir($targetDir)) {

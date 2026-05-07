@@ -121,7 +121,7 @@ final class GoogleAuthenticatorService
 
     public function verifyCode(string $secret, string $code, int $window = 1): bool
     {
-        $normalizedCode = preg_replace('/\D+/', '', $code ?? '');
+        $normalizedCode = preg_replace('/\D+/', '', $code);
         if (!is_string($normalizedCode) || strlen($normalizedCode) !== 6) {
             return false;
         }
@@ -145,7 +145,8 @@ final class GoogleAuthenticatorService
 
         $offset = ord(substr($hash, -1)) & 0x0F;
         $segment = substr($hash, $offset, 4);
-        $value = unpack('N', $segment)[1] & 0x7FFFFFFF;
+        $unpacked = unpack('N', $segment);
+        $value = ($unpacked !== false ? $unpacked[1] : 0) & 0x7FFFFFFF;
 
         return str_pad((string) ($value % 1000000), 6, '0', STR_PAD_LEFT);
     }
@@ -165,7 +166,7 @@ final class GoogleAuthenticatorService
 
         $binary = '';
         for ($i = 0, $len = strlen($bits); $i + 8 <= $len; $i += 8) {
-            $binary .= chr(bindec(substr($bits, $i, 8)));
+            $binary .= chr((int) bindec(substr($bits, $i, 8)) & 0xFF);
         }
 
         return $binary;

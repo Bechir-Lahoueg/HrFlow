@@ -3,6 +3,7 @@
 namespace App\Controller\rh;
 
 use App\Entity\Recrutement\Application;
+use App\Form\CandidateApplicationType;
 use App\Form\Recrutement\BulkApplicationActionType;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Repository\Recrutement\InterviewRepository;
@@ -60,9 +61,9 @@ final class RecruitmentApplicationController extends AbstractController
             $currentOffer = $jobOfferRepository->findOneByRh($jobOfferId, $rh);
         }
 
-        // Get applications for bulk form (only active, non-deleted)
-        $applications = $applicationRepository->findByRh($rh, $jobOfferId ?: null, $status, $department, $search);
-        
+        // Use current page items as bulk-form choices (eliminates duplicate full-table query)
+        $applications = iterator_to_array($pagination);
+
         // Create bulk action form
         $bulkForm = $this->createForm(BulkApplicationActionType::class, null, [
             'applications' => $applications,
@@ -94,6 +95,8 @@ final class RecruitmentApplicationController extends AbstractController
             }
 
             $count = 0;
+            $hiredCandidates = [];
+            $hiredApplicationIds = [];
             foreach ($selected as $application) {
                 switch ($action) {
                     case 'review':
@@ -111,15 +114,9 @@ final class RecruitmentApplicationController extends AbstractController
                     case 'hire':
                         $application->setStatus('HIRED');
                         $count++;
-                        // Auto-reject other applications from this candidate
-                        $candidate = $application->getCandidate();
-                        if ($candidate) {
-                            $candidateApps = $candidateAppsByCandidate[$candidate->getId()] ?? [];
-                            foreach ($candidateApps as $otherApp) {
-                                if ($otherApp->getId() !== $application->getId() && $otherApp->getStatus() !== 'REJECTED') {
-                                    $otherApp->setStatus('REJECTED');
-                                }
-                            }
+                        if ($application->getCandidate()) {
+                            $hiredCandidates[] = $application->getCandidate();
+                            $hiredApplicationIds[] = $application->getId();
                         }
                         break;
                     case 'reject':
@@ -128,8 +125,13 @@ final class RecruitmentApplicationController extends AbstractController
                         break;
                 }
             }
-            
+
             $em->flush();
+
+            // Batch-reject other open applications for all hired candidates (1 UPDATE query)
+            if (!empty($hiredCandidates)) {
+                $applicationRepository->batchRejectByCandidates($hiredCandidates, $hiredApplicationIds);
+            }
             
             $actionLabels = [
                 'review' => 'passées en revue',
@@ -233,7 +235,7 @@ final class RecruitmentApplicationController extends AbstractController
             return $this->redirectToRoute('app_rh_applications');
         }
 
-        $form = $this->createForm(ApplicationType::class, $application, ['is_edit' => true]);
+        $form = $this->createForm(CandidateApplicationType::class, $application, ['is_edit' => true]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

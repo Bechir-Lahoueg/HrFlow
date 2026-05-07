@@ -14,13 +14,14 @@ interface ToolInterface
 
     /**
      * Returns the Gemini function declaration (JSON schema).
+     * @return array<mixed>
      */
     public function getDefinition(): array;
 
     /**
      * Executes the tool logic.
      * 
-     * @param array $args Arguments provided by Gemini
+     * @param array<mixed> $args Arguments provided by Gemini
      * @return mixed The result of the execution
      */
     public function execute(array $args): mixed;

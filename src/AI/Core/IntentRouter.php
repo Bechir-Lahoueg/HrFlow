@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Core;
 
+use App\AI\Contract\ToolInterface;
 use App\AI\Contract\ToolRegistryInterface;
 use App\AI\Domain\Enum\IntentType;
 use App\AI\Infrastructure\ChatMessage;
@@ -181,6 +182,9 @@ final class IntentRouter
         return '';
     }
 
+    /**
+     * @param string[] $keywords
+     */
     private function containsAny(string $text, array $keywords): bool
     {
         foreach ($keywords as $keyword) {

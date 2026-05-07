@@ -73,7 +73,7 @@ final class SessionFeedbackService
 
     /**
      * @param int[] $formationIds
-     * @return array<int,float>
+     * @return array<int, array{average: float, count: int}>
      */
     public function getAverageRatingsByFormationIds(array $formationIds): array
     {

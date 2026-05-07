@@ -97,6 +97,9 @@ class ApplicationRepository extends ServiceEntityRepository
     ): array {
         $qb = $this->createQueryBuilder('a')
             ->join('a.jobOffer', 'jo')
+            ->addSelect('jo')
+            ->leftJoin('a.candidate', 'c')
+            ->addSelect('c')
             ->where('jo.createdBy = :rhId')
             ->andWhere('a.isDeleted = false')
             ->setParameter('rhId', $rh->getId())
@@ -127,6 +130,7 @@ class ApplicationRepository extends ServiceEntityRepository
 
     /**
      * Find applications by RH with optional filters (returns Query for pagination)
+     * @return \Doctrine\ORM\Query<int, Application>
      */
     public function findByRhQuery(
         DbUser $rh,
@@ -137,6 +141,9 @@ class ApplicationRepository extends ServiceEntityRepository
     ): \Doctrine\ORM\Query {
         $qb = $this->createQueryBuilder('a')
             ->join('a.jobOffer', 'jo')
+            ->addSelect('jo')
+            ->leftJoin('a.candidate', 'c')
+            ->addSelect('c')
             ->where('jo.createdBy = :rhId')
             ->andWhere('a.isDeleted = false')
             ->setParameter('rhId', $rh->getId())
@@ -162,7 +169,9 @@ class ApplicationRepository extends ServiceEntityRepository
                ->setParameter('search', '%' . $search . '%');
         }
 
-        return $qb->getQuery();
+        $query = $qb->getQuery();
+        /** @var \Doctrine\ORM\Query<int, Application> $query */
+        return $query;
     }
 
     /**
@@ -234,7 +243,11 @@ class ApplicationRepository extends ServiceEntityRepository
                ->setParameter('job', $job);
         }
 
-        $results = $qb->getQuery()->getResult();
+        $cacheId = 'app_status_stats_rh_' . $rh->getId() . ($job ? '_jo' . $job->getId() : '');
+        $results = $qb->getQuery()
+            ->setResultCacheLifetime(60)
+            ->setResultCacheId($cacheId)
+            ->getResult();
 
         $stats = ['PENDING' => 0, 'REVIEWING' => 0, 'INTERVIEW' => 0, 'OFFER' => 0, 'HIRED' => 0, 'REJECTED' => 0];
         foreach ($results as $row) {
@@ -255,6 +268,8 @@ class ApplicationRepository extends ServiceEntityRepository
             ->andWhere('a.isDeleted = false')
             ->setParameter('rhId', $rh->getId())
             ->getQuery()
+            ->setResultCacheLifetime(60)
+            ->setResultCacheId('app_count_rh_' . $rh->getId())
             ->getSingleScalarResult();
     }
 
@@ -272,6 +287,8 @@ class ApplicationRepository extends ServiceEntityRepository
             ->setParameter('rhId', $rh->getId())
             ->setParameter('pending', 'PENDING')
             ->getQuery()
+            ->setResultCacheLifetime(60)
+            ->setResultCacheId('app_pending_count_rh_' . $rh->getId())
             ->getSingleScalarResult();
     }
 
@@ -304,6 +321,33 @@ class ApplicationRepository extends ServiceEntityRepository
             ->setParameter('rhId', $rh->getId())
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * Batch-reject all non-REJECTED applications for the given candidates,
+     * excluding the application IDs that were just hired.
+     *
+     * @param \App\Entity\Recrutement\Candidate[] $candidates
+     * @param int[] $excludeIds Application IDs to keep as HIRED
+     */
+    public function batchRejectByCandidates(array $candidates, array $excludeIds): void
+    {
+        if (empty($candidates)) {
+            return;
+        }
+
+        $this->createQueryBuilder('a')
+            ->update()
+            ->set('a.status', ':rejected')
+            ->where('a.candidate IN (:candidates)')
+            ->andWhere('a.id NOT IN (:excludeIds)')
+            ->andWhere('a.status != :rejected')
+            ->andWhere('a.isDeleted = false')
+            ->setParameter('rejected', 'REJECTED')
+            ->setParameter('candidates', $candidates)
+            ->setParameter('excludeIds', $excludeIds)
+            ->getQuery()
+            ->execute();
     }
 
     /**

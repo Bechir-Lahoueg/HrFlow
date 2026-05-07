@@ -85,7 +85,6 @@ class RhProjectController extends AbstractController
             $tasks = $this->taskService->getTasksByProject($projectId);
             $team = $this->collaboratorService->getCollaboratorsByProject($projectId);
             $milestones = $this->milestoneService->getMilestonesByProject($projectId);
-            $updates = $this->updateService->getUpdatesByProject($projectId, 20);
             $analytics = $this->calculateAnalytics($project, $tasks, $team, $milestones);
 
             $reportProjects[] = [
@@ -93,7 +92,6 @@ class RhProjectController extends AbstractController
                 'tasks' => $tasks,
                 'team' => $team,
                 'milestones' => $milestones,
-                'updates' => $updates,
                 'analytics' => $analytics,
             ];
         }
@@ -292,7 +290,8 @@ class RhProjectController extends AbstractController
         }
 
         $this->taskService->createTask($data);
-        $this->updateService->logTaskCreated($id, $user->getId(), $data['title'], true);
+        $taskTitle = is_string($data['title'] ?? null) ? $data['title'] : (is_scalar($data['title'] ?? null) ? (string) $data['title'] : 'Untitled Task');
+        $this->updateService->logTaskCreated($id, $user->getId(), $taskTitle, true);
 
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse([

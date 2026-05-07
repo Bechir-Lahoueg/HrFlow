@@ -44,7 +44,7 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
             $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $interviewerChoices[(string) $label] = $user->getId();
         }
 
         // Get current application info if filtering
@@ -96,7 +96,7 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
             $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $interviewerChoices[(string) $label] = $user->getId();
         }
         
         $interview = new Interview();
@@ -110,8 +110,8 @@ final class RecruitmentInterviewController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Check for conflicts
             $validation = $conflictDetector->validateInterviewScheduling(
-                $interview->getInterviewerId(),
-                $interview->getInterviewDate()
+                $interview->getInterviewerId() ?? 0,
+                $interview->getInterviewDate() ?? new \DateTime()
             );
 
             if (!$validation['valid']) {
@@ -227,7 +227,7 @@ final class RecruitmentInterviewController extends AbstractController
         $interviewerChoices = [];
         foreach ($interviewers as $user) {
             $label = $user->getEmail() ? sprintf('%s (%s)', $user->getUsername(), $user->getEmail()) : $user->getUsername();
-            $interviewerChoices[$label] = $user->getId();
+            $interviewerChoices[(string) $label] = $user->getId();
         }
 
         $form = $this->createForm(InterviewType::class, $interview, [
@@ -241,8 +241,8 @@ final class RecruitmentInterviewController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Check for conflicts (excluding current interview)
             $validation = $conflictDetector->validateInterviewScheduling(
-                $interview->getInterviewerId(),
-                $interview->getInterviewDate(),
+                $interview->getInterviewerId() ?? 0,
+                $interview->getInterviewDate() ?? new \DateTime(),
                 $interview->getId()
             );
 
@@ -416,7 +416,7 @@ final class RecruitmentInterviewController extends AbstractController
             $events[] = [
                 'id' => $interview->getId(),
                 'title' => sprintf('%s - %s', $interview->getApplication()?->getCandidateName(), $interview->getType()),
-                'start' => $interview->getInterviewDate()->format('Y-m-d\TH:i:s'),
+                'start' => $interview->getInterviewDate()?->format('Y-m-d\TH:i:s') ?? '',
                 'url' => $this->generateUrl('app_rh_interviews_show', ['id' => $interview->getId()]),
                 'backgroundColor' => match($interview->getResult()) {
                     'PASSED' => '#10b981',

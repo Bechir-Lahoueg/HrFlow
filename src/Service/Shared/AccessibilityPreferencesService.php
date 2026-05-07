@@ -25,6 +25,18 @@ final class AccessibilityPreferencesService
     /** Codes de langue autorisés pour la synthèse vocale (Web Speech API). */
     public const ALLOWED_VOICE_LANGS = ['fr-FR', 'en-US', 'ar-TN'];
 
+    /** Vitesses de lecture autorisées (multiplieur, ex. 1.0 = normale). */
+    public const ALLOWED_VOICE_SPEEDS = [0.75, 1.0, 1.25, 1.5];
+
+    /**
+     * Memoization par requête — évite de re-requêter la DB à chaque
+     * appel Twig de accessibility_prefs() au sein de la même requête HTTP.
+     * Clé : "source_userId" (ex. "employees_42").
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    private array $requestCache = [];
+
     public function __construct(
         private readonly Connection $connection,
     ) {
@@ -41,6 +53,8 @@ final class AccessibilityPreferencesService
             'high_contrast'   => false,
             'font_scale'      => 100,
             'voice_feedback'  => false,
+            'hover_reading'   => false,
+            'voice_speed'     => 1.0,
             'simplified_ui'   => false,
             'reduce_motion'   => false,
             'voice_lang'      => 'fr-FR',
@@ -60,6 +74,12 @@ final class AccessibilityPreferencesService
 
         if (!$user instanceof DbUser) {
             return $defaults;
+        }
+
+        // Memoize per request: return cached result without hitting the DB again.
+        $cacheKey = $user->getSource() . '_' . $user->getId();
+        if (isset($this->requestCache[$cacheKey])) {
+            return $this->requestCache[$cacheKey];
         }
 
         $table = $user->getSource() === 'employees' ? 'employees' : 'users';
@@ -88,7 +108,10 @@ final class AccessibilityPreferencesService
             return $defaults;
         }
 
-        return $this->sanitize(array_merge($defaults, $decoded));
+        $result = $this->sanitize(array_merge($defaults, $decoded));
+        $this->requestCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     /**
@@ -120,6 +143,10 @@ final class AccessibilityPreferencesService
             return null;
         }
 
+        // Invalidate request-level cache so the next load() call reflects the saved value.
+        $cacheKey = $user->getSource() . '_' . $user->getId();
+        $this->requestCache[$cacheKey] = $merged;
+
         return $merged;
     }
 
@@ -143,10 +170,17 @@ final class AccessibilityPreferencesService
             $voiceLang = $defaults['voice_lang'];
         }
 
+        $voiceSpeed = (float) ($prefs['voice_speed'] ?? $defaults['voice_speed']);
+        if (!in_array($voiceSpeed, self::ALLOWED_VOICE_SPEEDS, true)) {
+            $voiceSpeed = $defaults['voice_speed'];
+        }
+
         return [
             'high_contrast'  => $this->toBool($prefs['high_contrast'] ?? false),
             'font_scale'     => $fontScale,
             'voice_feedback' => $this->toBool($prefs['voice_feedback'] ?? false),
+            'hover_reading'  => $this->toBool($prefs['hover_reading'] ?? false),
+            'voice_speed'    => $voiceSpeed,
             'simplified_ui'  => $this->toBool($prefs['simplified_ui'] ?? false),
             'reduce_motion'  => $this->toBool($prefs['reduce_motion'] ?? false),
             'voice_lang'     => $voiceLang,

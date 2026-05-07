@@ -27,6 +27,11 @@ services:
             $groqApi: '%groq_api%'
             $nvidiaApiKey: '%nvidia_api_key%'
             $projectDir: '%kernel.project_dir%'
+            # CORS — injected into CorsSubscriber from cors.yaml
+            $corsAllowOrigins: '%cors.allow_origins%'
+            $corsAllowMethods: '%cors.allow_methods%'
+            $corsAllowHeaders: '%cors.allow_headers%'
+            $corsMaxAge: '%cors.max_age%'
 
 
 

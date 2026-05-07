@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/** @extends AbstractType<array<string, mixed>> */
 class CandidateApplicationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -80,7 +81,7 @@ class CandidateApplicationType extends AbstractType
     /**
      * Custom validator for file extension (works without fileinfo extension)
      */
-    public function validateFileExtension($value, ExecutionContextInterface $context): void
+    public function validateFileExtension(mixed $value, ExecutionContextInterface $context): void
     {
         if (!$value instanceof UploadedFile || !$value->isValid()) {
             return;

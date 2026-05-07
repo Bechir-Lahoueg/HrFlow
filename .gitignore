@@ -5,6 +5,7 @@
 /.claude/
 /claude
 /.env.*.local
+/.env.render
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/

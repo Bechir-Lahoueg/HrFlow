@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\AI\Infrastructure;
 
+use App\AI\Contract\ToolInterface;
+
 final class ChatRequest
 {
     /**
      * @param ChatMessage[] $messages
-     * @param array<int, array<string, mixed>> $tools
+     * @param ToolInterface[]|array<int, array<string, mixed>> $tools
      */
     public function __construct(
         public readonly array $messages,

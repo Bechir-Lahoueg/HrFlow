@@ -5,6 +5,7 @@ namespace App\Service\AI\Tool\Application;
 use App\Service\AI\Tool\ToolInterface;
 use App\Repository\Recrutement\ApplicationRepository;
 use App\Entity\Recrutement\Application;
+use App\Security\DbUser;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class RankCandidatesTool implements ToolInterface
@@ -48,6 +49,7 @@ class RankCandidatesTool implements ToolInterface
         $jobId = (int)$args['job_id'];
         $limit = $args['limit'] ?? 5;
         $user = $this->security->getUser();
+        if (!$user instanceof DbUser) return ['error' => 'Not authenticated'];
 
         // Get applications for this job (filtered by RH owner in repository)
         $applications = $this->applicationRepository->findByJobOffer($jobId, $user);

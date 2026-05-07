@@ -254,8 +254,8 @@ class InterviewRepository extends ServiceEntityRepository
         ?int $excludeInterviewId = null,
         int $bufferMinutes = 60
     ): array {
-        $startTime = (clone $interviewDate)->modify("-{$bufferMinutes} minutes");
-        $endTime = (clone $interviewDate)->modify("+{$bufferMinutes} minutes");
+        $startTime = \DateTime::createFromInterface($interviewDate)->modify("-{$bufferMinutes} minutes");
+        $endTime = \DateTime::createFromInterface($interviewDate)->modify("+{$bufferMinutes} minutes");
 
         $qb = $this->createQueryBuilder('i')
             ->where('i.interviewerId = :interviewerId')
@@ -299,8 +299,8 @@ class InterviewRepository extends ServiceEntityRepository
      */
     public function findInterviewerScheduleForDate(int $interviewerId, \DateTimeInterface $date): array
     {
-        $startOfDay = (clone $date)->setTime(0, 0, 0);
-        $endOfDay = (clone $date)->setTime(23, 59, 59);
+        $startOfDay = \DateTime::createFromInterface($date)->setTime(0, 0, 0);
+        $endOfDay = \DateTime::createFromInterface($date)->setTime(23, 59, 59);
 
         return $this->createQueryBuilder('i')
             ->join('i.application', 'a')

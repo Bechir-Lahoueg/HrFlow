@@ -78,6 +78,7 @@ final class FormationRecommendationService
         // Also add generic recommendations if many deductions
         $totalDeductions = array_sum($typeCounts);
         if ($totalDeductions >= 3) {
+            /** @phpstan-ignore nullCoalesce.offset */
             $keywords['Développement Personnel'] = ($keywords['Développement Personnel'] ?? 0) + $totalDeductions;
             $reasons['Développement Personnel'] = sprintf('%d déductions totales ces %d derniers mois', $totalDeductions, $recentMonths);
         }

@@ -1,0 +1,12 @@
+parameters:
+    level: 8
+
+    paths:
+        - ../../../src/Security
+        - ../../../src/Service/Security
+
+    excludePaths:
+        analyse:
+            - ../../../vendor
+
+    treatPhpDocTypesAsCertain: false
