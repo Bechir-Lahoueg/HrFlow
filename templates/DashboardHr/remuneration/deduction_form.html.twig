@@ -3,8 +3,47 @@
 
 {% block title %}{% if deduction %}Éditer{% else %}Créer{% endif %} Déduction{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #D0D0D0;
+        }
+
+        html.a11y-high-contrast {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #3FA9F5;
+        }
+
+        #deduction-page-container {
+            background-color: #f4f7fb !important;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #deduction-page-container {
+                background-color: #18181b !important;
+            }
+        }
+
+        .hero-banner-deduction {
+            background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+        }
+
+        .focus-ring:focus {
+            outline: none;
+            border-color: #145EB7 !important;
+            box-shadow: 0 0 0 3px rgba(63, 169, 245, 0.2) !important;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="deduction-page-container" class="min-h-screen dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
@@ -13,23 +52,25 @@
         <main class="p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
 
             {# HERO BANNER #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-orange-950 to-amber-900 text-white p-8 animate-slide-up">
-                <div class="absolute -left-12 bottom-0 h-48 w-48 rounded-full bg-orange-400/15 blur-3xl"></div>
-                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-amber-300/15 blur-3xl"></div>
+            <section class="hero-banner-deduction relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-amber-200 uppercase tracking-[0.15em]">Rémunération</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-[0.15em]" style="color: #3FA9F5;">Rémunération</span>
                         </div>
-                        <h1 class="text-2xl sm:text-3xl font-display leading-[1.1] tracking-tight">
+                        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight">
                             {% if deduction %}Éditer{% else %}Ajouter{% endif %} une Déduction
                         </h1>
-                        <p class="text-slate-300/80 text-[13px] mt-1">
+                        <p class="text-slate-300 text-[13px] mt-2">
                             {% if deduction %}Modifiez les détails de cette déduction{% else %}Créez une nouvelle déduction d'employé{% endif %}
                         </p>
                     </div>
-                    <a href="{{ path('app_rh_payroll_deductions') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm backdrop-blur-sm border border-white/20 transition-colors">
+                    <a href="{{ path('app_rh_payroll_deductions') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm text-white font-medium text-sm transition-colors hover:bg-white/10"
+                       style="background: rgba(255,255,255,0.08);">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                         Retour
                     </a>
@@ -37,32 +78,36 @@
             </section>
 
             {# Form #}
-            <form method="POST" class="card-surface stat-stripe stat-stripe-amber p-6 space-y-6 animate-slide-up stagger-1">
-                
+            <form method="POST" class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm animate-slide-up stagger-1 space-y-6">
+
                 {# Flash messages #}
                 {% for message in app.flashes('error') %}
-                    <div class="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 text-sm font-medium flex items-start gap-3">
-                        <svg class="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                    <div class="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-start gap-3">
+                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
                         {{ message }}
                     </div>
                 {% endfor %}
+
+                {# Section header #}
+                <div class="flex items-center gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(20,94,183,0.1);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Informations de la déduction</h3>
+                </div>
 
                 {# Section: Employee & Type #}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {# Employé #}
                     {% if preSelectedEmployeeId or isEditing %}
                         <div>
-                            <label class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
-                                Employé
-                            </label>
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <label class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">Employé</label>
+                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                                 {% if isEditing and deduction %}
                                     {{ deduction.employeeId }}
                                 {% else %}
                                     {% for emp in employees %}
-                                        {% if emp.id == preSelectedEmployeeId %}
-                                            {{ emp.firstName }} {{ emp.lastName }}
-                                        {% endif %}
+                                        {% if emp.id == preSelectedEmployeeId %}{{ emp.firstName }} {{ emp.lastName }}{% endif %}
                                     {% endfor %}
                                 {% endif %}
                             </div>
@@ -70,10 +115,11 @@
                         </div>
                     {% else %}
                         <div>
-                            <label for="employee_id" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+                            <label for="employee_id" class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
                                 Employé <span class="text-red-500">*</span>
                             </label>
-                            <select id="employee_id" name="employee_id" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                            <select id="employee_id" name="employee_id" required
+                                    class="focus-ring w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white">
                                 <option value="">-- Sélectionner un employé --</option>
                                 {% for emp in employees %}
                                     <option value="{{ emp.id }}" {% if deduction and deduction.employeeId == emp.id %}selected{% endif %}>
@@ -86,16 +132,17 @@
 
                     {# Type Déduction #}
                     <div>
-                        <label for="type_deduction" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+                        <label for="type_deduction" class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
                             Type {% if not isEditing %}<span class="text-red-500">*</span>{% endif %}
                         </label>
                         {% if isEditing %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                                 {{ deduction.typeDeduction.value }}
                             </div>
                             <input type="hidden" name="type_deduction" value="{{ deduction.typeDeduction.value }}">
                         {% else %}
-                            <select id="type_deduction" name="type_deduction" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                            <select id="type_deduction" name="type_deduction" required
+                                    class="focus-ring w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white">
                                 <option value="">-- Sélectionner un type --</option>
                                 {% for value, label in typeChoices %}
                                     <option value="{{ value }}" {% if (deduction and deduction.typeDeduction.value == value) or (preSelectedType is defined and preSelectedType == value) %}selected{% endif %}>
@@ -111,49 +158,54 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {# Montant #}
                     <div>
-                        <label for="montant" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+                        <label for="montant" class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
                             Montant (TND) {% if not isEditing %}<span class="text-red-500">*</span>{% endif %}
                         </label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">DT</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-zinc-400">DT</span>
                             {% if isEditing %}
-                                <div class="pl-8 pr-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                                <div class="pl-10 pr-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-bold text-zinc-700 dark:text-zinc-300 font-mono-num">
                                     {{ deduction.montant }}
                                 </div>
                                 <input type="hidden" name="montant" value="{{ deduction.montant }}">
                             {% else %}
-                                <input type="number" id="montant" name="montant" class="w-full pl-8 pr-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" step="0.01" min="0" required value="{% if deduction %}{{ deduction.montant }}{% endif %}">
+                                <input type="number" id="montant" name="montant" required
+                                       step="0.01" min="0"
+                                       value="{% if deduction %}{{ deduction.montant }}{% endif %}"
+                                       placeholder="0.00"
+                                       class="focus-ring w-full pl-10 pr-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 font-mono-num">
                             {% endif %}
                         </div>
-                        {# Validation error message #}
-                        <div id="montant_error" class="mt-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 text-sm font-medium hidden items-start gap-2">
-                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                        <div id="montant_error" class="mt-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium hidden items-start gap-2">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
                             <span id="montant_error_text"></span>
                         </div>
                     </div>
 
                     {# Date Déduction #}
                     <div>
-                        <label for="date_deduction" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
+                        <label for="date_deduction" class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
                             Date de Déduction {% if not isEditing %}<span class="text-red-500">*</span>{% endif %}
                         </label>
                         {% if isEditing %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-bold text-zinc-700 dark:text-zinc-300">
                                 {{ deduction.dateDeduction ? deduction.dateDeduction|date('Y-m-d') : 'N/A' }}
                             </div>
                             <input type="hidden" name="date_deduction" value="{% if deduction and deduction.dateDeduction %}{{ deduction.dateDeduction|date('Y-m-d') }}{% endif %}">
                         {% else %}
-                            <input type="date" id="date_deduction" name="date_deduction" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" required value="{% if deduction and deduction.dateDeduction %}{{ deduction.dateDeduction|date('Y-m-d') }}{% endif %}">
+                            <input type="date" id="date_deduction" name="date_deduction" required
+                                   value="{% if deduction and deduction.dateDeduction %}{{ deduction.dateDeduction|date('Y-m-d') }}{% endif %}"
+                                   class="focus-ring w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white">
                         {% endif %}
                     </div>
                 </div>
 
                 {# Motif #}
                 <div>
-                    <label for="motif" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
-                        Motif
-                    </label>
-                    <textarea id="motif" name="motif" rows="4" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none" placeholder="Raison ou justification de la déduction...">{% if deduction %}{{ deduction.motif }}{% endif %}</textarea>
+                    <label for="motif" class="block text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">Motif</label>
+                    <textarea id="motif" name="motif" rows="4"
+                              placeholder="Raison ou justification de la déduction..."
+                              class="focus-ring w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 resize-none">{% if deduction %}{{ deduction.motif }}{% endif %}</textarea>
                 </div>
 
                 {# CSRF Token #}
@@ -161,11 +213,14 @@
 
                 {# Actions #}
                 <div class="flex items-center gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm transition-colors">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white text-sm font-bold transition-all shadow-sm"
+                            style="background: linear-gradient(135deg, #145EB7, #3FA9F5);">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         {% if deduction %}Mettre à jour{% else %}Créer{% endif %}
                     </button>
-                    <a href="{{ path('app_rh_payroll_deductions') }}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                    <a href="{{ path('app_rh_payroll_deductions') }}"
+                       class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                         Annuler
                     </a>
                 </div>

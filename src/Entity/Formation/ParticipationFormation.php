@@ -23,8 +23,7 @@ class ParticipationFormation
     private ?Employee $employee = null;
 
     #[ORM\ManyToOne(targetEntity: SessionFormation::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]
-    private ?SessionFormation $session = null;
+    #[ORM\JoinColumn(name: 'id_session', referencedColumnName: 'id_session', nullable: false, onDelete: 'CASCADE')]    private ?SessionFormation $session = null;
 
     #[ORM\Column(name: 'date_inscription', type: Types::DATE_MUTABLE)]
     private \DateTimeInterface $dateInscription;
@@ -42,6 +41,7 @@ class ParticipationFormation
     #[ORM\OneToMany(targetEntity: PresenceFormation::class, mappedBy: 'participation', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $presences;
 
+    #[Ignore]
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $token = null;
 
@@ -65,11 +65,11 @@ class ParticipationFormation
         return $this->token;
     }
 
-    public function setToken(?string $token): static
-    {
-        $this->token = $token;
-        return $this;
-    }
+    public function setToken(#[SensitiveParameter]?string $token): self
+        {
+            $this->token = $token;
+            return $this;
+        }
 
     public function __construct()
     {
