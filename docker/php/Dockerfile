@@ -57,7 +57,7 @@ RUN mkdir -p var/cache var/log \
     && chmod -R 775 var/
 
 # --- Exécution des scripts Composer post-install ---
-RUN composer run-script post-install-cmd --no-interaction || true
+RUN APP_ENV=prod APP_SECRET=buildsecret composer run-script post-install-cmd --no-interaction || true
 
 # --- Build Tailwind CSS ---
 RUN APP_ENV=prod php bin/console tailwind:build --no-interaction

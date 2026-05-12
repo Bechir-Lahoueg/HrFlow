@@ -50,7 +50,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 COPY . .
 
 # --- Composer post-install scripts ---
-RUN composer run-script post-install-cmd --no-interaction || true
+RUN APP_ENV=prod APP_SECRET=buildsecret composer run-script post-install-cmd --no-interaction || true
 
 # --- Install importmap vendor assets (assets/vendor/ is gitignored, must be fetched at build time) ---
 RUN APP_ENV=prod APP_SECRET=buildsecret php bin/console importmap:install --no-interaction
