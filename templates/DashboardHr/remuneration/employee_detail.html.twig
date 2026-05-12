@@ -2,8 +2,34 @@
 
 {% block title %}{{ employee.firstName }} {{ employee.lastName }} - Rémunération{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --payroll-primary-deep: #022E69;
+            --payroll-primary: #145EB7;
+            --payroll-accent: #3FA9F5;
+            --payroll-border: #D0D0D0;
+        }
+
+        #employee-detail-container {
+            background-color: #f4f7fb !important;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #employee-detail-container {
+                background-color: #18181b !important;
+            }
+        }
+
+        .hero-banner-employee {
+            background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="employee-detail-container" class="min-h-screen dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
@@ -27,44 +53,54 @@
             </div>
         {% endfor %}
 
-        <main class="p-6 lg:p-8 space-y-6 max-w-[1440px] mx-auto">
+        <main class="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
 
             {# HERO BANNER #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-900 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-teal-400/15 blur-3xl"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-300/15 blur-3xl"></div>
+            <section class="hero-banner-employee relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white font-bold text-2xl">
+                        <div class="w-16 h-16 rounded-2xl border border-white/20 flex items-center justify-center text-white font-bold text-2xl shrink-0" style="background: rgba(63, 169, 245, 0.2); backdrop-filter: blur(8px);">
                             {{ employee.firstName|first }}{{ employee.lastName|first }}
                         </div>
                         <div>
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
-                                <span class="text-[11px] font-bold text-teal-200 uppercase tracking-[0.15em]">Rémunération Employé</span>
+                                <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">Rémunération Employé</span>
                             </div>
-                            <h1 class="text-2xl sm:text-3xl font-display leading-[1.1] tracking-tight">{{ employee.firstName }} {{ employee.lastName }}</h1>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight">{{ employee.firstName }} {{ employee.lastName }}</h1>
                             <p class="text-slate-300/80 text-[13px] mt-0.5">{{ employee.email }} &bull; {{ employee.poste ?? 'Non défini' }}</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <a href="{{ path('app_rh_payroll_fiche_create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-sm transition-colors">
+                        <a href="{{ path('app_rh_payroll_fiche_create') }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all text-white"
+                            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                             Fiche de Paie
                         </a>
-                        <a href="{{ path('app_rh_payroll_prime_create', {'employee_id': employee.id}) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/20 text-emerald-200 font-semibold text-sm transition-colors">
+                        <a href="{{ path('app_rh_payroll_prime_create', {'employee_id': employee.id}) }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.25); color: #86efac;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                             Prime
                         </a>
-                        <a href="{{ path('app_rh_payroll_deduction_create', {'employee_id': employee.id}) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/20 text-amber-200 font-semibold text-sm transition-colors">
+                        <a href="{{ path('app_rh_payroll_deduction_create', {'employee_id': employee.id}) }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.25); color: #fde68a;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5M12 4.5v15"/></svg>
                             Déduction
                         </a>
-                        <a href="{{ path('app_rh_payroll_salary_advance_create', {'employee_id': employee.id}) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 border border-orange-400/20 text-orange-200 font-semibold text-sm transition-colors">
+                        <a href="{{ path('app_rh_payroll_salary_advance_create', {'employee_id': employee.id}) }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.25); color: #fed7aa;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m-7.5-7.5h15"/></svg>
                             Avance salaire
                         </a>
-                        <a href="{{ path('app_rh_remuneration_index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-medium text-sm transition-colors">
+                        <a href="{{ path('app_rh_remuneration_index') }}"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium text-sm transition-all"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             Retour
                         </a>
@@ -73,70 +109,96 @@
             </section>
 
             {# Fiches de Paie Table #}
-            <div class="card-surface stat-stripe stat-stripe-teal overflow-hidden animate-slide-up stagger-1">
-                <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                            <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Fiches de Paie</span>
-                            <span class="text-[11px] font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full ml-1">{{ fiches|length }} / {{ allFiches|length }}</span>
+            <section class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm overflow-hidden animate-slide-up stagger-1">
+                <div class="px-6 py-4 border-b flex flex-wrap items-center justify-between gap-4" style="border-color: #D0D0D0; background: #edf4ff;">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(20, 94, 183, 0.1);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108"/></svg>
                         </div>
-                        {# Filters #}
-                        <form method="GET" action="" class="flex flex-wrap items-center gap-2">
-                            <select name="mois" class="input-refined px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none">
-                                <option value="">Tous les mois</option>
-                                {% for m, label in {1:'Janvier',2:'Février',3:'Mars',4:'Avril',5:'Mai',6:'Juin',7:'Juillet',8:'Août',9:'Septembre',10:'Octobre',11:'Novembre',12:'Décembre'} %}
-                                    <option value="{{ m }}" {% if filterMois == m %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="annee" class="input-refined px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none">
-                                <option value="">Toutes les années</option>
-                                {% for year in availableYears %}
-                                    <option value="{{ year }}" {% if filterAnnee == year %}selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="statut" class="input-refined px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none">
-                                <option value="">Tous les statuts</option>
-                                <option value="paye" {% if filterStatut == 'paye' %}selected{% endif %}>Payé</option>
-                                <option value="non_paye" {% if filterStatut == 'non_paye' %}selected{% endif %}>Non Payé</option>
-                            </select>
-                            <button type="submit" class="px-3 py-1.5 text-sm rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-colors">Filtrer</button>
-                            {% if filterMois or filterAnnee or filterStatut %}
-                                <a href="{{ path('app_rh_remuneration_employee_detail', {employeeId: employee.id}) }}" class="px-3 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Réinitialiser</a>
-                            {% endif %}
-                        </form>
+                        <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #022E69;">Fiches de Paie</span>
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" style="background-color: rgba(20, 94, 183, 0.1); color: #145EB7;">
+                            {{ fiches|length }} / {{ allFiches|length }}
+                        </span>
                     </div>
+
+                    {# Filters #}
+                    <form method="GET" action="" class="flex flex-wrap items-center gap-2">
+                        <select name="mois"
+                            class="px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-1"
+                            style="border-color: #D0D0D0;">
+                            <option value="">Tous les mois</option>
+                            {% for m, label in {1:'Janvier',2:'Février',3:'Mars',4:'Avril',5:'Mai',6:'Juin',7:'Juillet',8:'Août',9:'Septembre',10:'Octobre',11:'Novembre',12:'Décembre'} %}
+                                <option value="{{ m }}" {% if filterMois == m %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="annee"
+                            class="px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-1"
+                            style="border-color: #D0D0D0;">
+                            <option value="">Toutes les années</option>
+                            {% for year in availableYears %}
+                                <option value="{{ year }}" {% if filterAnnee == year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="statut"
+                            class="px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-1"
+                            style="border-color: #D0D0D0;">
+                            <option value="">Tous les statuts</option>
+                            <option value="paye" {% if filterStatut == 'paye' %}selected{% endif %}>Payé</option>
+                            <option value="non_paye" {% if filterStatut == 'non_paye' %}selected{% endif %}>Non Payé</option>
+                        </select>
+                        <button type="submit"
+                            class="px-3 py-1.5 text-sm rounded-lg text-white font-semibold transition-all"
+                            style="background: linear-gradient(135deg, #145EB7, #3FA9F5);">
+                            Filtrer
+                        </button>
+                        {% if filterMois or filterAnnee or filterStatut %}
+                            <a href="{{ path('app_rh_remuneration_employee_detail', {employeeId: employee.id}) }}"
+                                class="px-3 py-1.5 text-sm rounded-lg border font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                style="border-color: #D0D0D0; color: #022E69;">
+                                Réinitialiser
+                            </a>
+                        {% endif %}
+                    </form>
                 </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30">
-                                <th class="px-6 py-3.5 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Période</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Salaire Brut</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Primes</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Déductions</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Salaire Net</th>
-                                <th class="px-6 py-3.5 text-center text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Statut</th>
-                                <th class="px-6 py-3.5 text-center text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Actions</th>
+                            <tr class="text-left text-[11px] font-bold uppercase tracking-wider border-b" style="color: #022E69; border-color: #D0D0D0; background: #f4f7fb;">
+                                <th class="py-3 px-4">Période</th>
+                                <th class="py-3 px-4 text-right">Salaire Brut</th>
+                                <th class="py-3 px-4 text-right">Primes</th>
+                                <th class="py-3 px-4 text-right">Déductions</th>
+                                <th class="py-3 px-4 text-right">Salaire Net</th>
+                                <th class="py-3 px-4 text-center">Statut</th>
+                                <th class="py-3 px-4 text-center">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                        <tbody>
                             {% if fiches|length > 0 %}
                                 {% for fiche in fiches %}
-                                <tr class="row-refined hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <span class="font-semibold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ fiche.mois }}/{{ fiche.annee }}</span>
+                                <tr class="border-b align-middle hover:bg-blue-50/40 transition-colors" style="border-color: #eef2f8;">
+                                    <td class="py-3 px-4">
+                                        <span class="font-semibold font-mono-num" style="color: #022E69;">{{ fiche.mois }}/{{ fiche.annee }}</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right text-sm font-mono-num text-zinc-700 dark:text-zinc-300">{{ fiche.salaireBrut }} DT</td>
-                                    <td class="px-6 py-4 text-right text-sm font-mono-num text-emerald-600 dark:text-emerald-400">+{{ fiche.totalPrimes }} DT</td>
-                                    <td class="px-6 py-4 text-right text-sm font-mono-num text-rose-600 dark:text-rose-400">-{{ fiche.totalDeductions }} DT</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="font-bold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ fiche.salaireNet }} DT</span>
+                                    <td class="py-3 px-4 text-right text-[13px] font-mono-num text-zinc-700 dark:text-zinc-300">
+                                        {{ fiche.salaireBrut }} DT
                                     </td>
-                                    <td class="px-6 py-4 text-center">
+                                    <td class="py-3 px-4 text-right text-[13px] font-mono-num text-emerald-600 dark:text-emerald-400">
+                                        +{{ fiche.totalPrimes }} DT
+                                    </td>
+                                    <td class="py-3 px-4 text-right text-[13px] font-mono-num text-rose-600 dark:text-rose-400">
+                                        -{{ fiche.totalDeductions }} DT
+                                    </td>
+                                    <td class="py-3 px-4 text-right">
+                                        <span class="font-bold font-mono-num text-[13px]" style="color: #022E69;">{{ fiche.salaireNet }} DT</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
                                         <form method="POST" action="{{ path('app_rh_payroll_fiche_toggle_statut', {id: fiche.id}) }}" style="display:inline;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('toggle_statut_' ~ fiche.id) }}">
-                                            <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors {% if fiche.statutPaiement %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100{% else %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-100 badge-glow-amber{% endif %}" title="Cliquer pour changer le statut">
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors {% if fiche.statutPaiement %}bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100{% else %}bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-100{% endif %}"
+                                                title="Cliquer pour changer le statut">
                                                 {% if fiche.statutPaiement %}
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                                                     Payé
@@ -147,17 +209,24 @@
                                             </button>
                                         </form>
                                     </td>
-                                    <td class="px-6 py-4 text-center">
+                                    <td class="py-3 px-4">
                                         <div class="flex items-center justify-center gap-1">
-                                            <a href="{{ path('app_rh_payroll_fiche_show', { id: fiche.id }) }}" class="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-500/20 flex items-center justify-center transition-colors" title="Voir">
+                                            <a href="{{ path('app_rh_payroll_fiche_show', { id: fiche.id }) }}"
+                                                class="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-500/20 flex items-center justify-center transition-colors"
+                                                title="Voir">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                             </a>
-                                            <a href="{{ path('app_rh_payroll_fiche_edit', { id: fiche.id }) }}" class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-500/20 flex items-center justify-center transition-colors" title="Éditer">
+                                            <a href="{{ path('app_rh_payroll_fiche_edit', { id: fiche.id }) }}"
+                                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-white"
+                                                style="background-color: #145EB7;"
+                                                title="Éditer">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             </a>
                                             <form method="POST" action="{{ path('app_rh_payroll_fiche_delete', { id: fiche.id }) }}" style="display:inline;" onsubmit="return confirm('Supprimer cette fiche ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_fiche_paie_' ~ fiche.id) }}">
-                                                <button type="submit" class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center justify-center transition-colors" title="Supprimer">
+                                                <button type="submit"
+                                                    class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center justify-center transition-colors"
+                                                    title="Supprimer">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 </button>
                                             </form>
@@ -167,19 +236,23 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center">
-                                        <div class="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
-                                            <svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.148.42-.248.63m5.801 0c.065.21.1.395.081.609A6.375 6.375 0 0112.75 21.75m0 0v-2.25"/></svg>
+                                    <td colspan="7" class="py-12 px-4 text-center">
+                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background-color: rgba(20, 94, 183, 0.08);">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.148.42-.248.63m5.801 0c.065.21.1.395.081.609A6.375 6.375 0 0112.75 21.75m0 0v-2.25"/></svg>
                                         </div>
                                         <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Aucune fiche de paie créée</p>
-                                        <a href="{{ path('app_rh_payroll_fiche_create') }}" class="text-xs text-teal-600 dark:text-teal-400 font-medium hover:underline mt-1 inline-block">Créer la première fiche</a>
+                                        <a href="{{ path('app_rh_payroll_fiche_create') }}"
+                                            class="text-xs font-medium hover:underline mt-1 inline-block"
+                                            style="color: #145EB7;">
+                                            Créer la première fiche
+                                        </a>
                                     </td>
                                 </tr>
                             {% endif %}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
 
         </main>
     </div>

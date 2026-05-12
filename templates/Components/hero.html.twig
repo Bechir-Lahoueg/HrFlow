@@ -55,78 +55,80 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255,255,255,0.88);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 24px rgba(2,46,105,0.10), 0 1px 4px rgba(2,46,105,0.06);
     transition: transform .25s, box-shadow .25s;
   }
   .hero-glass-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 40px rgba(2,46,105,0.16);
   }
   .hero-stat-card {
     background: rgba(255,255,255,0.68);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.92);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    box-shadow: 0 2px 16px rgba(2,46,105,0.08);
   }
   .hero-btn-secondary {
     background: rgba(255,255,255,0.75);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.88);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(2,46,105,0.10);
     transition: background .2s, box-shadow .2s, transform .2s;
   }
   .hero-btn-secondary:hover {
     background: rgba(255,255,255,0.95);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 24px rgba(2,46,105,0.16);
     transform: translateY(-1px);
   }
 </style>
 
 <section class="relative overflow-hidden"
   style="height:min(100vh,780px);
-         background-image:url('{{ asset('images/Gemini_Generated_Image_fiil3mfiil3mfiil.png') }}');
+         background-image:url('{{ asset('images/landingpage.png') }}');
          background-size:contain;
          background-position:center bottom;
          background-repeat:no-repeat;
-         background-color:#f5f0e8;">
+         background-color:#ffff;">
 
-    {# ── Subtle warm overlay ── #}
+    {# ── Subtle navy-tinted overlay ── #}
     <div class="absolute inset-0 pointer-events-none"
          style="background:linear-gradient(to bottom,
-           rgba(255,252,248,0.22) 0%,
-           rgba(255,252,248,0.06) 38%,
+           rgba(2,46,105,0.08) 0%,
+           rgba(2,46,105,0.03) 38%,
            transparent 58%,
-           rgba(210,225,215,0.12) 100%);"></div>
+           rgba(20,94,183,0.06) 100%);"></div>
 
     {# ── Main content — positioned in the sky/upper area of the illustration ── #}
     <div class="relative z-10 max-w-4xl mx-auto px-6 text-center flex flex-col items-center"
          style="padding-top:max(4rem,8vh); padding-bottom:30vh;">
-
-
 
         {# Heading #}
         <h1 class="hero-title leading-[1.12] mb-5"
             style="font-family:'Playfair Display',Georgia,serif;
                    font-size:clamp(2.6rem,5.8vw,5rem);
                    font-weight:900;
-                   color:#1a1209;
+                   color:#022E69;
                    letter-spacing:-0.01em;">
             Simplifiez vos RH.<br>
-            Libérez vos Talents.
+            <span style="background:linear-gradient(90deg,#3FA9F5 0%,#145EB7 100%);
+                         -webkit-background-clip:text;
+                         -webkit-text-fill-color:transparent;
+                         background-clip:text;">
+                Libérez vos Talents.
+            </span>
         </h1>
-
-
 
     </div>
 
     {# ── Scroll indicator ── #}
     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10">
-        <span class="text-[9px] uppercase tracking-[.18em] font-semibold text-slate-500/55">Défiler</span>
-        <svg class="hero-scroll w-4 h-4 text-slate-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span class="text-[9px] uppercase tracking-[.18em] font-semibold"
+              style="color:rgba(2,46,105,0.40);">Défiler</span>
+        <svg class="hero-scroll w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             style="color:rgba(20,94,183,0.45);">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
     </div>
 </section>
-

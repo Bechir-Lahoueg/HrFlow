@@ -4,42 +4,49 @@ declare(strict_types=1);
 
 namespace App\AI\Tool\Reporting;
 
-use App\AI\Tool\ApplicationTool;
+use App\AI\Contract\ToolInterface;
+use App\AI\Domain\ValueObject\ToolOutput;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class GenerateReportTool extends ApplicationTool
+final class GenerateReportTool implements ToolInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
     ) {}
 
-    protected function getToolName(): string
+    public function getName(): string
     {
         return 'generate_report';
     }
 
-    protected function getToolDescription(): string
-    {
-        return 'Génère un rapport statistiques sur les candidatures.';
-    }
-
-    protected function getParameters(): array
+    public function getDefinition(): array
     {
         return [
-            'type' => ['type' => 'string', 'description' => 'Type de rapport (pipeline, performance)'],
-            'job_offer_id' => ['type' => 'integer', 'description' => 'ID de l\'offre (optionnel)'],
-            'from_date' => ['type' => 'string', 'description' => 'Date de début'],
-            'to_date' => ['type' => 'string', 'description' => 'Date de fin'],
+            'name' => 'generate_report',
+            'description' => 'Génère un rapport statistiques sur les candidatures.',
+            'parameters' => [
+                'type' => [
+                    'type' => 'string',
+                    'description' => 'Type de rapport (pipeline, performance)',
+                ],
+                'job_offer_id' => [
+                    'type' => 'integer',
+                    'description' => 'ID de l\'offre (optionnel)',
+                ],
+                'from_date' => [
+                    'type' => 'string',
+                    'description' => 'Date de début',
+                ],
+                'to_date' => [
+                    'type' => 'string',
+                    'description' => 'Date de fin',
+                ],
+            ],
+            'required' => ['type'],
         ];
     }
 
-    protected function getRequired(): array
-    {
-        return ['type'];
-    }
-
-    /** @param array<mixed> $args */
-    public function execute(array $args, object $user): \App\AI\Domain\ValueObject\ToolOutput
+    public function execute(array $args, object $user): ToolOutput
     {
         $qb = $this->em->createQueryBuilder();
         $qb->select('a.status', 'COUNT(a.id) as cnt')
@@ -85,10 +92,13 @@ final class GenerateReportTool extends ApplicationTool
             $pipelineData['REJECTED'],
         );
 
-        return $this->createOutput($summary, [
-            'type' => 'pipeline_report',
-            'pipeline' => $pipelineData,
-            'total' => $total,
-        ]);
+        return new ToolOutput(
+            llmSummary: $summary,
+            uiPayload: [
+                'type' => 'pipeline_report',
+                'pipeline' => $pipelineData,
+                'total' => $total,
+            ],
+        );
     }
 }

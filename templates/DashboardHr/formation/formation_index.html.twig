@@ -20,11 +20,69 @@
         .credit-card:nth-child(1)::before{background:radial-gradient(circle,#14b8a6,transparent 70%)}
         .credit-card:nth-child(2)::before{background:radial-gradient(circle,#f97316,transparent 70%)}
         .credit-card:nth-child(3)::before{background:radial-gradient(circle,#6366f1,transparent 70%)}
+
+        /* Formation module background color - Force le fond correct */
+        #formation-page-container {
+            background-color: #f4f7fb !important;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            #formation-page-container {
+                background-color: #18181b !important;
+            }
+        }
+
+        /* Hero Banner - Force les couleurs */
+        .hero-banner-formation {
+            background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+        }
+
+        /* Formation module color palette */
+        :root {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #D0D0D0;
+        }
+
+        /* High contrast mode support */
+        html.a11y-high-contrast {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #3FA9F5;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="formation-page-container" class="min-h-screen dot-grid">
+    <style>
+        /* Formation module color palette */
+        :root {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #D0D0D0;
+        }
+
+        /* High contrast mode support */
+        html.a11y-high-contrast {
+            --form-primary-deep: #022E69;
+            --form-primary: #145EB7;
+            --form-accent: #3FA9F5;
+            --form-border: #3FA9F5;
+        }
+
+        /* Dark mode background */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #18181b;
+            }
+        }
+    </style>
+
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
@@ -46,28 +104,28 @@
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
             {# ══════════ Hero Banner ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-sky-900 to-indigo-900 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-sky-300/15 blur-3xl mesh-blob"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/15 blur-3xl mesh-blob-alt"></div>
+            <section class="hero-banner-formation relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl mesh-blob" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl mesh-blob-alt" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">RH Control Center</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">RH Control Center</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Catalogue des Formations</h2>
                         <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Gérez les formations, créez des sessions et suivez les participations des employés.</p>
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Total Formations</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4" style="background: rgba(255, 255, 255, 0.08);">
+                            <p class="text-[10px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63, 169, 245, 0.7);">Total Formations</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.total_formations }}</p>
-                            <p class="text-xs text-cyan-100/60 mt-1">dans le catalogue</p>
+                            <p class="text-xs mt-1" style="color: rgba(63, 169, 245, 0.6);">dans le catalogue</p>
                         </div>
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Sessions Actives</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4" style="background: rgba(255, 255, 255, 0.08);">
+                            <p class="text-[10px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63, 169, 245, 0.7);">Sessions Actives</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.active_sessions }}</p>
-                            <p class="text-xs text-cyan-100/60 mt-1">en cours</p>
+                            <p class="text-xs mt-1" style="color: rgba(63, 169, 245, 0.6);">en cours</p>
                         </div>
                     </div>
                 </div>
@@ -77,14 +135,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-1">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-blue-100" style="background-color: rgba(20, 94, 183, 0.1);">
+                            <svg class="w-5 h-5 text-[#145EB7] m-2.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
                         </div>
-                        <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Total</span>
+                        <span class="text-[11px] font-bold text-[#022E69] bg-blue-100" style="background-color: rgba(20, 94, 183, 0.1); padding: 0.375rem 0.5rem; border-radius: 0.375rem;">Total</span>
                     </div>
                     <p class="text-3xl font-extrabold text-zinc-900 font-mono-num">{{ stats.total_formations }}</p>
                     <p class="text-[13px] text-zinc-400 mt-1 font-medium">Formations</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-slate-400 to-slate-300"></div></div>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full" style="background: linear-gradient(90deg, #145EB7, #3FA9F5);"></div></div>
                 </div>
                 <div onclick="window.location.href='{{ path('rh_formation_active_sessions') }}'" class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover animate-slide-up stagger-2 cursor-pointer">
                     <div class="flex items-center justify-between mb-3">
@@ -115,7 +173,7 @@
                 <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.483 9.246 5 7.5 5S4.168 5.483 3 6.253v13C4.168 18.483 5.754 18 7.5 18s3.332.483 4.5 1.253m0-13C13.168 5.483 14.754 5 16.5 5s3.332.483 4.5 1.253v13C19.832 18.483 18.246 18 16.5 18s-3.332.483-4.5 1.253"/></svg>
                             Top 3 Formations
                         </h3>
                         <span class="text-[11px] font-semibold text-zinc-500">Basé sur les notes</span>
@@ -126,7 +184,7 @@
                             {% set rankClass = loop.index == 1 ? 'rank-gold' : (loop.index == 2 ? 'rank-silver' : 'rank-bronze') %}
                             {% set topFormationId = item.formationId|default(item.id|default(null)) %}
                             <div {% if topFormationId is not null %}onclick="window.location.href='{{ path('rh_formation_sessions', {id: topFormationId}) }}'"{% endif %}
-                                 class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 transition bg-zinc-50/40 dark:bg-zinc-800/20 {% if topFormationId is not null %}hover:border-indigo-300 hover:ring-2 hover:ring-indigo-500/10 cursor-pointer{% endif %}">
+                                 class="rounded-xl border border-zinc-100 dark:border-zinc-800/60 p-3 transition bg-zinc-50/40 dark:bg-zinc-800/20 {% if topFormationId is not null %}hover:border-[#3FA9F5] hover:ring-2 hover:ring-[#3FA9F5]/10 cursor-pointer{% endif %}">
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <span class="rank-badge {{ rankClass }}">#{{ loop.index }}</span>
@@ -162,7 +220,7 @@
                 <article class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 21V7l8-4 8 4v14M9 9h.01M9 12h.01M9 15h.01M12 9h.01M12 12h.01M12 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg>
                             Top 3 Formateurs
                         </h3>
                         <span class="text-[11px] font-semibold text-zinc-500">Par organisme</span>
@@ -211,12 +269,12 @@
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
                         </div>
                         <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Catalogue des Formations</h3>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ path('rh_formation_create') }}" data-turbo="false" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-bold hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-2">
+                        <a href="{{ path('rh_formation_create') }}" data-turbo="false" class="px-4 py-2.5 rounded-lg text-white text-sm font-bold transition-all shadow-sm flex items-center gap-2" style="background: linear-gradient(135deg, #145EB7, #3FA9F5); hover:opacity: 0.9;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                             Nouvelle Formation
                         </a>
@@ -227,14 +285,14 @@
                 <div class="flex justify-end gap-4 mb-6 bg-zinc-50/50 dark:bg-zinc-800/20 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/50">
                     {% set formationTypes = ['Technique', 'Soft Skills', 'Management', 'Leadership', 'Langues', 'Qualité', 'Sécurité', 'Conformité', 'Bureautique', 'Finance', 'RH', 'Digital', 'Autre'] %}
                     <form method="get" action="{{ path('rh_formation_list') }}" class="flex items-center gap-2 w-full md:w-auto">
-                        <select name="type" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
+                        <select name="type" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-[#145EB7] focus:ring-1 focus:ring-[#145EB7] shadow-sm">
                             <option value="">Tous les types</option>
                             {% for type in formationTypes %}
                                 <option value="{{ type }}" {% if filters.type == type %}selected{% endif %}>{{ type }}</option>
                             {% endfor %}
                         </select>
 
-                        <select name="sort" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm">
+                        <select name="sort" class="rounded-lg border-zinc-200 bg-white py-1.5 px-3 text-sm focus:border-[#145EB7] focus:ring-1 focus:ring-[#145EB7] shadow-sm">
                             <option value="created_at-DESC" {% if filters.sort == 'created_at-DESC' %}selected{% endif %}>Plus récent</option>
                             <option value="created_at-ASC" {% if filters.sort == 'created_at-ASC' %}selected{% endif %}>Plus ancien</option>
                             <option value="titre-ASC" {% if filters.sort == 'titre-ASC' %}selected{% endif %}>Titre (A-Z)</option>
@@ -243,7 +301,7 @@
                             <option value="duree-DESC" {% if filters.sort == 'duree-DESC' %}selected{% endif %}>Durée (Décroissant)</option>
                         </select>
 
-                        <button type="submit" class="shrink-0 px-4 py-1.5 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition flex items-center justify-center shadow-sm" title="Filtrer">
+                        <button type="submit" class="shrink-0 px-4 py-1.5 text-white font-bold rounded-lg transition flex items-center justify-center shadow-sm" style="background-color: #145EB7;" title="Filtrer">
                             Filtrer
                         </button>
 
@@ -307,7 +365,7 @@
                             {% set coverImage = fallbackImage %}
                         {% endif %}
                         <div onclick="window.location.href='{{ path('rh_formation_sessions', {id: formation.id}) }}'"
-                             class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/20">
+                             class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm card-hover flex flex-col justify-between cursor-pointer transition-all hover:ring-2 hover:ring-[#3FA9F5]/20">
                             <div>
                                 {% set rating = ratingMap[formation.id]|default(null) %}
                                 <div class="flex justify-between items-start mb-3 gap-2">
@@ -371,7 +429,7 @@
                                 </a>
                                 <form method="post" action="{{ path('rh_formation_delete', {id: formation.id}) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete-formation-' ~ formation.id) }}">
-                                    <button type="submit" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 flex items-center justify-center transition-colors" title="Supprimer">
+                                    <button type="submit" class="w-8 h-8 rounded-lg text-white flex items-center justify-center transition-colors" style="background-color: #dc2626;" title="Supprimer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>

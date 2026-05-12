@@ -43,6 +43,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Service/AI/'
 
     # HrFlow Mailer — inject the sender address from .env
     App\Service\Shared\HrFlowMailer:
@@ -98,13 +99,6 @@ services:
     App\Service\QuickChartService:
         arguments:
             $useJsLibrary: '%env(bool:QUICKCHART_ENABLED)%'
-
-    # Tool Registry - gets all tagged tools
-    App\AI\Core\ToolRegistry:
-        class: App\AI\Core\ToolRegistry
-        factory: ['App\AI\Core\ToolRegistry', 'createFromTaggedTools']
-        arguments:
-            - !tagged_iterator app.ai_tool
 
     # Conversation Memory
     App\AI\Core\ConversationMemory:

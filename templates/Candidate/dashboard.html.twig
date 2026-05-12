@@ -99,20 +99,20 @@
             display: flex; align-items: center; justify-content: center;
         }
         .see-all {
-            font-size: 13px; font-weight: 600; color: #16a34a;
+            font-size: 13px; font-weight: 600; color: #145EB7;
             text-decoration: none; display: flex; align-items: center; gap: 3px;
             transition: color .15s;
         }
-        .see-all:hover { color: #15803d; }
+        .see-all:hover { color: #0d3d6f; }
 
         .btn-green {
             display: inline-flex; align-items: center; gap: 7px;
             padding: 10px 20px; border-radius: 10px;
-            background: #16a34a; color: #fff; font-weight: 600; font-size: 13px;
+            background: #145EB7; color: #fff; font-weight: 600; font-size: 13px;
             border: none; cursor: pointer; text-decoration: none;
             transition: background .15s;
         }
-        .btn-green:hover { background: #15803d; }
+        .btn-green:hover { background: #0d3d6f; }
 
         .badge {
             display: inline-flex; align-items: center; gap: 5px;
@@ -123,7 +123,7 @@
         /* Sidebar profile card */
         .profile-banner {
             height: 80px;
-            background: linear-gradient(135deg, #16a34a, #0d9488);
+            background: linear-gradient(135deg, #145EB7, #145EB7);
             position: relative; overflow: hidden;
         }
         .profile-banner::after {
@@ -142,7 +142,7 @@
     <main style="max-width:1380px; margin:0 auto; padding:28px 20px 60px;">
 
         {# Welcome Banner #}
-        <div class="fade-up" style="border-radius:20px; overflow:hidden; margin-bottom:28px; background: linear-gradient(135deg,#15803d 0%,#16a34a 60%,#059669 100%); padding:32px 36px; position:relative;">
+        <div class="fade-up" style="border-radius:20px; overflow:hidden; margin-bottom:28px; background: linear-gradient(135deg,#0d3d6f 0%,#145EB7 60%,#145EB7 100%); padding:32px 36px; position:relative;">
             <div style="position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
             <div style="position:absolute;right:80px;bottom:-80px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
 
@@ -152,11 +152,11 @@
                         <div style="width:68px;height:68px;border-radius:16px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;">
                             {{ app.user.firstName|first|upper }}{{ app.user.lastName|first|upper }}
                         </div>
-                        <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#4ade80;border:2px solid rgba(255,255,255,.8);"></div>
+                        <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#3FA9F5;border:2px solid rgba(255,255,255,.8);"></div>
                     </div>
                     <div>
                         <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:4px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.9);margin-bottom:8px;">
-                            <span style="width:6px;height:6px;border-radius:50%;background:#86efac;"></span>
+                            <span style="width:6px;height:6px;border-radius:50%;background:#74c4f8;"></span>
                             Espace Candidat Actif
                         </div>
                         <h1 style="font-size:26px;font-weight:700;color:#fff;margin:0 0 4px;">Bonjour, {{ app.user.firstName|default(app.user.userIdentifier) }} 👋</h1>
@@ -164,7 +164,7 @@
                     </div>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;">
-                    <a href="{{ path('app_candidate_job_offers') }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;background:#fff;color:#15803d;font-weight:700;font-size:13px;text-decoration:none;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    <a href="{{ path('app_candidate_job_offers') }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;background:#fff;color:#0d3d6f;font-weight:700;font-size:13px;text-decoration:none;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,0,0,.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         Découvrir les offres
                     </a>
@@ -179,7 +179,7 @@
         {# Stats Grid #}
         {% set total = stats.total > 0 ? stats.total : 1 %}
         {% set statsData = [
-            { label: 'Total candidatures', value: stats.total, sub: 'postes visés', color: '#3b82f6', bg: '#eff6ff', path: 'app_candidate_applications',
+            { label: 'Total candidatures', value: stats.total, sub: 'postes visés', color: '#145EB7', bg: '#eff6ff', path: 'app_candidate_applications',
               icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
               pct: 100 },
             { label: 'En cours', value: stats.pending + stats.reviewing, sub: 'en attente', color: '#f59e0b', bg: '#fffbeb', path: 'app_candidate_applications',
@@ -188,7 +188,7 @@
             { label: 'Entretiens', value: stats.interview, sub: 'programmés', color: '#8b5cf6', bg: '#f5f3ff', path: 'app_candidate_interviews',
               icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
               pct: (stats.interview / total * 100)|round },
-            { label: 'Offres reçues', value: stats.offer + stats.hired, sub: 'acceptées', color: '#16a34a', bg: '#f0fdf4', path: 'app_candidate_applications',
+            { label: 'Offres reçues', value: stats.offer + stats.hired, sub: 'acceptées', color: '#145EB7', bg: '#e8f6fe', path: 'app_candidate_applications',
               icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
               pct: ((stats.offer + stats.hired) / total * 100)|round }
         ] %}
@@ -221,7 +221,7 @@
                 {# Quick Actions #}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="fade-up d3">
                     <a href="{{ path('app_candidate_job_offers') }}" class="action-card">
-                        <div class="action-icon" style="background:linear-gradient(135deg,#16a34a,#0d9488);">
+                        <div class="action-icon" style="background:linear-gradient(135deg,#145EB7,#3FA9F5);">
                             <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
                         <div style="flex:1;min-width:0;">
@@ -315,7 +315,7 @@
                             {% for application in recentApplications|slice(0, 5) %}
                                 <div class="app-item">
                                     <div style="width:40px;height:40px;border-radius:10px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <svg width="18" height="18" fill="none" stroke="#3b82f6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <svg width="18" height="18" fill="none" stroke="#145EB7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </div>
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-size:14px;font-weight:600;color:#1a1d23;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ application.jobOffer.title }}</p>
@@ -329,7 +329,7 @@
                                         {% set progressMap = {'PENDING': 20, 'REVIEWING': 40, 'REVIEWED': 40, 'INTERVIEW': 65, 'OFFER': 85, 'HIRED': 100, 'REJECTED': 0} %}
                                         {% set progress = progressMap[application.status] ?? 0 %}
                                         <div class="prog-bar" style="margin-top:6px;">
-                                            <div class="prog-fill" style="width:{{ progress }}%;background:#3b82f6;"></div>
+                                            <div class="prog-fill" style="width:{{ progress }}%;background:#145EB7;"></div>
                                         </div>
                                     </div>
                                     <span class="badge" style="background:{{ application.statusBg|default('#f1f5f9') }};color:{{ application.statusText|default('#475569') }};flex-shrink:0;">
@@ -360,7 +360,7 @@
                     <div class="profile-banner"></div>
                     <div style="padding:0 20px 20px;position:relative;">
                         <div style="position:absolute;top:-36px;left:20px;">
-                            <div style="width:68px;height:68px;border-radius:16px;background:linear-gradient(135deg,#34d399,#059669);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.12);">
+                            <div style="width:68px;height:68px;border-radius:16px;background:linear-gradient(135deg,#3FA9F5,#145EB7);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.12);">
                                 {{ app.user.firstName|first|upper }}{{ app.user.lastName|first|upper }}
                             </div>
                         </div>
@@ -371,10 +371,10 @@
                         <div style="margin-bottom:14px;">
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:6px;">
                                 <span style="color:#6b7280;font-weight:500;">Complétion du profil</span>
-                                <span style="color:#16a34a;font-weight:700;">{{ app.user.profileCompletion|default(75) }}%</span>
+                                <span style="color:#145EB7;font-weight:700;">{{ app.user.profileCompletion|default(75) }}%</span>
                             </div>
                             <div class="prog-bar" style="height:6px;">
-                                <div class="prog-fill" style="width:{{ app.user.profileCompletion|default(75) }}%;background:linear-gradient(90deg,#16a34a,#0d9488);"></div>
+                                <div class="prog-fill" style="width:{{ app.user.profileCompletion|default(75) }}%;background:linear-gradient(90deg,#145EB7,#145EB7);"></div>
                             </div>
                         </div>
 
@@ -408,8 +408,8 @@
                         {% if recentApplications|length > 0 %}
                             {% for application in recentApplications|slice(0, 3) %}
                                 <div style="display:flex;gap:10px;align-items:flex-start;">
-                                    <div style="width:30px;height:30px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <svg width="14" height="14" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
+                                    <div style="width:30px;height:30px;border-radius:8px;background:#e8f6fe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg width="14" height="14" fill="none" stroke="#145EB7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
                                     </div>
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-size:13px;color:#374151;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -427,14 +427,14 @@
 
                 {# Daily Tip #}
                 <div class="fade-up d5" style="border-radius:16px;padding:22px;background:#1a1d23;color:#fff;position:relative;overflow:hidden;">
-                    <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(22,163,74,.12);"></div>
+                    <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(20,94,183,.12);"></div>
                     <div style="position:relative;">
-                        <div style="width:40px;height:40px;border-radius:10px;background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.3);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                            <svg width="18" height="18" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <div style="width:40px;height:40px;border-radius:10px;background:rgba(20,94,183,.2);border:1px solid rgba(20,94,183,.3);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                            <svg width="18" height="18" fill="none" stroke="#3FA9F5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         </div>
-                        <p style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;">Conseil du jour</p>
+                        <p style="font-size:12px;font-weight:700;color:#3FA9F5;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;">Conseil du jour</p>
                         <p style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;margin:0 0 14px;">Personnalisez votre lettre de motivation pour chaque poste. Les recruteurs apprécient les candidats qui montrent un intérêt spécifique.</p>
-                        <a href="#" style="font-size:13px;font-weight:700;color:#4ade80;text-decoration:none;display:flex;align-items:center;gap:4px;">
+                        <a href="#" style="font-size:13px;font-weight:700;color:#3FA9F5;text-decoration:none;display:flex;align-items:center;gap:4px;">
                             Lire le guide
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
@@ -445,7 +445,7 @@
                 <div class="card fade-up d6" style="padding:16px 14px;">
                     <h3 style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;padding:0 6px;margin:0 0 8px;">Raccourcis</h3>
                     {% for link in [
-                        { path: 'app_candidate_job_offers', label: 'Offres d\'emploi', sub: 'Explorer', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', ic: '#16a34a', ibg: '#f0fdf4' },
+                        { path: 'app_candidate_job_offers', label: 'Offres d\'emploi', sub: 'Explorer', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', ic: '#145EB7', ibg: '#e8f6fe' },
                         { path: 'app_candidate_applications', label: 'Mes candidatures', sub: 'Historique', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', ic: '#2563eb', ibg: '#eff6ff' },
                         { path: 'app_candidate_interviews', label: 'Mes entretiens', sub: 'Calendrier', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', ic: '#7c3aed', ibg: '#f5f3ff' }
                     ] %}

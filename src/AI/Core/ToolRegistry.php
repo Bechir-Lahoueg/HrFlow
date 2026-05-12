@@ -6,23 +6,17 @@ namespace App\AI\Core;
 
 use App\AI\Contract\ToolInterface;
 use App\AI\Contract\ToolRegistryInterface;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 final class ToolRegistry implements ToolRegistryInterface
 {
     /**
-     * @param ToolInterface[] $tools
+     * @param iterable<ToolInterface> $tools
      */
     public function __construct(
-        private readonly array $tools = [],
+        #[TaggedIterator('app.ai_tool')]
+        private readonly iterable $tools = [],
     ) {}
-
-    /**
-     * @param \Traversable<ToolInterface> $tools
-     */
-    public static function createFromTaggedTools(\Traversable $tools): self
-    {
-        return new self(\iterator_to_array($tools));
-    }
 
     public function get(string $name): ToolInterface
     {

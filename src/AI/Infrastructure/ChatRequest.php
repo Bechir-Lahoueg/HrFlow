@@ -17,5 +17,6 @@ final class ChatRequest
         public readonly string $systemPrompt = '',
         public readonly array $tools = [],
         public readonly int $maxTools = 5,
+        public readonly ?string $responseMimeType = null,
     ) {}
 }

@@ -1,10 +1,42 @@
 {% extends 'base.html.twig' %}
 {% set fiche = fiche|default(null) %}
 
-{% block title %}{% if fiche %}Éditer{% else %}Créer{% endif %} Fiche de Paie{% endblock %}
+{% block title %}{% if fiche %}Éditer{% else %}Créer{% endif %} Fiche de Paie - Gestion RH{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --payroll-primary-deep: #022E69;
+            --payroll-primary: #145EB7;
+            --payroll-accent: #3FA9F5;
+            --payroll-border: #D0D0D0;
+        }
+
+        #fiche-form-container {
+            background-color: #f4f7fb !important;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #fiche-form-container {
+                background-color: #18181b !important;
+            }
+        }
+
+        .hero-banner-fiche {
+            background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+        }
+
+        .field-focus:focus {
+            outline: none;
+            ring: 2px solid #145EB7;
+            border-color: #145EB7;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="fiche-form-container" class="min-h-screen dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
@@ -13,23 +45,25 @@
         <main class="p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
 
             {# HERO BANNER #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-sky-900 text-white p-8 animate-slide-up">
-                <div class="absolute -left-12 bottom-0 h-48 w-48 rounded-full bg-teal-400/15 blur-3xl"></div>
-                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-sky-300/15 blur-3xl"></div>
+            <section class="hero-banner-fiche relative overflow-hidden rounded-2xl text-white p-8 animate-slide-up">
+                <div class="absolute -left-12 bottom-0 h-48 w-48 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-teal-200 uppercase tracking-[0.15em]">Rémunération</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">Rémunération</span>
                         </div>
-                        <h1 class="text-2xl sm:text-3xl font-display leading-[1.1] tracking-tight">
+                        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight">
                             {% if fiche %}Éditer{% else %}Créer{% endif %} une Fiche de Paie
                         </h1>
                         <p class="text-slate-300/80 text-[13px] mt-1">
                             {% if fiche %}Modifiez les détails de cette fiche{% else %}Créez une nouvelle fiche de paie{% endif %}
                         </p>
                     </div>
-                    <a href="{{ path('app_rh_remuneration_index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm backdrop-blur-sm border border-white/20 transition-colors">
+                    <a href="{{ path('app_rh_remuneration_index') }}"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-colors self-start sm:self-auto"
+                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                         Retour
                     </a>
@@ -37,7 +71,7 @@
             </section>
 
             {# Form #}
-            <form method="POST" class="card-surface stat-stripe stat-stripe-teal p-6 space-y-6 animate-slide-up stagger-1">
+            <form method="POST" class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm p-6 space-y-6 animate-slide-up stagger-1">
 
                 {# Flash messages #}
                 {% for message in app.flashes('error') %}
@@ -53,16 +87,27 @@
                     </div>
                 {% endfor %}
 
+                {# Section label #}
+                <div class="flex items-center gap-3 pb-2 border-b" style="border-color: #D0D0D0;">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(20, 94, 183, 0.1);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    </div>
+                    <h3 class="text-[13px] font-bold uppercase tracking-wider" style="color: #022E69;">Employé & Période</h3>
+                </div>
+
                 {# Employé & Période #}
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">Employé</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider mb-2" style="color: #022E69;">Employé</label>
                         {% if fiche %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <div class="px-4 py-2.5 rounded-lg border text-sm text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800" style="border-color: #D0D0D0; background: #f4f7fb;">
                                 {{ fiche.employeeName }}
                             </div>
                         {% else %}
-                            <select id="employee_id" name="employee_id" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                            <select id="employee_id" name="employee_id"
+                                class="w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2"
+                                style="border-color: #D0D0D0;"
+                                required>
                                 <option value="">-- Sélectionner un employé --</option>
                                 {% for emp in employees %}
                                     <option value="{{ emp.id }}">{{ emp.firstName }} {{ emp.lastName }}</option>
@@ -72,14 +117,17 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">Mois</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider mb-2" style="color: #022E69;">Mois</label>
                         {% if fiche %}
                             {% set monthNames = {1:'Janvier',2:'Février',3:'Mars',4:'Avril',5:'Mai',6:'Juin',7:'Juillet',8:'Août',9:'Septembre',10:'Octobre',11:'Novembre',12:'Décembre'} %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <div class="px-4 py-2.5 rounded-lg border text-sm text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800" style="border-color: #D0D0D0; background: #f4f7fb;">
                                 {{ monthNames[fiche.mois] }}
                             </div>
                         {% else %}
-                            <select id="mois" name="mois" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
+                            <select id="mois" name="mois"
+                                class="w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2"
+                                style="border-color: #D0D0D0;"
+                                required>
                                 {% for m in 1..12 %}
                                     <option value="{{ m }}">{{ m }}</option>
                                 {% endfor %}
@@ -88,57 +136,87 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">Année</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider mb-2" style="color: #022E69;">Année</label>
                         {% if fiche %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white">
+                            <div class="px-4 py-2.5 rounded-lg border text-sm text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800" style="border-color: #D0D0D0; background: #f4f7fb;">
                                 {{ fiche.annee }}
                             </div>
                         {% else %}
-                            <input type="number" id="annee" name="annee" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" min="2020" max="2100" required value="{{ 'now'|date('Y') }}">
+                            <input type="number" id="annee" name="annee"
+                                class="w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2"
+                                style="border-color: #D0D0D0;"
+                                min="2020" max="2100" required value="{{ 'now'|date('Y') }}">
                         {% endif %}
                     </div>
+                </div>
+
+                {# Section label — Salaire #}
+                <div class="flex items-center gap-3 pb-2 border-b" style="border-color: #D0D0D0;">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(20, 94, 183, 0.1);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3.75-9.75a6 6 0 000 11.25M2.25 9.75a9 9 0 0119.5 0"/></svg>
+                    </div>
+                    <h3 class="text-[13px] font-bold uppercase tracking-wider" style="color: #022E69;">Salaire</h3>
                 </div>
 
                 {# Salaire Brut #}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">Salaire Brut (TND)</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider mb-2" style="color: #022E69;">Salaire Brut (TND)</label>
                         {% if fiche %}
-                            <div class="px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white font-mono">
+                            <div class="px-4 py-2.5 rounded-lg border text-sm font-mono text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800" style="border-color: #D0D0D0; background: #f4f7fb;">
                                 {{ fiche.salaireBrut }} DT
                             </div>
                         {% else %}
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">DT</span>
-                                <input type="number" id="salaire_brut" name="salaire_brut" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" step="0.01" min="0" required value="">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color: #145EB7;">DT</span>
+                                <input type="number" id="salaire_brut" name="salaire_brut"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2"
+                                    style="border-color: #D0D0D0;"
+                                    step="0.01" min="0" required value="">
                             </div>
                         {% endif %}
                     </div>
                 </div>
 
+                {# Section label — Notes #}
+                <div class="flex items-center gap-3 pb-2 border-b" style="border-color: #D0D0D0;">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(20, 94, 183, 0.1);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    </div>
+                    <h3 class="text-[13px] font-bold uppercase tracking-wider" style="color: #022E69;">Notes</h3>
+                </div>
+
                 {# Notes #}
                 <div>
-                    <label for="notes" class="block text-sm font-semibold text-zinc-900 dark:text-white mb-2">
-                        Notes
+                    <label for="notes" class="block text-[11px] font-bold uppercase tracking-wider mb-2" style="color: #022E69;">
+                        Remarques
                     </label>
-                    <textarea id="notes" name="notes" rows="3" class="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none" placeholder="Notes ou remarques...">{{ fiche.notes ?? '' }}</textarea>
+                    <textarea id="notes" name="notes" rows="3"
+                        class="w-full px-4 py-2.5 rounded-lg border text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 resize-none"
+                        style="border-color: #D0D0D0;"
+                        placeholder="Notes ou remarques...">{{ fiche.notes ?? '' }}</textarea>
                 </div>
 
                 {# Info box #}
-                <div class="px-4 py-3 rounded-lg bg-teal-50 dark:bg-teal-500/10 border border-teal-200 dark:border-teal-500/30 text-teal-700 dark:text-teal-400 text-sm">
-                    <strong>Note :</strong> Les totaux des primes et déductions seront calculés automatiquement à partir des primes et déductions enregistrées pour cet employé sur la période sélectionnée.
+                <div class="px-4 py-3 rounded-lg text-sm flex items-start gap-3" style="background-color: rgba(20, 94, 183, 0.06); border: 1px solid rgba(20, 94, 183, 0.2); color: #145EB7;">
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                    <span><strong>Note :</strong> Les totaux des primes et déductions seront calculés automatiquement à partir des primes et déductions enregistrées pour cet employé sur la période sélectionnée.</span>
                 </div>
 
-                {# CSRF Token - correct for both create and edit #}
+                {# CSRF Token #}
                 <input type="hidden" name="_token" value="{{ csrf_token(fiche ? 'edit_fiche_paie_' ~ fiche.id : 'create_fiche_paie') }}">
 
                 {# Actions #}
-                <div class="flex items-center gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm transition-colors">
+                <div class="flex items-center gap-3 pt-4 border-t" style="border-color: #D0D0D0;">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition-all shadow-sm"
+                        style="background: linear-gradient(135deg, #145EB7, #3FA9F5);">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         {% if fiche %}Mettre à jour{% else %}Créer{% endif %}
                     </button>
-                    <a href="{{ path('app_rh_remuneration_index') }}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                    <a href="{{ path('app_rh_remuneration_index') }}"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                        style="border-color: #D0D0D0; color: #022E69;">
                         Annuler
                     </a>
                 </div>
