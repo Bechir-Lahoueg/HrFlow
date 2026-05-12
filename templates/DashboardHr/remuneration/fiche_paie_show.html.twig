@@ -2,8 +2,100 @@
 
 {% block title %}Fiche de Paie - {{ fiche.mois }}/{{ fiche.annee }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --payroll-primary-deep: #022E69;
+            --payroll-primary: #145EB7;
+            --payroll-accent: #3FA9F5;
+            --payroll-border: #D0D0D0;
+        }
+
+        html.a11y-high-contrast {
+            --payroll-border: #3FA9F5;
+        }
+
+        #fiche-page-container {
+            background-color: #f4f7fb !important;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #fiche-page-container {
+                background-color: #18181b !important;
+            }
+        }
+
+        .hero-banner-fiche {
+            background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 0.75rem;
+            border: 1px solid #f1f5f9;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,.04);
+        }
+
+        .dark .stat-card {
+            background: #18181b;
+            border-color: rgba(39,39,42,.5);
+        }
+
+        .table-section {
+            background: #fff;
+            border-radius: 0.75rem;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,.04);
+            overflow: hidden;
+        }
+
+        .dark .table-section {
+            background: #18181b;
+            border-color: rgba(39,39,42,.5);
+        }
+
+        .table-header-row {
+            background: #edf4ff;
+            border-bottom: 1px solid #D0D0D0;
+        }
+
+        .dark .table-header-row {
+            background: rgba(20,94,183,.12);
+            border-color: rgba(39,39,42,.5);
+        }
+
+        .table-body-row {
+            border-bottom: 1px solid #eef2f8;
+            transition: background .15s;
+        }
+
+        .table-body-row:hover {
+            background: rgba(59,130,246,.04);
+        }
+
+        .dark .table-body-row {
+            border-color: rgba(39,39,42,.5);
+        }
+
+        .sidebar-card {
+            background: #fff;
+            border-radius: 0.75rem;
+            border: 1px solid #f1f5f9;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,.04);
+        }
+
+        .dark .sidebar-card {
+            background: #18181b;
+            border-color: rgba(39,39,42,.5);
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="fiche-page-container" class="min-h-screen dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
@@ -11,46 +103,45 @@
 
         {# Flash messages #}
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-medium animate-slide-up">
+            <div class="mx-6 lg:mx-8 mt-4 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center gap-2.5 animate-slide-up">
                 <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                 </div>
                 {{ message }}
             </div>
         {% endfor %}
 
-        <main class="p-6 lg:p-8 space-y-6 max-w-[1440px] mx-auto">
+        <main class="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
 
-            {# HERO BANNER #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-sky-900 text-white p-8 animate-slide-up">
-                <div class="absolute -left-12 bottom-0 h-48 w-48 rounded-full bg-teal-400/15 blur-3xl"></div>
-                <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-sky-300/15 blur-3xl"></div>
-                <div class="absolute left-1/2 top-0 h-40 w-40 rounded-full bg-teal-500/10 blur-3xl"></div>
-                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {# ═══════════════ HERO BANNER ═══════════════ #}
+            <section class="hero-banner-fiche relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(63,169,245,0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl" style="background: radial-gradient(circle, rgba(20,94,183,0.15), transparent 70%);"></div>
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-teal-200 uppercase tracking-[0.15em]">Fiche de Paie</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">Fiche de Paie</span>
                         </div>
-                        <h1 class="text-2xl sm:text-3xl font-display leading-[1.1] tracking-tight">{{ fiche.mois }}/{{ fiche.annee }}</h1>
-                        <p class="text-slate-300/80 text-[13px] mt-1">{{ fiche.employeeName }}</p>
+                        <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">{{ fiche.mois }}/{{ fiche.annee }}</h1>
+                        <p class="mt-2 text-[15px] text-slate-300 leading-relaxed">{{ fiche.employeeName }}</p>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
                         <button
                             type="button"
                             id="sendPayslipBtn"
                             data-url="{{ path('app_rh_payroll_fiche_send_email', { id: fiche.id }) }}"
                             data-token="{{ csrf_token('send_fiche_email_' ~ fiche.id) }}"
-                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/80 hover:bg-emerald-500 text-white font-semibold text-sm backdrop-blur-sm border border-emerald-300/30 transition-colors"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/80 hover:bg-emerald-500 text-white font-bold text-sm border border-emerald-300/30 transition-colors"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l8.89 5.93a2 2 0 002.22 0L23 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             Envoyer fiche
                         </button>
-                        <a href="{{ path('app_rh_payroll_fiche_edit', { id: fiche.id }) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-sm border border-white/20 transition-colors">
+                        <a href="{{ path('app_rh_payroll_fiche_edit', { id: fiche.id }) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             Éditer
                         </a>
-                        <a href="{{ path('app_rh_remuneration_index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm backdrop-blur-sm border border-white/20 transition-colors">
+                        <a href="{{ path('app_rh_remuneration_index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm border border-white/20 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             Retour
                         </a>
@@ -58,149 +149,225 @@
                 </div>
             </section>
 
+            {# ═══════════════ Stats Grid ═══════════════ #}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-slide-up stagger-1">
+
+                {# Salaire Brut #}
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: rgba(20,94,183,0.1);">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3.75-9.75a6 6 0 000 11.25M2.25 9.75a9 9 0 0119.5 0"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style="background: rgba(20,94,183,.08); color: #145EB7;">Brut</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ fiche.salaireBrut }} <span class="text-sm font-semibold text-zinc-400">DT</span></p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Salaire Brut</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full" style="background: linear-gradient(90deg, #145EB7, #3FA9F5);"></div></div>
+                </div>
+
+                {# Primes #}
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-50 text-emerald-600">Primes</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono-num">+{{ fiche.totalPrimes }} <span class="text-sm font-semibold text-zinc-400">DT</span></p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Total Primes</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div></div>
+                </div>
+
+                {# Déductions #}
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-amber-50 text-amber-600">Déductions</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono-num">-{{ fiche.totalDeductions }} <span class="text-sm font-semibold text-zinc-400">DT</span></p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Total Déductions</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-1/3 rounded-full bg-gradient-to-r from-amber-500 to-orange-400"></div></div>
+                </div>
+
+                {# Salaire Net #}
+                <div class="stat-card card-hover" style="border-color: rgba(20,94,183,.15);">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #145EB7, #3FA9F5);">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108"/></svg>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style="background: rgba(20,94,183,.08); color: #145EB7;">Net</span>
+                    </div>
+                    <p class="text-2xl font-extrabold font-mono-num" style="color: #022E69;">{{ fiche.salaireNet }} <span class="text-sm font-semibold text-zinc-400">DT</span></p>
+                    <p class="text-[13px] text-zinc-400 mt-1 font-medium">Salaire Net</p>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full" style="background: linear-gradient(90deg, #022E69, #3FA9F5);"></div></div>
+                </div>
+
+            </div>
+
+            {# ═══════════════ Main Content + Sidebar ═══════════════ #}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {# Left column: Summary + Tables #}
+                {# ── Left: Tables ── #}
                 <div class="lg:col-span-2 space-y-5">
 
-                    {# Summary Stats #}
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up stagger-1">
-                        <div class="card-surface stat-stripe stat-stripe-teal p-5 group">
-                            <p class="text-[11px] text-zinc-400 font-semibold uppercase tracking-[0.08em] mb-2">Salaire Brut</p>
-                            <p class="text-2xl font-extrabold font-mono-num leading-none text-zinc-900 dark:text-white">{{ fiche.salaireBrut }}<span class="text-base font-semibold text-zinc-400 ml-1">DT</span></p>
-                        </div>
-                        <div class="card-surface stat-stripe stat-stripe-emerald p-5 group">
-                            <p class="text-[11px] text-zinc-400 font-semibold uppercase tracking-[0.08em] mb-2">Total Primes</p>
-                            <p class="text-2xl font-extrabold font-mono-num leading-none text-emerald-600 dark:text-emerald-400">+{{ fiche.totalPrimes }}<span class="text-base font-semibold text-zinc-400 ml-1">DT</span></p>
-                        </div>
-                        <div class="card-surface stat-stripe stat-stripe-rose p-5 group">
-                            <p class="text-[11px] text-zinc-400 font-semibold uppercase tracking-[0.08em] mb-2">Total Déductions</p>
-                            <p class="text-2xl font-extrabold font-mono-num leading-none text-rose-600 dark:text-rose-400">-{{ fiche.totalDeductions }}<span class="text-base font-semibold text-zinc-400 ml-1">DT</span></p>
-                        </div>
-                        <div class="card-surface stat-stripe stat-stripe-sky p-5 group bg-teal-50/50 dark:bg-teal-500/5">
-                            <p class="text-[11px] text-teal-500 font-bold uppercase tracking-[0.08em] mb-2">Salaire Net</p>
-                            <p class="text-2xl font-extrabold font-mono-num leading-none text-teal-700 dark:text-teal-300">{{ fiche.salaireNet }}<span class="text-base font-semibold text-teal-400 ml-1">DT</span></p>
-                        </div>
-                    </div>
-
                     {# Primes Table #}
-                    <div class="card-surface stat-stripe stat-stripe-emerald overflow-hidden animate-slide-up stagger-2">
-                        <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Primes</span>
+                    <div class="table-section animate-slide-up stagger-2">
+                        <div class="px-5 py-4 flex items-center justify-between" style="border-bottom: 1px solid #D0D0D0;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                </div>
+                                <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Primes</h3>
                             </div>
-                            <span class="text-xs text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full font-semibold">{{ primes|length }}</span>
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(20,94,183,.08); color: #145EB7;">{{ primes|length }}</span>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full">
+                            <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/60 dark:bg-zinc-800/30">
-                                        <th class="px-5 py-3 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Type</th>
-                                        <th class="px-5 py-3 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Montant</th>
-                                        <th class="px-5 py-3 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Motif</th>
+                                    <tr class="table-header-row text-left text-[11px] font-bold uppercase tracking-wider" style="color: #022E69;">
+                                        <th class="py-3 px-5">Type</th>
+                                        <th class="py-3 px-5 text-right">Montant</th>
+                                        <th class="py-3 px-5">Motif</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                <tbody>
                                     {% if primes|length > 0 %}
                                         {% for prime in primes %}
-                                        <tr class="row-refined">
-                                            <td class="px-5 py-3 text-sm">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                                        <tr class="table-body-row align-middle">
+                                            <td class="py-3 px-5">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                                                     {{ prime.typePrime.value }}
                                                 </span>
                                             </td>
-                                            <td class="px-5 py-3 text-right text-sm font-mono-num font-semibold text-emerald-600 dark:text-emerald-400">+{{ prime.montant }} DT</td>
-                                            <td class="px-5 py-3 text-sm text-zinc-500 dark:text-zinc-400">{{ prime.motif ?? '—' }}</td>
+                                            <td class="py-3 px-5 text-right font-mono-num font-semibold text-emerald-600 dark:text-emerald-400">+{{ prime.montant }} DT</td>
+                                            <td class="py-3 px-5 text-zinc-500 dark:text-zinc-400">{{ prime.motif ?? '—' }}</td>
                                         </tr>
                                         {% endfor %}
                                     {% else %}
-                                        <tr><td colspan="3" class="px-5 py-8 text-center text-xs text-zinc-400">Aucune prime enregistrée</td></tr>
+                                        <tr>
+                                            <td colspan="3" class="py-12 px-5 text-center">
+                                                <p class="text-sm text-zinc-400 font-medium">Aucune prime enregistrée</p>
+                                            </td>
+                                        </tr>
                                     {% endif %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    {# Deductions Table #}
-                    <div class="card-surface stat-stripe stat-stripe-rose overflow-hidden animate-slide-up stagger-3">
-                        <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-rose-400"></div>
-                                <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Déductions</span>
+                    {# Déductions Table #}
+                    <div class="table-section animate-slide-up stagger-3">
+                        <div class="px-5 py-4 flex items-center justify-between" style="border-bottom: 1px solid #D0D0D0;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12H4.5"/></svg>
+                                </div>
+                                <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Déductions</h3>
                             </div>
-                            <span class="text-xs text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full font-semibold">{{ deductions|length }}</span>
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(20,94,183,.08); color: #145EB7;">{{ deductions|length }}</span>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full">
+                            <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/60 dark:bg-zinc-800/30">
-                                        <th class="px-5 py-3 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Type</th>
-                                        <th class="px-5 py-3 text-right text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Montant</th>
-                                        <th class="px-5 py-3 text-left text-[11px] font-bold text-zinc-500 uppercase tracking-[0.08em]">Motif</th>
+                                    <tr class="table-header-row text-left text-[11px] font-bold uppercase tracking-wider" style="color: #022E69;">
+                                        <th class="py-3 px-5">Type</th>
+                                        <th class="py-3 px-5 text-right">Montant</th>
+                                        <th class="py-3 px-5">Motif</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                <tbody>
                                     {% if deductions|length > 0 %}
                                         {% for deduction in deductions %}
-                                        <tr class="row-refined">
-                                            <td class="px-5 py-3 text-sm">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400">
+                                        <tr class="table-body-row align-middle">
+                                            <td class="py-3 px-5">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
                                                     {{ deduction.typeDeduction.value }}
                                                 </span>
                                             </td>
-                                            <td class="px-5 py-3 text-right text-sm font-mono-num font-semibold text-rose-600 dark:text-rose-400">-{{ deduction.montant }} DT</td>
-                                            <td class="px-5 py-3 text-sm text-zinc-500 dark:text-zinc-400">{{ deduction.motif ?? '—' }}</td>
+                                            <td class="py-3 px-5 text-right font-mono-num font-semibold text-amber-600 dark:text-amber-400">-{{ deduction.montant }} DT</td>
+                                            <td class="py-3 px-5 text-zinc-500 dark:text-zinc-400">{{ deduction.motif ?? '—' }}</td>
                                         </tr>
                                         {% endfor %}
                                     {% else %}
-                                        <tr><td colspan="3" class="px-5 py-8 text-center text-xs text-zinc-400">Aucune déduction enregistrée</td></tr>
+                                        <tr>
+                                            <td colspan="3" class="py-12 px-5 text-center">
+                                                <p class="text-sm text-zinc-400 font-medium">Aucune déduction enregistrée</p>
+                                            </td>
+                                        </tr>
                                     {% endif %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
                 </div>
 
-                {# Right column: Details #}
-                <div>
-                    <div class="card-surface stat-stripe stat-stripe-sky p-5 space-y-4 animate-slide-up stagger-1 sticky top-24">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-2 h-2 rounded-full bg-sky-400"></div>
-                            <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em]">Détails</span>
-                        </div>
-                        <div>
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Employé</p>
-                            <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ fiche.employeeName }}</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Période</p>
-                            <p class="text-sm font-semibold font-mono-num text-zinc-900 dark:text-white">{{ fiche.mois }}/{{ fiche.annee }}</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Créée le</p>
-                            <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ fiche.createdAt|date('d/m/Y H:i') }}</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-1">Dernière modification</p>
-                            <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ fiche.updatedAt|date('d/m/Y H:i') }}</p>
-                        </div>
-                        {% if fiche.notes %}
-                        <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800/50">
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-2">Notes</p>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed">{{ fiche.notes }}</p>
-                        </div>
-                        {% endif %}
+                {# ── Right: Sidebar details ── #}
+                <div class="space-y-5">
 
-                        <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800/50" id="churnBox" data-url="{{ path('app_rh_payroll_employee_churn', { employeeId: fiche.employeeId }) }}">
-                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.08em] mb-2">Churn prediction</p>
-                            <p class="text-sm font-semibold text-zinc-900 dark:text-white" id="churnScore">Chargement...</p>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1" id="churnSource"></p>
-                            <p class="text-xs text-zinc-600 dark:text-zinc-300 mt-1" id="churnIndicator"></p>
+                    {# Employee Card #}
+                    <div class="sidebar-card animate-slide-up stagger-1 sticky top-24">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #022E69, #145EB7);">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                            </div>
+                            <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Détails</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="p-3 rounded-xl" style="background: #edf4ff;">
+                                <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color: #3FA9F5;">Employé</p>
+                                <p class="text-[13px] font-semibold" style="color: #022E69;">{{ fiche.employeeName }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Mois</p>
+                                    <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 font-mono-num">{{ fiche.mois }}</p>
+                                </div>
+                                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Année</p>
+                                    <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200 font-mono-num">{{ fiche.annee }}</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Créée le</p>
+                                <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">{{ fiche.createdAt|date('d/m/Y H:i') }}</p>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Dernière modification</p>
+                                <p class="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">{{ fiche.updatedAt|date('d/m/Y H:i') }}</p>
+                            </div>
+
+                            {% if fiche.notes %}
+                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Notes</p>
+                                <p class="text-[13px] text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed">{{ fiche.notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {# Churn Prediction #}
+                        <div class="mt-5 pt-5 border-t" style="border-color: #D0D0D0;" id="churnBox" data-url="{{ path('app_rh_payroll_employee_churn', { employeeId: fiche.employeeId }) }}">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(20,94,183,.1);">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #145EB7;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                                </div>
+                                <p class="text-[13px] font-bold text-zinc-800 dark:text-zinc-200">Churn Prediction</p>
+                            </div>
+                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
+                                <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100" id="churnScore">Chargement...</p>
+                                <p class="text-[11px] text-zinc-400 mt-1" id="churnSource"></p>
+                                <p class="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1" id="churnIndicator"></p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
 
         </main>
@@ -214,60 +381,46 @@
         sendBtn.addEventListener('click', async function () {
             const url = sendBtn.dataset.url;
             const token = sendBtn.dataset.token;
-            if (!url || !token) {
-                return;
-            }
-
-            const previous = sendBtn.textContent;
+            if (!url || !token) return;
+            const previous = sendBtn.innerHTML;
             sendBtn.disabled = true;
             sendBtn.textContent = 'Envoi...';
-
             try {
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': token,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' }
                 });
-
                 const payload = await response.json();
-                alert(payload.message || (payload.success ? 'Fiche envoyee.' : 'Echec envoi.'));
+                alert(payload.message || (payload.success ? 'Fiche envoyée.' : 'Échec envoi.'));
             } catch (e) {
-                alert('Erreur reseau pendant envoi email.');
+                alert('Erreur réseau pendant envoi email.');
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.textContent = previous;
+                sendBtn.innerHTML = previous;
             }
         });
     }
 
     const churnBox = document.getElementById('churnBox');
-    if (!churnBox) {
-        return;
-    }
-
-    const scoreEl = document.getElementById('churnScore');
+    if (!churnBox) return;
+    const scoreEl  = document.getElementById('churnScore');
     const sourceEl = document.getElementById('churnSource');
     const indicatorEl = document.getElementById('churnIndicator');
 
-    fetch(churnBox.dataset.url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-        .then(function (r) { return r.json(); })
-        .then(function (payload) {
+    fetch(churnBox.dataset.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(payload => {
             if (!payload.success) {
-                scoreEl.textContent = 'Indisponible';
-                sourceEl.textContent = payload.message || 'Aucune prediction.';
+                scoreEl.textContent  = 'Indisponible';
+                sourceEl.textContent = payload.message || 'Aucune prédiction.';
                 return;
             }
-
-            scoreEl.textContent = payload.score + '% - ' + payload.label;
-            sourceEl.textContent = 'Source: ' + payload.source;
+            scoreEl.textContent     = payload.score + '% — ' + payload.label;
+            sourceEl.textContent    = 'Source : ' + payload.source;
             indicatorEl.textContent = payload.indicator || '';
         })
-        .catch(function () {
-            scoreEl.textContent = 'Indisponible';
+        .catch(() => {
+            scoreEl.textContent  = 'Indisponible';
             sourceEl.textContent = 'Erreur de chargement.';
         });
 })();

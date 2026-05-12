@@ -1,207 +1,488 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Login | HrFlow{% endblock %}
+{% block title %}Login | HR-Flow{% endblock %}
 
 {% block stylesheets %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @keyframes hintFadeIn {
-            from { opacity: 0; transform: translateY(-3px); }
-            to   { opacity: 1; transform: translateY(0); }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy:   #022E69;
+            --blue:   #145EB7;
+            --sky:    #3FA9F5;
+            --white:  #ffffff;
+            --gray-50: #F8FAFC;
+            --gray-100:#F1F5F9;
+            --gray-200:#E2E8F0;
+            --gray-400:#94A3B8;
+            --gray-500:#64748B;
+            --gray-700:#334155;
+            a--gray-900:#0F172A;
         }
-        .login-input:user-invalid,
-        .login-input:not(:placeholder-shown):invalid {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--white); }
+
+        /* ── LAYOUT ── */
+        .login-root {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
         }
-        .login-input:user-valid,
-        .login-input:not(:placeholder-shown):valid {
-            border-color: #22c55e !important;
-            box-shadow: 0 0 0 3px rgba(34,197,94,0.12) !important;
+        @media (max-width: 900px) {
+            .login-root { grid-template-columns: 1fr; }
+            .panel-left  { display: none; }
         }
-        .login-hint {
-            display: none;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #ef4444;
-            margin-top: 0.25rem;
-            animation: hintFadeIn 0.15s ease-out;
+
+        /* ── LEFT PANEL ── */
+        .panel-left {
+            position: relative;
+            overflow: hidden;
+            background: var(--navy);
+            display: flex;
+            flex-direction: column;
+            padding: 3rem;
         }
-        .login-input:user-invalid + .login-hint,
-        .login-input:not(:placeholder-shown):invalid + .login-hint {
+
+        /* Gradient mesh */
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(63,169,245,.18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 60% at 80% 80%, rgba(20,94,183,.35) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 60% 30%, rgba(63,169,245,.10) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Subtle grid texture */
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .panel-left > * { position: relative; z-index: 1; }
+
+        /* Logo */
+        .left-logo {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            text-decoration: none;
+            margin-bottom: auto;
+        }
+        .left-logo-mark {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--sky) 0%, var(--blue) 100%);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(63,169,245,.4);
+        }
+        .left-logo-mark svg { width: 20px; height: 20px; }
+        .left-logo-text { font-size: 1.125rem; font-weight: 800; color: var(--white); letter-spacing: -.02em; }
+
+        /* Hero copy */
+        .left-hero { margin-top: auto; margin-bottom: auto; }
+        .left-hero h1 {
+            font-size: clamp(2rem, 3vw, 2.75rem);
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.15;
+            letter-spacing: -.03em;
+            margin-bottom: 1.25rem;
+        }
+        .left-hero h1 em {
+            font-style: normal;
+            background: linear-gradient(90deg, var(--sky) 0%, #7dd3fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .left-hero p {
+            font-size: .9375rem;
+            color: rgba(255,255,255,.55);
+            line-height: 1.7;
+            max-width: 360px;
+        }
+
+        /* Quote */
+        .left-quote {
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .left-quote p { font-size: .8125rem; color: rgba(255,255,255,.4); font-style: italic; line-height: 1.6; }
+        .left-quote cite { display: block; font-size: .8125rem; font-weight: 600; color: rgba(255,255,255,.55); margin-top: .5rem; font-style: normal; }
+
+        /* ── RIGHT PANEL ── */
+        .panel-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            background: var(--white);
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        /* Mobile logo */
+        .mobile-logo { display: none; margin-bottom: 2.5rem; }
+        @media (max-width: 900px) { .mobile-logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; } }
+
+        /* Heading */
+        .form-title {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -.03em;
+            margin-bottom: .4rem;
+        }
+        .form-subtitle { font-size: .9375rem; color: var(--gray-500); margin-bottom: 2rem; }
+
+        /* Steps */
+        .steps-bar {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: .5rem;
+            margin-bottom: 2rem;
+        }
+        .step-pill {
+            border: 1.5px solid var(--gray-200);
+            border-radius: 10px;
+            padding: .625rem .75rem;
+            text-align: center;
+            background: var(--gray-50);
+            transition: border-color .2s, background .2s;
+        }
+        .step-pill.active {
+            border-color: var(--sky);
+            background: rgba(63,169,245,.05);
+        }
+        .step-num {
             display: block;
+            font-size: .625rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--gray-400);
+            margin-bottom: .2rem;
         }
+        .step-pill.active .step-num { color: var(--sky); }
+        .step-name { font-size: .75rem; font-weight: 700; color: var(--gray-700); }
+
+        /* Alerts */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: .625rem;
+            padding: .875rem 1rem;
+            border-radius: 12px;
+            font-size: .8125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        .alert svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: .1rem; }
+        .alert-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; }
+        .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #16A34A; }
+        .alert-warning { background: #FFFBEB; border: 1px solid #FDE68A; color: #D97706; }
+        .alert-info    { background: #F0F9FF; border: 1px solid #BAE6FD; color: #0284C7; }
+
+        /* Form fields */
+        .field { margin-bottom: 1.125rem; }
+        .field label { display: block; font-size: .8125rem; font-weight: 700; color: var(--gray-700); margin-bottom: .5rem; }
+
+        .field-wrap { position: relative; }
+        .field-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            pointer-events: none;
+        }
+        .field-icon svg { width: 16px; height: 16px; display: block; }
+
+        .login-input {
+            width: 100%;
+            padding: .8125rem 1rem .8125rem 2.75rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 12px;
+            background: var(--white);
+            font-family: inherit;
+            font-size: .9rem;
+            font-weight: 500;
+            color: var(--gray-900);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .login-input::placeholder { color: var(--gray-400); font-weight: 400; }
+        .login-input:focus {
+            border-color: var(--sky);
+            box-shadow: 0 0 0 3px rgba(63,169,245,.15);
+        }
+
+        /* Inline validation */
+        @keyframes hintIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+        .login-hint { display:none; font-size:.7rem; font-weight:600; color:#ef4444; margin-top:.35rem; animation: hintIn .15s ease; }
+        .login-input:user-invalid + .login-hint,
+        .login-input:not(:placeholder-shown):invalid + .login-hint { display:block; }
+        .login-input:user-invalid,
+        .login-input:not(:placeholder-shown):invalid { border-color:#ef4444 !important; box-shadow:0 0 0 3px rgba(239,68,68,.1) !important; }
+        .login-input:user-valid,
+        .login-input:not(:placeholder-shown):valid { border-color:#22c55e !important; box-shadow:0 0 0 3px rgba(34,197,94,.1) !important; }
+
+        /* Password toggle */
+        .pw-toggle {
+            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--gray-400); padding: 0; line-height: 0;
+            transition: color .2s;
+        }
+        .pw-toggle:hover { color: var(--blue); }
+        .pw-toggle svg { width: 16px; height: 16px; display: block; }
+
+        /* 2FA bar */
+        .twofa-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--gray-50);
+            border: 1.5px solid var(--gray-200);
+            border-radius: 12px;
+            padding: .625rem 1rem;
+            margin-bottom: 1.125rem;
+        }
+        .twofa-bar p { font-size: .75rem; font-weight: 500; color: var(--gray-500); }
+        .twofa-toggle { font-size: .75rem; font-weight: 700; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; transition: color .15s; }
+        .twofa-toggle:hover { color: var(--sky); }
+
+        /* TOTP field wrapper */
+        .totp-wrapper.hidden { display: none; }
+
+        /* Forgot */
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+        }
+        .forgot-link { font-size: .8125rem; font-weight: 700; color: var(--blue); text-decoration: none; transition: color .15s; }
+        .forgot-link:hover { color: var(--sky); }
+
+        /* Submit button */
+        .btn-submit {
+            width: 100%;
+            padding: .9375rem;
+            background: var(--navy);
+            color: var(--white);
+            font-family: inherit;
+            font-size: .9375rem;
+            font-weight: 800;
+            letter-spacing: -.01em;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background .2s, box-shadow .2s, transform .1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(63,169,245,.15) 100%);
+        }
+        .btn-submit:hover {
+            background: var(--blue);
+            box-shadow: 0 8px 24px rgba(2,46,105,.3);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active { transform: translateY(0); box-shadow: none; }
+
+        /* Footer */
+        .form-footer { text-align: center; font-size: .8125rem; color: var(--gray-500); margin-top: 1.5rem; }
+        .form-footer a { font-weight: 700; color: var(--blue); text-decoration: none; }
+        .form-footer a:hover { color: var(--sky); }
+
+        /* Scroll fade-in on load */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .form-container { animation: fadeUp .45s ease both; }
+        .panel-left .left-hero { animation: fadeUp .5s .1s ease both; }
+        .panel-left .left-quote { animation: fadeUp .5s .2s ease both; }
     </style>
 {% endblock %}
 
 {% block body %}
 {% set lowerError = error ? (error.messageKey|lower) : '' %}
 {% set showTotpByDefault = 'authenticator' in lowerError or '2fa' in lowerError or 'code google' in lowerError %}
-<div class="min-h-screen bg-[#fafafa] font-[Manrope,sans-serif] antialiased flex">
 
-    {# Left panel - branding #}
-    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        {# Decorative shapes #}
-        <div class="absolute top-20 left-[10%] w-72 h-72 bg-teal-500/20 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-20 right-[10%] w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-400/5 rounded-full blur-3xl"></div>
+<div class="login-root">
 
-        <div class="relative z-10 flex flex-col justify-between p-12 w-full">
-            {# Brand #}
-            <a href="{{ path('app_home') }}" class="flex items-center gap-2.5 no-underline">
-                <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[3] origin-left">
-            </a>
+    {# ── LEFT PANEL ── #}
+    <div class="panel-left">
 
-            {# Main content #}
-            <div class="mt-auto mb-auto">
-                <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-6">
-                    Connectez-vous a<br>
-                    <span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">votre espace RH</span>
-                </h1>
-                <p class="text-lg text-slate-400 max-w-md leading-relaxed">
-                    Suivez les candidatures, gerez vos equipes, et pilotez vos KPIs recrutement dans une interface simple et moderne.
-                </p>
+        {# Logo #}
+        <a href="{{ path('app_home') }}" class="left-logo">
+            <img src="{{ asset('images/logoo.png') }}" alt="HR-Flow" style="height: 38px; width: auto;">
+        </a>
 
-                {# Stats row (real data) #}
-                <div class="flex items-center gap-8 mt-10">
-                    <div>
-                        <p class="text-2xl font-extrabold text-white">{{ loginStats.employeesCount|number_format(0, '.', ' ') }}</p>
-                        <p class="text-sm text-slate-500">Employes</p>
-                    </div>
-                    <div class="w-px h-10 bg-slate-700"></div>
-                    <div>
-                        <p class="text-2xl font-extrabold text-white">{{ loginStats.pendingLeavesCount|number_format(0, '.', ' ') }}</p>
-                        <p class="text-sm text-slate-500">Conges en attente</p>
-                    </div>
-                    <div class="w-px h-10 bg-slate-700"></div>
-                    <div>
-                        <p class="text-2xl font-extrabold text-white">{{ loginStats.openPositionsCount|number_format(0, '.', ' ') }}</p>
-                        <p class="text-sm text-slate-500">Offres ouvertes</p>
-                    </div>
-                </div>
-            </div>
+        {# Hero #}
+        <div class="left-hero">
+            <h1>Connectez-vous à<br><em>votre espace RH</em></h1>
+            <p>Suivez les candidatures, gérez vos équipes et pilotez vos KPIs recrutement dans une interface simple et moderne.</p>
+        </div>
 
-            {# Bottom quote #}
-            <div class="mt-auto pt-10 border-t border-slate-700/50">
-                <p class="text-sm text-slate-500 italic">"HrFlow a transforme notre processus de recrutement. Nous avons reduit notre temps d'embauche de 40%."</p>
-                <p class="text-sm font-semibold text-slate-400 mt-2">— Sarah M., DRH</p>
-            </div>
+        {# Quote #}
+        <div class="left-quote">
+            <p>"HR-Flow a transformé notre processus de recrutement. Nous avons réduit notre temps d'embauche de 40%."</p>
+            <cite>— Sarah M., Directrice des Ressources Humaines</cite>
         </div>
     </div>
 
-    {# Right panel - form #}
-    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <div class="w-full max-w-md">
+    {# ── RIGHT PANEL ── #}
+    <div class="panel-right">
+        <div class="form-container">
+
             {# Mobile logo #}
-            <a href="{{ path('app_home') }}" class="lg:hidden flex items-center gap-2.5 no-underline mb-10">
-                <img src="{{ asset('logo.png') }}" alt="HrFlow logo" class="w-9 h-9 rounded-lg object-cover scale-[3] origin-left">
+            <a href="{{ path('app_home') }}" class="mobile-logo">
+                <div class="left-logo-mark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <span style="font-size:1.1rem;font-weight:800;color:var(--navy);letter-spacing:-.02em;">HR-Flow</span>
             </a>
 
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Bon retour</h2>
-            <p class="text-slate-500 mb-8">Entrez vos informations pour continuer.</p>
+            <h2 class="form-title">Bon retour !</h2>
+            <p class="form-subtitle">Entrez vos informations pour continuer.</p>
 
-            <div class="mb-6 grid grid-cols-3 gap-2">
-                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Etape 1</p>
-                    <p class="text-xs font-semibold text-slate-700">Identifiant</p>
+            {# Steps #}
+            <div class="steps-bar">
+                <div class="step-pill">
+                    <span class="step-num">Étape 1</span>
+                    <span class="step-name">Identifiant</span>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Etape 2</p>
-                    <p class="text-xs font-semibold text-slate-700">Mot de passe</p>
+                <div class="step-pill">
+                    <span class="step-num">Étape 2</span>
+                    <span class="step-name">Mot de passe</span>
                 </div>
-                <div id="step-2fa" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center {{ showTotpByDefault ? 'ring-1 ring-teal-300 border-teal-300' : '' }}">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Etape 3</p>
-                    <p class="text-xs font-semibold text-slate-700">Code 2FA</p>
+                <div id="step-2fa" class="step-pill {{ showTotpByDefault ? 'active' : '' }}">
+                    <span class="step-num">Étape 3</span>
+                    <span class="step-name">Code 2FA</span>
                 </div>
             </div>
 
+            {# Alerts #}
             {% if error %}
-                <div class="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 font-medium flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                <div class="alert alert-error">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    {{ error.messageKey|trans(error.messageData,'security') }}
                 </div>
             {% endif %}
-
-            {% for message in app.flashes('success') %}
-                <div class="mb-6 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    {{ message }}
+            {% for m in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ m }}
+                </div>
+            {% endfor %}
+            {% for m in app.flashes('warning') %}
+                <div class="alert alert-warning">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>{{ m }}
+                </div>
+            {% endfor %}
+            {% for m in app.flashes('info') %}
+                <div class="alert alert-info">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/></svg>{{ m }}
+                </div>
+            {% endfor %}
+            {% for m in app.flashes('error') %}
+                <div class="alert alert-error">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>{{ m }}
                 </div>
             {% endfor %}
 
-            {% for message in app.flashes('warning') %}
-                <div class="mb-6 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700 font-medium flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
-                    {{ message }}
-                </div>
-            {% endfor %}
+            {# Form #}
+            <form method="post" action="{{ path('app_login') }}" novalidate data-2fa-status-url="{{ path('app_auth_2fa_status') }}">
 
-            {% for message in app.flashes('info') %}
-                <div class="mb-6 px-4 py-3 rounded-xl bg-sky-50 border border-sky-200 text-sm text-sky-700 font-medium flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/></svg>
-                    {{ message }}
-                </div>
-            {% endfor %}
-
-            {% for message in app.flashes('error') %}
-                <div class="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 font-medium flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                    {{ message }}
-                </div>
-            {% endfor %}
-
-            <form method="post" action="{{ path('app_login') }}" class="space-y-5" novalidate data-2fa-status-url="{{ path('app_auth_2fa_status') }}">
-                <div>
-                    <label for="identifier" class="block text-sm font-bold text-slate-700 mb-2">Email ou Username</label>
-                    <input id="identifier" name="identifier" type="text"
-                           placeholder="nom@entreprise.com ou admin"
-                           value="{{ last_username|default('') }}"
-                           required
-                           class="login-input w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20">
-                    <span class="login-hint">Veuillez entrer une adresse email valide</span>
+                {# Identifier #}
+                <div class="field">
+                    <label for="identifier">Email ou Username</label>
+                    <div class="field-wrap">
+                        <span class="field-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </span>
+                        <input id="identifier" name="identifier" type="text"
+                               placeholder="nom@entreprise.com ou admin"
+                               value="{{ last_username|default('') }}"
+                               required
+                               class="login-input">
+                        <span class="login-hint">Veuillez entrer un identifiant valide.</span>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-bold text-slate-700 mb-2">Mot de passe</label>
-                    <input id="password" name="password" type="password"
-                           placeholder="••••••••"
-                           required
-                           class="login-input w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20">
-                    <span class="login-hint">Ce champ est obligatoire</span>
+                {# Password #}
+                <div class="field">
+                    <label for="password">Mot de passe</label>
+                    <div class="field-wrap">
+                        <span class="field-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </span>
+                        <input id="password" name="password" type="password"
+                               placeholder="••••••••"
+                               required
+                               class="login-input">
+                        <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Afficher le mot de passe">
+                            <svg id="eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                        <span class="login-hint">Ce champ est obligatoire.</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                    <p id="twofa-status" class="text-xs font-medium text-slate-500">2FA detectee automatiquement selon le compte.</p>
-                    <button id="toggle-2fa" type="button" class="text-xs font-semibold text-teal-600 hover:text-teal-700">Afficher le code 2FA</button>
+                {# 2FA bar #}
+                <div class="twofa-bar">
+                    <p id="twofa-status">2FA détectée automatiquement selon le compte.</p>
+                    <button id="toggle-2fa" type="button" class="twofa-toggle">Afficher code 2FA</button>
                 </div>
 
-                <div id="totp-wrapper" class="{{ showTotpByDefault ? '' : 'hidden' }}">
-                    <label for="totp_code" class="block text-sm font-bold text-slate-700 mb-2">Code Google Authenticator</label>
-                    <input id="totp_code" name="totp_code" type="text"
-                           placeholder="123456"
-                           inputmode="numeric"
-                           autocomplete="one-time-code"
-                           class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20">
-                    <p class="mt-2 text-xs text-slate-500">Requis uniquement si la double authentification est active sur votre compte.</p>
+                {# TOTP #}
+                <div id="totp-wrapper" class="totp-wrapper field {{ showTotpByDefault ? '' : 'hidden' }}">
+                    <label for="totp_code">Code Google Authenticator</label>
+                    <div class="field-wrap">
+                        <span class="field-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </span>
+                        <input id="totp_code" name="totp_code" type="text"
+                               placeholder="123456"
+                               inputmode="numeric"
+                               autocomplete="one-time-code"
+                               class="login-input">
+                    </div>
+                    <p style="font-size:.72rem;color:var(--gray-400);margin-top:.4rem;font-weight:500;">Requis uniquement si la double authentification est active sur votre compte.</p>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <div class="flex items-center justify-between">
-                    <span></span>
-                    <a href="#" class="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">Mot de passe oublie ?</a>
+                {# Forgot #}
+                <div class="form-row">
+                    <a href="#" class="forgot-link">Mot de passe oublié ?</a>
                 </div>
 
-                <button type="submit"
-                        class="w-full py-3.5 px-6 text-base font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all hover:shadow-xl hover:shadow-slate-900/20">
-                    Se connecter
-                </button>
+                <button type="submit" class="btn-submit">Se connecter</button>
             </form>
 
-            <p class="text-center text-sm text-slate-500 mt-8">
-                Retour a <a href="{{ path('app_home') }}" class="font-semibold text-teal-600 hover:text-teal-700 transition-colors">l'accueil</a>
+            <p class="form-footer">
+                Retour à <a href="{{ path('app_home') }}">l'accueil</a>
             </p>
         </div>
     </div>
@@ -209,74 +490,71 @@
 
 <script>
 (function () {
-    const form = document.querySelector('form[data-2fa-status-url]');
-    if (!form) return;
+    // Password visibility toggle
+    const pwToggle = document.getElementById('pw-toggle');
+    const pwInput  = document.getElementById('password');
+    const eyeIcon  = document.getElementById('eye-icon');
+    if (pwToggle && pwInput) {
+        pwToggle.addEventListener('click', function () {
+            const isText = pwInput.type === 'text';
+            pwInput.type = isText ? 'password' : 'text';
+            eyeIcon.innerHTML = isText
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>';
+        });
+    }
 
-    const endpoint = form.getAttribute('data-2fa-status-url');
-    const identifierInput = document.getElementById('identifier');
-    const totpWrapper = document.getElementById('totp-wrapper');
-    const totpInput = document.getElementById('totp_code');
-    const toggleBtn = document.getElementById('toggle-2fa');
-    const statusLabel = document.getElementById('twofa-status');
-    const step2fa = document.getElementById('step-2fa');
+    // 2FA auto-detect + manual toggle
+    const form          = document.querySelector('form[data-2fa-status-url]');
+    if (!form) return;
+    const endpoint      = form.getAttribute('data-2fa-status-url');
+    const identifierIn  = document.getElementById('identifier');
+    const totpWrapper   = document.getElementById('totp-wrapper');
+    const totpInput     = document.getElementById('totp_code');
+    const toggleBtn     = document.getElementById('toggle-2fa');
+    const statusLabel   = document.getElementById('twofa-status');
+    const step2fa       = document.getElementById('step-2fa');
     let timer = null;
 
-    function showTotp(required, source) {
-        const visible = required || !totpWrapper.classList.contains('hidden');
-        if (required) {
+    function setTotpVisible(visible, required) {
+        if (visible) {
             totpWrapper.classList.remove('hidden');
-            totpInput.setAttribute('required', 'required');
-            statusLabel.textContent = '2FA requise pour ce compte. Entrez le code Google Authenticator.';
-            toggleBtn.textContent = 'Masquer le code 2FA';
-            step2fa.classList.add('ring-1', 'ring-teal-300', 'border-teal-300');
-            return;
-        }
-
-        if (source === 'manual' && visible) {
-            const isHidden = totpWrapper.classList.toggle('hidden');
-            if (isHidden) {
-                totpInput.removeAttribute('required');
-                statusLabel.textContent = '2FA detectee automatiquement selon le compte.';
-                toggleBtn.textContent = 'Afficher le code 2FA';
-                step2fa.classList.remove('ring-1', 'ring-teal-300', 'border-teal-300');
-            } else {
-                statusLabel.textContent = 'Activez ce champ si votre compte utilise Google Authenticator.';
-                toggleBtn.textContent = 'Masquer le code 2FA';
-                step2fa.classList.add('ring-1', 'ring-teal-300', 'border-teal-300');
-            }
+            if (required) totpInput.setAttribute('required', 'required');
+            statusLabel.textContent = required
+                ? '2FA requise — entrez le code Google Authenticator.'
+                : 'Activez si votre compte utilise Google Authenticator.';
+            toggleBtn.textContent = 'Masquer code 2FA';
+            step2fa.classList.add('active');
+        } else {
+            totpWrapper.classList.add('hidden');
+            totpInput.removeAttribute('required');
+            statusLabel.textContent = '2FA détectée automatiquement selon le compte.';
+            toggleBtn.textContent = 'Afficher code 2FA';
+            step2fa.classList.remove('active');
         }
     }
 
     async function checkTwoFactorStatus() {
-        const identifier = (identifierInput.value || '').trim();
-        if (identifier.length < 3) {
-            return;
-        }
-
+        const id = (identifierIn.value || '').trim();
+        if (id.length < 3) return;
         try {
-            const response = await fetch(endpoint + '?identifier=' + encodeURIComponent(identifier), {
-                credentials: 'same-origin',
-                headers: { 'Accept': 'application/json' }
-            });
-            const data = await response.json();
-            showTotp(Boolean(data.required), 'auto');
-        } catch (e) {
-            // Keep silent; manual toggle still works.
-        }
+            const res  = await fetch(endpoint + '?identifier=' + encodeURIComponent(id), { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            const data = await res.json();
+            if (data.required) setTotpVisible(true, true);
+        } catch (e) { /* silent */ }
     }
 
-    identifierInput.addEventListener('input', function () {
-        if (timer) clearTimeout(timer);
+    identifierIn.addEventListener('input', function () {
+        clearTimeout(timer);
         timer = setTimeout(checkTwoFactorStatus, 280);
     });
 
     toggleBtn.addEventListener('click', function () {
-        showTotp(false, 'manual');
+        const isHidden = totpWrapper.classList.contains('hidden');
+        setTotpVisible(isHidden, false);
     });
 
-    if (identifierInput.value.trim().length >= 3) {
-        checkTwoFactorStatus();
-    }
+    if (identifierIn.value.trim().length >= 3) checkTwoFactorStatus();
 })();
 </script>
 {% endblock %}

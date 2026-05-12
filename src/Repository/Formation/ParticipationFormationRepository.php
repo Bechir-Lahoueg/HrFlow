@@ -45,6 +45,7 @@ class ParticipationFormationRepository extends ServiceEntityRepository
     public function findBySession(int $sessionId): array
     {
         return $this->createQueryBuilder('p')
+            ->addSelect('e', 's', 'f')
             ->join('p.employee', 'e')
             ->join('p.session', 's')
             ->join('s.formation', 'f')
@@ -62,6 +63,7 @@ class ParticipationFormationRepository extends ServiceEntityRepository
     public function findByRhId(int $rhId, string $status = '', ?int $formationId = null, bool $priorityOnly = false): array
     {
         $qb = $this->createQueryBuilder('p')
+            ->addSelect('e', 's', 'f')
             ->join('p.employee', 'e')
             ->join('p.session', 's')
             ->join('s.formation', 'f')
