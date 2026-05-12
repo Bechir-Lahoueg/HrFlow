@@ -8,9 +8,9 @@
         .offer-card { transition: all .2s; }
         .offer-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px -8px rgba(15,23,42,.12); }
         .status-dot { animation: pulse 2s infinite; }
-        .tab-active { box-shadow: 0 2px 0 #14b8a6; }
+        .tab-active { box-shadow: 0 2px 0 #145EB7; }
         .modal-backdrop { backdrop-filter: blur(6px); }
-        .salary-bar { background: linear-gradient(90deg, #14b8a6, #10b981); border-radius: 99px; }
+        .salary-bar { background: linear-gradient(90deg, #145EB7, #1e7dd9); border-radius: 99px; }
     </style>
 {% endblock %}
 
@@ -22,7 +22,7 @@
         {% include 'DashboardHr/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2 animate-slide-up">
+            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-formation-50 border border-formation-200 text-formation-600 text-sm font-medium flex items-center gap-2 animate-slide-up">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ message }}
             </div>
@@ -41,28 +41,28 @@
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
             {# ══════════ Hero Banner ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-violet-950 to-indigo-900 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-violet-400/15 blur-3xl"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-indigo-300/15 blur-3xl"></div>
+            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-formation-950 via-formation-900 to-formation-800 text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-formation-400/15 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-formation-300/15 blur-3xl"></div>
                 <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-violet-200 uppercase tracking-wider">Recruitment Hub</span>
+                            <div class="w-2 h-2 rounded-full bg-formation-400 animate-pulse"></div>
+                            <span class="text-[11px] font-bold text-formation-200 uppercase tracking-wider">Recruitment Hub</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des offres d'emploi</h2>
                         <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Publiez, gérez et suivez vos offres d'emploi. Attirez les meilleurs talents pour votre équipe.</p>
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
                         <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-violet-200/70 font-bold">Offres actives</p>
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">Offres actives</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.statusCounts.PUBLISHED|default(0) }}</p>
-                            <p class="text-xs text-violet-100/60 mt-1">en cours de recrutement</p>
+                            <p class="text-xs text-formation-100/60 mt-1">en cours de recrutement</p>
                         </div>
                         <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-violet-200/70 font-bold">Total candidatures</p>
+                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">Total candidatures</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.totalApplications|default(0) }}</p>
-                            <p class="text-xs text-violet-100/60 mt-1">candidatures reçues</p>
+                            <p class="text-xs text-formation-100/60 mt-1">candidatures reçues</p>
                         </div>
                     </div>
                 </div>
@@ -72,25 +72,25 @@
             <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-1">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-formation-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-formation-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
                         </div>
                         <span class="text-[11px] font-bold text-slate-400">Total</span>
                     </div>
                     <p class="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono-num">{{ stats.totalOffers|default(0) }}</p>
                     <p class="text-[13px] text-zinc-400 mt-1 font-medium">Toutes les offres</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-violet-400 to-indigo-400"></div></div>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-full rounded-full bg-gradient-to-r from-formation-400 to-formation-300"></div></div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-2">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
+                        <div class="w-10 h-10 rounded-lg bg-formation-50 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-formation-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
                         </div>
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-formation-400 animate-pulse"></span>
                     </div>
-                    <p class="text-3xl font-extrabold text-emerald-600 font-mono-num">{{ stats.statusCounts.PUBLISHED|default(0) }}</p>
+                    <p class="text-3xl font-extrabold text-formation-600 font-mono-num">{{ stats.statusCounts.PUBLISHED|default(0) }}</p>
                     <p class="text-[13px] text-zinc-400 mt-1 font-medium">Offres ouvertes</p>
-                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"></div></div>
+                    <div class="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-gradient-to-r from-formation-500 to-formation-400"></div></div>
                 </div>
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-5 shadow-sm animate-slide-up stagger-3">
                     <div class="flex items-center justify-between mb-3">
@@ -121,7 +121,7 @@
                 {# Create Form #}
                 <section class="xl:col-span-1 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800/50 p-6">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-formation-600 to-formation-500 flex items-center justify-center shadow-lg shadow-formation-600/30">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                         </div>
                         <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-100">Nouvelle offre</h2>
@@ -145,7 +145,7 @@
                         
                         {{ form_row(form.status) }}
 
-                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-violet-500 to-indigo-600 text-white hover:from-violet-400 hover:to-indigo-500 shadow-lg shadow-violet-500/20 transition-all duration-200 mt-2">
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold bg-gradient-to-r from-formation-600 to-formation-500 text-white hover:from-formation-400 hover:to-formation-500 shadow-lg shadow-formation-600/30 transition-all duration-200 mt-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                             Publier l'offre
                         </button>
@@ -157,11 +157,11 @@
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-100">Offres d'emploi</h2>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-md">{{ jobOffers|length }} offres</span>
+                            <span class="text-xs font-bold text-formation-600 bg-formation-50 px-2.5 py-1 rounded-md">{{ jobOffers|length }} offres</span>
                             {# Filter tabs #}
                             <div class="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-1">
-                                <a href="{{ path('app_rh_job_offers') }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if not app.request.query.get('status') %}bg-violet-50 text-violet-700{% else %}text-slate-500 hover:text-slate-700{% endif %}">Tous</a>
-                                <a href="{{ path('app_rh_job_offers', {status: 'OPEN'}) }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if app.request.query.get('status') == 'OPEN' %}bg-emerald-50 text-emerald-700{% else %}text-slate-500 hover:text-slate-700{% endif %}">Ouverts</a>
+                                <a href="{{ path('app_rh_job_offers') }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if not app.request.query.get('status') %}bg-formation-50 text-formation-600{% else %}text-slate-500 hover:text-slate-700{% endif %}">Tous</a>
+                                <a href="{{ path('app_rh_job_offers', {status: 'OPEN'}) }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if app.request.query.get('status') == 'OPEN' %}bg-formation-50 text-formation-600{% else %}text-slate-500 hover:text-slate-700{% endif %}">Ouverts</a>
                                 <a href="{{ path('app_rh_job_offers', {status: 'DRAFT'}) }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if app.request.query.get('status') == 'DRAFT' %}bg-amber-50 text-amber-700{% else %}text-slate-500 hover:text-slate-700{% endif %}">Brouillons</a>
                                 <a href="{{ path('app_rh_job_offers', {status: 'CLOSED'}) }}" class="px-3 py-1.5 text-[12px] font-semibold rounded-md transition-colors {% if app.request.query.get('status') == 'CLOSED' %}bg-slate-100 text-slate-700{% else %}text-slate-500 hover:text-slate-700{% endif %}">Fermés</a>
                             </div>
@@ -175,7 +175,7 @@
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex items-start gap-4 flex-1 min-w-0">
                                 <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm
-                                    {% if offer.status == 'PUBLISHED' %}bg-gradient-to-br from-emerald-400 to-teal-500
+                                    {% if offer.status == 'PUBLISHED' %}bg-gradient-to-br from-formation-400 to-formation-600
                                     {% elseif offer.status == 'DRAFT' %}bg-gradient-to-br from-amber-400 to-orange-500
                                     {% else %}bg-gradient-to-br from-slate-400 to-slate-500{% endif %}">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
@@ -184,17 +184,17 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <h3 class="text-[15px] font-bold text-slate-800 dark:text-zinc-100 truncate">{{ offer.title }}</h3>
                                         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold
-                                            {% if offer.status == 'PUBLISHED' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                                            {% if offer.status == 'PUBLISHED' %}bg-formation-50 text-formation-600 border border-formation-200
                                             {% elseif offer.status == 'DRAFT' %}bg-amber-50 text-amber-700 border border-amber-200
                                             {% else %}bg-slate-100 text-slate-600 border border-slate-200{% endif %}">
                                             <span class="w-1.5 h-1.5 rounded-full
-                                                {% if offer.status == 'PUBLISHED' %}bg-emerald-500 animate-pulse
+                                                {% if offer.status == 'PUBLISHED' %}bg-formation-500 animate-pulse
                                                 {% elseif offer.status == 'DRAFT' %}bg-amber-500
                                                 {% else %}bg-slate-400{% endif %}"></span>
                                             {{ offer.status }}
                                         </span>
                                         {% if offer.employmentType %}
-                                            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-violet-50 text-violet-700">{{ offer.employmentType }}</span>
+                                            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-formation-50 text-formation-600">{{ offer.employmentType }}</span>
                                         {% endif %}
                                     </div>
                                     <div class="flex items-center gap-3 mt-1.5 flex-wrap">
@@ -217,18 +217,18 @@
                                     </div>
                                     {% if offer.salaryMin > 0 or offer.salaryMax > 0 %}
                                         <div class="mt-2 flex items-center gap-2">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            <span class="text-[12px] font-semibold text-emerald-700">{{ offer.salaryMin|number_format(0, '.', ' ') }} – {{ offer.salaryMax|number_format(0, '.', ' ') }} TND</span>
+                                            <svg class="w-3.5 h-3.5 text-formation-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span class="text-[12px] font-semibold text-formation-600">{{ offer.salaryMin|number_format(0, '.', ' ') }} – {{ offer.salaryMax|number_format(0, '.', ' ') }} TND</span>
                                         </div>
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <a href="{{ path('app_rh_applications', {job_offer_id: offer.id}) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors border border-violet-100">
+                                <a href="{{ path('app_rh_applications', {job_offer_id: offer.id}) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-formation-50 text-formation-600 hover:bg-formation-100 transition-colors border border-formation-100">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
                                     {{ applicationsCount|default(0) }} candidats
                                 </a>
-                                <a href="{{ path('app_rh_job_offers_show', {id: offer.id}) }}" class="p-2 rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors" title="Voir détails">
+                                <a href="{{ path('app_rh_job_offers_show', {id: offer.id}) }}" class="p-2 rounded-lg text-slate-400 hover:bg-formation-50 hover:text-formation-600 transition-colors" title="Voir détails">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </a>
                                 <a href="{{ path('app_rh_job_offers_edit', {id: offer.id}) }}" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" title="Modifier">
@@ -254,8 +254,8 @@
                     </div>
                     {% else %}
                     <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/60 p-12 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-violet-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+                        <div class="w-16 h-16 rounded-2xl bg-formation-50 flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-formation-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
                         </div>
                         <p class="text-slate-400 text-sm font-medium">Aucune offre d'emploi pour le moment.</p>
                         <p class="text-slate-300 text-xs mt-1">Créez votre première offre en utilisant le formulaire.</p>
@@ -294,7 +294,7 @@
                                         </div>
                                         <div class="flex items-center gap-1">
                                             {# Restore button #}
-                                            <button type="button" onclick="openModal('restoreJobOfferModal{{ offer.id }}')" class="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" title="Restaurer">
+                                            <button type="button" onclick="openModal('restoreJobOfferModal{{ offer.id }}')" class="p-2 rounded-lg text-formation-500 hover:bg-formation-50 hover:text-formation-600 transition-colors" title="Restaurer">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/>
                                                 </svg>
@@ -318,7 +318,7 @@
                             title: 'Restaurer l\'offre',
                             message: 'Êtes-vous sûr de vouloir restaurer l\'offre "' ~ offer.title ~ '" ?',
                             confirm_button_text: 'Restaurer',
-                            confirm_button_class: 'bg-emerald-600 hover:bg-emerald-700',
+                            confirm_button_class: 'bg-formation-600 hover:bg-formation-700',
                             form_action: path('app_rh_job_offers_restore', {id: offer.id}),
                             csrf_token: csrf_token('restore_job_offer_' ~ offer.id)
                         } %}

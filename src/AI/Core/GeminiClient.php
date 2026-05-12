@@ -25,62 +25,19 @@ final class GeminiClient implements LlmClientInterface
         private readonly LoggerInterface $logger,
     ) {}
 
-    public function chatStructured(string $prompt, string $systemPrompt): array
-    {
-        $payload = [
-            'contents' => [
-                ['role' => 'user', 'parts' => [['text' => $prompt]]],
-            ],
-            'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
-            'generationConfig' => [
-                'temperature' => 0.1,
-                'maxOutputTokens' => 1024,
-                'responseMimeType' => 'application/json',
-            ],
-        ];
-
-        try {
-            $response = $this->httpClient->request('POST', self::BASE_URL, [
-                'json' => $payload,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'X-Goog-Api-Key' => $this->apiKey,
-                ],
-                'timeout' => 30,
-            ]);
-
-            $content = $response->getContent();
-            $data = json_decode($content, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Gemini JSON decode error', ['error' => json_last_error_msg()]);
-                return [];
-            }
-
-            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-            $result = json_decode($text, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Gemini result JSON decode error', ['text' => $text]);
-                return [];
-            }
-
-            return $result;
-        } catch (\Throwable $e) {
-            $this->logger->error('Gemini chatStructured error', ['message' => $e->getMessage()]);
-            return [];
-        }
-    }
-
     public function chat(ChatRequest $request): ChatResponse
     {
         $contents = $this->buildContents($request->messages);
         $generationConfig = [
-            'temperature' => 0.9,
+            'temperature' => 0.1,
             'topP' => 0.95,
             'topK' => 40,
             'maxOutputTokens' => 2048,
         ];
+
+        if ($request->responseMimeType !== null) {
+            $generationConfig['responseMimeType'] = $request->responseMimeType;
+        }
 
         $payload = [
             'contents' => $contents,
@@ -96,79 +53,91 @@ final class GeminiClient implements LlmClientInterface
         }
 
         if (\count($request->tools) > 0) {
-            $payload['tools'] = $this->buildTools($request->tools);
+            $tools = $this->buildTools($request->tools);
+            if (!empty($tools)) {
+                $payload['tools'] = $tools;
+            }
         }
 
-        $maxRetries = 2;
-        $retryCount = 0;
-        $data = null;
+        $statusCode = null;
+        $content = null;
 
-        while ($retryCount <= $maxRetries) {
-            try {
-                $response = $this->httpClient->request('POST', self::BASE_URL, [
-                    'json' => $payload,
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                        'X-Goog-Api-Key' => $this->apiKey,
-                    ],
-                    'timeout' => 30,
+        try {
+            $response = $this->httpClient->request('POST', self::BASE_URL, [
+                'json' => $payload,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'X-Goog-Api-Key' => $this->apiKey,
+                ],
+                'timeout' => 30,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $content = $response->getContent(false);
+
+            if ($statusCode >= 400) {
+                $this->logger->error('Gemini API error', [
+                    'status' => $statusCode,
+                    'response' => \substr($content, 0, 2000),
+                    'intent_parse' => $request->responseMimeType !== null,
+                    'has_tools' => \count($request->tools) > 0,
                 ]);
-
-                $statusCode = $response->getStatusCode();
-                $content = $response->getContent(false);
-
-                if (in_array($statusCode, [429, 500, 503], true) && $retryCount < $maxRetries) {
-                    ++$retryCount;
-                    $this->logger->warning('Gemini API ' . $statusCode . ', retrying', ['attempt' => $retryCount]);
-                    sleep(2);
-                    continue;
-                }
-                
-                if ($statusCode >= 400) {
-                    $this->logger->error('Gemini API error', [
-                        'status' => $statusCode,
-                        'response' => $content,
-                    ]);
-                    return new ChatResponse(
-                        content: 'Erreur de connexion au service IA (code ' . $statusCode . '). Veuillez réessayer.',
-                        toolCalls: [],
-                    );
-                }
-                
-                $data = json_decode($content, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $this->logger->error('Gemini JSON decode error', [
-                        'error' => json_last_error_msg(),
-                    ]);
-                    return new ChatResponse(
-                        content: 'Erreur de traitement de la réponse IA.',
-                        toolCalls: [],
-                    );
-                }
-                
-                break;
-            } catch (ClientExceptionInterface|ServerExceptionInterface $e) {
-                if ($retryCount < $maxRetries) {
-                    ++$retryCount;
-                    $this->logger->warning('Gemini HTTP error, retrying', ['attempt' => $retryCount, 'message' => $e->getMessage()]);
-                    sleep(2);
-                    continue;
-                }
-                $this->logger->error('Gemini HTTP error', ['message' => $e->getMessage()]);
                 return new ChatResponse(
-                    content: 'Erreur de communication avec le service IA. Veuillez réessayer.',
+                    content: 'Erreur de connexion au service IA (code ' . $statusCode . '). Veuillez réessayer.',
                     toolCalls: [],
                 );
-            } catch (\Exception $e) {
-                $this->logger->error('Gemini unexpected error', ['message' => $e->getMessage()]);
+            }
+
+            $data = \json_decode($content, true);
+            if (\json_last_error() !== \JSON_ERROR_NONE) {
+                $this->logger->error('Gemini JSON decode error', [
+                    'error' => \json_last_error_msg(),
+                ]);
                 return new ChatResponse(
-                    content: 'Une erreur inattendue est survenue. Veuillez réessayer.',
+                    content: 'Erreur de traitement de la réponse IA.',
                     toolCalls: [],
+                );
+            }
+
+            return $this->parseResponse($data);
+        } catch (\Throwable $e) {
+            $this->logger->error('Gemini request failed', [
+                'message' => $e->getMessage(),
+                'status' => $statusCode,
+            ]);
+            return new ChatResponse(
+                content: 'Erreur de communication avec le service IA. Veuillez réessayer.',
+                toolCalls: [],
+            );
+        }
+    }
+
+    private function parseResponse(array $data): ChatResponse
+    {
+        $content = '';
+        $toolCalls = [];
+
+        if (!isset($data['candidates'][0]['content']['parts'])) {
+            return new ChatResponse(content: '', toolCalls: []);
+        }
+
+        foreach ($data['candidates'][0]['content']['parts'] as $part) {
+            if (isset($part['text'])) {
+                $content .= $part['text'];
+            }
+            if (isset($part['functionCall'])) {
+                $toolCalls[] = new ToolCall(
+                    id: $part['functionCall']['id'] ?? \bin2hex(\random_bytes(8)),
+                    name: $part['functionCall']['name'],
+                    arguments: $part['functionCall']['args'] ?? [],
                 );
             }
         }
 
-        return $this->parseResponse($data ?? []);
+        return new ChatResponse(
+            content: $content,
+            toolCalls: $toolCalls,
+        );
     }
 
     /**
@@ -212,8 +181,9 @@ final class GeminiClient implements LlmClientInterface
                     ],
                 ];
             } else {
+                $role = $message->role === 'model' ? 'model' : 'user';
                 $contents[] = [
-                    'role' => $message->role,
+                    'role' => $role,
                     'parts' => [
                         ['text' => $message->content],
                     ],
@@ -225,55 +195,85 @@ final class GeminiClient implements LlmClientInterface
     }
 
     /**
-     * @param array<int, \App\AI\Contract\ToolInterface|array<string, mixed>> $tools
+     * @param array<int, ToolInterface|array<string, mixed>> $tools
      * @return array<int, mixed>
      */
     private function buildTools(array $tools): array
     {
         $functionDeclarations = [];
         foreach ($tools as $tool) {
-            if (!($tool instanceof \App\AI\Contract\ToolInterface)) {
+            if (!$tool instanceof ToolInterface) {
                 continue;
             }
-            $functionDeclarations[] = $tool->getDefinition();
+            $definition = $tool->getDefinition();
+            if (!isset($definition['name'])) {
+                continue;
+            }
+            $functionDeclarations[] = $this->normalizeToolDefinition($definition);
+        }
+
+        if (empty($functionDeclarations)) {
+            return [];
         }
 
         return [
-            [
-                'functionDeclarations' => $functionDeclarations,
-            ],
+            ['functionDeclarations' => $functionDeclarations],
         ];
     }
 
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function parseResponse(array $data): ChatResponse
+    private function normalizeToolDefinition(array $definition): array
     {
-        $content = '';
-        $toolCalls = [];
+        $normalized = [
+            'name' => $definition['name'],
+            'description' => $definition['description'] ?? '',
+        ];
 
-        if (isset($data['candidates'])) {
-            $candidate = $data['candidates'][0] ?? null;
-            if ($candidate && isset($candidate['content']['parts'])) {
-                foreach ($candidate['content']['parts'] as $part) {
-                    if (isset($part['text'])) {
-                        $content .= $part['text'];
-                    }
-                    if (isset($part['functionCall'])) {
-                        $toolCalls[] = new ToolCall(
-                            id: $part['functionCall']['id'] ?? bin2hex(random_bytes(8)),
-                            name: $part['functionCall']['name'],
-                            arguments: $part['functionCall']['args'] ?? [],
-                        );
-                    }
+        if (isset($definition['parameters'])) {
+            $normalized['parameters'] = $this->normalizeSchema($definition['parameters']);
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeSchema(array $schema): array
+    {
+        $normalized = [
+            'type' => 'OBJECT',
+            'properties' => [],
+        ];
+
+        if (!isset($schema['properties']) && !isset($schema['type'])) {
+            return $normalized;
+        }
+
+        if (isset($schema['type'])) {
+            $normalized['type'] = \strtoupper($schema['type']);
+        }
+
+        if (!isset($schema['properties'])) {
+            return $normalized;
+        }
+
+        foreach ($schema['properties'] as $key => $prop) {
+            if (\is_array($prop)) {
+                $normalized['properties'][$key] = [
+                    'type' => \strtoupper($prop['type'] ?? 'STRING'),
+                    'description' => $prop['description'] ?? '',
+                ];
+                if (isset($prop['enum'])) {
+                    $normalized['properties'][$key]['enum'] = $prop['enum'];
                 }
+                if (isset($prop['required'])) {
+                    $normalized['required'] = $prop['required'];
+                }
+            } else {
+                $normalized['properties'][$key] = [
+                    'type' => 'STRING',
+                    'description' => \is_string($prop) ? $prop : '',
+                ];
             }
         }
 
-        return new ChatResponse(
-            content: $content,
-            toolCalls: $toolCalls,
-        );
+        return $normalized;
     }
 }

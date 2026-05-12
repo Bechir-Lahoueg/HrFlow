@@ -43,6 +43,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Service/AI/'
 
     # HrFlow Mailer — inject the sender address from .env
     App\Service\Shared\HrFlowMailer:

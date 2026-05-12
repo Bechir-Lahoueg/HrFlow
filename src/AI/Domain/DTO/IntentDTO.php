@@ -12,5 +12,6 @@ final class IntentDTO
         public readonly IntentType $intent,
         public readonly array $parameters = [],
         public readonly array $outputFormat = [],
+        public readonly ?string $originalMessage = null,
     ) {}
 }
