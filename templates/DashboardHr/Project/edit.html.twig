@@ -5,145 +5,239 @@
 {% block stylesheets %}
 {{ parent() }}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary: #06b6d4;
-    --primary-dark: #0f172a;
+    --deep:    #022E69;
+    --primary: #145EB7;
+    --accent:  #3FA9F5;
+    --light-accent: rgba(63,169,245,0.12);
     --surface: #ffffff;
-    --bg: #f8f9fb;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --text-muted: #64748b;
-    --radius: 14px;
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
+    --bg:      #f4f7fb;
+    --border:  #dce6f5;
+    --text:    #0d1f3c;
+    --muted:   #6b82a8;
+    --radius:  16px;
+    --shadow:  0 2px 16px -4px rgba(2,46,105,.13);
+    --shadow-lg: 0 8px 32px -8px rgba(2,46,105,.22);
 }
-body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
 
-.form-wrapper {
-    max-width: 800px;
-    margin: 0 auto;
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); font-family: 'DM Sans', system-ui, sans-serif; color: var(--text); }
+
+/* ── Layout wrapper ── */
+.form-wrapper { max-width: 820px; margin: 0 auto; }
+
+/* ── Hero header ── */
+.form-hero {
+    background: linear-gradient(135deg, #022E69 0%, #0a3d8f 55%, #051f3d 100%);
+    border-radius: var(--radius);
+    padding: 2rem 2.25rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
 }
+.form-hero::before {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(63,169,245,.18), transparent 70%);
+}
+.form-hero::after {
+    content: '';
+    position: absolute;
+    left: -40px; bottom: -60px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(20,94,183,.2), transparent 70%);
+}
+.form-hero .breadcrumb-trail {
+    font-size: .75rem;
+    font-weight: 600;
+    opacity: .75;
+    margin-bottom: .75rem;
+    position: relative; z-index: 1;
+}
+.form-hero .breadcrumb-trail a { color: #93c5fd; text-decoration: none; }
+.form-hero .breadcrumb-trail a:hover { color: #bfdbfe; }
+.form-hero .badge-module {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .65rem; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: #3FA9F5;
+    margin-bottom: .6rem; position: relative; z-index: 1;
+}
+.form-hero .badge-module .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #3FA9F5; animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .5; transform: scale(1.4); }
+}
+.form-hero h1 {
+    font-size: 1.7rem; font-weight: 800; color: #fff;
+    margin: 0 0 .35rem; position: relative; z-index: 1;
+}
+.form-hero p {
+    font-size: .875rem; color: #93c5fd;
+    margin: 0; position: relative; z-index: 1;
+}
+
+/* ── Card ── */
 .form-card {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 2rem;
-    box-shadow: var(--shadow-md);
     border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
 }
-.form-header {
-    background: linear-gradient(135deg, #0f172a, #1e293b 45%, #0e7490 100%);
-    color: white;
-    border-radius: var(--radius);
-    padding: 1.75rem 2rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-md);
-}
-.form-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-.form-header p { margin: .3rem 0 0; opacity: .85; font-size: .875rem; }
 
+/* ── Section ── */
 .form-section {
-    margin-bottom: 1.75rem;
-    padding-bottom: 1.75rem;
+    padding: 1.75rem 2rem;
     border-bottom: 1px solid var(--border);
 }
-.form-section:last-child { border-bottom: none; margin-bottom: 0; }
+.form-section:last-child { border-bottom: none; }
+
 .section-label {
-    font-size: .7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: #0e7490;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .65rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--primary);
+    background: var(--light-accent);
+    padding: .3rem .75rem; border-radius: 99px;
+    border: 1px solid rgba(63,169,245,.25);
+    margin-bottom: 1.25rem;
 }
-.form-label { font-weight: 600; font-size: .825rem; color: var(--text); margin-bottom: .4rem; }
-.form-control, .form-select, .form-control-lg {
+
+/* ── Fields ── */
+.form-label {
+    font-size: .8rem; font-weight: 700;
+    color: var(--text); margin-bottom: .4rem;
+    display: block;
+}
+.form-control, .form-select {
     border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: .6rem .9rem;
-    font-size: .9rem;
-    transition: border-color .15s, box-shadow .15s;
-    background: #fafafa;
+    border-radius: 10px;
+    padding: .65rem 1rem;
+    font-size: .875rem;
+    font-family: inherit;
+    background: #f8fafd;
+    color: var(--text);
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    width: 100%;
 }
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(6,182,212,.15);
-    background: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px rgba(63,169,245,.18);
+    background: #fff;
+    outline: none;
 }
-textarea.form-control { resize: vertical; min-height: 90px; }
+.form-control.is-invalid { border-color: #ef4444; }
+textarea.form-control { resize: vertical; min-height: 96px; }
+.input-group-text {
+    background: #eef4fc; border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--primary);
+    font-weight: 700; font-size: .85rem;
+    padding: .65rem .9rem;
+}
+.input-group .form-control { border-radius: 0 10px 10px 0; }
+.input-group .form-control:first-child { border-radius: 10px 0 0 10px; }
+.input-group .input-group-text:first-child { border-radius: 10px 0 0 10px; }
+.input-group .input-group-text:last-child  { border-radius: 0 10px 10px 0; }
+.invalid-feedback { font-size: .775rem; font-weight: 600; color: #dc2626; margin-top: .3rem; }
+.text-danger-field { font-size: .775rem; font-weight: 600; color: #dc2626; margin-top: .35rem; }
 
+/* ── Status pills ── */
+.status-grid   { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; }
 .priority-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
-.priority-option { display: none; }
-.priority-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .3rem;
-    padding: .75rem .5rem;
+@media (max-width: 640px) {
+    .status-grid   { grid-template-columns: repeat(2, 1fr); }
+    .priority-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.status-option, .priority-option { display: none; }
+
+.status-label, .priority-label {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: .4rem;
+    padding: .7rem .5rem;
     border-radius: 10px;
     border: 2px solid var(--border);
     cursor: pointer;
-    transition: all .2s;
-    font-size: .8rem;
-    font-weight: 600;
-    text-align: center;
+    font-size: .75rem; font-weight: 700;
+    text-align: center; color: var(--muted);
+    transition: all .18s;
+    user-select: none;
+    background: #f8fafd;
 }
-.priority-option:checked + .priority-label { border-color: var(--primary); background: #ede9fe; color: var(--primary); }
-.priority-option:checked + .priority-label { background: #ecfeff; }
-.priority-label:hover { border-color: var(--primary-light, #818cf8); }
-
-.status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-@media (max-width: 576px) { .status-grid { grid-template-columns: repeat(2, 1fr); } .priority-grid { grid-template-columns: repeat(2, 1fr); } }
-.status-option { display: none; }
-.status-label {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    padding: .6rem .75rem;
-    border-radius: 8px;
-    border: 2px solid var(--border);
-    cursor: pointer;
-    transition: all .2s;
-    font-size: .8rem;
-    font-weight: 600;
+.status-label:hover, .priority-label:hover {
+    border-color: var(--accent);
+    color: var(--primary);
+    background: var(--light-accent);
 }
-.status-option:checked + .status-label { border-color: var(--primary); background: #ede9fe; color: var(--primary); }
-.status-option:checked + .status-label { background: #ecfeff; }
-
-.priority-dot {
-    width: .75rem;
-    height: .75rem;
-    border-radius: 999px;
-    display: inline-block;
+.status-option:checked + .status-label,
+.priority-option:checked + .priority-label {
+    border-color: var(--primary);
+    background: var(--light-accent);
+    color: var(--primary);
+    box-shadow: 0 0 0 2.5px rgba(20,94,183,.15);
 }
 
-.status-dot {
-    width: .6rem;
-    height: .6rem;
-    border-radius: 999px;
-    display: inline-block;
+.color-dot {
+    width: .7rem; height: .7rem; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
 }
 
+/* ── Actions row ── */
+.form-actions {
+    padding: 1.5rem 2rem;
+    background: #f8fafd;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.btn-cancel {
+    font-size: .85rem; font-weight: 700;
+    padding: .65rem 1.5rem; border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: #fff; color: var(--muted);
+    text-decoration: none;
+    transition: all .15s;
+    display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-cancel:hover { border-color: var(--accent); color: var(--primary); }
 .btn-submit {
-    background: linear-gradient(135deg, #0f172a, #334155);
-    color: white;
+    font-size: .875rem; font-weight: 800;
+    padding: .7rem 2rem; border-radius: 10px;
     border: none;
-    padding: .75rem 2rem;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: .95rem;
-    cursor: pointer;
-    transition: all .2s;
-    box-shadow: 0 4px 15px rgba(15,23,42,.24);
+    background: linear-gradient(135deg, var(--deep) 0%, var(--primary) 100%);
+    color: #fff; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .5rem;
+    transition: all .18s;
+    box-shadow: 0 4px 16px -4px rgba(2,46,105,.35);
 }
-.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15,23,42,.35); }
+.btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -6px rgba(2,46,105,.45);
+}
+
+/* ── Alert ── */
+.alert-error {
+    border-radius: 12px;
+    background: #fff0f0;
+    border: 1px solid #fecaca;
+    padding: .9rem 1.2rem;
+    font-size: .85rem;
+    color: #dc2626;
+    margin-bottom: 1rem;
+}
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div class="min-h-screen bg-[#f4f7fb] dark:bg-zinc-950 dot-grid">
 
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
@@ -151,186 +245,196 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
         {% include 'DashboardHr/components/_header.html.twig' %}
 
-        <main class="p-6 space-y-6 max-w-7xl mx-auto">
-<div class="form-wrapper">
+        <main class="p-6 max-w-7xl mx-auto">
+        <div class="form-wrapper">
 
-    <div class="form-header relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl"></div>
-        <div class="relative z-10">
-        <div class="d-flex align-items-center gap-2 mb-1" style="font-size:.8rem; opacity:.85">
-            <a href="{{ path('rh_project_index') }}" style="color:#bae6fd; text-decoration:none">← Projets</a>
-            {% if project is defined %}<span>/ <a href="{{ path('rh_project_show', {id: project.id}) }}" style="color:white; text-decoration:none">{{ project.name }}</a></span>{% endif %}
-        </div>
-        <h1>{{ project is defined ? 'Modifier le Projet' : 'Nouveau Projet' }}</h1>
-        <p>{{ project is defined ? 'Mettez à jour les informations du projet.' : 'Renseignez les informations pour créer un nouveau projet.' }}</p>
-        </div>
-    </div>
-
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endfor %}
-
-    <div class="form-card">
-
-        {# Résumé des erreurs côté serveur (utile si les flashes/session ne s'affichent pas) #}
-        {% if errors is defined and errors|length > 0 %}
-            <div class="alert alert-danger rounded-3 mb-3" role="alert">
-                <strong>Veuillez corriger les erreurs suivantes :</strong>
-                <ul class="mb-0 mt-2">
-                    {% for message in errors %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        <form action="{{ project is defined ? path('rh_project_edit', {id: project.id}) : path('rh_project_new') }}" method="POST" novalidate>
-
-            {# ── Infos générales ── #}
-            <div class="form-section">
-                <div class="section-label">Informations Générales</div>
-                <div class="mb-3">
-                    <label class="form-label">Nom du projet *</label>
-                    <input type="text" name="name" class="form-control {% if errors.name is defined %}is-invalid{% endif %}"
-                           value="{{ old_data.name ?? project.name ?? '' }}"
-                           placeholder="Ex: Refonte site web, Migration cloud...">
-                    {% if errors.name|default(null) %}
-                        <div class="invalid-feedback d-block">{{ errors.name }}</div>
+            {# ── Hero ── #}
+            <div class="form-hero">
+                <div class="breadcrumb-trail">
+                    <a href="{{ path('rh_project_index') }}">← Projets</a>
+                    {% if project is defined %}
+                        <span style="color:#93c5fd"> / </span>
+                        <a href="{{ path('rh_project_show', {id: project.id}) }}">{{ project.name }}</a>
                     {% endif %}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control" rows="3"
-                              placeholder="Décrivez les objectifs et le périmètre du projet...">{{ old_data.description ?? project.description ?? '' }}</textarea>
-                </div>
+                <div class="badge-module"><span class="dot"></span>Project Studio</div>
+                <h1>{{ project is defined ? 'Modifier le Projet' : 'Nouveau Projet' }}</h1>
+                <p>{{ project is defined ? 'Mettez à jour les informations du projet.' : 'Renseignez les informations pour créer un nouveau projet.' }}</p>
             </div>
 
-            {# ── Statut et Priorité ── #}
-            <div class="form-section">
-                <div class="section-label">Statut et Priorité</div>
-                <div class="mb-4">
-                    <label class="form-label">Statut</label>
-                    <div class="status-grid">
-                        {% set statuses = [
-                            {val: 'planning', label: 'Planification', color: '#64748b'},
-                            {val: 'in_progress', label: 'En cours', color: '#16a34a'},
-                            {val: 'on_hold', label: 'En pause', color: '#f59e0b'},
-                            {val: 'completed', label: 'Termine', color: '#2563eb'},
-                            {val: 'cancelled', label: 'Annule', color: '#ef4444'}
-                        ] %}
-                        {% for s in statuses %}
-                        <div>
-                            <input type="radio" name="status" id="status_{{ s.val }}" value="{{ s.val }}" class="status-option"
-                                   {% if (old_data.status ?? project.status ?? 'planning') == s.val %}checked{% endif %}>
-                            <label for="status_{{ s.val }}" class="status-label w-100"><span class="status-dot" style="background: {{ s.color }}"></span>{{ s.label }}</label>
+            {# ── Flash errors ── #}
+            {% for message in app.flashes('error') %}
+                <div class="alert-error">
+                    <strong>Erreur :</strong> {{ message }}
+                </div>
+            {% endfor %}
+
+            {# ── Form card ── #}
+            <div class="form-card">
+
+                {% if errors is defined and errors|length > 0 %}
+                    <div class="alert-error" style="margin: 1.5rem 2rem 0; border-radius: 10px;">
+                        <strong>Veuillez corriger les erreurs suivantes :</strong>
+                        <ul class="mb-0 mt-1 ps-3">
+                            {% for message in errors %}<li>{{ message }}</li>{% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form action="{{ project is defined ? path('rh_project_edit', {id: project.id}) : path('rh_project_new') }}" method="POST" novalidate>
+
+                    {# ── Infos générales ── #}
+                    <div class="form-section">
+                        <div class="section-label">Informations générales</div>
+                        <div class="mb-3">
+                            <label class="form-label">Nom du projet <span style="color:#ef4444">*</span></label>
+                            <input type="text" name="name"
+                                   class="form-control {{ errors.name is defined ? 'is-invalid' : '' }}"
+                                   value="{{ old_data.name ?? project.name ?? '' }}"
+                                   placeholder="Ex : Refonte site web, Migration cloud…">
+                            {% if errors.name|default(null) %}
+                                <div class="invalid-feedback">{{ errors.name }}</div>
+                            {% endif %}
                         </div>
-                        {% endfor %}
-                    </div>
-                    {% if errors.status|default(null) %}
-                        <div class="text-danger mt-2" style="font-size:.85rem; font-weight:600">{{ errors.status }}</div>
-                    {% endif %}
-                </div>
-                <div>
-                    <label class="form-label">Priorité</label>
-                    <div class="priority-grid">
-                        {% set priorities = [
-                            {val: 'low', color: '#16a34a', label: 'Faible'},
-                            {val: 'medium', color: '#f59e0b', label: 'Moyenne'},
-                            {val: 'high', color: '#f97316', label: 'Haute'},
-                            {val: 'critical', color: '#ef4444', label: 'Critique'}
-                        ] %}
-                        {% for p in priorities %}
                         <div>
-                            <input type="radio" name="priority" id="prio_{{ p.val }}" value="{{ p.val }}" class="priority-option"
-                                   {% if (old_data.priority ?? project.priority ?? 'medium') == p.val %}checked{% endif %}>
-                            <label for="prio_{{ p.val }}" class="priority-label w-100">
-                                <span class="priority-dot" style="background: {{ p.color }}"></span>
-                                {{ p.label }}
-                            </label>
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3"
+                                      placeholder="Décrivez les objectifs et le périmètre du projet…">{{ old_data.description ?? project.description ?? '' }}</textarea>
                         </div>
-                        {% endfor %}
                     </div>
-                    {% if errors.priority|default(null) %}
-                        <div class="text-danger mt-2" style="font-size:.85rem; font-weight:600">{{ errors.priority }}</div>
-                    {% endif %}
-                </div>
-            </div>
 
-            {# ── Dates ── #}
-            <div class="form-section">
-                <div class="section-label">Calendrier</div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Date de début</label>
-                        <input type="date" name="start_date" class="form-control {% if errors.start_date is defined %}is-invalid{% endif %}"
-                               value="{{ old_data.start_date ?? project.start_date ?? 'now'|date('Y-m-d') }}">
-                        {% if errors.start_date|default(null) %}
-                            <div class="invalid-feedback d-block">{{ errors.start_date }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Date de fin prévue</label>
-                        <input type="date" name="end_date" class="form-control {% if errors.end_date is defined %}is-invalid{% endif %}"
-                               value="{{ old_data.end_date ?? project.end_date ?? '' }}">
-                        {% if errors.end_date|default(null) %}
-                            <div class="invalid-feedback d-block">{{ errors.end_date }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+                    {# ── Statut & Priorité ── #}
+                    <div class="form-section">
+                        <div class="section-label">Statut et priorité</div>
 
-            {# ── Budget & Heures ── #}
-            <div class="form-section">
-                <div class="section-label">Budget et Ressources</div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Budget (€)</label>
-                        <div class="input-group">
-                            <span class="input-group-text">€</span>
-                            <input type="number" name="budget" class="form-control {% if errors.budget is defined %}is-invalid{% endif %}"
-                                   value="{{ old_data.budget ?? project.budget ?? '' }}" min="0" step="100"
-                                   placeholder="0">
-                            {% if errors.budget|default(null) %}
-                                <div class="invalid-feedback d-block">{{ errors.budget }}</div>
+                        <div class="mb-4">
+                            <label class="form-label">Statut</label>
+                            <div class="status-grid">
+                                {% set statuses = [
+                                    {val: 'planning',    label: 'Planification', color: '#6b82a8'},
+                                    {val: 'in_progress', label: 'En cours',      color: '#16a34a'},
+                                    {val: 'on_hold',     label: 'En pause',      color: '#f59e0b'},
+                                    {val: 'completed',   label: 'Terminé',       color: '#145EB7'},
+                                    {val: 'cancelled',   label: 'Annulé',        color: '#ef4444'}
+                                ] %}
+                                {% for s in statuses %}
+                                <div>
+                                    <input type="radio" name="status" id="status_{{ s.val }}" value="{{ s.val }}" class="status-option"
+                                           {% if (old_data.status ?? project.status ?? 'planning') == s.val %}checked{% endif %}>
+                                    <label for="status_{{ s.val }}" class="status-label w-100">
+                                        <span class="color-dot" style="background:{{ s.color }}"></span>
+                                        {{ s.label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if errors.status|default(null) %}
+                                <div class="text-danger-field">{{ errors.status }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="form-label">Priorité</label>
+                            <div class="priority-grid">
+                                {% set priorities = [
+                                    {val: 'low',      color: '#16a34a', label: 'Faible'},
+                                    {val: 'medium',   color: '#f59e0b', label: 'Moyenne'},
+                                    {val: 'high',     color: '#f97316', label: 'Haute'},
+                                    {val: 'critical', color: '#ef4444', label: 'Critique'}
+                                ] %}
+                                {% for p in priorities %}
+                                <div>
+                                    <input type="radio" name="priority" id="prio_{{ p.val }}" value="{{ p.val }}" class="priority-option"
+                                           {% if (old_data.priority ?? project.priority ?? 'medium') == p.val %}checked{% endif %}>
+                                    <label for="prio_{{ p.val }}" class="priority-label w-100">
+                                        <span class="color-dot" style="background:{{ p.color }}"></span>
+                                        {{ p.label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if errors.priority|default(null) %}
+                                <div class="text-danger-field">{{ errors.priority }}</div>
                             {% endif %}
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Heures estimées</label>
-                        <div class="input-group">
-                            <input type="number" name="estimated_hours" class="form-control {% if errors.estimated_hours is defined %}is-invalid{% endif %}"
-                                   value="{{ old_data.estimated_hours ?? project.estimated_hours ?? '' }}" min="0"
-                                   placeholder="0">
-                            <span class="input-group-text">h</span>
-                            {% if errors.estimated_hours|default(null) %}
-                                <div class="invalid-feedback d-block">{{ errors.estimated_hours }}</div>
-                            {% endif %}
+
+                    {# ── Calendrier ── #}
+                    <div class="form-section">
+                        <div class="section-label">Calendrier</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Date de début</label>
+                                <input type="date" name="start_date"
+                                       class="form-control {{ errors.start_date is defined ? 'is-invalid' : '' }}"
+                                       value="{{ old_data.start_date ?? project.start_date ?? 'now'|date('Y-m-d') }}">
+                                {% if errors.start_date|default(null) %}
+                                    <div class="invalid-feedback">{{ errors.start_date }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de fin prévue</label>
+                                <input type="date" name="end_date"
+                                       class="form-control {{ errors.end_date is defined ? 'is-invalid' : '' }}"
+                                       value="{{ old_data.end_date ?? project.end_date ?? '' }}">
+                                {% if errors.end_date|default(null) %}
+                                    <div class="invalid-feedback">{{ errors.end_date }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    {# ── Budget & Heures ── #}
+                    <div class="form-section">
+                        <div class="section-label">Budget et ressources</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Budget (€)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input type="number" name="budget"
+                                           class="form-control {{ errors.budget is defined ? 'is-invalid' : '' }}"
+                                           value="{{ old_data.budget ?? project.budget ?? '' }}"
+                                           min="0" step="100" placeholder="0">
+                                </div>
+                                {% if errors.budget|default(null) %}
+                                    <div class="invalid-feedback d-block">{{ errors.budget }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Heures estimées</label>
+                                <div class="input-group">
+                                    <input type="number" name="estimated_hours"
+                                           class="form-control {{ errors.estimated_hours is defined ? 'is-invalid' : '' }}"
+                                           value="{{ old_data.estimated_hours ?? project.estimated_hours ?? '' }}"
+                                           min="0" placeholder="0">
+                                    <span class="input-group-text">h</span>
+                                </div>
+                                {% if errors.estimated_hours|default(null) %}
+                                    <div class="invalid-feedback d-block">{{ errors.estimated_hours }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ── Actions ── #}
+                    <div class="form-actions">
+                        <a href="{{ project is defined ? path('rh_project_show', {id: project.id}) : path('rh_project_index') }}"
+                           class="btn-cancel">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7 7-7m11 7H3"/></svg>
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn-submit">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            {{ project is defined ? 'Sauvegarder les modifications' : 'Créer le projet' }}
+                        </button>
+                    </div>
+
+                </form>
             </div>
 
-            {# ── Actions ── #}
-            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-                <a href="{{ project is defined ? path('rh_project_show', {id: project.id}) : path('rh_project_index') }}"
-                   class="btn btn-outline-secondary fw-semibold px-4">
-                    Annuler
-                </a>
-                <button type="submit" class="btn-submit">
-                    {{ project is defined ? 'Sauvegarder les modifications' : 'Creer le projet' }}
-                </button>
-            </div>
-
-        </form>
-    </div>
-
-</div>
+        </div>
         </main>
-
     </div>
 </div>
 {% endblock %}

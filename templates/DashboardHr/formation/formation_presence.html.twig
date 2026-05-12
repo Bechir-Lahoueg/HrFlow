@@ -1,91 +1,315 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}RH - Gestion des Présences{% endblock %}
+{% block title %}RH — Gestion des Présences{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --deep:    #022E69;
+        --primary: #145EB7;
+        --accent:  #3FA9F5;
+        --light:   rgba(63,169,245,.1);
+        --border:  #dce6f5;
+        --bg:      #f4f7fb;
+        --surface: #ffffff;
+        --text:    #0d1f3c;
+        --muted:   #6b82a8;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── Hero ── */
+    .hero-banner {
+        background: linear-gradient(135deg, #022E69 0%, #0a3d8f 55%, #051f3d 100%);
+        border-radius: 1rem; padding: 2rem 2.25rem;
+        position: relative; overflow: hidden;
+        box-shadow: 0 8px 32px -8px rgba(2,46,105,.35);
+    }
+    .hero-banner::before {
+        content: ''; position: absolute; right: -60px; top: -60px;
+        width: 220px; height: 220px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(63,169,245,.18), transparent 70%);
+    }
+    .hero-banner::after {
+        content: ''; position: absolute; left: -40px; bottom: -60px;
+        width: 180px; height: 180px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(20,94,183,.2), transparent 70%);
+    }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-size: .65rem; font-weight: 800; letter-spacing: .12em;
+        text-transform: uppercase; color: #3FA9F5;
+        margin-bottom: .6rem; position: relative; z-index: 1;
+    }
+    .hero-badge .dot {
+        width: 6px; height: 6px; border-radius: 50%; background: #3FA9F5;
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+    .hero-banner h2 { font-size: 1.9rem; font-weight: 800; color: #fff; margin: 0 0 .25rem; position: relative; z-index: 1; }
+    .hero-banner p  { font-size: .875rem; color: #93c5fd; margin: 0; position: relative; z-index: 1; }
+    .hero-chips     { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; position: relative; z-index: 1; }
+    .hero-chip {
+        display: inline-flex; align-items: center; gap: .4rem;
+        background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
+        border-radius: 99px; padding: .3rem .85rem;
+        font-size: .75rem; font-weight: 700; color: #e0f2fe;
+        backdrop-filter: blur(6px);
+    }
+
+    /* ── Back link ── */
+    .back-link {
+        display: inline-flex; align-items: center; gap: .45rem;
+        font-size: .8rem; font-weight: 700; color: var(--deep);
+        text-decoration: none; transition: color .15s;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* ── Card surface ── */
+    .fp-surface {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        box-shadow: 0 2px 16px -4px rgba(2,46,105,.1);
+        overflow: hidden;
+    }
+
+    /* ── Table ── */
+    .presence-table-wrap { overflow-x: auto; }
+    .presence-table { width: 100%; border-collapse: collapse; font-size: .82rem; white-space: nowrap; }
+
+    .presence-table thead th {
+        background: #edf4ff;
+        color: var(--deep);
+        font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em;
+        padding: .85rem 1rem; border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 10;
+    }
+    .presence-table thead th:first-child {
+        position: sticky; left: 0; z-index: 20;
+        background: #edf4ff; border-right: 1px solid var(--border);
+        box-shadow: 2px 0 6px -2px rgba(2,46,105,.12);
+    }
+    .presence-table thead th.date-col { text-align: center; border-left: 1px solid var(--border); min-width: 100px; }
+
+    .presence-table tbody tr { transition: background .15s; }
+    .presence-table tbody tr:hover { background: #f3f8ff; }
+    .presence-table tbody td { padding: .7rem 1rem; border-bottom: 1px solid #eef2f8; vertical-align: middle; }
+    .presence-table tbody tr:last-child td { border-bottom: none; }
+
+    .emp-cell {
+        position: sticky; left: 0; z-index: 5;
+        background: inherit;
+        border-right: 1px solid var(--border);
+        box-shadow: 2px 0 6px -2px rgba(2,46,105,.08);
+        min-width: 200px;
+    }
+    .emp-name  { font-size: .82rem; font-weight: 700; color: var(--deep); }
+    .emp-email { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
+
+    .date-cell { text-align: center; border-left: 1px solid #eef2f8; padding: .7rem .5rem; }
+
+    /* ── Selects ── */
+    .presence-select {
+        border: 1.5px solid var(--border);
+        border-radius: 7px; padding: .35rem .55rem;
+        font-size: .72rem; font-weight: 700;
+        font-family: inherit; cursor: pointer;
+        transition: border-color .15s, box-shadow .15s;
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' viewBox='0 0 10 6'%3E%3Cpath stroke='%236b82a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right .5rem center;
+        padding-right: 1.6rem;
+        min-width: 90px;
+    }
+    .presence-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(63,169,245,.18); }
+
+    .sel-present  { background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+    .sel-present:focus { border-color: #22c55e; }
+    .sel-absent   { background-color: #fff0f0; border-color: #fecaca; color: #dc2626; }
+    .sel-absent:focus  { border-color: #ef4444; }
+    .sel-justifie { background-color: #fffbeb; border-color: #fde68a; color: #b45309; }
+    .sel-justifie:focus{ border-color: #f59e0b; }
+
+    /* ── Table header section ── */
+    .table-header {
+        padding: 1.1rem 1.5rem;
+        background: #f8fafd;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .section-icon {
+        width: 34px; height: 34px; border-radius: .55rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ── Save footer ── */
+    .table-footer {
+        padding: 1.1rem 1.5rem;
+        background: #f8fafd;
+        border-top: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: flex-end; gap: .75rem;
+    }
+    .btn-save {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: linear-gradient(135deg, var(--deep), var(--primary));
+        color: #fff; padding: .65rem 1.5rem; border-radius: 9px;
+        font-size: .82rem; font-weight: 800; font-family: inherit;
+        border: none; cursor: pointer;
+        box-shadow: 0 3px 12px -4px rgba(2,46,105,.4);
+        transition: all .15s;
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px -6px rgba(2,46,105,.5); }
+
+    /* ── Flash ── */
+    .flash-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; border-radius:.75rem; padding:.7rem 1rem; font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.5rem; }
+
+    /* ── Empty ── */
+    .empty-row td { padding: 3.5rem 1rem; text-align: center; color: var(--muted); font-size: .875rem; }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div class="min-h-screen bg-[#f4f7fb] dot-grid">
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
     <div class="lg:ml-[272px] transition-all duration-300">
         {% include 'DashboardHr/components/_header.html.twig' %}
 
         {% for message in app.flashes('success') %}
-            <div class="mx-6 mt-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+            <div class="mx-6 mt-4 flash-success animate-slide-up">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ message }}
             </div>
         {% endfor %}
 
-        <main class="p-6 max-w-5xl mx-auto">
+        <main class="p-6 space-y-6 max-w-5xl mx-auto">
+
+            {# ── URLs ── #}
             {% set returnMode = app.request.query.get('return') %}
-            {% set backUrl = returnMode == 'active' ? path('rh_formation_active_sessions') : path('rh_formation_sessions', {id: formation.id}) %}
-            {% set submitUrl = returnMode == 'active' ? (path('rh_formation_session_presence', {id: session.id}) ~ '?return=active') : path('rh_formation_session_presence', {id: session.id}) %}
-            <div class="mb-6">
-                <a href="{{ backUrl }}" class="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-800 text-sm font-medium">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    Retour aux sessions
-                </a>
-            </div>
+            {% set backUrl    = returnMode == 'active' ? path('rh_formation_active_sessions') : path('rh_formation_sessions', {id: formation.id}) %}
+            {% set submitUrl  = returnMode == 'active' ? (path('rh_formation_session_presence', {id: session.id}) ~ '?return=active') : path('rh_formation_session_presence', {id: session.id}) %}
 
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 p-6 shadow-sm mb-6">
-                <h1 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Gestion des Présences</h1>
-                <p class="text-zinc-600 dark:text-zinc-400 mt-1">Formation : {{ formation.titre }} | Période : {{ session.dateDebut|date('d/m/Y') }} au {{ session.dateFin|date('d/m/Y') }}</p>
-            </div>
+            {# ── Back ── #}
+            <a href="{{ backUrl }}" class="back-link">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7 7-7m11 7H3"/></svg>
+                Retour aux sessions
+            </a>
 
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-zinc-100 dark:border-zinc-800/50 flex justify-between items-center bg-zinc-50/50">
-                    <h2 class="font-bold text-zinc-800">Tableau des présences</h2>
+            {# ── Hero ── #}
+            <section class="hero-banner animate-slide-up">
+                <div class="hero-badge"><span class="dot"></span>RH Control Center</div>
+                <h2>Gestion des Présences</h2>
+                <p>Suivi journalier des présences pour la session en cours.</p>
+                <div class="hero-chips">
+                    <span class="hero-chip">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
+                        {{ formation.titre }}
+                    </span>
+                    <span class="hero-chip">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        {{ session.dateDebut|date('d/m/Y') }} — {{ session.dateFin|date('d/m/Y') }}
+                    </span>
+                    <span class="hero-chip">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                        {{ participations|length }} participant{{ participations|length != 1 ? 's' : '' }}
+                    </span>
+                    <span class="hero-chip">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/></svg>
+                        {{ dates|length }} jour{{ dates|length != 1 ? 's' : '' }}
+                    </span>
+                </div>
+            </section>
+
+            {# ── Presence table ── #}
+            <section class="fp-surface animate-slide-up">
+
+                <div class="table-header">
+                    <div style="display:flex;align-items:center;gap:.65rem;">
+                        <div class="section-icon">
+                            <svg width="15" height="15" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        </div>
+                        <div>
+                            <p style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0;">Suivi journalier</p>
+                            <p style="font-size:.9rem;font-weight:800;color:var(--deep);margin:0;">Tableau des présences</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                        <span style="display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:99px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span>Présent
+                        </span>
+                        <span style="display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:99px;background:#fff0f0;border:1px solid #fecaca;color:#dc2626;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Absent
+                        </span>
+                        <span style="display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:99px;background:#fffbeb;border:1px solid #fde68a;color:#b45309;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>Justifié
+                        </span>
+                    </div>
                 </div>
 
-                <form method="post" action="{{ submitUrl }}" class="p-0 overflow-x-auto">
-                    <table class="w-full text-sm text-left whitespace-nowrap">
-                        <thead class="bg-zinc-50/50 text-zinc-500 font-medium uppercase tracking-wide text-xs border-b border-zinc-100">
-                            <tr>
-                                <th class="px-6 py-4 sticky left-0 bg-zinc-50/50 z-10">Employé</th>
-                                {% for d in dates %}
-                                    <th class="px-4 py-4 text-center border-l border-zinc-100">{{ d|date('d/m') }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-100">
-                            {% for p in participations %}
-                                <tr class="hover:bg-zinc-50/50 transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-zinc-800 sticky left-0 bg-white dark:bg-zinc-900 z-10 border-r border-zinc-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                                        {{ p.employee.firstName }} {{ p.employee.lastName }}
-                                        <div class="text-xs font-normal text-zinc-500">{{ p.employee.email }}</div>
-                                    </td>
+                <form method="post" action="{{ submitUrl }}">
+                    <div class="presence-table-wrap">
+                        <table class="presence-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Employé</th>
                                     {% for d in dates %}
-                                        {% set currentStatut = currentPresences[d][p.id] ?? 'Absent' %}
-                                        <td class="px-2 py-4 text-center border-l border-zinc-100">
-                                            <select name="presences[{{ d }}][{{ p.id }}]"
-                                                    class="text-xs border-zinc-200 rounded-md focus:ring-teal-500 focus:border-teal-500 p-1.5
-                                                           {{ currentStatut == 'Present' ? 'bg-emerald-50 text-emerald-700 font-medium' :
-                                                              (currentStatut == 'Absent' ? 'bg-red-50 text-red-700 font-medium' : 'bg-amber-50 text-amber-700 font-medium') }}">
-                                                <option value="Present" {{ currentStatut == 'Present' ? 'selected' : '' }}>Présent</option>
-                                                <option value="Absent" {{ currentStatut == 'Absent' ? 'selected' : '' }}>Absent</option>
-                                                <option value="Justifie" {{ currentStatut == 'Justifie' ? 'selected' : '' }}>Justifié</option>
-                                            </select>
-                                        </td>
+                                        <th class="date-col">{{ d|date('d/m') }}</th>
                                     {% endfor %}
                                 </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="{{ dates|length + 1 }}" class="px-6 py-10 text-center text-zinc-500">
-                                        Aucun participant accepté pour cette session.
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for p in participations %}
+                                    <tr>
+                                        <td class="emp-cell">
+                                            <div style="display:flex;align-items:center;gap:.6rem;">
+                                                <div style="width:32px;height:32px;border-radius:.5rem;background:linear-gradient(135deg,var(--deep),var(--primary));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                    <span style="font-size:.65rem;font-weight:800;color:#fff;">{{ p.employee.firstName|first|upper }}{{ p.employee.lastName|first|upper }}</span>
+                                                </div>
+                                                <div>
+                                                    <div class="emp-name">{{ p.employee.firstName }} {{ p.employee.lastName }}</div>
+                                                    <div class="emp-email">{{ p.employee.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% for d in dates %}
+                                            {% set currentStatut = currentPresences[d][p.id] ?? 'Absent' %}
+                                            <td class="date-cell">
+                                                <select name="presences[{{ d }}][{{ p.id }}]"
+                                                        class="presence-select {% if currentStatut == 'Present' %}sel-present{% elseif currentStatut == 'Absent' %}sel-absent{% else %}sel-justifie{% endif %}"
+                                                        onchange="this.className='presence-select '+(this.value=='Present'?'sel-present':this.value=='Absent'?'sel-absent':'sel-justifie')">
+                                                    <option value="Present"  {{ currentStatut == 'Present'  ? 'selected' : '' }}>Présent</option>
+                                                    <option value="Absent"   {{ currentStatut == 'Absent'   ? 'selected' : '' }}>Absent</option>
+                                                    <option value="Justifie" {{ currentStatut == 'Justifie' ? 'selected' : '' }}>Justifié</option>
+                                                </select>
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% else %}
+                                    <tr class="empty-row">
+                                        <td colspan="{{ dates|length + 1 }}">Aucun participant accepté pour cette session.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
                     {% if participations|length > 0 %}
-                    <div class="p-6 bg-zinc-50/50 border-t border-zinc-100 flex justify-end">
-                        <button type="submit" class="px-6 py-2.5 rounded-lg bg-teal-600 text-white font-bold hover:bg-teal-700 shadow-sm transition-colors">
+                    <div class="table-footer">
+                        <button type="submit" class="btn-save">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                             Enregistrer les présences
                         </button>
                     </div>
                     {% endif %}
                 </form>
-            </div>
+
+            </section>
+
         </main>
     </div>
 </div>

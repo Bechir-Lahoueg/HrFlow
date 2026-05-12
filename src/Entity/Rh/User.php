@@ -5,6 +5,7 @@ namespace App\Entity\Rh;
 use App\Repository\Rh\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -22,6 +23,8 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
+
+    #[Ignore]
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
@@ -66,11 +69,11 @@ class User
         return $this->password;
     }
 
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-        return $this;
-    }
+    public function setPassword(#[SensitiveParameter] string $password): static
+        {
+            $this->password = $password;
+            return $this;
+        }
 
     public function getRole(): ?string
     {

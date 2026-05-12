@@ -9,11 +9,44 @@
     .count-anim{animation:countUp .4s ease-out both}
     .table-row-hover{transition:all .15s}
     .table-row-hover:hover{background:#f8fafc}
+
+    /* Relation module color palette */
+    :root {
+        --relation-primary-deep: #022E69;
+        --relation-primary: #145EB7;
+        --relation-accent: #3FA9F5;
+        --relation-border: #D0D0D0;
+    }
+
+    /* High contrast mode support */
+    html.a11y-high-contrast {
+        --relation-primary-deep: #022E69;
+        --relation-primary: #145EB7;
+        --relation-accent: #3FA9F5;
+        --relation-border: #3FA9F5;
+    }
+
+    /* Page container background */
+    #relation-page-container {
+        background-color: #f4f7fb !important;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        #relation-page-container {
+            background-color: #18181b !important;
+        }
+    }
+
+    /* Hero banner */
+    .hero-banner-relation {
+        background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d) !important;
+    }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f8f9fb] dark:bg-zinc-950 dot-grid">
+<div id="relation-page-container" class="min-h-screen dot-grid">
 
     {% include 'DashboardHr/components/_sidebar.html.twig' %}
 
@@ -42,28 +75,28 @@
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
             {# ══════════ Hero ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl"></div>
-                <div class="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-violet-300/10 blur-3xl"></div>
+            <section class="hero-banner-relation relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl mesh-blob" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl mesh-blob-alt" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-cyan-200 uppercase tracking-wider">Relations Studio</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">Relations Studio</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des Relations</h2>
                         <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Demandes, feedbacks employés et évaluations de formations de votre équipe.</p>
                     </div>
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">En attente</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4" style="background: rgba(255, 255, 255, 0.08);">
+                            <p class="text-[10px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63, 169, 245, 0.7);">En attente</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ requestStats.pending }}</p>
-                            <p class="text-xs text-cyan-100/60 mt-1">demandes à traiter</p>
+                            <p class="text-xs mt-1" style="color: rgba(63, 169, 245, 0.6);">demandes à traiter</p>
                         </div>
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-cyan-200/70 font-bold">Feedbacks</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4" style="background: rgba(255, 255, 255, 0.08);">
+                            <p class="text-[10px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63, 169, 245, 0.7);">Feedbacks</p>
                             <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ totalFeedbacks }}</p>
-                            <p class="text-xs text-cyan-100/60 mt-1">reçus au total</p>
+                            <p class="text-xs mt-1" style="color: rgba(63, 169, 245, 0.6);">reçus au total</p>
                         </div>
                     </div>
                 </div>
@@ -71,7 +104,7 @@
 
             {# ══════════ Tab Nav ══════════ #}
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-sm">
-                <div class="flex border-b border-zinc-100 dark:border-zinc-800">
+                <div class="flex border-b" style="border-color: #D0D0D0;">
                     {% set tabs = [
                         {key: 'requests',  label: 'Demandes',      badge: requestStats.pending},
                         {key: 'config',    label: 'Config Types',  badge: null},
@@ -82,7 +115,7 @@
                     <button onclick="switchTab('{{ t.key }}')"
                             id="tab-btn-{{ t.key }}"
                             class="tab-btn flex items-center gap-2 px-6 py-4 text-[13px] font-bold border-b-2 transition-all
-                                   {{ tab == t.key ? 'border-cyan-500 text-cyan-600' : 'border-transparent text-zinc-400 hover:text-zinc-700' }}">
+                                   {{ tab == t.key ? 'border-[#145EB7] text-[#145EB7]' : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300' }}">
                         {% if t.key == 'requests' %}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         {% elseif t.key == 'config' %}
@@ -94,7 +127,7 @@
                         {% endif %}
                         {{ t.label }}
                         {% if t.badge is not null and t.badge > 0 %}
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ tab == t.key ? 'bg-cyan-100 text-cyan-700' : 'bg-zinc-100 text-zinc-500' }}">{{ t.badge }}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ tab == t.key ? 'bg-[#145EB7]/10 text-[#145EB7]' : 'bg-zinc-100 text-zinc-500' }}">{{ t.badge }}</span>
                         {% endif %}
                     </button>
                     {% endfor %}
@@ -121,29 +154,29 @@
                     <form method="GET" class="flex flex-wrap gap-3 items-end">
                         <input type="hidden" name="tab" value="requests">
                         <input type="text" name="search_req" value="{{ searchReq }}" placeholder="Rechercher..."
-                               class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 focus:outline-none transition-all w-56">
-                        <select name="status" class="rounded-lg border border-zinc-200 bg-zinc-50 text-sm px-3 py-2 focus:border-cyan-400 focus:outline-none">
+                               class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm px-3 py-2 focus:border-[#145EB7] focus:ring-2 focus:ring-[#145EB7]/20 focus:outline-none transition-all w-56">
+                        <select name="status" class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm px-3 py-2 focus:border-[#145EB7] focus:outline-none">
                             <option value="">Tous les statuts</option>
                             {% for s in ['pending','approved','rejected','cancelled'] %}
                             <option value="{{ s }}" {{ statusFilter == s ? 'selected' : '' }}>{{ s|capitalize }}</option>
                             {% endfor %}
                         </select>
-                        <button class="px-4 py-2 rounded-lg bg-slate-900 text-white text-[12px] font-bold hover:bg-slate-800 transition-all">Filtrer</button>
+                        <button class="px-4 py-2 rounded-lg text-white text-[12px] font-bold transition-all" style="background-color: #145EB7;">Filtrer</button>
                         {% if statusFilter or searchReq %}<a href="{{ path('rh_relation_index', {tab: 'requests'}) }}" class="px-3 py-2 text-[12px] text-zinc-500 hover:text-zinc-700">✕ Reset</a>{% endif %}
                     </form>
 
                     {# Table #}
-                    <div class="overflow-x-auto rounded-xl border border-zinc-100">
+                    <div class="overflow-x-auto rounded-xl border" style="border-color: #D0D0D0;">
                         <table class="min-w-full text-sm">
-                            <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50/80">
-                                <tr>
-                                    <th class="py-3 px-4 text-left">Employé</th>
-                                    <th class="py-3 px-4 text-left">Titre</th>
-                                    <th class="py-3 px-4 text-left">Type</th>
-                                    <th class="py-3 px-4 text-left">Priorité</th>
-                                    <th class="py-3 px-4 text-left">Statut</th>
-                                    <th class="py-3 px-4 text-left">Date</th>
-                                    <th class="py-3 px-4 text-left">Actions</th>
+                            <thead class="text-[11px] font-bold uppercase tracking-wider text-[#022E69] bg-blue-50" style="background-color: #edf4ff;">
+                                <tr style="border-color: #D0D0D0;">
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Employé</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Titre</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Type</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Priorité</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Statut</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Date</th>
+                                    <th class="py-3 px-4 text-left" style="border-color: #D0D0D0;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -180,19 +213,19 @@
                                     <div class="flex gap-1.5 flex-wrap">
                                         {% if req.attachment_url %}
                                         <a href="{{ req.attachment_url }}" target="_blank"
-                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-colors">Fichier</a>
+                                           class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg text-white border-0 hover:opacity-90 transition-opacity" style="background-color: #145EB7;">Fichier</a>
                                         {% endif %}
                                         <button onclick="loadRequestDetails({{ req.id }})"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors">
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
                                             Details
                                         </button>
                                         {% if req.status == 'pending' %}
                                         <button onclick="openApproveModal({{ req.id }}, '{{ req.title|e('js') }}')"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors">
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
                                             Approuver
                                         </button>
                                         <button onclick="openRejectModal({{ req.id }}, '{{ req.title|e('js') }}')"
-                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
+                                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors">
                                             Rejeter
                                         </button>
                                         {% endif %}
@@ -210,16 +243,16 @@
                 {# ══════════ TAB: CONFIG TYPES ══════════ #}
                 <div id="panel-config" class="tab-panel {{ tab != 'config' ? 'hidden' : '' }} p-6 space-y-5">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-[15px] font-bold text-zinc-800">Types de demandes</h3>
+                        <h3 class="text-[15px] font-bold text-zinc-800 dark:text-zinc-200">Types de demandes</h3>
                         <button onclick="openModal('modalNewType')"
-                                class="px-4 py-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 text-white font-bold text-[12px] hover:from-slate-800 transition-all shadow-sm">
+                                class="px-4 py-2 rounded-lg text-white font-bold text-[12px] transition-all shadow-sm" style="background: linear-gradient(135deg, #145EB7, #3FA9F5);">
                             Nouveau type
                         </button>
                     </div>
-                    <div class="overflow-x-auto rounded-xl border border-zinc-100">
+                    <div class="overflow-x-auto rounded-xl border" style="border-color: #D0D0D0;">
                         <table class="min-w-full text-sm">
-                            <thead class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50/80">
-                                <tr>
+                            <thead class="text-[11px] font-bold uppercase tracking-wider text-[#022E69] bg-blue-50" style="background-color: #edf4ff;">
+                                <tr style="border-color: #D0D0D0;">
                                     <th class="py-3 px-4 text-left">Nom</th>
                                     <th class="py-3 px-4 text-left">Description</th>
                                     <th class="py-3 px-4 text-left">Approbation</th>
