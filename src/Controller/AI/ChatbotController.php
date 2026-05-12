@@ -7,7 +7,6 @@ namespace App\Controller\AI;
 use App\AI\Core\AgentOrchestrator;
 use App\AI\Infrastructure\ChatMessage;
 use App\AI\Infrastructure\ConversationContext;
-use App\AI\Core\ConversationMemory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,9 +40,7 @@ class ChatbotController extends AbstractController
             }
 
             $conversationContext = new ConversationContext(
-                messages: [
-                    new ChatMessage('user', $message),
-                ],
+                messages: [new ChatMessage('user', $message)],
                 user: $user,
                 sessionId: $sessionId,
             );
@@ -55,26 +52,25 @@ class ChatbotController extends AbstractController
                 'ui_payload' => $result->uiPayload,
                 'pending_changesets' => $result->pendingChangesets,
                 'tool_calls' => $result->toolCalls,
-                'active_job' => $result->activeJob,
-                'candidates' => $result->candidates,
-                'candidates_analyzed' => $result->candidatesAnalyzed,
-                'interviews_planned' => $result->interviewsPlanned,
                 'plan' => $result->plan,
                 'completed_steps' => $result->completedSteps,
+                'active_job' => $result->activeJob,
+                'candidates' => $result->candidates,
+                'interviews' => $result->interviews,
+                'candidates_analyzed' => $result->candidatesAnalyzed,
+                'interviews_planned' => $result->interviewsPlanned,
                 'request_id' => $requestId,
             ]);
         } catch (\Throwable $e) {
             $logger->error('AI chat failed', [
                 'request_id' => $requestId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return new JsonResponse([
                 'message' => "Le chatbot a rencontré une erreur. Réessayez dans quelques instants.\n\nRequest ID: `{$requestId}`",
                 'validation_error' => $e->getMessage(),
-                'plan' => [],
-                'completed_steps' => 0,
-                'tool_calls' => [],
                 'request_id' => $requestId,
             ], 200);
         }
@@ -87,18 +83,13 @@ class ChatbotController extends AbstractController
     }
 
     #[Route('/chat/clear', name: 'app_rh_ai_chat_clear', methods: ['POST'])]
-    public function clear(Request $request, ConversationMemory $memory, LoggerInterface $logger): JsonResponse
+    public function clear(Request $request, \App\AI\Core\ConversationMemory $memory): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $sessionId = $data['session_id'] ?? $request->getSession()->getId();
 
         if ($sessionId) {
-            $cacheKey = "chat_memory_{$sessionId}";
-            $user = $this->getUser();
-            $logger->info('AI chat session cleared', [
-                'session_id' => $sessionId,
-                'user_id' => $user !== null && method_exists($user, 'getId') ? $user->getId() : null,
-            ]);
+            $memory->clear($sessionId);
         }
 
         return new JsonResponse(['status' => 'cleared', 'session_id' => $sessionId]);

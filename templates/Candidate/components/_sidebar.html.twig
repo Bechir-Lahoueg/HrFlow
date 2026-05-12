@@ -9,7 +9,7 @@
     {# Logo #}
     <div class="flex items-center gap-3 px-5 h-16 border-b border-slate-100 shrink-0">
         <a href="{{ path('app_home') }}" class="flex items-center gap-3 group no-underline">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-all duration-200 group-hover:scale-105 shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-formation-600 to-formation-500 flex items-center justify-center shadow-md shadow-formation-600/30 group-hover:shadow-formation-400/40 transition-all duration-200 group-hover:scale-105 shrink-0">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0v-2.25c0-1.094-.787-2.036-1.872-2.18-2.087-.277-4.216-.42-6.378-.42s-4.291.143-6.378.42c-1.085.144-1.872 1.086-1.872 2.18v2.25"/>
                 </svg>
@@ -56,7 +56,7 @@
                     {% set isActive = app.request.get('_route') == item.route %}
                     <a href="{{ path(item.route) }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group
-                              {{ isActive ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                              {{ isActive ? 'bg-formation-600 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
                         <svg class="w-5 h-5 shrink-0 {{ isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600' }}"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {{ item.icon|raw }}
@@ -74,7 +74,7 @@
                 {% set isProfileActive = app.request.get('_route') == 'app_candidate_profile' %}
                 <a href="{{ path('app_candidate_profile') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group
-                          {{ isProfileActive ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                          {{ isProfileActive ? 'bg-formation-600 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
                     <svg class="w-5 h-5 shrink-0 {{ isProfileActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600' }}"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
@@ -97,7 +97,7 @@
     {# User Summary Footer #}
     <div class="px-3 py-3 border-t border-slate-100 shrink-0">
         <a href="{{ path('app_candidate_profile') }}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors group">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shrink-0">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-formation-400 to-formation-500 flex items-center justify-center shrink-0">
                 <span class="text-xs font-bold text-white">{{ app.user.firstName|first|upper }}{{ app.user.lastName|first|upper }}</span>
             </div>
             <div class="flex-1 min-w-0">
