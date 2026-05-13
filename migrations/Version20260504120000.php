@@ -16,6 +16,13 @@ final class Version20260504120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        // Colonnes peut-être déjà présentes (migration déjà appliquée manuellement en prod)
+        $this->skipIf(
+            $this->connection->createSchemaManager()->tableExists('participation_formation')
+            && in_array('quiz_score', array_keys($this->connection->createSchemaManager()->introspectTable('participation_formation')->getColumns()), true),
+            'quiz_score already exists in participation_formation — skipping.'
+        );
+
         $this->addSql('ALTER TABLE participation_formation ADD quiz_score INT DEFAULT NULL, ADD quiz_passed TINYINT(1) NOT NULL, ADD quiz_attempted_at DATETIME DEFAULT NULL');
     }
 
