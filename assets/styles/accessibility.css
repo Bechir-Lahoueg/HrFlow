@@ -156,13 +156,64 @@ html.a11y-high-contrast .text-green-600 { color: var(--a11y-success) !important;
 /* ──────────────────────────────────────────────────────────────────────────
    Mode interface simplifiée (option C — fort)
    - Masque widgets décoratifs
+   - Palette apaisée : surfaces blanches/gris très doux
    - Garde uniquement contenu essentiel + actions principales
-   - Augmente l'espacement
+   - Augmente l'espacement et la lisibilité
    ────────────────────────────────────────────────────────────────────────── */
 
-/* Espacement augmenté */
+/* Variables de palette simplifiée */
 html.a11y-simplified {
+    --a11y-simple-bg:      #f8f9fb;
+    --a11y-simple-surface: #ffffff;
+    --a11y-simple-border:  #e2e6ea;
+    --a11y-simple-text:    #1a1d23;
+    --a11y-simple-muted:   #5a6072;
+    --a11y-simple-accent:  #2563eb;
     line-height: 1.6;
+}
+html.a11y-simplified.dark {
+    --a11y-simple-bg:      #16181d;
+    --a11y-simple-surface: #1e2128;
+    --a11y-simple-border:  #2e3340;
+    --a11y-simple-text:    #e8eaf0;
+    --a11y-simple-muted:   #8b93a8;
+    --a11y-simple-accent:  #60a5fa;
+}
+
+/* Corps principal : fond calme uniforme */
+html.a11y-simplified body {
+    background: var(--a11y-simple-bg) !important;
+    color: var(--a11y-simple-text) !important;
+}
+
+/* Surfaces de cartes : blanc pur / surface sombre */
+html.a11y-simplified :where(.bg-white, .bg-zinc-50, .bg-zinc-100) {
+    background: var(--a11y-simple-surface) !important;
+    border-color: var(--a11y-simple-border) !important;
+}
+html.a11y-simplified.dark :where(.bg-zinc-900, .bg-zinc-800, .bg-zinc-800\/40) {
+    background: var(--a11y-simple-surface) !important;
+    border-color: var(--a11y-simple-border) !important;
+}
+
+/* Textes atténués lisibles */
+html.a11y-simplified :where(.text-zinc-400, .text-zinc-500, .text-slate-400, .text-slate-500) {
+    color: var(--a11y-simple-muted) !important;
+}
+
+/* Remplace les gradients colorés par une surface neutre douce */
+html.a11y-simplified :where(.rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md):where(.bg-gradient-to-r, .bg-gradient-to-br, .bg-gradient-to-tr, .bg-gradient-to-b) {
+    background: var(--a11y-simple-surface) !important;
+    border: 1px solid var(--a11y-simple-border) !important;
+}
+
+/* Les en-têtes de section (gradient dark header) → surface neutre */
+html.a11y-simplified :where(.bg-gradient-to-r.from-slate-900,
+    .bg-gradient-to-br.from-slate-900,
+    .bg-gradient-to-br.from-zinc-900) {
+    background: var(--a11y-simple-bg) !important;
+    color: var(--a11y-simple-text) !important;
+    border-bottom: 2px solid var(--a11y-simple-border) !important;
 }
 
 /* Désactive toutes les animations / transitions décoratives */
@@ -170,11 +221,10 @@ html.a11y-simplified *,
 html.a11y-simplified *::before,
 html.a11y-simplified *::after {
     animation: none !important;
-    transition: none !important;
+    transition: color 0.1s, background-color 0.1s !important;
 }
 
-/* Masque les décorations purement esthétiques :
-   motifs, gradients d'arrière-plan, blobs, dot-grid, noise-bg */
+/* Masque les décorations purement esthétiques */
 html.a11y-simplified .dot-grid,
 html.a11y-simplified .mesh-blob,
 html.a11y-simplified .mesh-blob-alt,
@@ -186,35 +236,28 @@ html.a11y-simplified .badge-glow-amber {
     animation: none !important;
 }
 
-/* Masque les éléments marqués comme "secondaires" / décoratifs */
+/* Éléments marqués décoratifs / secondaires */
 html.a11y-simplified [data-a11y-decorative="true"],
 html.a11y-simplified [data-a11y-secondary="true"] {
     display: none !important;
 }
 
-/* Allège les ombres et bordures pour un rendu plus calme */
+/* Allège les ombres */
 html.a11y-simplified :where(.shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
-    box-shadow: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07) !important;
 }
 
+/* Bords plus doux */
 html.a11y-simplified :where(.rounded-2xl, .rounded-xl) {
-    border-radius: 0.5rem !important;
+    border-radius: 0.625rem !important;
 }
 
-/* Les badges décoratifs et glows sont neutralisés */
+/* Stat-stripe décorative */
 html.a11y-simplified :where(.stat-stripe::before) {
     display: none !important;
 }
 
-html.a11y-simplified :where(.bg-gradient-to-r, .bg-gradient-to-br, .bg-gradient-to-tr) {
-    background: rgba(0, 0, 0, 0.02) !important;
-}
-
-html.a11y-simplified.dark :where(.bg-gradient-to-r, .bg-gradient-to-br, .bg-gradient-to-tr) {
-    background: rgba(255, 255, 255, 0.02) !important;
-}
-
-/* Augmente l'espacement entre les sections principales */
+/* Espacement augmenté entre sections */
 html.a11y-simplified main > * + * {
     margin-top: 1.5rem !important;
 }

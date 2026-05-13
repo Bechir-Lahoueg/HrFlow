@@ -1,8 +1,3 @@
-{# ──────────────────────────────────────────────────────────────────────────
-   Bouton flottant d'accessibilité + mini-popover
-   Inclus dans base.html.twig pour tout utilisateur authentifié.
-   Câblé par assets/js/accessibility/floating-button.js
-   ────────────────────────────────────────────────────────────────────────── #}
 <div id="a11y-fab-root" data-a11y-decorative="false">
     {# data-a11y-decorative="false" garantit que le bouton reste visible
        même en mode interface simplifiée (l'a11y est essentielle). #}
@@ -57,13 +52,36 @@
 
         {# Retour vocal #}
         <div class="a11y-row">
-            <span class="a11y-row-label">Retour vocal</span>
+            <span class="a11y-row-label">
+                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M9 4a.5.5 0 0 0-.812-.39L5.825 5.5H3.5A.5.5 0 0 0 3 6v4a.5.5 0 0 0 .5.5h2.325l2.363 1.89A.5.5 0 0 0 9 12V4zm3.025 4a4.486 4.486 0 0 1-1.318 3.182L10 10.475A3.489 3.489 0 0 0 11.025 8 3.49 3.49 0 0 0 10 5.525l.707-.707A4.486 4.486 0 0 1 12.025 8z"/>
+                </svg>
+                Retour vocal
+            </span>
             <span style="display:inline-flex; align-items:center; gap:0.5rem;">
                 <button type="button"
                         class="a11y-toggle"
                         data-a11y-toggle="voice_feedback"
                         aria-pressed="false"
                         aria-label="Activer ou désactiver le retour vocal"></button>
+                <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
+            </span>
+        </div>
+
+        {# Lecture au survol — sous-option du retour vocal #}
+        <div class="a11y-row a11y-sub-row" data-a11y-voice-opts style="padding-left:1.25rem; border-top:0; padding-top:0; margin-top:-0.25rem;">
+            <span class="a11y-row-label" style="font-size:0.78rem; color:#71717a; gap:0.3rem;">
+                <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" style="opacity:0.7; flex-shrink:0;">
+                    <path d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+                </svg>
+                Lire au survol
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <button type="button"
+                        class="a11y-toggle"
+                        data-a11y-toggle="hover_reading"
+                        aria-pressed="false"
+                        aria-label="Activer la lecture des éléments au survol de la souris"></button>
                 <span class="a11y-toggle-state" aria-live="polite">Désactivé</span>
             </span>
         </div>
@@ -116,5 +134,10 @@
                 Réinitialiser
             </button>
         </div>
+
+        {# Signature #}
+        <p style="margin:0.6rem 0 0; text-align:center; font-size:0.68rem; color:#a1a1aa; letter-spacing:0.02em; user-select:none;">
+            Accessibility v1.2 &mdash; made with ❤️ by <strong style="color:#6366f1;">Bechir Lahoueg</strong>
+        </p>
     </div>
 </div>

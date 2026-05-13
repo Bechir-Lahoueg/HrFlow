@@ -121,6 +121,13 @@ class FloatingButton {
         const incBtn = this.popover.querySelector('[data-a11y-font-step="1"]');
         if (decBtn) decBtn.disabled = prefs.font_scale <= A11Y_FONT_SCALES[0];
         if (incBtn) incBtn.disabled = prefs.font_scale >= A11Y_FONT_SCALES[A11Y_FONT_SCALES.length - 1];
+
+        // Sous-options vocales : grisées quand voice_feedback est désactivé
+        this.popover.querySelectorAll('[data-a11y-voice-opts]').forEach((el) => {
+            el.style.opacity = prefs.voice_feedback ? '1' : '0.4';
+            el.style.pointerEvents = prefs.voice_feedback ? '' : 'none';
+            el.setAttribute('aria-hidden', prefs.voice_feedback ? 'false' : 'true');
+        });
     }
 }
 
