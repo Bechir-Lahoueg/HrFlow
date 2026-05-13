@@ -45,8 +45,8 @@ class AccessibilityManager {
             this.prefs = this._sanitize({ ...DEFAULT_PREFS, ...seed });
             this._authenticated = true;
         } else {
-            // Utilisateur non connecté → on lit le localStorage uniquement.
-            const cached = this._readLocal();
+            // Utilisateur non connecté → localStorage d'abord, cookie en fallback.
+            const cached = this._readLocal() || this._readCookie();
             if (cached) this.prefs = this._sanitize({ ...DEFAULT_PREFS, ...cached });
         }
 
@@ -98,8 +98,12 @@ class AccessibilityManager {
         this.prefs = next;
         this.apply();
         this._writeLocal();
+        this._writeCookie();
         this._scheduleServerSync();
         this._dispatch();
+
+        // Journal dans la console (debug + traçabilité)
+        console.log('[HrFlow A11y] Préférences enregistrées :', { ...this.prefs });
 
         // Retour vocal sur les changements importants
         if (!options.silent && this.prefs.voice_feedback) {
@@ -170,6 +174,21 @@ class AccessibilityManager {
     _writeLocal() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.prefs)); }
         catch (_) { /* silencieux (quota / mode privé) */ }
+    }
+
+    _readCookie() {
+        try {
+            const match = document.cookie.match(/(?:^|;\s*)hrflow-a11y-prefs=([^;]*)/);
+            return match ? JSON.parse(decodeURIComponent(match[1])) : null;
+        } catch (_) { return null; }
+    }
+
+    _writeCookie() {
+        try {
+            const value = encodeURIComponent(JSON.stringify(this.prefs));
+            const maxAge = 60 * 60 * 24 * 365; // 1 an
+            document.cookie = `hrflow-a11y-prefs=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        } catch (_) { /* silencieux */ }
     }
 
     _scheduleServerSync() {

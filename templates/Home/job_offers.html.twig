@@ -16,14 +16,14 @@
     {# Hero Section #}
     <section class="pt-32 pb-16 px-6">
         <div class="max-w-6xl mx-auto text-center mb-10">
-            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold mb-6">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-formation-50 text-formation-700 text-sm font-semibold mb-6">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Nous recrutons !
             </span>
 
             <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight text-center">
                 Rejoignez 
-                <span class="text-slate-900 bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
+                <span class="text-slate-900 bg-clip-text bg-gradient-to-r from-formation-600 to-formation-400">
                     Notre Équipe
                 </span>
             </h1>
@@ -40,11 +40,11 @@
             {% if jobOffers|length > 0 %}
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {% for offer in jobOffers %}
-                    <article class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all duration-300 overflow-hidden flex flex-col">
+                    <article class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-formation-200 transition-all duration-300 overflow-hidden flex flex-col">
                         {# Card Header with Icon #}
                         <div class="p-6 pb-4">
                             <div class="flex items-start justify-between mb-4">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-formation-500 to-formation-600 flex items-center justify-center shadow-lg shadow-formation-500/20">
                                     <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none">
                                     <!-- Bigger background circle -->
                                     <circle cx="12" cy="12" r="10" fill="#7C3AED"/>
@@ -59,12 +59,12 @@
                                     />
                                     </svg>
                                 </div>
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-formation-50 text-formation-700">
                                     {{ offer.employmentType|default('CDI')|upper }}
                                 </span>
                             </div>
                             
-                            <h2 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
+                            <h2 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-formation-600 transition-colors">
                                 {{ offer.title }}
                             </h2>
                             
@@ -91,7 +91,7 @@
                                 {% endif %}
                                 
                                 {% if offer.salaryMin > 0 or offer.salaryMax > 0 %}
-                                <span class="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-formation-700 bg-formation-50 px-2.5 py-1.5 rounded-lg border border-formation-200">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     {{ offer.salaryMin|number_format(0, '.', ' ') }} - {{ offer.salaryMax|number_format(0, '.', ' ') }} TND
                                 </span>
@@ -115,7 +115,7 @@
                         <h3 class="text-xl font-bold mb-3">Interesse par l'une de ces offres ?</h3>
                         <p class="text-slate-400 mb-6">Connectez-vous ou creez un compte pour postuler.</p>
                         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <a href="{{ path('app_candidate_login') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold transition-all duration-200">
+                            <a href="{{ path('app_candidate_login') }}" class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-formation-500 hover:bg-formation-400 text-slate-900 font-semibold transition-all duration-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
                                 Se connecter
                             </a>
@@ -129,7 +129,7 @@
                 {% elseif is_granted('ROLE_CANDIDATE') %}
                 {# Show message for logged in candidates #}
                 <div class="mt-16 pt-10 border-t border-slate-200 text-center">
-                    <div class="bg-emerald-50 rounded-2xl p-8 text-slate-900 max-w-2xl mx-auto border border-emerald-200">
+                    <div class="bg-formation-50 rounded-2xl p-8 text-slate-900 max-w-2xl mx-auto border border-formation-200">
                         <h3 class="text-xl font-bold mb-3">Vous etes connecte en tant que candidat</h3>
                         <p class="text-slate-600 mb-6">Vous pouvez maintenant postuler aux offres qui vous interessent.</p>
                         <p class="text-sm text-slate-500">Connecte en tant que <span class="font-semibold">{{ app.user.username }}</span></p>
@@ -163,7 +163,7 @@
                 Envoyez-nous votre candidature spontanee et nous vous contacterons des qu'une opportunite correspondant a votre profil se presente.
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="mailto:recrutement@hrflow.tn" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold transition-all duration-200">
+                <a href="mailto:recrutement@hrflow.tn" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-formation-500 hover:bg-formation-400 text-slate-900 font-semibold transition-all duration-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                     Candidature spontanee
                 </a>

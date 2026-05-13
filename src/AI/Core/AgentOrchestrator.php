@@ -5,104 +5,328 @@ declare(strict_types=1);
 namespace App\AI\Core;
 
 use App\AI\Contract\LlmClientInterface;
-use App\AI\Contract\ToolInterface;
-use App\AI\Contract\ToolRegistryInterface;
+use App\AI\Domain\DTO\ApplicationQuery;
+use App\AI\Domain\DTO\CandidateQuery;
+use App\AI\Domain\DTO\IntentDTO;
+use App\AI\Domain\DTO\InterviewQuery;
+use App\AI\Domain\DTO\PipelineQuery;
 use App\AI\Domain\Enum\IntentType;
-use App\AI\Domain\ValueObject\PendingChangeset;
 use App\AI\Infrastructure\AgentResponse;
 use App\AI\Infrastructure\ChatMessage;
 use App\AI\Infrastructure\ChatRequest;
 use App\AI\Infrastructure\ConversationContext;
-use App\AI\Infrastructure\ToolCall;
+use App\Service\Recrutement\ApplicationService;
+use App\Service\Recrutement\CandidateService;
+use App\Service\Recrutement\InterviewService;
+use App\Service\Recrutement\PipelineService;
+use App\Service\Recrutement\ReportService;
 
 final class AgentOrchestrator
 {
-    private const MAX_LOOP_ITERATIONS = 5;
-    private const MAX_TOOLS_PER_REQUEST = 5;
-
     public function __construct(
         private readonly LlmClientInterface $llmClient,
-        private readonly ToolRegistryInterface $toolRegistry,
-        private readonly ToolValidator $toolValidator,
-        private readonly ConversationMemory $memory,
-        private readonly RecruitmentContextProvider $contextProvider,
-        private readonly IntentRouter $intentRouter,
+        private readonly IntentParser $intentParser,
+        private readonly PipelineService $pipelineService,
+        private readonly CandidateService $candidateService,
+        private readonly ApplicationService $applicationService,
+        private readonly InterviewService $interviewService,
+        private readonly ReportService $reportService,
         private readonly ChangesetManager $changesetManager,
+        private readonly ConversationMemory $memory,
     ) {}
 
     public function process(ConversationContext $conversationContext): AgentResponse
     {
-        $messages = $conversationContext->messages;
         $user = $conversationContext->user;
         $sessionId = $conversationContext->sessionId;
 
-        $history = $this->memory->load($sessionId);
-        $allMessages = [...$history, ...$messages];
+        $lastMessage = $this->getLastUserMessage($conversationContext->messages);
 
-        if (\count($history) > 0) {
-            $messages = $this->trimMessages($allMessages);
+        if ($this->isGreeting($lastMessage)) {
+            return $this->handleGreeting($lastMessage, $user);
         }
 
-        $lastUserMsg = $this->getLastUserMessage($messages);
-        if ($this->isGreeting($lastUserMsg)) {
-            return $this->handleGreeting($lastUserMsg, $user);
-        }
+        $intent = $this->intentParser->parse($lastMessage);
 
-        $intent = $this->intentRouter->classify($messages);
-        $selectedTools = $this->intentRouter->selectTools($intent, $this->toolRegistry);
-        $scopedTools = \array_slice($selectedTools, 0, self::MAX_TOOLS_PER_REQUEST);
+        $result = $this->dispatch($intent, $user);
 
-        $systemPrompt = $this->contextProvider->buildSystemPrompt($user, $intent->value);
+        $responseMessage = $this->generateResponse($intent, $result);
 
-        $loopResult = $this->runAgenticLoop($messages, $scopedTools, $user, $sessionId);
-        $finalMessage = $loopResult['message'];
-        $toolCalls = $loopResult['toolCalls'];
-        $toolResults = $loopResult['toolResults'];
-        $pendingChangesets = $loopResult['pendingChangesets'];
+        return $this->buildAgentResponse($responseMessage, $result, $intent);
+    }
 
-        $uiPayload = $this->buildUiPayload($toolCalls, $toolResults);
-
-        $this->memory->save($sessionId, $messages);
-
-        $formattedToolCalls = \array_map(function (ToolCall $tc, array $result) {
-            return [
-                'tool_name' => $tc->name,
-                'status' => 'done',
-                'details' => $result['uiPayload'] ?? null,
-                'args' => $tc->arguments,
-                'download_url' => ($result['uiPayload'] ?? [])['download_url'] ?? null,
-                'chart_data' => ($result['uiPayload'] ?? [])['chart_data'] ?? null,
-            ];
-        }, $toolCalls, $toolResults);
-
-        $planSteps = [];
-        foreach ($toolCalls as $tc) {
-            $planSteps[] = 'Exécuter ' . $tc->name;
-        }
-        if (empty($planSteps)) {
-            $planSteps[] = 'Analyser la requête';
-        }
-
-        $aggregates = $this->aggregateToolResults($toolResults);
-
-        return new AgentResponse(
-            message: $finalMessage->content ?: 'Traitement terminé.',
-            uiPayload: $uiPayload,
-            pendingChangesets: \array_map(
-                fn(PendingChangeset $c) => [
-                    'id' => $c->id,
-                    'tool' => $c->tool,
-                    'action' => $c->action,
-                ],
-                $pendingChangesets,
+    private function dispatch(IntentDTO $intent, object $user): ServiceResult
+    {
+        return match ($intent->intent) {
+            IntentType::GREETING => new ServiceResult(
+                data: [],
+                message: 'Bonjour ! Comment puis-je vous aider ?',
             ),
-            toolCalls: $formattedToolCalls,
-            plan: $planSteps,
-            completedSteps: \count($planSteps),
-            activeJob: $aggregates['activeJob'],
-            candidates: $aggregates['candidates'],
-            candidatesAnalyzed: $aggregates['candidatesAnalyzed'],
-            interviewsPlanned: $aggregates['interviewsPlanned'],
+            IntentType::PIPELINE_ANALYSIS => $this->handlePipelineAnalysis($intent),
+            IntentType::CANDIDATE_ANALYSIS => $this->handleCandidateAnalysis($intent),
+            IntentType::DATA_QUERY => $this->handleDataQuery($intent),
+            IntentType::MUTATION => $this->handleMutation($intent, $user),
+            IntentType::SCHEDULING => $this->handleScheduling($intent),
+            IntentType::REPORT_GENERATION => $this->handleReportGeneration($intent),
+            IntentType::UNKNOWN => new ServiceResult(
+                data: [],
+                message: "Je n'ai pas compris votre demande. Pouvez-vous reformuler ?",
+            ),
+        };
+    }
+
+    private function handlePipelineAnalysis(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $query = new PipelineQuery(
+            department: $params['department'] ?? null,
+            dateRange: $params['time_range'] ?? $params['date_range'] ?? null,
+            groupBy: $params['group_by'] ?? null,
+            status: $params['status'] ?? null,
+            jobOfferId: isset($params['job_offer_id']) ? (int) $params['job_offer_id'] : null,
+        );
+
+        $result = $this->pipelineService->execute($query);
+
+        return new ServiceResult(
+            data: [
+                'summary' => $result->summary,
+                'by_stage' => $result->byStage,
+                'by_department' => $result->byDepartment,
+                'by_offer' => $result->byOffer,
+                'over_time' => $result->overTime,
+                'visualization_hints' => $result->visualizationHints,
+            ],
+            visualizationHints: $result->visualizationHints,
+        );
+    }
+
+    private function handleCandidateAnalysis(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $outputFormat = $intent->outputFormat;
+
+        $query = new CandidateQuery(
+            jobOfferId: isset($params['job_offer_id']) ? (int) $params['job_offer_id'] : null,
+            status: $params['status'] ?? null,
+            department: $params['department'] ?? null,
+            limit: isset($params['limit']) ? (int) $params['limit'] : 50,
+            ids: $params['ids'] ?? [],
+            action: $params['action'] ?? null,
+        );
+
+        $action = $params['action'] ?? 'search';
+        $result = match ($action) {
+            'rank' => $this->candidateService->rank($query),
+            'compare' => $this->candidateService->compare($query->ids),
+            default => $this->candidateService->search($query),
+        };
+
+        return new ServiceResult(
+            data: [
+                'candidates' => $result->candidates,
+                'total' => $result->total,
+                'ranking' => $result->ranking,
+                'comparison' => $result->comparison,
+                'visualization_hints' => $result->visualizationHints,
+            ],
+            visualizationHints: $result->visualizationHints,
+            candidates: $result->candidates,
+            candidatesAnalyzed: $result->total,
+        );
+    }
+
+    private function handleDataQuery(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $entity = $params['entity'] ?? $params['type'] ?? 'application';
+
+        return match ($entity) {
+            'application', 'candidature', 'candidat' => $this->queryApplications($intent),
+            'interview', 'entretien' => $this->queryInterviews($intent),
+            'job_offer', 'offer', 'offre' => $this->queryJobOffers($intent),
+            default => $this->queryApplications($intent),
+        };
+    }
+
+    private function queryApplications(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $query = new ApplicationQuery(
+            jobOfferId: isset($params['job_offer_id']) ? (int) $params['job_offer_id'] : null,
+            status: $params['status'] ?? null,
+            department: $params['department'] ?? null,
+            limit: isset($params['limit']) ? (int) $params['limit'] : 50,
+            ids: $params['ids'] ?? [],
+        );
+
+        $applications = $this->applicationService->list($query);
+
+        return new ServiceResult(
+            data: ['applications' => $applications, 'total' => count($applications)],
+            visualizationHints: ['table'],
+            candidates: $applications,
+            candidatesAnalyzed: count($applications),
+        );
+    }
+
+    private function queryInterviews(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $query = new InterviewQuery(
+            applicationId: isset($params['application_id']) ? (int) $params['application_id'] : null,
+            dateFrom: $params['date_from'] ?? $params['from'] ?? null,
+            dateTo: $params['date_to'] ?? $params['to'] ?? null,
+            result: $params['result'] ?? null,
+        );
+
+        $interviews = $this->interviewService->list($query);
+        $stats = $this->interviewService->getStats();
+
+        return new ServiceResult(
+            data: [
+                'interviews' => $interviews,
+                'total' => count($interviews),
+                'stats' => $stats,
+            ],
+            visualizationHints: ['table'],
+            interviews: $interviews,
+            interviewsPlanned: count($interviews),
+        );
+    }
+
+    private function queryJobOffers(IntentDTO $intent): ServiceResult
+    {
+        return new ServiceResult(
+            data: ['message' => 'Fonctionnalité de consultation des offres via le service dédié.'],
+            visualizationHints: ['table'],
+        );
+    }
+
+    private function handleMutation(IntentDTO $intent, object $user): ServiceResult
+    {
+        $params = $intent->parameters;
+
+        $changeset = $this->applicationService->updateStatus(
+            applicationId: isset($params['application_id']) ? (int) $params['application_id'] : 0,
+            newStatus: $params['new_status'] ?? $params['status'] ?? '',
+            user: $user,
+        );
+
+        if ($changeset !== null) {
+            return new ServiceResult(
+                data: ['pending_changeset' => true, 'changeset_id' => $changeset->id],
+                pendingChangesets: [$changeset],
+                message: "Modification en attente de confirmation.",
+            );
+        }
+
+        return new ServiceResult(
+            data: ['status' => 'applied'],
+            message: "Modification effectuée.",
+        );
+    }
+
+    private function handleScheduling(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+
+        if (isset($params['application_id']) && isset($params['date'])) {
+            $result = $this->interviewService->schedule(
+                applicationId: (int) $params['application_id'],
+                scheduledAt: $params['date'],
+                notes: $params['notes'] ?? '',
+            );
+
+            return new ServiceResult(
+                data: ['interview' => $result],
+                visualizationHints: ['table'],
+                interviewsPlanned: 1,
+            );
+        }
+
+        $query = new InterviewQuery(
+            dateFrom: $params['date_from'] ?? null,
+            dateTo: $params['date_to'] ?? null,
+        );
+        $interviews = $this->interviewService->list($query);
+
+        return new ServiceResult(
+            data: ['interviews' => $interviews, 'total' => count($interviews)],
+            visualizationHints: ['table'],
+            interviews: $interviews,
+            interviewsPlanned: count($interviews),
+        );
+    }
+
+    private function handleReportGeneration(IntentDTO $intent): ServiceResult
+    {
+        $params = $intent->parameters;
+        $type = $params['report_type'] ?? $params['type'] ?? 'pipeline';
+
+        $report = $this->reportService->generate($type, $params);
+
+        return new ServiceResult(
+            data: $report,
+            visualizationHints: $report['visualization_hints'] ?? ['table'],
+        );
+    }
+
+    private function generateResponse(IntentDTO $intent, ServiceResult $result): string
+    {
+        if ($result->message !== null) {
+            return $result->message;
+        }
+
+        if ($intent->intent === IntentType::GREETING) {
+            return $result->message ?? '';
+        }
+
+        if ($result->isEmpty()) {
+            return 'Aucune donnée trouvée pour votre requête.';
+        }
+
+        $prompt = $this->buildGenerationPrompt($intent, $result);
+
+        $request = new ChatRequest(
+            messages: [new ChatMessage('user', $prompt)],
+            systemPrompt: 'Tu es un assistant RH qui résume des données structurées en français. Sois concis et précis.',
+        );
+
+        $response = $this->llmClient->chat($request);
+
+        return $response->content ?: 'Données récupérées avec succès.';
+    }
+
+    private function buildGenerationPrompt(IntentDTO $intent, ServiceResult $result): string
+    {
+        $typeLabel = match ($intent->intent) {
+            IntentType::PIPELINE_ANALYSIS => 'analyse de pipeline',
+            IntentType::CANDIDATE_ANALYSIS => 'analyse de candidats',
+            IntentType::DATA_QUERY => 'consultation de données',
+            IntentType::SCHEDULING => 'planification',
+            IntentType::REPORT_GENERATION => 'génération de rapport',
+            default => 'résultat',
+        };
+
+        return "Voici les données d'un {$typeLabel}. Résume-les en 2-3 phrases en français:\n\n"
+            . json_encode($result->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+
+    private function buildAgentResponse(string $message, ServiceResult $result, IntentDTO $intent): AgentResponse
+    {
+        return new AgentResponse(
+            message: $message,
+            uiPayload: $result->uiPayload(),
+            pendingChangesets: $result->pendingChangesets,
+            toolCalls: [],
+            plan: $result->planSteps(),
+            completedSteps: $result->completedSteps(),
+            activeJob: $result->activeJob,
+            candidates: $result->candidates,
+            interviews: $result->interviews,
+            candidatesAnalyzed: $result->candidatesAnalyzed,
+            interviewsPlanned: $result->interviewsPlanned,
         );
     }
 
@@ -132,108 +356,6 @@ final class AgentOrchestrator
         )) > 0);
     }
 
-    /**
-     * @param array<int, mixed> $messages
-     * @param ToolInterface[] $tools
-     * @return array{message: ChatMessage, toolCalls: list<ToolCall>, toolResults: list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}>, pendingChangesets: list<PendingChangeset>}
-     */
-    private function runAgenticLoop(array $messages, array $tools, object $user, string $sessionId): array
-    {
-        $iteration = 0;
-        $pendingChangesets = [];
-        $allToolCalls = [];
-        $allToolResults = [];
-
-        while ($iteration < self::MAX_LOOP_ITERATIONS) {
-            ++$iteration;
-
-            $request = new ChatRequest(
-                messages: $messages,
-                systemPrompt: '',
-                tools: $tools,
-                maxTools: self::MAX_TOOLS_PER_REQUEST,
-            );
-
-            $response = $this->llmClient->chat($request);
-
-            if (\count($response->toolCalls) === 0) {
-                return [
-                    'message' => new ChatMessage('model', $response->content),
-                    'toolCalls' => $allToolCalls,
-                    'toolResults' => $allToolResults,
-                    'pendingChangesets' => $pendingChangesets,
-                ];
-            }
-
-            foreach ($response->toolCalls as $toolCall) {
-                $this->toolValidator->validate($toolCall, $user);
-
-                try {
-                    $tool = $this->toolRegistry->get($toolCall->name);
-                } catch (\InvalidArgumentException) {
-                    $messages[] = new ChatMessage('user', "Outil non trouvé: {$toolCall->name}");
-                    continue;
-                }
-
-                $toolResult = $tool->execute($toolCall->arguments, $user);
-                $allToolCalls[] = $toolCall;
-                $allToolResults[] = [
-                    'llmSummary' => $toolResult->llmSummary,
-                    'uiPayload' => $toolResult->uiPayload,
-                ];
-
-                if ($toolResult->hasPendingChange && $toolResult->pendingChangeset !== null) {
-                    $changeset = $this->changesetManager->stage(
-                        $toolCall,
-                        ['result' => $toolResult, 'sessionId' => $sessionId],
-                        $user,
-                    );
-                    $pendingChangesets[] = $changeset;
-                }
-
-                $messages[] = new ChatMessage(
-                    role: 'model',
-                    content: '',
-                    toolCallId: $toolCall->id,
-                    toolCallName: $toolCall->name,
-                    toolCallArgs: $toolCall->arguments,
-                );
-                $messages[] = new ChatMessage(
-                    role: 'user',
-                    content: $toolResult->llmSummary,
-                    toolResponse: $toolResult->uiPayload,
-                    toolCallName: $toolCall->name,
-                );
-            }
-        }
-
-        return [
-            'message' => new ChatMessage('model', 'Nombre maximum d\'itérations atteint.'),
-            'toolCalls' => $allToolCalls,
-            'toolResults' => $allToolResults,
-            'pendingChangesets' => $pendingChangesets,
-        ];
-    }
-
-    /**
-     * @param ChatMessage[] $messages
-     * @return ChatMessage[]
-     */
-    private function trimMessages(array $messages): array
-    {
-        if (\count($messages) <= 10) {
-            return $messages;
-        }
-
-        $recent = \array_slice($messages, -8);
-        $summary = $this->memory->summarizeOld($messages);
-
-        return [$summary, ...$recent];
-    }
-
-    /**
-     * @param ChatMessage[] $messages
-     */
     private function getLastUserMessage(array $messages): string
     {
         for ($i = \count($messages) - 1; $i >= 0; --$i) {
@@ -242,80 +364,5 @@ final class AgentOrchestrator
             }
         }
         return '';
-    }
-
-    /**
-     * @param ToolCall[] $toolCalls
-     * @param list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}> $toolResults
-     * @return array<int, mixed>
-     */
-    private function buildUiPayload(array $toolCalls, array $toolResults): array
-    {
-        $payload = [];
-        foreach ($toolCalls as $i => $tc) {
-            $result = $toolResults[$i] ?? [];
-            $payload[] = [
-                'name' => $tc->name,
-                'status' => 'done',
-                'body' => $result['llmSummary'] ?? 'Outil exécuté avec succès.',
-                'uiPayload' => $result['uiPayload'] ?? [],
-            ];
-        }
-        return $payload;
-    }
-
-    /**
-     * Extract aggregates from tool results for the response.
-     *
-     * @param list<array{llmSummary?: string|null, uiPayload?: array<string, mixed>|null}> $toolResults
-     * @return array{activeJob: ?array<string, mixed>, candidates: array<int, mixed>, candidatesAnalyzed: int, interviewsPlanned: int}
-     */
-    private function aggregateToolResults(array $toolResults): array
-    {
-        $activeJob = null;
-        $candidates = [];
-        $candidatesAnalyzed = 0;
-        $interviewsPlanned = 0;
-
-        foreach ($toolResults as $result) {
-            $ui = $result['uiPayload'] ?? [];
-            $uiType = $ui['type'] ?? null;
-
-            if ($uiType === 'applications_table' && isset($ui['data'])) {
-                $candidates = array_merge($candidates, $ui['data']);
-                $candidatesAnalyzed += count($ui['data']);
-            }
-            if ($uiType === 'candidates_table' && isset($ui['data'])) {
-                $candidates = array_merge($candidates, $ui['data']);
-                $candidatesAnalyzed += count($ui['data']);
-            }
-            if ($uiType === 'ranking' && isset($ui['data'])) {
-                $candidates = array_merge($candidates, $ui['data']);
-                $candidatesAnalyzed = max($candidatesAnalyzed, count($ui['data']));
-            }
-            if (isset($ui['candidates_analyzed'])) {
-                $candidatesAnalyzed = max($candidatesAnalyzed, (int) $ui['candidates_analyzed']);
-            }
-            if (isset($ui['interviews_planned'])) {
-                $interviewsPlanned += (int) $ui['interviews_planned'];
-            }
-            if (isset($ui['job_offer']) && is_array($ui['job_offer'])) {
-                $activeJob = $ui['job_offer'];
-            }
-            if ($uiType === 'job_offers_table' && isset($ui['data']) && count($ui['data']) > 0) {
-                $activeJob = [
-                    'title' => $ui['data'][0]['title'] ?? null,
-                    'location' => $ui['data'][0]['location'] ?? null,
-                    'applications' => count($ui['data']),
-                ];
-            }
-        }
-
-        return [
-            'activeJob' => $activeJob,
-            'candidates' => $candidates,
-            'candidatesAnalyzed' => $candidatesAnalyzed,
-            'interviewsPlanned' => $interviewsPlanned,
-        ];
     }
 }

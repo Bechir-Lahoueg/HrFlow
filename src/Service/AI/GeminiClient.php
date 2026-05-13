@@ -28,7 +28,7 @@ class GeminiClient implements LlmClientInterface
     public function generateContent(array $messages, array $tools = [], array $config = [], ?string $systemInstruction = null): array
     {
         $modelName = $config['model'] ?? $this->model;
-        $url = sprintf('%s/models/%s:generateContent?key=%s', self::BASE_URL, $modelName, $this->apiKey);
+        $url = sprintf('%s/models/%s:generateContent', self::BASE_URL, $modelName);
 
         $body = [
             'contents' => $this->normalizeMessages($messages),
@@ -36,7 +36,6 @@ class GeminiClient implements LlmClientInterface
 
         if (!empty($tools)) {
             $cleanedTools = array_map(function($tool) {
-                // Convert to Gemini's expected format (camelCase)
                 $geminiTool = [
                     'name' => $tool['name'] ?? '',
                     'description' => $tool['description'] ?? '',
@@ -47,12 +46,10 @@ class GeminiClient implements LlmClientInterface
                 return $geminiTool;
             }, array_values($tools));
 
-            // Gemini API uses camelCase for functionDeclarations
             $body['tools'] = [
                 ['functionDeclarations' => $cleanedTools]
             ];
 
-            // Enable function calling mode (AUTO lets model decide when to call)
             $body['toolConfig'] = [
                 'functionCallingConfig' => [
                     'mode' => 'AUTO'
@@ -77,6 +74,9 @@ class GeminiClient implements LlmClientInterface
 
         $response = $this->httpClient->request('POST', $url, [
             'json' => $body,
+            'headers' => [
+                'X-Goog-Api-Key' => $this->apiKey,
+            ],
         ]);
 
         $data = $response->toArray(false);

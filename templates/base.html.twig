@@ -41,7 +41,12 @@
                 {% else %}
                     try {
                         var raw = localStorage.getItem('hrflow-a11y-prefs');
-                        if (raw) prefs = JSON.parse(raw);
+                        if (raw) {
+                            prefs = JSON.parse(raw);
+                        } else {
+                            var cm = document.cookie.match(/(?:^|;\s*)hrflow-a11y-prefs=([^;]*)/);
+                            if (cm) prefs = JSON.parse(decodeURIComponent(cm[1]));
+                        }
                     } catch(e) { prefs = null; }
                 {% endif %}
                 if (!prefs) prefs = { high_contrast:false, font_scale:100, voice_feedback:false, simplified_ui:false, reduce_motion:false };
@@ -94,9 +99,7 @@
         {% endblock %}
 
         {# ── Composants d'accessibilité globaux ── #}
-        {% if app.user %}
-            {% include 'Components/_a11y_floating_button.html.twig' %}
-        {% endif %}
+        {% include 'Components/_a11y_floating_button.html.twig' %}
         {% include 'Components/_confirm_dialog.html.twig' %}
 
         {# Theme toggle logic #}
