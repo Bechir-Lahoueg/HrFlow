@@ -26,7 +26,7 @@
 
 ###> symfony/asset-mapper ###
 /public/assets/
-/assets/vendor/
+# /assets/vendor/ — tracked in git so Docker build doesn't need importmap:install
 ###< symfony/asset-mapper ###
 
 ###> phpstan/phpstan ###
