@@ -18,6 +18,21 @@ APP_ENV=prod php bin/console cache:warmup --no-interaction
 
 # Run pending migrations
 echo "==> Running database migrations..."
+
+# These migrations were already applied manually in prod (recorded with the old
+# namespace format "DoctrineMigrationsVersionXXX" without backslash).
+# We register them with the canonical format so Doctrine does not try to run them again.
+SKIP_MIGRATIONS=(
+    "DoctrineMigrations\\Version20260504120000"
+    "DoctrineMigrations\\Version20260504123000"
+    "DoctrineMigrations\\Version20260506180808"
+    "DoctrineMigrations\\Version20260507120000"
+    "DoctrineMigrations\\Version20260507192436"
+)
+for version in "${SKIP_MIGRATIONS[@]}"; do
+    APP_ENV=prod php bin/console doctrine:migrations:version --add --no-interaction "$version" 2>/dev/null || true
+done
+
 APP_ENV=prod php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
 # Ensure var/ is fully writable (cache:warmup writes as same user — no issue here)

@@ -1,0 +1,71 @@
+{% set current_section = 'modules-ai-reporting' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Rapports IA</h1>
+
+<p>Le module Rapports IA utilise l'intelligence artificielle (Groq / Llama 3.3 70B et Google Gemini) pour generer des analyses et visualisations a partir de requetes en langage naturel.</p>
+
+<h2>Architecture</h2>
+<p>Le systeme IA est compose de quatre composants principaux :</p>
+<table>
+    <thead>
+        <tr>
+            <th>Composant</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td><strong>ReportAgent</strong></td><td>Orchestre la generation de rapports de bout en bout</td></tr>
+        <tr><td><strong>SqlPlannerLlm</strong></td><td>Genere des requetes SQL optimisees via IA</td></tr>
+        <tr><td><strong>ReportLlm</strong></td><td>Convertit les donnees en rapports narratifs</td></tr>
+        <tr><td><strong>DataAnalysisAgent</strong></td><td>Produit des graphiques et tableaux</td></tr>
+    </tbody>
+</table>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Generation de rapports en langage naturel</h3>
+<ol>
+    <li>Saisissez une description en francais ou en anglais</li>
+    <li>L'IA analyse la demande et genere les requetes SQL</li>
+    <li>Les donnees sont extraites et analysees</li>
+    <li>Un rapport structure est genere avec visualisations</li>
+</ol>
+
+<h3>Exemples de prompts</h3>
+<ul>
+    <li>"Affiche les tendances des candidatures par departement"</li>
+    <li>"Genere un rapport complet d'analyse de recrutement"</li>
+    <li>"Compare les taux de reussite des entretiens par type de poste"</li>
+    <li>"Montre-moi tout ce qui concerne le recrutement"</li>
+</ul>
+
+<h3>Types de visualisations</h3>
+<ul>
+    <li><strong>Diagrammes en barres</strong> : Comparaisons et classements</li>
+    <li><strong>Diagrammes circulaires</strong> : Proportions et pourcentages</li>
+    <li><strong>Graphiques en lignes</strong> : Tendances temporelles</li>
+    <li><strong>Graphiques en aires</strong> : Visualisations cumulatives</li>
+    <li><strong>Tableaux</strong> : Donnees structurees</li>
+</ul>
+
+<h3>Export</h3>
+<ul>
+    <li>Export CSV des donnees</li>
+    <li>Export des rapports</li>
+    <li>Import CSV pour analyse</li>
+</ul>
+
+<h2>Configuration des cles API</h2>
+<p>Les cles API sont configurees dans le fichier <code>config.properties</code> du module AppUi :</p>
+<pre><code>GROQ_API_KEY=votre_cle_groq
+GEMINI_API_KEY=votre_cle_gemini</code></pre>
+
+<h2>Securite</h2>
+<ul>
+    <li>Les requetes SQL generees sont validees pour prevenir les injections</li>
+    <li>L'acces aux tables est restreint au schema autorise</li>
+    <li>Les cles API sont stockees localement</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% set current_section = 'user-guides-admin' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Guide Administrateur</h1>
+
+<p>L'administrateur a un acces complet a toutes les fonctionnalites de HrFlow.</p>
+
+<h2>Tableau de bord administrateur</h2>
+<p>Le tableau de bord affiche :</p>
+<ul>
+    <li>Nombre total d'utilisateurs et d'employes</li>
+    <li>Statistiques des conges en cours</li>
+    <li>Formations actives</li>
+    <li>Recrutements recents</li>
+    <li>Graphiques et indicateurs de performance</li>
+</ul>
+
+<h2>Gestion des utilisateurs</h2>
+
+<h3>Ajouter un utilisateur RH</h3>
+<ol>
+    <li>Accedez a <strong>Gestion &gt; Utilisateurs</strong></li>
+    <li>Cliquez sur <strong>Ajouter un utilisateur</strong></li>
+    <li>Remplissez les informations (nom, email, mot de passe)</li>
+    <li>Selectionnez le role <strong>RH</strong></li>
+    <li>Validez la creation</li>
+</ol>
+
+<h3>Modifier / Supprimer un utilisateur</h3>
+<ol>
+    <li>Trouvez l'utilisateur dans la liste</li>
+    <li>Utilisez les boutons d'action pour modifier ou supprimer</li>
+    <li>Confirmez l'operation</li>
+</ol>
+
+<h2>Gestion des employes</h2>
+
+<h3>Ajouter un employe</h3>
+<ol>
+    <li>Accedez a <strong>Gestion &gt; Employes</strong></li>
+    <li>Cliquez sur <strong>Ajouter un employe</strong></li>
+    <li>Remplissez les informations personnelles et professionnelles</li>
+    <li>Associez l'employe a un gestionnaire RH</li>
+    <li>Validez</li>
+</ol>
+
+<blockquote><strong>Relation RH-Employe :</strong> Chaque employe est rattache a un gestionnaire RH qui valide ses conges, formations et autres demandes.</blockquote>
+
+<h2>Statistiques</h2>
+<p>La section Statistiques offre une vue analytique avec :</p>
+<ul>
+    <li>Repartition des employes par departement</li>
+    <li>Taux de conges par mois</li>
+    <li>Formations les plus suivies</li>
+    <li>Evolution des recrutements</li>
+</ul>
+{% endblock %}

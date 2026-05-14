@@ -43,6 +43,8 @@ security:
         - { path: ^/abonnements, roles: PUBLIC_ACCESS }
         - { path: ^/a-propos, roles: PUBLIC_ACCESS }
         - { path: ^/contact, roles: PUBLIC_ACCESS }
+        - { path: ^/telechargement, roles: PUBLIC_ACCESS }
+        - { path: ^/docs, roles: PUBLIC_ACCESS }
         - { path: ^/candidat, roles: ROLE_CANDIDATE }
         - { path: ^/welcome/admin, roles: ROLE_ADMIN }
         - { path: ^/welcome/rh, roles: ROLE_RH }

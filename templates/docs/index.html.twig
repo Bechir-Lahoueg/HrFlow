@@ -1,0 +1,49 @@
+{% set current_section = 'index' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">HrFlow - Plateforme de gestion RH</h1>
+
+<p>Bienvenue sur la documentation officielle de <strong>HrFlow</strong>, la plateforme RH moderne qui centralise le recrutement intelligent, la gestion des collaborateurs et l'analytique RH.</p>
+
+<h2>A propos</h2>
+<p>HrFlow est une application desktop JavaFX multi-modules developpee par une equipe d'ingenieurs ESPRIT. Elle offre une solution complete de gestion des ressources humaines avec des fonctionnalites couvrant le recrutement, les conges, les formations, la paie, les relations employes et les rapports assistes par IA.</p>
+
+<h2>Roles utilisateur</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Role</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Administrateur</strong></td>
+            <td>Gestion des utilisateurs, configuration systeme, supervision globale</td>
+        </tr>
+        <tr>
+            <td><strong>RH / Manager</strong></td>
+            <td>Gestion des employes, recrutement, formations, paie, projets</td>
+        </tr>
+        <tr>
+            <td><strong>Employe</strong></td>
+            <td>Demandes de conges, inscriptions formations, candidatures, messagerie</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Fonctionnalites principales</h2>
+<ul>
+    <li><strong>Gestion des utilisateurs</strong> - Authentification multi-roles, profils, droits d'acces</li>
+    <li><strong>Recrutement</strong> - Offres d'emploi, candidatures, entretiens, rapports IA</li>
+    <li><strong>Formations</strong> - Catalogue, sessions, inscriptions, certificats</li>
+    <li><strong>Conges</strong> - Demandes, approbations, soldes, conflits</li>
+    <li><strong>Paie</strong> - Fiches de paie, primes, deductions, calcul fiscal</li>
+    <li><strong>Relations employes</strong> - Projets, taches, feedback, requetes internes</li>
+    <li><strong>Rapports IA</strong> - Generation de rapports en langage naturel, analyses predictives</li>
+</ul>
+
+<h2>Pour commencer</h2>
+<p>Consultez la section <a href="{{ path('app_docs', {path: 'installation/linux'}) }}" class="text-indigo-600 hover:text-indigo-800 underline">Installation</a> pour installer HrFlow sur votre systeme, ou rendez-vous sur <a href="{{ path('app_docs', {path: 'getting-started/login'}) }}" class="text-indigo-600 hover:text-indigo-800 underline">Premiers pas</a> si l'application est deja installee.</p>
+{% endblock %}

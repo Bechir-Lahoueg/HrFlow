@@ -1,0 +1,40 @@
+{% set current_section = 'getting-started-first-steps' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Premieres etapes</h1>
+
+<h2>Apres la premiere connexion</h2>
+
+<h3>1. En tant qu'Administrateur</h3>
+<ol>
+    <li><strong>Creer des comptes RH</strong> : Allez dans Gestion &gt; Utilisateurs pour ajouter des gestionnaires RH</li>
+    <li><strong>Configurer le systeme</strong> : Accedez aux parametres pour configurer les options globales</li>
+    <li><strong>Superviser</strong> : Consultez les statistiques et les rapports d'activite</li>
+</ol>
+
+<h3>2. En tant que RH / Manager</h3>
+<ol>
+    <li><strong>Ajouter des employes</strong> : Dans la section Employes, creez les profils de vos collaborateurs</li>
+    <li><strong>Publier des offres</strong> : Accedez au module Recrutement pour diffuser vos offres d'emploi</li>
+    <li><strong>Planifier des formations</strong> : Creez un catalogue de formations et programmez des sessions</li>
+    <li><strong>Gerer la paie</strong> : Configurez les fiches de paie, primes et deductions</li>
+</ol>
+
+<h3>3. En tant qu'Employe</h3>
+<ol>
+    <li><strong>Completer votre profil</strong> : Accedez a vos parametres pour mettre a jour vos informations</li>
+    <li><strong>Soumettre un conge</strong> : Dans l'onglet Conges, faites une demande d'absence</li>
+    <li><strong>Postuler a un emploi interne</strong> : Consultez les offres disponibles dans le module Recrutement</li>
+    <li><strong>S'inscrire a une formation</strong> : Parcourez le catalogue et inscrivez-vous</li>
+</ol>
+
+<h2>Navigation</h2>
+<p>L'interface est organisee en sections laterales :</p>
+<ul>
+    <li><strong>Tableau de bord</strong> : Vue d'ensemble avec indicateurs cles</li>
+    <li><strong>Modules fonctionnels</strong> : Acces a chaque domaine (Conges, Formations, Recrutement, etc.)</li>
+    <li><strong>Notifications</strong> : Alertes et mises a jour</li>
+    <li><strong>Parametres</strong> : Configuration du profil et des preferences</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% set current_section = 'installation-macos' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Installation sur macOS</h1>
+
+<h2>Prerequis</h2>
+<ul>
+    <li>macOS 13+ (Ventura) ou superieur</li>
+    <li>Processeur Intel ou Apple Silicon (M1/M2/M3)</li>
+    <li>4 Go RAM minimum</li>
+    <li>500 Mo espace disque</li>
+</ul>
+
+<h2>Installation</h2>
+
+<h3>Option 1 : Package DMG</h3>
+<ol>
+    <li>Rendez-vous sur la <a href="{{ path('app_download') }}" class="text-indigo-600 hover:text-indigo-800 underline">page de telechargement</a></li>
+    <li>Telechargez <code>HrFlow-1.0.0.dmg</code></li>
+    <li>Ouvrez le fichier DMG et glissez HrFlow dans le dossier Applications</li>
+</ol>
+
+<h3>Option 2 : Execution via Maven</h3>
+<pre><code>git clone https://github.com/Bechir-Lahoueg/Esprit-PIDEV-3A4-HrFlow.git
+cd Esprit-PIDEV-3A4-HrFlow/JAVA
+mvn clean compile
+cd AppUi
+mvn javafx:run</code></pre>
+
+<h3>Option 3 : Homebrew (a venir)</h3>
+<pre><code>brew install hrflow/tap/hrflow</code></pre>
+
+<h2>Configuration</h2>
+<p>HrFlow fonctionne avec une base de donnees MySQL distante. Assurez-vous d'avoir une connexion Internet active au premier lancement.</p>
+{% endblock %}

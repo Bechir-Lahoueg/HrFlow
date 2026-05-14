@@ -1,0 +1,234 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Telechargement | HrFlow{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .copy-btn { transition: all .2s ease; }
+        .copy-btn.copied { background: #059669; color: white; }
+        .os-tab { cursor: pointer; transition: all .2s ease; }
+        .os-tab.active { background: #022E69; color: white; border-color: #022E69; }
+        .os-panel { display: none; }
+        .os-panel.active { display: block; }
+        .download-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(2,46,105,0.12); }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    function switchOsTab(el) {
+        document.querySelectorAll('.os-tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.os-panel').forEach(function(p) { p.classList.remove('active'); });
+        el.classList.add('active');
+        var panel = document.getElementById(el.dataset.os);
+        if (panel) panel.classList.add('active');
+    }
+    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var code = this.parentElement.querySelector('code');
+            if (!code) return;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = 'Copie !';
+                btn.classList.add('copied');
+                setTimeout(function() {
+                    btn.textContent = 'Copier';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+    });
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f8fafc] font-[Manrope,sans-serif] antialiased">
+    {% include 'Components/navbar.html.twig' %}
+
+    <section class="relative pt-32 pb-20 lg:pt-36 lg:pb-28 overflow-hidden">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute top-16 left-[8%] w-72 h-72 bg-emerald-200/30 rounded-full blur-3xl"></div>
+            <div class="absolute top-28 right-[12%] w-80 h-80 bg-cyan-200/25 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[34rem] h-[34rem] bg-sky-100/40 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-sm font-bold text-slate-700 mb-6">
+                    v{{ version }}
+                </span>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-5">
+                    Telechargez
+                    <span class="text-slate-900">HrFlow</span>
+                </h1>
+                <p class="text-lg text-slate-500 leading-relaxed max-w-2xl mx-auto">
+                    Installez HrFlow sur votre systeme en quelques clics. Disponible pour Linux et Windows.
+                </p>
+            </div>
+
+            {# OS Tabs #}
+            <div class="flex justify-center gap-3 mb-16">
+                <button class="os-tab active px-6 py-3 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-900" data-os="linux" onclick="switchOsTab(this)">
+                    <span class="flex items-center gap-2">
+                    <img src="{{ asset('icons8-linux-48.png') }}" alt="Linux" class="w-10 h-10">
+                    Linux
+                    </span>
+                </button>
+                <button class="os-tab px-6 py-3 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-900" data-os="windows" onclick="switchOsTab(this)">
+                    <span class="flex items-center gap-2">
+                        <img src="{{ asset('windows.png') }}" alt="" class="w-5 h-5 pointer-events-none">
+                        Windows
+                    </span>
+                </button>
+            </div>
+
+            {# Linux Panel #}
+            <div id="linux" class="os-panel active max-w-4xl mx-auto">
+                <div class="flex items-center justify-center gap-3 mb-8">
+                    <span class="text-lg font-bold text-slate-700">Selectionnez votre distribution</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <a href="{{ deb_url }}" class="download-card bg-white border border-slate-200 rounded-2xl p-8 shadow-sm transition-all block group">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                                <img src="{{ asset('ubuntu.png') }}" alt="Ubuntu" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Ubuntu / Debian</h3>
+                                <p class="text-sm text-slate-500">hrflow_{{ version }}_amd64.deb</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-semibold text-[#145EB7] group-hover:gap-3 transition-all">
+                            Telecharger .deb
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </div>
+                    </a>
+                    <a href="{{ rpm_url }}" class="download-card bg-white border border-slate-200 rounded-2xl p-8 shadow-sm transition-all block group">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
+                                <img src="{{ asset('fedora.png') }}" alt="Fedora" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Fedora / RHEL</h3>
+                                <p class="text-sm text-slate-500">hrflow-{{ version }}-1.x86_64.rpm</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-semibold text-[#145EB7] group-hover:gap-3 transition-all">
+                            Telecharger .rpm
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </div>
+                    </a>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Installer via le depot officiel</h3>
+
+                {# APT #}
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-slate-900">Ubuntu / Debian (APT)</h4>
+                        <button class="copy-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">Copier</button>
+                    </div>
+                    <div class="bg-[#0F172A] rounded-xl p-4 overflow-x-auto">
+                        <code class="text-sm text-green-400 leading-relaxed block whitespace-pre-wrap font-mono">curl -fsSL {{ gpg_url }} | sudo gpg --dearmor -o /usr/share/keyrings/hrflow.gpg
+echo "deb [signed-by=/usr/share/keyrings/hrflow.gpg] {{ repo_url }} stable main" | sudo tee /etc/apt/sources.list.d/hrflow.list
+sudo apt update && sudo apt install hrflow</code>
+                    </div>
+                </div>
+
+                {# DNF #}
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-slate-900">Fedora / RHEL (DNF)</h4>
+                        <button class="copy-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">Copier</button>
+                    </div>
+                    <div class="bg-[#0F172A] rounded-xl p-4 overflow-x-auto">
+                        <code class="text-sm text-green-400 leading-relaxed block whitespace-pre-wrap font-mono">sudo dnf5 config-manager addrepo --from-repofile="{{ rpm_repo_url }}"
+sudo dnf install hrflow</code>
+                    </div>
+                </div>
+            </div>
+
+            {# Windows Panel #}
+            <div id="windows" class="os-panel max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="download-card bg-white border border-slate-200 rounded-2xl p-8 shadow-sm opacity-60">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center">
+                                <img src="{{ asset('windows.png') }}" alt="Windows" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Installateur Windows</h3>
+                                <p class="text-sm text-slate-500">HrFlow-{{ version }}-Setup.exe</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-400">Bientot disponible</p>
+                    </div>
+                    <div class="download-card bg-white border border-slate-200 rounded-2xl p-8 shadow-sm opacity-60">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
+                                <img src="{{ asset('windows.png') }}" alt="Windows" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Package MSI</h3>
+                                <p class="text-sm text-slate-500">HrFlow-{{ version }}.msi</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-400">Bientot disponible</p>
+                    </div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+                    <p class="text-sm text-amber-800">
+                        <strong>Note :</strong> L'installateur Windows necessite Java 17+ installe au prealable.
+                        Telechargez-le depuis <a href="https://adoptium.net" class="underline font-semibold" target="_blank">Adoptium</a>.
+                    </p>
+                </div>
+            </div>
+
+            {# System requirements #}
+            <div class="max-w-4xl mx-auto mt-12">
+                <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Configuration requise</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-700 mb-2">Systeme</h4>
+                            <ul class="space-y-1 text-sm text-slate-500">
+                                <li>Ubuntu 20.04+ / Fedora 38+</li>
+                                <li>Windows 10+</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-700 mb-2">Materiel</h4>
+                            <ul class="space-y-1 text-sm text-slate-500">
+                                <li>4 Go RAM minimum</li>
+                                <li>500 Mo espace disque</li>
+                                <li>Processeur x86_64</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-700 mb-2">Logiciel</h4>
+                            <ul class="space-y-1 text-sm text-slate-500">
+                                <li>Java 17 (JRE)</li>
+                                <li>Connexion Internet</li>
+                                <li>Base MySQL 8.0+</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Documentation links #}
+            <div class="max-w-4xl mx-auto mt-8 text-center">
+                <p class="text-sm text-slate-500">
+                    Consultez le <a href="https://docs.hrflow.tn" target="_blank" class="font-semibold text-[#145EB7] underline">guide d'utilisation</a>
+                    pour les instructions d'installation detaillees et la documentation complete.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    {% include 'Components/footer.html.twig' %}
+</div>
+{% endblock %}

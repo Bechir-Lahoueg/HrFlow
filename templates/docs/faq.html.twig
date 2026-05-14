@@ -1,0 +1,39 @@
+{% set current_section = 'faq' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">FAQ - Questions frequentes</h1>
+
+<h2>Installation</h2>
+
+<h3>Quels sont les prerequis pour installer HrFlow ?</h3>
+<p>Java 17+, 4 Go RAM, 500 Mo espace disque, MySQL 8.0+.</p>
+
+<h3>Comment installer HrFlow sur Linux ?</h3>
+<p>Utilisez notre depot APT : <code>sudo apt install hrflow</code>. Voir le <a href="{{ path('app_docs', {path: 'installation/linux'}) }}" class="text-indigo-600 hover:text-indigo-800 underline">guide d'installation</a>.</p>
+
+<h3>HrFlow fonctionne-t-il sur macOS ?</h3>
+<p>Oui, compatible macOS 13+ (Intel et Apple Silicon).</p>
+
+<h2>Utilisation</h2>
+
+<h3>Comment reinitialiser mon mot de passe ?</h3>
+<p>Contactez votre administrateur RH pour une reinitialisation de mot de passe.</p>
+
+<h3>Puis-je utiliser HrFlow sans connexion Internet ?</h3>
+<p>Une connexion Internet est requise pour la base de donnees et les fonctionnalites IA.</p>
+
+<h3>Comment exporter mes donnees ?</h3>
+<p>La plupart des modules proposent l'export en PDF et Excel.</p>
+
+<h2>Problemes techniques</h2>
+
+<h3>L'application ne demarre pas</h3>
+<p>Verifiez que Java 17+ est installe : <code>java -version</code>. Consultez la section <a href="{{ path('app_docs', {path: 'troubleshooting'}) }}" class="text-indigo-600 hover:text-indigo-800 underline">Depannage</a>.</p>
+
+<h3>Erreur de connexion a la base de donnees</h3>
+<p>Verifiez votre connexion Internet et les parametres dans <code>application.properties</code>.</p>
+
+<h3>Les rapports IA ne fonctionnent pas</h3>
+<p>Verifiez que la cle API Groq/Gemini est correctement configuree dans <code>config.properties</code>.</p>
+{% endblock %}

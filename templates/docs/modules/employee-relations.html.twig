@@ -1,0 +1,65 @@
+{% set current_section = 'modules-employee-relations' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Relations Employes</h1>
+
+<p>Le module Relations Employes gere les projets, les taches, les feedbacks, les requetes internes et les notifications.</p>
+
+<h2>Entites</h2>
+<ul>
+    <li><strong>Project</strong> : Projet (nom, statut, priorite, budget, taux d'avancement)</li>
+    <li><strong>ProjectTask</strong> : Tache (titre, statut, priorite, heures, echeance)</li>
+    <li><strong>ProjectMilestone</strong> : Jalon (nom, date cible, taux d'avancement)</li>
+    <li><strong>ProjectCollaborator</strong> : Collaborateur (role, heures assignees)</li>
+    <li><strong>Feedback</strong> : Avis (type, note 1-5, anonyme)</li>
+    <li><strong>Request</strong> : Requete interne (titre, statut, priorite)</li>
+    <li><strong>Notification</strong> : Notification systeme</li>
+</ul>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Projets</h3>
+<ul>
+    <li>Creation et gestion de projets</li>
+    <li>Assignation de collaborateurs</li>
+    <li>Suivi du budget et des heures</li>
+    <li>Taux d'avancement automatique</li>
+</ul>
+
+<h3>Taches</h3>
+<ul>
+    <li>Creation avec priorite et echeance</li>
+    <li>Assignation aux employes</li>
+    <li>Vue Kanban</li>
+    <li>Rappels automatiques par email</li>
+</ul>
+
+<h3>Jalons</h3>
+<ul>
+    <li>Definition d'etapes cles</li>
+    <li>Suivi du taux de completion</li>
+    <li>Alertes de deadline</li>
+</ul>
+
+<h3>Feedback</h3>
+<ul>
+    <li>Feedback anonyme ou nominal</li>
+    <li>Evaluation par note (1-5)</li>
+    <li>Types de feedback configurables</li>
+</ul>
+
+<h3>Requetes internes</h3>
+<ul>
+    <li>Soumission de requetes</li>
+    <li>Types de requetes configurables</li>
+    <li>Workflow d'approbation</li>
+</ul>
+
+<h3>Notifications</h3>
+<ul>
+    <li>Notifications systeme</li>
+    <li>Rappels par email</li>
+    <li>Alertes de taches</li>
+</ul>
+{% endblock %}

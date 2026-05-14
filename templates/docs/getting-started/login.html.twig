@@ -1,0 +1,48 @@
+{% set current_section = 'getting-started-login' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Connexion a HrFlow</h1>
+
+<h2>Demarrage de l'application</h2>
+<p>Lancez HrFlow depuis :</p>
+<ul>
+    <li><strong>Linux</strong> : Menu Applications &gt; HrFlow ou commande <code>hrflow</code></li>
+    <li><strong>Windows</strong> : Menu Demarrer &gt; HrFlow</li>
+    <li><strong>macOS</strong> : Dossier Applications &gt; HrFlow</li>
+    <li><strong>Developpement</strong> : <code>mvn javafx:run</code> depuis le repertoire <code>AppUi</code></li>
+</ul>
+
+<h2>Ecran de connexion</h2>
+<p>L'ecran de connexion presente deux onglets :</p>
+<ul>
+    <li><strong>Administrateur / RH</strong> : connexion pour les gestionnaires</li>
+    <li><strong>Employe</strong> : connexion pour les employes</li>
+</ul>
+
+<h2>Identifiants par defaut</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Role</th>
+            <th>Nom d'utilisateur</th>
+            <th>Mot de passe</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>Administrateur</td><td>admin</td><td>admin123</td></tr>
+        <tr><td>RH / Manager</td><td>hr</td><td>hr123</td></tr>
+        <tr><td>Employe</td><td>employee</td><td>emp123</td></tr>
+    </tbody>
+</table>
+
+<blockquote><strong>Securite :</strong> Changez les mots de passe par defaut apres votre premiere connexion.</blockquote>
+
+<h2>Apres la connexion</h2>
+<p>Le tableau de bord s'affiche selon votre role :</p>
+<ul>
+    <li>L'<strong>Administrateur</strong> accede a la gestion des utilisateurs et aux statistiques globales</li>
+    <li>Le <strong>RH</strong> accede a la gestion des employes, recrutement, formations, paie et projets</li>
+    <li>L'<strong>Employe</strong> accede a ses conges, formations, candidatures et feedback</li>
+</ul>
+{% endblock %}

@@ -42,4 +42,17 @@ final class HomeController extends AbstractController
     {
         return $this->render('Home/contact.html.twig');
     }
+
+    #[Route('/telechargement', name: 'app_download')]
+    public function download(): Response
+    {
+        return $this->render('Home/download.html.twig', [
+            'deb_url' => 'https://hrflow-0pxj.onrender.com/deb/pool/main/hrflow_0.0.1_amd64.deb',
+            'rpm_url' => 'https://hrflow-0pxj.onrender.com/rpm/Packages/hrflow-100.1.x86_64.rpm',
+            'gpg_url' => 'https://hrflow-0pxj.onrender.com/hrflow.gpg',
+            'repo_url' => 'https://hrflow-0pxj.onrender.com/deb',
+            'rpm_repo_url' => 'https://hrflow-0pxj.onrender.com',
+            'version' => '1.0.0',
+        ]);
+    }
 }

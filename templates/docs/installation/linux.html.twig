@@ -1,0 +1,53 @@
+{% set current_section = 'installation-linux' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Installation sur Linux</h1>
+
+<h2>Prerequis</h2>
+<ul>
+    <li>Ubuntu 20.04+ / Debian 11+ / Fedora 38+ ou toute distribution compatible</li>
+    <li>4 Go RAM minimum</li>
+    <li>500 Mo espace disque</li>
+    <li>Connexion Internet</li>
+</ul>
+
+<h2>Option 1 : Installation via le depot officiel (recommande)</h2>
+
+<h3>Ubuntu / Debian (APT)</h3>
+<p>Ajoutez le depot HrFlow et installez :</p>
+<pre><code>curl -fsSL https://downloads.hrflow.tn/hrflow.gpg | sudo gpg --dearmor -o /usr/share/keyrings/hrflow.gpg
+echo "deb [signed-by=/usr/share/keyrings/hrflow.gpg] https://downloads.hrflow.tn/deb stable main" | sudo tee /etc/apt/sources.list.d/hrflow.list
+sudo apt update && sudo apt install hrflow</code></pre>
+
+<h3>Fedora / RHEL (DNF)</h3>
+<pre><code>sudo dnf5 config-manager addrepo --from-repofile="https://downloads.hrflow.tn/rpm/hrflow.repo"
+sudo dnf install hrflow</code></pre>
+
+<h2>Option 2 : Installation manuelle</h2>
+<ol>
+    <li>Telechargez le paquet depuis la <a href="{{ path('app_download') }}" class="text-indigo-600 hover:text-indigo-800 underline">page de telechargement</a></li>
+    <li>Installez-le :</li>
+</ol>
+<pre><code># Debian/Ubuntu
+sudo dpkg -i hrflow_1.0.0_amd64.deb
+sudo apt install -f  # installe les dependances manquantes
+
+# Fedora/RHEL
+sudo rpm -ivh hrflow-1.0.0-1.x86_64.rpm</code></pre>
+
+<h2>Option 3 : Execution via JAR</h2>
+<p>Si vous avez Java 17+ installe :</p>
+<pre><code># Cloner et construire
+git clone https://github.com/Bechir-Lahoueg/Esprit-PIDEV-3A4-HrFlow.git
+cd Esprit-PIDEV-3A4-HrFlow/JAVA
+mvn clean compile
+
+# Lancer
+cd AppUi
+mvn javafx:run</code></pre>
+
+<h2>Verification</h2>
+<p>Apres installation, lancez HrFlow depuis le menu Applications ou via la commande :</p>
+<pre><code>hrflow</code></pre>
+{% endblock %}
