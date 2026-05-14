@@ -19,9 +19,14 @@ final class AdminThemeExtension extends AbstractExtension implements GlobalsInte
 
     public function getGlobals(): array
     {
-        $user = $this->security->getUser();
         $themes = $this->adminThemeService->getAll();
-        $currentTheme = $this->adminThemeService->getTheme($user);
+
+        try {
+            $user = $this->security->getUser();
+            $currentTheme = $this->adminThemeService->getTheme($user);
+        } catch (\Throwable) {
+            $currentTheme = $themes[AdminThemeService::DEFAULT_THEME];
+        }
 
         return [
             'admin_theme'     => $currentTheme,

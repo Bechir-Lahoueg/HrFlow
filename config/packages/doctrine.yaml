@@ -6,6 +6,11 @@ doctrine:
         # either here or in the DATABASE_URL env var (see .env file)
         #server_version: '16'
 
+        # PDO::MYSQL_ATTR_CONNECT_TIMEOUT = 1001
+        # Fail fast (5 s) when MySQL is unreachable instead of hanging 30 s
+        options:
+            1001: 5
+
         profiling_collect_backtrace: '%kernel.debug%'
     orm:
         validate_xml_mapping: true

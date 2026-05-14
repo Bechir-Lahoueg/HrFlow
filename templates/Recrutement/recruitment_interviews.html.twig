@@ -42,45 +42,45 @@
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
             {# ══════════ Hero ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-formation-950 via-formation-900 to-formation-800 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-formation-400/15 blur-3xl"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-formation-300/15 blur-3xl"></div>
-                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
+            <section class="relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up" style="background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d);">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl mesh-blob" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl mesh-blob-alt" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
+                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-center">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <a href="{{ path('app_rh_interviews_calendar') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-formation-500/20 text-formation-300 text-xs font-bold hover:bg-formation-500/30 transition-all border border-formation-400/20 shadow-lg">
+                            <a href="{{ path('app_rh_interviews_calendar') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all" style="background: rgba(63,169,245,0.18); color: #74c4f8; border: 1px solid rgba(63,169,245,0.25);" onmouseover="this.style.background='rgba(63,169,245,0.28)'" onmouseout="this.style.background='rgba(63,169,245,0.18)'">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
                                 Voir le calendrier
                             </a>
-                            <div class="w-2 h-2 rounded-full bg-formation-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-formation-200 uppercase tracking-wider">Interview Tracker</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-[0.15em]" style="color: #3FA9F5;">Interview Tracker</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des entretiens</h2>
                         {% if currentApplication is defined and currentApplication %}
-                            <p class="mt-2 text-formation-300 text-[13px] font-semibold flex items-center gap-2">
+                            <p class="mt-2 text-[13px] font-semibold flex items-center gap-2" style="color: #74c4f8;">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-                                Candidat: {{ currentApplication.candidateName }}
+                                Candidat : {{ currentApplication.candidateName }}
                             </p>
                         {% else %}
-                            <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Planifiez et évaluez vos entretiens. Collaborez avec vos interviewers et prenez les meilleures décisions de recrutement.</p>
+                            <p class="mt-3 text-[15px] max-w-xl leading-relaxed" style="color: rgba(203,213,225,0.9);">Planifiez et évaluez vos entretiens. Collaborez avec vos interviewers et prenez les meilleures décisions de recrutement.</p>
                         {% endif %}
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">Total entretiens</p>
-                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.totalInterviews|default(0) }}</p>
-                            <p class="text-xs text-formation-100/60 mt-1">planifiés</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4 transition-colors group" style="background: rgba(255,255,255,0.08);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <p class="text-[9px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63,169,245,0.7);">Total entretiens</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">{{ stats.totalInterviews|default(0) }}</p>
+                            <p class="text-xs mt-1" style="color: rgba(203,213,225,0.6);">planifiés</p>
                         </div>
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">Score moyen</p>
-                            <p class="mt-1 text-3xl font-extrabold font-mono-num">
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4 transition-colors group" style="background: rgba(255,255,255,0.08);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <p class="text-[9px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63,169,245,0.7);">Score moyen</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">
                                 {% if stats.averageScore %}
                                     {{ stats.averageScore|round(1) }}/100
                                 {% else %}
-                                    —
+                                    &mdash;
                                 {% endif %}
                             </p>
-                            <p class="text-xs text-formation-100/60 mt-1">sur les entretiens notés</p>
+                            <p class="text-xs mt-1" style="color: rgba(203,213,225,0.6);">sur les entretiens notés</p>
                         </div>
                     </div>
                 </div>
