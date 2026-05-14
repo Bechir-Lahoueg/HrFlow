@@ -1,0 +1,110 @@
+{% set current_section = 'user-guides-employee' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Guide Employe</h1>
+
+<p>L'employe peut gerer ses conges, ses formations, ses candidatures et ses informations personnelles.</p>
+
+<h2>Tableau de bord employe</h2>
+<p>Le tableau de bord affiche :</p>
+<ul>
+    <li>Resume de vos conges (solde restant)</li>
+    <li>Formations a venir</li>
+    <li>Notifications recentes</li>
+    <li>Taches de projets assignees</li>
+</ul>
+
+<h2>Gestion des conges</h2>
+
+<h3>Faire une demande de conge</h3>
+<ol>
+    <li>Accedez a <strong>Conges &gt; Nouvelle demande</strong></li>
+    <li>Selectionnez le type de conge (annuel, maladie, etc.)</li>
+    <li>Definissez les dates de debut et fin</li>
+    <li>Ajoutez un motif si necessaire</li>
+    <li>Soumettez la demande</li>
+</ol>
+
+<h3>Consulter vos demandes</h3>
+<ol>
+    <li>Accedez a <strong>Conges &gt; Mes demandes</strong></li>
+    <li>Visualisez le statut de chaque demande (En attente, Accepte, Refuse)</li>
+    <li>Consultez l'historique</li>
+</ol>
+
+<h3>Verifier votre solde</h3>
+<p>Le solde de conges disponible est affiche sur le tableau de bord et dans la section Conges.</p>
+
+<h2>Formations</h2>
+
+<h3>Parcourir le catalogue</h3>
+<ol>
+    <li>Accedez a <strong>Formations &gt; Catalogue</strong></li>
+    <li>Parcourez les formations disponibles</li>
+    <li>Filtrez par type, organisme ou statut</li>
+</ol>
+
+<h3>S'inscrire a une session</h3>
+<ol>
+    <li>Selectionnez une formation</li>
+    <li>Consultez les sessions disponibles</li>
+    <li>Cliquez sur <strong>S'inscrire</strong></li>
+    <li>Attendez la confirmation du RH</li>
+</ol>
+
+<h3>Consulter vos inscriptions</h3>
+<ol>
+    <li>Accedez a <strong>Formations &gt; Mes inscriptions</strong></li>
+    <li>Visualisez le statut de chaque inscription</li>
+    <li>Accedez aux certificats telechargeables</li>
+</ol>
+
+<h2>Recrutement</h2>
+
+<h3>Postuler a une offre</h3>
+<ol>
+    <li>Accedez a <strong>Recrutement &gt; Offres d'emploi</strong></li>
+    <li>Parcourez les postes disponibles</li>
+    <li>Cliquez sur une offre pour voir les details</li>
+    <li>Cliquez sur <strong>Postuler</strong></li>
+    <li>Telechargez votre CV et lettre de motivation</li>
+</ol>
+
+<h3>Suivre vos candidatures</h3>
+<ol>
+    <li>Accedez a <strong>Recrutement &gt; Mes candidatures</strong></li>
+    <li>Consultez le statut de chaque candidature</li>
+    <li>Voyez les entretiens planifies</li>
+</ol>
+
+<h2>Projets</h2>
+
+<h3>Voir mes taches</h3>
+<ol>
+    <li>Accedez a <strong>Projets &gt; Mes projets</strong></li>
+    <li>Consultez les taches qui vous sont assignees</li>
+    <li>Mettez a jour le statut de vos taches</li>
+</ol>
+
+<h3>Vue Kanban</h3>
+<p>La vue Kanban offre une interface visuelle pour gerer vos taches par statut.</p>
+
+<h2>Feedback</h2>
+
+<h3>Donner un feedback</h3>
+<ol>
+    <li>Accedez a <strong>Relations &gt; Feedback</strong></li>
+    <li>Selectionnez le type de feedback</li>
+    <li>Saisissez votre message</li>
+    <li>Vous pouvez choisir l'option anonyme</li>
+</ol>
+
+<h2>Parametres</h2>
+<ol>
+    <li>Accedez a <strong>Parametres</strong></li>
+    <li>Modifiez vos informations personnelles</li>
+    <li>Changez votre mot de passe</li>
+    <li>Configurez les preferences de notification</li>
+</ol>
+{% endblock %}

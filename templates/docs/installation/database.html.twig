@@ -1,0 +1,61 @@
+{% set current_section = 'installation-database' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Configuration de la base de donnees</h1>
+
+<p>HrFlow utilise <strong>MySQL 8.0+</strong> comme systeme de gestion de base de donnees. Par defaut, l'application se connecte a une instance cloud hebergee sur <strong>Aiven Cloud</strong>.</p>
+
+<h2>Schema de base de donnees</h2>
+<p>Le schema complet est disponible dans le fichier <code>JAVA/full_database_schema.sql</code>.</p>
+
+<h2>Tables principales</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Table</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td><code>users</code></td><td>Comptes utilisateurs (Admin, RH, Employe)</td></tr>
+        <tr><td><code>employees</code></td><td>Profils employes detailles</td></tr>
+        <tr><td><code>leave_requests</code></td><td>Demandes de conges</td></tr>
+        <tr><td><code>leave_balance</code></td><td>Soldes de conges</td></tr>
+        <tr><td><code>formation</code></td><td>Catalogue de formations</td></tr>
+        <tr><td><code>session_formation</code></td><td>Sessions de formation</td></tr>
+        <tr><td><code>participation_formation</code></td><td>Participations aux formations</td></tr>
+        <tr><td><code>job_offer</code></td><td>Offres d'emploi</td></tr>
+        <tr><td><code>applications</code></td><td>Candidatures</td></tr>
+        <tr><td><code>interviews</code></td><td>Entretiens</td></tr>
+        <tr><td><code>projects</code></td><td>Projets internes</td></tr>
+        <tr><td><code>project_tasks</code></td><td>Taches de projets</td></tr>
+        <tr><td><code>FichePaie</code></td><td>Fiches de paie</td></tr>
+        <tr><td><code>Prime</code></td><td>Primes</td></tr>
+        <tr><td><code>Deduction</code></td><td>Deductions</td></tr>
+        <tr><td><code>requests</code></td><td>Requetes internes</td></tr>
+        <tr><td><code>feedbacks</code></td><td>Feedback employes</td></tr>
+        <tr><td><code>notifications</code></td><td>Notifications systeme</td></tr>
+    </tbody>
+</table>
+
+<h2>Configuration</h2>
+<p>Les parametres de connexion se trouvent dans les fichiers <code>application.properties</code> de chaque module Maven :</p>
+<pre><code>db.url=jdbc:mysql://hrflow-hrflow.f.aivencloud.com:21031/defaultdb?ssl-mode=REQUIRED
+db.username=your_username
+db.password=your_password</code></pre>
+
+<h2>Installation locale</h2>
+<p>Pour utiliser une base de donnees locale :</p>
+<ol>
+    <li>Creez la base de donnees :</li>
+</ol>
+<pre><code>CREATE DATABASE hrflow;</code></pre>
+<ol start="2">
+    <li>Importez le schema :</li>
+</ol>
+<pre><code>mysql -u root -p hrflow &lt; JAVA/full_database_schema.sql</code></pre>
+<ol start="3">
+    <li>Modifiez les fichiers <code>application.properties</code> de chaque module pour pointer vers votre instance locale.</li>
+</ol>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% set current_section = 'modules-training' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Formations</h1>
+
+<p>Le module Formations permet de gerer le catalogue de formations, les sessions, les inscriptions et les certificats.</p>
+
+<h2>Entites</h2>
+<ul>
+    <li><strong>Formation</strong> : Cours (titre, type, duree, organisme)</li>
+    <li><strong>SessionFormation</strong> : Session (dates, lieu, mode, capacite, statut)</li>
+    <li><strong>ParticipationFormation</strong> : Inscription (utilisateur, statut, note, certificat)</li>
+    <li><strong>FeedbackFormation</strong> : Avis (note 1-5, commentaire)</li>
+</ul>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Gestion du catalogue</h3>
+<ul>
+    <li>Creation et modification des formations</li>
+    <li>Classification par type</li>
+    <li>Suivi par organisme formateur</li>
+</ul>
+
+<h3>Sessions</h3>
+<ul>
+    <li>Planification avec dates et lieu</li>
+    <li>Mode presentiel ou distanciel</li>
+    <li>Controle de la capacite maximale</li>
+    <li>Statut (Planifiee, En cours, Terminee)</li>
+</ul>
+
+<h3>Inscriptions</h3>
+<ul>
+    <li>Inscription des employes aux sessions</li>
+    <li>Validation par le RH</li>
+    <li>Suivi de presence</li>
+    <li>Generation automatique de certificats PDF</li>
+</ul>
+
+<h3>Feedbacks</h3>
+<ul>
+    <li>Evaluation des formations (1-5)</li>
+    <li>Commentaires et suggestions</li>
+    <li>Statistiques de satisfaction</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% set current_section = 'modules-recruitment' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Recrutement</h1>
+
+<p>Le module Recrutement gere l'ensemble du cycle de recrutement : publication d'offres, gestion des candidatures, planification des entretiens et rapports analytiques.</p>
+
+<h2>Entites</h2>
+<ul>
+    <li><strong>JobOffer</strong> : Offre d'emploi (titre, description, departement, salaire, statut)</li>
+    <li><strong>Application</strong> : Candidature (candidat, CV, statut, email)</li>
+    <li><strong>Interview</strong> : Entretien (date, type, score, resultat)</li>
+</ul>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Offres d'emploi</h3>
+<ul>
+    <li>Publication et gestion des offres</li>
+    <li>Filtrage par departement, statut, localisation</li>
+    <li>Export PDF des offres</li>
+</ul>
+
+<h3>Candidatures</h3>
+<ul>
+    <li>Depot de candidatures avec CV</li>
+    <li>Suivi du statut (Nouvelle, En cours, Acceptee, Refusee)</li>
+    <li>Evaluation des candidats</li>
+    <li>Export PDF en masse</li>
+</ul>
+
+<h3>Entretiens</h3>
+<ul>
+    <li>Planification avec calendrier</li>
+    <li>Notation et resultats</li>
+    <li>Rappels automatiques</li>
+</ul>
+
+<h3>Rapports IA</h3>
+<ul>
+    <li>Analyses predictives</li>
+    <li>Generation de rapports en langage naturel</li>
+    <li>Visualisations graphiques</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% set current_section = 'modules-leave' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Conges</h1>
+
+<p>Le module Conges gere les demandes d'absence, les soldes de conges, la detection de conflits et l'export de rapports.</p>
+
+<h2>Entites</h2>
+<ul>
+    <li><strong>LeaveRequest</strong> : Demande de conge (dates, type, statut)</li>
+    <li><strong>LeaveBalance</strong> : Solde de conges (jours disponibles, total accumule)</li>
+    <li><strong>LeaveNotification</strong> : Notification de conge</li>
+</ul>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Demandes de conge</h3>
+<ul>
+    <li>Soumission avec dates et type de conge</li>
+    <li>Types : Annuel, Maladie, Personnel, etc.</li>
+    <li>Statuts : En attente, Accepte, Refuse</li>
+    <li>Historique complet</li>
+</ul>
+
+<h3>Soldes de conges</h3>
+<ul>
+    <li>Suivi du solde disponible</li>
+    <li>Accumulation automatique</li>
+    <li>Verification avant validation</li>
+</ul>
+
+<h3>Workflow d'approbation</h3>
+<ul>
+    <li>Notification au responsable RH</li>
+    <li>Validation ou refus par le RH</li>
+    <li>Notification de decision a l'employe</li>
+</ul>
+
+<h3>Detection de conflits</h3>
+<ul>
+    <li>Verification des chevauchements</li>
+    <li>Detection des conges simultanes dans une equipe</li>
+</ul>
+
+<h3>Export</h3>
+<ul>
+    <li>Export Excel des conges</li>
+    <li>Export PDF des demandes</li>
+    <li>Statistiques par periode</li>
+</ul>
+{% endblock %}

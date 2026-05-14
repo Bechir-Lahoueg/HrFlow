@@ -16,6 +16,8 @@
                 <a href="{{ path('app_subscriptions') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Tarification</a>
             {% endif %}
             <a href="{{ path('app_contact') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Contact</a>
+            <a href="{{ path('app_download') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Telechargement</a>
+            <a href="{{ path('app_docs', {path: ''}) }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Documentation</a>
         </nav>
 
         {# Desktop CTA #}
@@ -63,6 +65,8 @@
                 <a href="{{ path('app_subscriptions') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Tarification</a>
             {% endif %}
             <a href="{{ path('app_contact') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Contact</a>
+            <a href="{{ path('app_download') }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Telechargement</a>
+            <a href="{{ path('app_docs', {path: ''}) }}" class="block px-4 py-3 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors" onclick="closeMobileMenu()">Documentation</a>
             <div class="pt-3 mt-3 border-t border-slate-200/60 space-y-2">
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     {% if is_granted('ROLE_CANDIDATE') %}
