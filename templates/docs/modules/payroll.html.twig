@@ -1,0 +1,59 @@
+{% set current_section = 'modules-payroll' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Module Paie et Remuneration</h1>
+
+<p>Le module Paie gere les fiches de paie, les primes, les deductions et le calcul fiscal.</p>
+
+<h2>Entites</h2>
+<ul>
+    <li><strong>FichePaie</strong> : Fiche de paie (mois, annee, salaire brut/net)</li>
+    <li><strong>Prime</strong> : Prime (type, montant, date)</li>
+    <li><strong>Deduction</strong> : Deduction (type, montant, date)</li>
+</ul>
+
+<h2>Fonctionnalites</h2>
+
+<h3>Fiches de paie</h3>
+<ul>
+    <li>Creation mensuelle par employe</li>
+    <li>Calcul automatique du salaire net</li>
+    <li>Historique complet</li>
+    <li>Export PDF via Apache PDFBox</li>
+</ul>
+
+<h3>Primes</h3>
+<ul>
+    <li>Types de primes configurables</li>
+    <li>Attribution par employe</li>
+    <li>Inclusion automatique dans la paie</li>
+</ul>
+
+<h3>Deductions</h3>
+<ul>
+    <li>Types de deductions (impots, cotisations, etc.)</li>
+    <li>Application au calcul du salaire net</li>
+    <li>Historique par employe</li>
+</ul>
+
+<h3>Calcul fiscal</h3>
+<ul>
+    <li>Regles fiscales tunisiennes</li>
+    <li>Calcul automatique des cotisations</li>
+    <li>Baremes progressifs</li>
+</ul>
+
+<h3>Conversion de devises</h3>
+<ul>
+    <li>Support multi-devises</li>
+    <li>Taux de conversion configurables</li>
+</ul>
+
+<h3>Statistiques</h3>
+<ul>
+    <li>Evolution des salaires</li>
+    <li>Repartition des primes</li>
+    <li>Comparaison periodique</li>
+</ul>
+{% endblock %}

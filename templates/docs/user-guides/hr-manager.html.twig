@@ -1,0 +1,138 @@
+{% set current_section = 'user-guides-hr-manager' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Guide RH / Manager</h1>
+
+<p>Le gestionnaire RH est l'utilisateur principal de HrFlow. Il gere les employes, les recrutements, les formations, la paie et les relations internes.</p>
+
+<h2>Tableau de bord RH</h2>
+<p>Le tableau de bord affiche les indicateurs cles :</p>
+<ul>
+    <li>Employes sous votre gestion</li>
+    <li>Demandes de conges en attente</li>
+    <li>Sessions de formation a venir</li>
+    <li>Projets en cours</li>
+    <li>Notifications recentes</li>
+</ul>
+
+<h2>Gestion des employes</h2>
+
+<h3>Ajouter un employe</h3>
+<ol>
+    <li>Accedez a <strong>Employes &gt; Ajouter</strong></li>
+    <li>Remplissez les champs obligatoires (nom, prenom, email, poste)</li>
+    <li>Definissez le service et le type de contrat</li>
+    <li>Validez pour creer le compte employe</li>
+</ol>
+
+<h3>Consulter la liste</h3>
+<p>La liste des employes affiche pour chaque collaborateur :</p>
+<ul>
+    <li>Nom et prenom</li>
+    <li>Adresse email</li>
+    <li>Poste et service</li>
+    <li>Statut (actif/inactif)</li>
+    <li>Actions rapides (modifier, supprimer)</li>
+</ul>
+
+<h2>Recrutement</h2>
+
+<h3>Creer une offre d'emploi</h3>
+<ol>
+    <li>Accedez a <strong>Recrutement &gt; Offres d'emploi</strong></li>
+    <li>Cliquez sur <strong>Nouvelle offre</strong></li>
+    <li>Remplissez le titre, la description, le departement et la localisation</li>
+    <li>Definissez la fourchette salariale</li>
+    <li>Publiez l'offre</li>
+</ol>
+
+<h3>Gerer les candidatures</h3>
+<ol>
+    <li>Consultez les candidatures recues depuis <strong>Recrutement &gt; Candidatures</strong></li>
+    <li>Filtrez par statut (Nouvelle, En cours, Acceptee, Refusee)</li>
+    <li>Consultez les CV et lettres de motivation</li>
+    <li>Planifiez des entretiens</li>
+</ol>
+
+<h3>Planifier un entretien</h3>
+<ol>
+    <li>Depuis une candidature, cliquez sur <strong>Planifier un entretien</strong></li>
+    <li>Selectionnez la date, l'heure et le type d'entretien</li>
+    <li>Ajoutez un interviewer</li>
+    <li>Enregistrez</li>
+</ol>
+
+<h2>Formations</h2>
+
+<h3>Creer une formation</h3>
+<ol>
+    <li>Accedez a <strong>Formations &gt; Catalogue</strong></li>
+    <li>Cliquez sur <strong>Ajouter une formation</strong></li>
+    <li>Remplissez le titre, le type, la duree et l'organisme</li>
+    <li>Validez</li>
+</ol>
+
+<h3>Planifier une session</h3>
+<ol>
+    <li>Depuis une formation, cliquez sur <strong>Ajouter une session</strong></li>
+    <li>Definissez les dates, le lieu, le mode (presentiel/distanciel)</li>
+    <li>Fixez la capacite maximale</li>
+    <li>Publiez la session</li>
+</ol>
+
+<h3>Gerer les inscriptions</h3>
+<ol>
+    <li>Consultez les participants a une session</li>
+    <li>Validez ou refusez les inscriptions</li>
+    <li>Enregistrez la presence</li>
+</ol>
+
+<h2>Paie et remuneration</h2>
+
+<h3>Creer une fiche de paie</h3>
+<ol>
+    <li>Accedez a <strong>Paie &gt; Fiches de paie</strong></li>
+    <li>Selectionnez l'employe, le mois et l'annee</li>
+    <li>Remplissez le salaire brut</li>
+    <li>Ajoutez les primes et deductions</li>
+    <li>Le salaire net est calcule automatiquement</li>
+</ol>
+
+<h3>Gerer les primes</h3>
+<ol>
+    <li>Accedez a <strong>Paie &gt; Primes</strong></li>
+    <li>Ajoutez des primes (type, montant, date)</li>
+    <li>Les primes sont automatiquement incluses dans les fiches de paie</li>
+</ol>
+
+<h3>Gerer les deductions</h3>
+<ol>
+    <li>Accedez a <strong>Paie &gt; Deductions</strong></li>
+    <li>Ajoutez des deductions (type, montant, date)</li>
+    <li>Les deductions sont appliquees au calcul du salaire net</li>
+</ol>
+
+<h2>Projets</h2>
+
+<h3>Creer un projet</h3>
+<ol>
+    <li>Accedez a <strong>Projets &gt; Nouveau projet</strong></li>
+    <li>Remplissez le nom, la description, les dates</li>
+    <li>Fixez le budget et les heures estimees</li>
+    <li>Ajoutez des collaborateurs</li>
+</ol>
+
+<h3>Gerer les taches</h3>
+<ol>
+    <li>Depuis un projet, accedez a l'onglet <strong>Taches</strong></li>
+    <li>Creez des taches avec assignation, priorite et echeance</li>
+    <li>Suivez l'avancement</li>
+</ol>
+
+<h3>Vue Kanban</h3>
+<p>La vue Kanban permet de visualiser les taches par statut (A faire, En cours, Termine).</p>
+
+<h2>Rapports IA</h2>
+<p>Le module <strong>Rapports IA</strong> permet de generer des analyses en langage naturel. Voir <a href="{{ path('app_docs', {path: 'modules/ai-reporting'}) }}" class="text-indigo-600 hover:text-indigo-800 underline">Rapports IA</a> pour plus de details.</p>
+{% endblock %}

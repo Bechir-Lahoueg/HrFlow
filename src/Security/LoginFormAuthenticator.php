@@ -97,7 +97,11 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
         $roles = $token->getRoleNames();
-        $this->removeTargetPath($request->getSession(), $firewallName);
+
+        $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
+        if ($targetPath) {
+            return new RedirectResponse($targetPath);
+        }
 
         // Send login alert email for RH and Admin only
         $user = $token->getUser();

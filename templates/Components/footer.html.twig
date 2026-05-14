@@ -84,10 +84,10 @@
             <div>
                 <h4 class="text-[11px] font-bold uppercase tracking-widest mb-5" style="color:#94A3B8;">Ressources</h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Documentation</a></li>
-                    <li><a href="#" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Centre d&#39;aide</a></li>
-                    <li><a href="#" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Référence API</a></li>
-                    <li><a href="#" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Communauté</a></li>
+                    <li><a href="{{ path('app_download') }}" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Telechargement</a></li>
+                    <li><a href="{{ path('app_docs', {path: ''}) }}" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Documentation</a></li>
+                    <li><a href="{{ path('app_docs', {path: 'getting-started/login'}) }}" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">Guide d&#39;utilisation</a></li>
+                    <li><a href="https://github.com/Bechir-Lahoueg/Esprit-PIDEV-3A4-HrFlow" target="_blank" class="text-[13px] transition-colors hover:text-sky-500" style="color:#64748B;">GitHub</a></li>
                 </ul>
             </div>
         </div>

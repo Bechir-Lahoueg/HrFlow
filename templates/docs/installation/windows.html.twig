@@ -1,0 +1,49 @@
+{% set current_section = 'installation-windows' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Installation sur Windows</h1>
+
+<h2>Prerequis</h2>
+<ul>
+    <li>Windows 10 ou 11 (64 bits)</li>
+    <li>4 Go RAM minimum</li>
+    <li>500 Mo espace disque</li>
+    <li><strong>Java 17 (JRE)</strong> ou superieur</li>
+</ul>
+
+<h2>Installation de Java</h2>
+<p>HrFlow necessite Java 17 ou superieur. Si vous ne l'avez pas deja installe :</p>
+<ol>
+    <li>Rendez-vous sur <a href="https://adoptium.net/" class="text-indigo-600 hover:text-indigo-800 underline" target="_blank">Adoptium.net</a></li>
+    <li>Telechargez la version <strong>17 (LTS)</strong> pour Windows x64</li>
+    <li>Lancez l'installateur MSI et suivez les instructions</li>
+    <li>Verifiez l'installation :</li>
+</ol>
+<pre><code>java -version</code></pre>
+
+<h2>Installation de HrFlow</h2>
+
+<h3>Option 1 : Installateur EXE (recommande)</h3>
+<ol>
+    <li>Rendez-vous sur la <a href="{{ path('app_download') }}" class="text-indigo-600 hover:text-indigo-800 underline">page de telechargement</a></li>
+    <li>Telechargez <code>HrFlow-Setup.exe</code></li>
+    <li>Lancez l'installateur et suivez les instructions</li>
+    <li>HrFlow sera disponible dans le menu Demarrer</li>
+</ol>
+
+<h3>Option 2 : Execution via Maven</h3>
+<pre><code>git clone https://github.com/Bechir-Lahoueg/Esprit-PIDEV-3A4-HrFlow.git
+cd Esprit-PIDEV-3A4-HrFlow\JAVA
+mvn clean compile
+cd AppUi
+mvn javafx:run</code></pre>
+
+<h3>Option 3 : Fichier JAR executable</h3>
+<pre><code>cd AppUi
+mvn clean package
+java -jar target\AppUi-1.0-SNAPSHOT.jar</code></pre>
+
+<h2>Configuration de la base de donnees</h2>
+<p>HrFlow se connecte automatiquement a la base de donnees distante. Si vous souhaitez utiliser votre propre instance MySQL, modifiez le fichier <code>application.properties</code> dans chaque module.</p>
+{% endblock %}

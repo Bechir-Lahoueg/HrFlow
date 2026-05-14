@@ -1,0 +1,69 @@
+{% set current_section = 'troubleshooting' %}
+{% extends 'docs/layout.html.twig' %}
+
+{% block docs_content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-6">Depannage</h1>
+
+<h2>L'application ne demarre pas</h2>
+
+<h3>Probleme : JavaFX ne se lance pas</h3>
+<p><strong>Solution :</strong></p>
+<pre><code># Verifier la version de Java
+java -version
+
+# Mettre a jour JAVA_HOME
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64</code></pre>
+
+<h3>Probleme : Erreur "JavaFX runtime components are missing"</h3>
+<p><strong>Solution :</strong> Assurez-vous d'utiliser le plugin Maven JavaFX :</p>
+<pre><code>cd AppUi
+mvn javafx:run</code></pre>
+
+<h2>Probleme de base de donnees</h2>
+
+<h3>Probleme : Impossible de se connecter a MySQL</h3>
+<p><strong>Solutions :</strong></p>
+<pre><code># Verifier que MySQL est en cours d'execution
+sudo systemctl status mysql
+
+# Demarrer MySQL
+sudo systemctl start mysql
+
+# Verifier la base de donnees
+mysql -u root -p -e "SHOW DATABASES;"</code></pre>
+
+<h3>Probleme : Table manquante</h3>
+<p><strong>Solution :</strong> Executez le script SQL pour creer les tables :</p>
+<pre><code>mysql -u root -p hrflow &lt; JAVA/full_database_schema.sql</code></pre>
+
+<h2>Fonctionnalites IA</h2>
+
+<h3>Probleme : La generation de rapports echoue</h3>
+<p><strong>Solutions :</strong></p>
+<pre><code># Verifier la cle API Groq
+echo $GROQ_API_KEY
+
+# Tester la connectivite API
+curl -H "Authorization: Bearer $GROQ_API_KEY" \
+     https://api.groq.com/openai/v1/models</code></pre>
+
+<h2>Performance</h2>
+
+<h3>L'application est lente</h3>
+<p><strong>Solutions :</strong></p>
+<ul>
+    <li>Augmentez la memoire JVM : <code>-Xmx2g</code></li>
+    <li>Verifiez la connexion reseau</li>
+    <li>Fermez les modules inutilises</li>
+</ul>
+
+<h2>Export PDF</h2>
+
+<h3>Probleme : L'export PDF echoue</h3>
+<p><strong>Solutions :</strong></p>
+<ul>
+    <li>Verifiez que les polices sont installees</li>
+    <li>Assurez-vous d'avoir les permissions d'ecriture dans le repertoire de destination</li>
+    <li>Consultez les logs pour plus de details</li>
+</ul>
+{% endblock %}
