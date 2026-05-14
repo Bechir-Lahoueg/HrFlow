@@ -36,18 +36,18 @@
 
         <main class="p-6 max-w-4xl mx-auto">
             {# ══════════ Header ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-formation-950 via-formation-900 to-formation-800 text-white p-8 mb-6 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-formation-400/15 blur-3xl"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-formation-300/15 blur-3xl"></div>
+            <section class="relative overflow-hidden rounded-2xl text-white p-8 mb-6 animate-slide-up" style="background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d);">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl mesh-blob" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl mesh-blob-alt" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
                 <div class="relative z-10">
                     <div class="flex items-center gap-2 mb-3">
-                        <a href="{{ path('app_rh_applications') }}" class="text-formation-200 hover:text-white transition-colors">
+                        <a href="{{ path('app_rh_applications') }}" class="hover:text-white transition-colors" style="color: #3FA9F5;">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
                         </a>
-                        <span class="text-[11px] font-bold text-formation-200 uppercase tracking-wider">Retour aux candidatures</span>
+                        <span class="text-[11px] font-bold uppercase tracking-wider" style="color: #3FA9F5;">Retour aux candidatures</span>
                     </div>
                     <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Modifier la candidature</h2>
-                    <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Modifiez les informations du candidat.</p>
+                    <p class="mt-3 text-[15px] max-w-xl leading-relaxed" style="color: rgba(203,213,225,0.9);">Modifiez les informations du candidat.</p>
                 </div>
             </section>
 

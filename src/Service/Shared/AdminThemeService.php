@@ -12,6 +12,9 @@ final class AdminThemeService
 {
     public const DEFAULT_THEME = 'violet';
 
+    /** Request-scoped cache: keyed by user id, value is the resolved theme key. */
+    private array $cache = [];
+
     public function __construct(
         private readonly Connection $connection,
     ) {
@@ -98,20 +101,26 @@ final class AdminThemeService
             return self::DEFAULT_THEME;
         }
 
+        $userId = (int) $user->getId();
+
+        if (isset($this->cache[$userId])) {
+            return $this->cache[$userId];
+        }
+
         try {
             $value = $this->connection->fetchOne(
                 'SELECT admin_dashboard_theme FROM users WHERE id = :id LIMIT 1',
-                ['id' => $user->getId()],
+                ['id' => $userId],
             );
         } catch (\Throwable) {
             return self::DEFAULT_THEME;
         }
 
         if (!is_string($value) || $value === '') {
-            return self::DEFAULT_THEME;
+            return $this->cache[$userId] = self::DEFAULT_THEME;
         }
 
-        return array_key_exists($value, $this->getAll()) ? $value : self::DEFAULT_THEME;
+        return $this->cache[$userId] = array_key_exists($value, $this->getAll()) ? $value : self::DEFAULT_THEME;
     }
 
     public function save(int $userId, string $themeKey): bool

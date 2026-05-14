@@ -23,13 +23,6 @@
             background-color: #f4f7fb !important;
         }
 
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            #settings-page-container {
-                background-color: #18181b !important;
-            }
-        }
-
         /* High contrast mode support */
         html.a11y-high-contrast {
             --settings-primary-deep: #022E69;
@@ -51,12 +44,6 @@
             --settings-border: #D0D0D0;
         }
 
-        /* Dark mode background */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #18181b;
-            }
-        }
     </style>
 
     {% include 'DashboardHr/components/_sidebar.html.twig' %}

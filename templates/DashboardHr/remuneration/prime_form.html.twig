@@ -1,4 +1,4 @@
-﻿{% extends 'base.html.twig' %}{% set prime = prime|default(null) %}
+{% extends 'base.html.twig' %}{% set prime = prime|default(null) %}
 {% block title %}{% if prime is defined and prime %}Éditer{% else %}Créer{% endif %} Prime{% endblock %}
 
 {% block stylesheets %}
@@ -21,11 +21,6 @@
         #prime-page-container {
             background-color: #f4f7fb !important;
         }
-
-        @media (prefers-color-scheme: dark) {
-            #prime-page-container {
-                background-color: #18181b !important;
-            }
         }
 
         .hero-banner-prime {

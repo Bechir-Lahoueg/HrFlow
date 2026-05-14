@@ -41,35 +41,35 @@
         <main class="p-6 space-y-6 max-w-7xl mx-auto">
 
             {# ══════════ Hero ══════════ #}
-            <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-formation-950 via-formation-900 to-formation-800 text-white p-8 md:p-10 animate-slide-up">
-                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-formation-400/15 blur-3xl"></div>
-                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-formation-300/15 blur-3xl"></div>
-                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
+            <section class="relative overflow-hidden rounded-2xl text-white p-8 md:p-10 animate-slide-up" style="background: linear-gradient(to bottom right, #022E69, #0a3d8f, #051f3d);">
+                <div class="absolute -left-16 bottom-0 h-56 w-56 rounded-full blur-3xl mesh-blob" style="background: radial-gradient(circle, rgba(63, 169, 245, 0.15), transparent 70%);"></div>
+                <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl mesh-blob-alt" style="background: radial-gradient(circle, rgba(20, 94, 183, 0.15), transparent 70%);"></div>
+                <div class="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-center">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2 h-2 rounded-full bg-formation-400 animate-pulse"></div>
-                            <span class="text-[11px] font-bold text-formation-200 uppercase tracking-wider">Talent Pipeline</span>
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3FA9F5;"></div>
+                            <span class="text-[11px] font-bold uppercase tracking-[0.15em]" style="color: #3FA9F5;">Talent Pipeline</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">Gestion des candidatures</h2>
                         {% if currentOffer is defined and currentOffer %}
-                            <p class="mt-2 text-formation-300 text-[13px] font-semibold flex items-center gap-2">
+                            <p class="mt-2 text-[13px] font-semibold flex items-center gap-2" style="color: #74c4f8;">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
-                                Filtre: {{ currentOffer.title }}
+                                Filtre : {{ currentOffer.title }}
                             </p>
                         {% else %}
-                            <p class="mt-3 text-[15px] text-slate-300 max-w-xl leading-relaxed">Suivez et gérez toutes vos candidatures. Faites avancer les talents dans votre pipeline de recrutement.</p>
+                            <p class="mt-3 text-[15px] max-w-xl leading-relaxed" style="color: rgba(203,213,225,0.9);">Suivez et gérez toutes vos candidatures. Faites avancer les talents dans votre pipeline de recrutement.</p>
                         {% endif %}
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">Total candidats</p>
-                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.totalApplications|default(0) }}</p>
-                            <p class="text-xs text-formation-100/60 mt-1">candidatures reçues</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4 transition-colors group" style="background: rgba(255,255,255,0.08);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <p class="text-[9px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63,169,245,0.7);">Total candidats</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">{{ stats.totalApplications|default(0) }}</p>
+                            <p class="text-xs mt-1" style="color: rgba(203,213,225,0.6);">candidatures reçues</p>
                         </div>
-                        <div class="rounded-xl border border-white/15 bg-white/8 backdrop-blur-sm p-4">
-                            <p class="text-[10px] uppercase tracking-[0.15em] text-formation-200/70 font-bold">En attente</p>
-                            <p class="mt-1 text-3xl font-extrabold font-mono-num">{{ stats.pendingApplications|default(0) }}</p>
-                            <p class="text-xs text-formation-100/60 mt-1">à examiner</p>
+                        <div class="rounded-xl border border-white/15 backdrop-blur-sm p-4 transition-colors group" style="background: rgba(255,255,255,0.08);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            <p class="text-[9px] uppercase tracking-[0.15em] font-bold" style="color: rgba(63,169,245,0.7);">En attente</p>
+                            <p class="mt-1 text-2xl font-extrabold font-mono-num group-hover:scale-105 transition-transform origin-left">{{ stats.pendingApplications|default(0) }}</p>
+                            <p class="text-xs mt-1" style="color: rgba(203,213,225,0.6);">à examiner</p>
                         </div>
                     </div>
                 </div>
