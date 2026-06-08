@@ -36,6 +36,7 @@ security:
         - { path: ^/employee/formation/verify/, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/auth/2fa-status, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/2fa-email-code, roles: PUBLIC_ACCESS }
         - { path: ^/candidat/inscription, roles: PUBLIC_ACCESS }
         - { path: ^/candidat/connexion, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }

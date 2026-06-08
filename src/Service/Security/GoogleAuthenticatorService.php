@@ -119,7 +119,10 @@ final class GoogleAuthenticatorService
         return $this->verifyCode($secret, $code);
     }
 
-    public function verifyCode(string $secret, string $code, int $window = 1): bool
+    // window=2 => tolère ±60s de décalage d'horloge entre le serveur et le téléphone.
+    // ±30s (window=1) était trop strict : un léger drift de l'horloge serveur (fréquent en
+    // Docker/VM) faisait échouer un code pourtant correct ("Code invalide").
+    public function verifyCode(string $secret, string $code, int $window = 2): bool
     {
         $normalizedCode = preg_replace('/\D+/', '', $code);
         if (!is_string($normalizedCode) || strlen($normalizedCode) !== 6) {

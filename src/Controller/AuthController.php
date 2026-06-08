@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -28,6 +29,7 @@ final class AuthController extends AbstractController
         private readonly DbUserProvider $dbUserProvider,
         private readonly GoogleAuthenticatorService $googleAuthenticatorService,
         private readonly CacheInterface $cache,
+        private readonly CsrfTokenManagerInterface $csrfTokenManager,
     ) {
     }
 
@@ -63,24 +65,82 @@ final class AuthController extends AbstractController
     {
         $identifier = trim((string) $request->query->get('identifier', ''));
         if (mb_strlen($identifier) < 3) {
-            return new JsonResponse(['required' => false]);
+            return new JsonResponse(['exists' => false, 'required' => false]);
         }
 
-        // Cache per identifier for 60s — this endpoint is hit on every keystroke by JS
-        $cacheKey = '2fa_status_' . hash('xxh3', $identifier);
-        $required = $this->cache->get($cacheKey, function (ItemInterface $item) use ($identifier): bool {
-            $item->expiresAfter(60);
-            try {
-                $user = $this->dbUserProvider->loadUserByIdentifier($identifier);
-                if ($user instanceof DbUser) {
-                    return $this->googleAuthenticatorService->isEnabled($user);
-                }
-            } catch (\Throwable) {
-                // Unknown identifier — not an error
-            }
-            return false;
-        });
+        // Pas de cache : la détection alimente un flux de login en 2 étapes, on veut
+        // l'état réel (un compte qui vient d'activer/désactiver la 2FA ne doit pas rester
+        // bloqué 60s sur un état périmé).
+        $exists = false;
+        $required = false;
+        $displayName = null;
 
-        return new JsonResponse(['required' => $required]);
+        try {
+            $user = $this->dbUserProvider->loadUserByIdentifier($identifier);
+            if ($user instanceof DbUser) {
+                $exists = true;
+                $required = $this->googleAuthenticatorService->isEnabled($user);
+                $displayName = $user->getFullName() ?: $user->getUsername();
+            }
+        } catch (\Throwable) {
+            // Identifiant inconnu — on ne révèle pas l'existence dans l'UI étape 1,
+            // mais on laisse l'étape 2 s'afficher pour ne pas faire d'énumération de comptes.
+        }
+
+        return new JsonResponse([
+            'exists' => $exists,
+            'required' => $required,
+            'displayName' => $displayName,
+        ]);
+    }
+
+    /**
+     * Fallback "code par email" : si l'utilisateur n'a plus accès à son app
+     * authenticator, il peut recevoir un code temporaire par email.
+     * Le code est stocké hashé en session avec une expiration courte.
+     */
+    #[Route('/auth/2fa-email-code', name: 'app_auth_2fa_email_code', methods: ['POST'])]
+    public function sendEmailFallbackCode(Request $request, \App\Service\Shared\HrFlowMailer $mailer): JsonResponse
+    {
+        $identifier = trim((string) $request->request->get('identifier', ''));
+        if (mb_strlen($identifier) < 3) {
+            return new JsonResponse(['sent' => false], 400);
+        }
+
+        // Réponse générique quoi qu'il arrive (anti-énumération de comptes).
+        // On retourne aussi un CSRF token frais : après ce POST, Symfony peut régénérer
+        // l'ID de session, ce qui invaliderait le token pré-rendu dans le HTML.
+        $freshCsrf = $this->csrfTokenManager->getToken('authenticate')->getValue();
+        $generic = new JsonResponse(['sent' => true, 'csrf' => $freshCsrf]);
+
+        try {
+            $user = $this->dbUserProvider->loadUserByIdentifier($identifier);
+            if (!$user instanceof DbUser || !$this->googleAuthenticatorService->isEnabled($user)) {
+                return $generic;
+            }
+            $email = $user->getEmail();
+            if (!$email) {
+                return $generic;
+            }
+
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $session = $request->getSession();
+            $session->set('2fa_email_fallback', [
+                'identifier' => $identifier,
+                'hash' => password_hash($code, PASSWORD_DEFAULT),
+                'expires' => time() + 600, // 10 minutes
+                'attempts' => 0,
+            ]);
+
+            $mailer->sendTwoFactorFallbackCode(
+                $email,
+                $user->getFullName() ?: $user->getUsername(),
+                $code
+            );
+        } catch (\Throwable) {
+            // On reste générique.
+        }
+
+        return $generic;
     }
 }

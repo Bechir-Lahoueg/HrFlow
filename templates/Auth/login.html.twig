@@ -315,6 +315,43 @@
         .form-footer a { font-weight: 700; color: var(--blue); text-decoration: none; }
         .form-footer a:hover { color: var(--sky); }
 
+        /* ── Login en 2 étapes ── */
+        .login-step.hidden { display: none; }
+        @keyframes stepIn { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+        .login-step:not(.hidden) { animation: stepIn .28s ease both; }
+
+        /* Chip "compte détecté" (étape 2) */
+        .account-chip {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            background: var(--gray-50);
+            border: 1.5px solid var(--gray-200);
+            border-radius: 14px;
+            padding: .625rem .875rem;
+            margin-bottom: 1.25rem;
+        }
+        .account-chip .chip-avatar {
+            width: 36px; height: 36px; flex: 0 0 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--navy));
+            color: #fff; font-weight: 800; font-size: .8rem;
+            display: flex; align-items: center; justify-content: center;
+            text-transform: uppercase;
+        }
+        .account-chip .chip-info { min-width: 0; flex: 1; }
+        .account-chip .chip-name { font-size: .8rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .account-chip .chip-mail { font-size: .72rem; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .account-chip .chip-edit { font-size: .72rem; font-weight: 700; color: var(--blue); background: none; border: none; cursor: pointer; padding: .25rem .4rem; border-radius: 8px; transition: background .15s; }
+        .account-chip .chip-edit:hover { background: rgba(63,169,245,.1); }
+
+        /* Lien fallback "envoyer un code par email" */
+        .fallback-link { font-size: .72rem; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; margin-top: .55rem; transition: color .15s; }
+        .fallback-link:hover { color: var(--sky); }
+        .fallback-link[disabled] { color: var(--gray-400); cursor: default; }
+        .fallback-note { font-size: .72rem; color: #16a34a; font-weight: 600; margin-top: .5rem; display: none; }
+        .fallback-note.show { display: block; }
+
         /* Scroll fade-in on load */
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .form-container { animation: fadeUp .45s ease both; }
@@ -368,19 +405,15 @@
             <h2 class="form-title">Bon retour !</h2>
             <p class="form-subtitle">Entrez vos informations pour continuer.</p>
 
-            {# Steps #}
+            {# Steps — 2 étapes : identifiant puis vérification #}
             <div class="steps-bar">
-                <div class="step-pill">
+                <div id="step-pill-1" class="step-pill active">
                     <span class="step-num">Étape 1</span>
                     <span class="step-name">Identifiant</span>
                 </div>
-                <div class="step-pill">
+                <div id="step-pill-2" class="step-pill {{ showTotpByDefault ? 'active' : '' }}">
                     <span class="step-num">Étape 2</span>
-                    <span class="step-name">Mot de passe</span>
-                </div>
-                <div id="step-2fa" class="step-pill {{ showTotpByDefault ? 'active' : '' }}">
-                    <span class="step-num">Étape 3</span>
-                    <span class="step-name">Code 2FA</span>
+                    <span class="step-name">Vérification</span>
                 </div>
             </div>
 
@@ -412,73 +445,94 @@
                 </div>
             {% endfor %}
 
-            {# Form #}
-            <form method="post" action="{{ path('app_login') }}" novalidate data-2fa-status-url="{{ path('app_auth_2fa_status') }}">
+            {# Form — flux 2 étapes : (1) identifiant → (2) mot de passe + 2FA si requise #}
+            <form method="post" action="{{ path('app_login') }}" novalidate
+                  data-2fa-status-url="{{ path('app_auth_2fa_status') }}"
+                  data-email-code-url="{{ path('app_auth_2fa_email_code') }}">
 
-                {# Identifier #}
-                <div class="field">
-                    <label for="identifier">Email ou Username</label>
-                    <div class="field-wrap">
-                        <span class="field-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        </span>
-                        <input id="identifier" name="identifier" type="text"
-                               placeholder="nom@entreprise.com ou admin"
-                               value="{{ last_username|default('') }}"
-                               required
-                               class="login-input">
-                        <span class="login-hint">Veuillez entrer un identifiant valide.</span>
+                {# ───────── ÉTAPE 1 : Identifiant ───────── #}
+                <div id="login-step-1" class="login-step {{ showTotpByDefault ? 'hidden' : '' }}">
+                    <div class="field">
+                        <label for="identifier">Email ou Username</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            </span>
+                            <input id="identifier" name="identifier" type="text"
+                                   placeholder="nom@entreprise.com ou admin"
+                                   value="{{ last_username|default('') }}"
+                                   autocomplete="username"
+                                   required
+                                   class="login-input">
+                            <span class="login-hint">Veuillez entrer un identifiant valide.</span>
+                        </div>
                     </div>
+
+                    <button type="button" id="btn-continue" class="btn-submit">Continuer</button>
                 </div>
 
-                {# Password #}
-                <div class="field">
-                    <label for="password">Mot de passe</label>
-                    <div class="field-wrap">
-                        <span class="field-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        </span>
-                        <input id="password" name="password" type="password"
-                               placeholder="••••••••"
-                               required
-                               class="login-input">
-                        <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Afficher le mot de passe">
-                            <svg id="eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
-                        <span class="login-hint">Ce champ est obligatoire.</span>
-                    </div>
-                </div>
+                {# ───────── ÉTAPE 2 : Vérification ───────── #}
+                <div id="login-step-2" class="login-step {{ showTotpByDefault ? '' : 'hidden' }}">
 
-                {# 2FA bar #}
-                <div class="twofa-bar">
-                    <p id="twofa-status">2FA détectée automatiquement selon le compte.</p>
-                    <button id="toggle-2fa" type="button" class="twofa-toggle">Afficher code 2FA</button>
-                </div>
-
-                {# TOTP #}
-                <div id="totp-wrapper" class="totp-wrapper field {{ showTotpByDefault ? '' : 'hidden' }}">
-                    <label for="totp_code">Code Google Authenticator</label>
-                    <div class="field-wrap">
-                        <span class="field-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        </span>
-                        <input id="totp_code" name="totp_code" type="text"
-                               placeholder="123456"
-                               inputmode="numeric"
-                               autocomplete="one-time-code"
-                               class="login-input">
+                    {# Compte détecté #}
+                    <div class="account-chip">
+                        <div class="chip-avatar" id="chip-avatar">?</div>
+                        <div class="chip-info">
+                            <div class="chip-name" id="chip-name">Votre compte</div>
+                            <div class="chip-mail" id="chip-mail">{{ last_username|default('') }}</div>
+                        </div>
+                        <button type="button" class="chip-edit" id="chip-edit">Modifier</button>
                     </div>
-                    <p style="font-size:.72rem;color:var(--gray-400);margin-top:.4rem;font-weight:500;">Requis uniquement si la double authentification est active sur votre compte.</p>
+
+                    {# Password #}
+                    <div class="field">
+                        <label for="password">Mot de passe</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </span>
+                            <input id="password" name="password" type="password"
+                                   placeholder="••••••••"
+                                   autocomplete="current-password"
+                                   class="login-input">
+                            <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Afficher le mot de passe">
+                                <svg id="eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                            <span class="login-hint">Ce champ est obligatoire.</span>
+                        </div>
+                    </div>
+
+                    {# TOTP — affiché uniquement si le compte a la 2FA active #}
+                    <div id="totp-wrapper" class="totp-wrapper field {{ showTotpByDefault ? '' : 'hidden' }}">
+                        <label for="totp_code">Code de vérification</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </span>
+                            <input id="totp_code" name="totp_code" type="text"
+                                   placeholder="123456"
+                                   inputmode="numeric"
+                                   maxlength="6"
+                                   autocomplete="one-time-code"
+                                   class="login-input">
+                        </div>
+                        <p style="font-size:.72rem;color:var(--gray-400);margin-top:.4rem;font-weight:500;">
+                            Saisissez le code à 6 chiffres de votre application d'authentification.
+                        </p>
+                        {# Fallback : recevoir un code par email #}
+                        <button type="button" id="fallback-link" class="fallback-link">Je n'ai pas accès à mon application d'authentification</button>
+                        <p id="fallback-note" class="fallback-note">✓ Un code de connexion vient d'être envoyé à votre adresse email.</p>
+                    </div>
+
+                    {# Forgot #}
+                    <div class="form-row">
+                        <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Se connecter</button>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-                {# Forgot #}
-                <div class="form-row">
-                    <a href="#" class="forgot-link">Mot de passe oublié ?</a>
-                </div>
-
-                <button type="submit" class="btn-submit">Se connecter</button>
             </form>
 
             <p class="form-footer">
@@ -490,7 +544,7 @@
 
 <script>
 (function () {
-    // Password visibility toggle
+    // ── Password visibility toggle ──
     const pwToggle = document.getElementById('pw-toggle');
     const pwInput  = document.getElementById('password');
     const eyeIcon  = document.getElementById('eye-icon');
@@ -504,57 +558,151 @@
         });
     }
 
-    // 2FA auto-detect + manual toggle
-    const form          = document.querySelector('form[data-2fa-status-url]');
+    const form = document.querySelector('form[data-2fa-status-url]');
     if (!form) return;
-    const endpoint      = form.getAttribute('data-2fa-status-url');
+
+    const statusUrl     = form.getAttribute('data-2fa-status-url');
+    const emailCodeUrl  = form.getAttribute('data-email-code-url');
     const identifierIn  = document.getElementById('identifier');
+    const step1         = document.getElementById('login-step-1');
+    const step2         = document.getElementById('login-step-2');
+    const btnContinue   = document.getElementById('btn-continue');
+    const chipEdit      = document.getElementById('chip-edit');
+    const chipName      = document.getElementById('chip-name');
+    const chipMail      = document.getElementById('chip-mail');
+    const chipAvatar    = document.getElementById('chip-avatar');
     const totpWrapper   = document.getElementById('totp-wrapper');
     const totpInput     = document.getElementById('totp_code');
-    const toggleBtn     = document.getElementById('toggle-2fa');
-    const statusLabel   = document.getElementById('twofa-status');
-    const step2fa       = document.getElementById('step-2fa');
-    let timer = null;
+    const pillS1        = document.getElementById('step-pill-1');
+    const pillS2        = document.getElementById('step-pill-2');
+    const fallbackLink  = document.getElementById('fallback-link');
+    const fallbackNote  = document.getElementById('fallback-note');
 
-    function setTotpVisible(visible, required) {
-        if (visible) {
+    // Force le champ TOTP à n'accepter que des chiffres.
+    if (totpInput) {
+        totpInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D+/g, '').slice(0, 6);
+        });
+    }
+
+    function setTotpRequired(required) {
+        if (required) {
             totpWrapper.classList.remove('hidden');
-            if (required) totpInput.setAttribute('required', 'required');
-            statusLabel.textContent = required
-                ? '2FA requise — entrez le code Google Authenticator.'
-                : 'Activez si votre compte utilise Google Authenticator.';
-            toggleBtn.textContent = 'Masquer code 2FA';
-            step2fa.classList.add('active');
+            totpInput.setAttribute('required', 'required');
         } else {
             totpWrapper.classList.add('hidden');
             totpInput.removeAttribute('required');
-            statusLabel.textContent = '2FA détectée automatiquement selon le compte.';
-            toggleBtn.textContent = 'Afficher code 2FA';
-            step2fa.classList.remove('active');
         }
     }
 
-    async function checkTwoFactorStatus() {
-        const id = (identifierIn.value || '').trim();
-        if (id.length < 3) return;
+    // Étape 1 : récupère l'état du compte (existence + 2FA + nom).
+    async function fetchAccountStatus(id) {
         try {
-            const res  = await fetch(endpoint + '?identifier=' + encodeURIComponent(id), { credentials: 'same-origin', headers: { Accept: 'application/json' } });
-            const data = await res.json();
-            if (data.required) setTotpVisible(true, true);
-        } catch (e) { /* silent */ }
+            const res  = await fetch(statusUrl + '?identifier=' + encodeURIComponent(id), {
+                credentials: 'same-origin', headers: { Accept: 'application/json' }
+            });
+            return await res.json();
+        } catch (e) {
+            // En cas d'erreur réseau, on laisse passer à l'étape 2 sans 2FA (le serveur tranchera).
+            return { exists: true, required: false, displayName: null };
+        }
     }
 
-    identifierIn.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(checkTwoFactorStatus, 280);
+    function goToStep2(data) {
+        const id = identifierIn.value.trim();
+        // Chip compte
+        const name = (data && data.displayName) ? data.displayName : id;
+        chipName.textContent = name;
+        chipMail.textContent = id;
+        chipAvatar.textContent = (name || '?').trim().charAt(0) || '?';
+
+        setTotpRequired(!!(data && data.required));
+
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+        pillS1.classList.remove('active');
+        pillS2.classList.add('active');
+
+        // Focus sur le mot de passe pour enchaîner naturellement.
+        setTimeout(function () { pwInput && pwInput.focus(); }, 60);
+    }
+
+    function goToStep1() {
+        step2.classList.add('hidden');
+        step1.classList.remove('hidden');
+        pillS2.classList.remove('active');
+        pillS1.classList.add('active');
+        setTimeout(function () { identifierIn && identifierIn.focus(); }, 60);
+    }
+
+    async function handleContinue() {
+        const id = identifierIn.value.trim();
+        if (id.length < 3) {
+            identifierIn.reportValidity();
+            return;
+        }
+        btnContinue.disabled = true;
+        btnContinue.textContent = 'Vérification…';
+        const data = await fetchAccountStatus(id);
+        btnContinue.disabled = false;
+        btnContinue.textContent = 'Continuer';
+        goToStep2(data);
+    }
+
+    btnContinue.addEventListener('click', handleContinue);
+
+    // Entrée dans le champ identifiant → passe à l'étape 2 (au lieu de soumettre).
+    identifierIn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !step1.classList.contains('hidden')) {
+            e.preventDefault();
+            handleContinue();
+        }
     });
 
-    toggleBtn.addEventListener('click', function () {
-        const isHidden = totpWrapper.classList.contains('hidden');
-        setTotpVisible(isHidden, false);
-    });
+    chipEdit.addEventListener('click', goToStep1);
 
-    if (identifierIn.value.trim().length >= 3) checkTwoFactorStatus();
+    // ── Fallback : recevoir un code par email ──
+    let fallbackCooldown = false;
+    const csrfField = form.querySelector('input[name="_csrf_token"]');
+    if (fallbackLink) {
+        fallbackLink.addEventListener('click', async function () {
+            if (fallbackCooldown) return;
+            const id = identifierIn.value.trim();
+            if (id.length < 3) return;
+            fallbackCooldown = true;
+            fallbackLink.disabled = true;
+            const original = fallbackLink.textContent;
+            fallbackLink.textContent = 'Envoi en cours…';
+            try {
+                const body = new URLSearchParams({ identifier: id });
+                const res = await fetch(emailCodeUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+                    body: body.toString()
+                });
+                const data = await res.json().catch(function () { return {}; });
+                // Mettre à jour le CSRF token si Symfony a régénéré la session.
+                if (data.csrf && csrfField) {
+                    csrfField.value = data.csrf;
+                }
+                fallbackNote.classList.add('show');
+            } catch (e) { /* silent */ }
+            fallbackLink.textContent = original;
+            // Cooldown 30s pour éviter le spam.
+            setTimeout(function () { fallbackCooldown = false; fallbackLink.disabled = false; }, 30000);
+        });
+    }
+
+    // Si le serveur a renvoyé une erreur 2FA (rechargement après échec), on est déjà à l'étape 2 :
+    // on s'assure que le focus va sur le bon champ.
+    if (!step2.classList.contains('hidden')) {
+        const id = identifierIn.value.trim();
+        chipName.textContent = id;
+        chipMail.textContent = id;
+        chipAvatar.textContent = (id || '?').charAt(0) || '?';
+        setTimeout(function () { (totpInput && !totpWrapper.classList.contains('hidden') ? totpInput : pwInput).focus(); }, 60);
+    }
 })();
 </script>
 {% endblock %}

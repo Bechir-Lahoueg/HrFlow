@@ -84,10 +84,15 @@
   }
 </style>
 
+{# Image hero choisie aléatoirement à chaque rechargement (la page est en no-store, donc re-rendue à chaque visite). #}
+{% set heroImages = ['images/landingpage.png', 'images/Gemini_Generated_Image_fiil3mfiil3mfiil.png'] %}
+{% set heroImage = random(heroImages) %}
+
 <section class="relative overflow-hidden"
-  style="height:min(100vh,780px);
-         background-image:url('{{ asset('images/landingpage.png') }}');
-         background-size:contain;
+  style="height:min(100svh,780px);
+         min-height:520px;
+         background-image:url('{{ asset(heroImage) }}');
+         background-size:cover;
          background-position:center bottom;
          background-repeat:no-repeat;
          background-color:#ffff;">
@@ -111,12 +116,12 @@
                    font-weight:900;
                    color:#022E69;
                    letter-spacing:-0.01em;">
-            Simplifiez vos RH.<br>
+            Simplifiez vos RH<br>
             <span style="background:linear-gradient(90deg,#3FA9F5 0%,#145EB7 100%);
                          -webkit-background-clip:text;
                          -webkit-text-fill-color:transparent;
                          background-clip:text;">
-                Libérez vos Talents.
+                Libérez vos Talents
             </span>
         </h1>
 

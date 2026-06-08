@@ -260,25 +260,53 @@
 {# QUOTE                                                        #}
 {# ──────────────────────────────────────────────────────────── #}
 {% macro quote(quote, accent, refreshUrl) %}
-    <div class="relative overflow-hidden bg-gradient-to-br from-{{ accent }}-600 via-{{ accent }}-700 to-{{ accent }}-900 rounded-xl p-6 text-white shadow-lg h-full">
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/20 blur-2xl"></div>
-            <div class="absolute -bottom-16 -left-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
-        </div>
-        <div class="relative z-10 h-full flex flex-col">
-            <div class="flex items-start justify-between mb-4">
-                <svg class="w-10 h-10 opacity-40" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-                <a href="{{ refreshUrl }}" class="w-8 h-8 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors backdrop-blur" title="Nouvelle citation">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-                </a>
-            </div>
-            <p class="text-[15px] font-medium leading-relaxed italic flex-1">« {{ quote.content|default('Chargement…') }} »</p>
-            <div class="mt-4 pt-4 border-t border-white/20 flex items-center gap-2">
-                <div class="w-1 h-6 bg-white/60 rounded-full"></div>
-                <p class="text-[12px] font-bold uppercase tracking-wider">{{ quote.author|default('—') }}</p>
-            </div>
-        </div>
+
+<div class="relative overflow-hidden rounded-xl p-6 text-white shadow-lg h-full"
+     style="background: linear-gradient(135deg, #0b1f3a 0%, #145EB7 55%, #3FA9F5 100%);">
+
+    {# decorative blobs #}
+    <div class="absolute inset-0 opacity-25">
+        <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl"
+             style="background: rgba(63, 169, 245, 0.25);"></div>
+
+        <div class="absolute -bottom-16 -left-10 w-48 h-48 rounded-full blur-3xl"
+             style="background: rgba(20, 94, 183, 0.20);"></div>
     </div>
+
+    <div class="relative z-10 h-full flex flex-col">
+
+        <div class="flex items-start justify-between mb-4">
+
+            <svg class="w-10 h-10 opacity-40" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+            </svg>
+
+            <a href="{{ refreshUrl }}"
+               class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors backdrop-blur"
+               title="Nouvelle citation">
+
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                </svg>
+
+            </a>
+        </div>
+
+        <p class="text-[15px] font-medium leading-relaxed italic flex-1">
+            « {{ quote.content|default('Chargement…') }} »
+        </p>
+
+        <div class="mt-4 pt-4 border-t border-white/20 flex items-center gap-2">
+            <div class="w-1 h-6 bg-white/60 rounded-full"></div>
+            <p class="text-[12px] font-bold uppercase tracking-wider">
+                {{ quote.author|default('—') }}
+            </p>
+        </div>
+
+    </div>
+</div>
+
 {% endmacro %}
 
 {# ──────────────────────────────────────────────────────────── #}

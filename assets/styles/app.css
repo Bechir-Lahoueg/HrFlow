@@ -472,3 +472,41 @@
     height: 20px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   COUCHE DE SÉCURITÉ RESPONSIVE GLOBALE
+   Objectif : éliminer les débordements horizontaux et rendre
+   médias / tableaux fluides sur petits écrans, SANS toucher au
+   rendu desktop ni à l'identité visuelle. Ajustements invisibles.
+   ════════════════════════════════════════════════════════════ */
+
+/* Empêche tout scroll horizontal accidentel de la page entière. */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+
+/* Médias fluides : ne débordent jamais de leur conteneur.
+   Les utilitaires Tailwind de taille gardent la priorité. */
+img, video, canvas { max-width: 100%; }
+
+/* Les enfants de flex/grid peuvent rétrécir au lieu de pousser
+   la largeur (cause n°1 de débordement avec du texte long). */
+.flex > *, .grid > * { min-width: 0; }
+
+/* Césure des longs mots / URLs / emails dans les zones de texte. */
+p, h1, h2, h3, h4, h5, h6, span, a, li, td, th, label {
+  overflow-wrap: break-word;
+}
+
+/* Tableaux : sur mobile, deviennent défilables horizontalement
+   au lieu de casser la mise en page de la page. */
+@media (max-width: 640px) {
+  table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Les blocs préformatés ne débordent pas non plus. */
+  pre { overflow-x: auto; max-width: 100%; }
+}

@@ -18,7 +18,10 @@ framework:
             messenger.bus.default: []
 
         routing:
-            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
+            # Les emails partent en synchrone : aucun worker messenger:consume ne tourne,
+            # les messages restaient bloqués dans la queue async (jamais envoyés).
+            # Un code de connexion / alerte doit partir immédiatement pendant la requête.
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
 

@@ -286,6 +286,19 @@ class HrFlowMailer
     // ──────────────────────────────────────────────
     // Internal: send email
     // ──────────────────────────────────────────────
+    // ──────────────────────────────────────────────
+    // Code 2FA de secours (fallback authenticator perdu)
+    // ──────────────────────────────────────────────
+    public function sendTwoFactorFallbackCode(string $recipientEmail, string $recipientName, string $code): void
+    {
+        $html = $this->twig->render('emails/two_factor_fallback.html.twig', [
+            'name' => $recipientName,
+            'code' => $code,
+        ]);
+
+        $this->send($recipientEmail, 'Votre code de connexion — HrFlow', $html);
+    }
+
     private function send(string $to, string $subject, string $htmlBody): void
     {
         try {

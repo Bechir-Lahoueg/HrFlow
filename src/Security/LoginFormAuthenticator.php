@@ -53,7 +53,11 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $totpCode = (string) $request->request->get('totp_code', '');
         $csrfToken = (string) $request->request->get('_csrf_token', '');
 
-        $request->getSession()->set('_security.last_username', $identifier);
+        $session = $request->getSession();
+        $session->set('_security.last_username', $identifier);
+
+        // Code de secours envoyé par email (si l'utilisateur n'a plus son authenticator).
+        $emailFallback = $session->get('2fa_email_fallback');
 
         return new Passport(
             new UserBadge($identifier, fn (string $userIdentifier) => $this->userProvider->loadUserByIdentifier($userIdentifier)),
@@ -74,18 +78,26 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
                     $totpCode = preg_replace('/\D+/', '', (string) $credentials['totp_code']) ?? '';
                     if ($totpCode === '') {
-                        throw new CustomUserMessageAuthenticationException('Code Google Authenticator requis pour ce compte.');
+                        throw new CustomUserMessageAuthenticationException('Code de vérification requis pour ce compte.');
                     }
 
-                    if (!$this->googleAuthenticatorService->verifyForUser($user, $totpCode)) {
-                        throw new CustomUserMessageAuthenticationException('Code Google Authenticator invalide.');
+                    // 1) Code authenticator (TOTP) — voie normale.
+                    if ($this->googleAuthenticatorService->verifyForUser($user, $totpCode)) {
+                        return true;
                     }
 
-                    return true;
+                    // 2) Fallback : code reçu par email (stocké hashé en session, à usage unique).
+                    if ($this->isEmailFallbackCodeValid($credentials['email_fallback'], $credentials['identifier'], $totpCode)) {
+                        return true;
+                    }
+
+                    throw new CustomUserMessageAuthenticationException('Code de vérification invalide.');
                 },
                 [
                     'password' => $password,
                     'totp_code' => $totpCode,
+                    'identifier' => $identifier,
+                    'email_fallback' => is_array($emailFallback) ? $emailFallback : null,
                 ]
             ),
             [
@@ -96,6 +108,9 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
+        // Code de secours email à usage unique : on l'invalide dès une connexion réussie.
+        $request->getSession()->remove('2fa_email_fallback');
+
         $roles = $token->getRoleNames();
 
         $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
@@ -144,6 +159,35 @@ final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             return $this->urlGenerator->generate(self::CANDIDATE_LOGIN_ROUTE);
         }
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+
+    /**
+     * Valide un code de secours reçu par email.
+     *
+     * @param array{identifier?:string,hash?:string,expires?:int,attempts?:int}|null $fallback
+     */
+    private function isEmailFallbackCodeValid(?array $fallback, string $identifier, string $code): bool
+    {
+        if ($fallback === null) {
+            return false;
+        }
+
+        // Le code de secours est lié à l'identifiant qui l'a demandé.
+        if (($fallback['identifier'] ?? null) !== $identifier) {
+            return false;
+        }
+
+        // Expiration (10 min).
+        if (($fallback['expires'] ?? 0) < time()) {
+            return false;
+        }
+
+        $hash = (string) ($fallback['hash'] ?? '');
+        if ($hash === '') {
+            return false;
+        }
+
+        return password_verify($code, $hash);
     }
 
     private function isPasswordValid(string $plainPassword, string $storedPassword): bool
