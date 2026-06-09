@@ -18,20 +18,54 @@
 
         </a>
 
-        {# Desktop nav #}
-        <nav class="hidden lg:flex items-center gap-1 rounded-full bg-white/75 backdrop-blur-md border border-white/80 shadow-sm px-2 py-1">
-            <a href="{{ path('app_home') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Accueil</a>
-            <a href="{{ path('app_about') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">A propos</a>
-            <a href="{{ path('app_job_offers') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Offres d'emploi</a>
+{# Desktop nav #}
+<nav class="hidden lg:flex items-center gap-0.5 rounded-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-md px-2 py-1">
 
-            {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-                <a href="{{ path('app_subscriptions') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Tarification</a>
-            {% endif %}
+    <a href="{{ path('app_home') }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        Accueil
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
 
-            <a href="{{ path('app_contact') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Contact</a>
-            <a href="{{ path('app_download') }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Telechargement</a>
-            <a href="{{ path('app_docs', {path: ''}) }}" class="px-4 py-2 text-sm font-semibold text-slate-900 hover:text-black hover:bg-white rounded-full transition-colors">Documentation</a>
-        </nav>
+    <a href="{{ path('app_about') }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        A propos
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
+
+    <a href="{{ path('app_job_offers') }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        Offres
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
+
+    {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+        <a href="{{ path('app_subscriptions') }}"
+           class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+            Tarifs
+            <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+        </a>
+    {% endif %}
+
+    <a href="{{ path('app_contact') }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        Contact
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
+
+    <a href="{{ path('app_download') }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        Téléchargement
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
+
+    <a href="{{ path('app_docs', {path: ''}) }}"
+       class="group relative px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:text-black transition-all duration-200">
+        Documentation
+        <span class="absolute bottom-0 left-1/2 h-0.5 w-0 bg-slate-900 transition-all duration-300 group-hover:w-4/5 group-hover:left-[10%]"></span>
+    </a>
+
+</nav>
 
         {# Desktop CTA #}
         <div class="hidden lg:flex items-center gap-3 shrink-0">
